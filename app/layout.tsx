@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: { default: "Promptexa — Discover Better AI Prompts", template: "%s | Promptexa" },
   description: "Discover visual AI prompts for image, video, writing, coding, marketing and more.",
   applicationName: "Promptexa",
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
   keywords: ["AI prompts","prompt library","image prompts","video prompts","ChatGPT prompts","Midjourney prompts"],
   openGraph: { title: "Promptexa — Discover Better AI Prompts", description: "A visual AI prompt discovery platform.", type: "website" },
 };
