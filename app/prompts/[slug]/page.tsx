@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import PromptActions from "./PromptActions";
 
 const demoPrompts = [
   { slug:"cinematic-product-campaign", title:"Cinematic Product Campaign", type:"Image", model:"Flux", category:"Image Prompts", prompt:"A premium studio product shot with dramatic lighting, refined material detail, controlled reflections and a polished commercial aesthetic.", excerpt:"Premium product photography designed for cinematic commercial campaigns.", example:"Use this structure when you need a hero product visual with strong lighting direction and clean composition.", videoConcept:"Slow 3-second push-in, subtle parallax, controlled highlights and a final centered hero frame." },
@@ -22,7 +23,7 @@ export default async function PromptPage({ params }: { params: Promise<{slug:str
       <div className="detailvisual"><span>{p.type.toUpperCase()}</span></div>
       <div className="detailmeta">{p.type} · {p.model} · {p.category}</div>
       <h1>{p.title}</h1><p className="lead">{p.excerpt}</p>
-      <section className="promptbox"><div><span className="eyebrow">PROMPT</span><button onClick={undefined} aria-label="Copy prompt is enabled in the discovery UI">Copy from discovery</button></div><pre>{p.prompt}</pre></section>
+      <section className="promptbox"><div><span className="eyebrow">PROMPT</span><PromptActions prompt={p.prompt} /></div><pre>{p.prompt}</pre></section>
       <div className="detailgrid"><section><span className="eyebrow">HOW TO USE</span><p>{p.example}</p></section><section><span className="eyebrow">VIDEO CONCEPT</span><p>{p.videoConcept}</p></section></div>
     </article>
   </main>;
