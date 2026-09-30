@@ -1,2 +1,2 @@
 # Promptexa
-Prompt exa
+Prompt exa 
