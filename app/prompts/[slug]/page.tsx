@@ -27,7 +27,7 @@ export default async function PromptPage({params}:{params:Promise<{slug:string}>
  if(!p && process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY){
    const supabase=await createClient();
    const {data}=await supabase.from("prompts").select("id,slug,title,excerpt,prompt_text,prompt_type,tags,preview_image_url,example_description,video_concept,categories(name),ai_models(name)").eq("slug",slug).eq("published",true).maybeSingle();
-   if(data) p={...data,type:data.prompt_type,model:Array.isArray(data.ai_models)?data.ai_models[0]?.name:data.ai_models?.name||"AI",category:Array.isArray(data.categories)?data.categories[0]?.name:data.categories?.name||"Prompts",prompt:data.prompt_text,example:data.example_description||"Adapt this prompt to your workflow.",videoConcept:data.video_concept||"Use the prompt as the creative brief for your video generation workflow."};
+   if(data){ const row=data as any; p={...row,type:row.prompt_type,model:Array.isArray(row.ai_models)?row.ai_models[0]?.name:row.ai_models?.name||"AI",category:Array.isArray(row.categories)?row.categories[0]?.name:row.categories?.name||"Prompts",prompt:row.prompt_text,example:row.example_description||"Adapt this prompt to your workflow.",videoConcept:row.video_concept||"Use the prompt as the creative brief for your video generation workflow."}; }
  }
  if(!p) notFound();
  return <main className="detail">
