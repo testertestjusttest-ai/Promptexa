@@ -23,21 +23,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const base = fallback[slug];
   if (!base && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)) notFound();
 
-  const supabase = await createClient();
-  const { data: categoryData } = await supabase.from("categories").select("id,name,slug").eq("slug", slug).maybeSingle();
-  const category = (categoryData as any) || base;
+  let category: any = base;
+  let prompts: any[] = [];
+
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    const supabase = await createClient();
+    const { data: categoryData } = await supabase.from("categories").select("id,name,slug").eq("slug", slug).maybeSingle();
+    category = (categoryData as any) || base;
+    if (!category) notFound();
+
+    const { data: promptData } = await supabase
+      .from("prompts")
+      .select("id,slug,title,excerpt,prompt_type,preview_image_url,ai_models(name)")
+      .eq("published", true)
+      .eq("category_id", category.id)
+      .order("featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(48);
+
+    prompts = (promptData || []) as any[];
+  }
+
   if (!category) notFound();
-
-  const { data: promptData } = await supabase
-    .from("prompts")
-    .select("id,slug,title,excerpt,prompt_type,preview_image_url,ai_models(name)")
-    .eq("published", true)
-    .eq("category_id", category.id)
-    .order("featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(48);
-
-  const prompts = (promptData || []) as any[];
 
   return (
     <main>
