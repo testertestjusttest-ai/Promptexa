@@ -5,25 +5,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const fallbackImages = {
-  portrait: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=85",
-  product: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=85",
-  fashion: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1400&q=85",
-  landscape: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
-  food: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1400&q=85",
-  creative: "https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&w=1400&q=85",
-} as const;
-
-function fallbackImage(prompt: string, type: string) {
-  const lower = prompt.toLowerCase();
-  if (/fashion|editorial|clothing|outfit|runway/.test(lower)) return fallbackImages.fashion;
-  if (/portrait|person|face|people|human|model/.test(lower)) return fallbackImages.portrait;
-  if (/food|cake|dessert|coffee|restaurant|dish/.test(lower)) return fallbackImages.food;
-  if (/mountain|beach|forest|city|street|architecture|landscape/.test(lower)) return fallbackImages.landscape;
-  if (/product|bottle|phone|car|watch|shoe|packaging|campaign/.test(lower)) return fallbackImages.product;
-  return type.toLowerCase() === "image" ? fallbackImages.creative : fallbackImages.landscape;
-}
-
 function adminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -34,7 +15,6 @@ function adminClient() {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug") || "";
-  const type = (searchParams.get("type") || "AI prompt").slice(0, 30);
 
   if (!slug) return new Response("Missing slug", { status: 400 });
 
@@ -52,10 +32,9 @@ export async function GET(request: Request) {
     return Response.redirect(promptRow.preview_image_url, 302);
   }
 
-  const fallback = () => Response.redirect(fallbackImage(prompt, type), 302);
   const admin = adminClient();
 
-  if (!admin || !process.env.OPENAI_API_KEY) return fallback();
+  if (!admin || !process.env.OPENAI_API_KEY) return new Response("Image generation is not configured.", { status: 503 });
 
   // Claim generation so repeated card renders do not create duplicate OpenAI jobs.
   if (promptRow) {
@@ -84,11 +63,12 @@ export async function GET(request: Request) {
   }
 
   const generationPrompt = [
-    "Create a photorealistic, production-quality visual preview for this AI prompt.",
-    "Depict the actual subject and scene described by the prompt with realistic materials, lighting, composition, camera perspective and depth.",
-    "This is a visual reference, not a UI placeholder.",
+    "Create a photorealistic, production-quality visual preview for this exact AI prompt.",
+    "The preview must visually demonstrate the prompt itself, not a generic stock photo or abstract substitute.",
+    "Follow the requested subject, composition, camera perspective, lighting, environment, styling, materials, color palette and mood.",
     "Never create a placeholder, icon, illustration, geometric avatar, card, box, mockup, UI, diagram, logo, caption or text.",
-    "Do not add a person or human figure unless the supplied prompt explicitly asks for one.",
+    "If the prompt asks for a human, the human belongs only to this prompt's described scene. User-uploaded human photos are reserved for the separate photo-editing workflow.",
+    "Give every prompt a distinct visual identity using its title, category, model and unique prompt id.",
     prompt,
   ].join("\n\n");
 
@@ -109,6 +89,7 @@ export async function GET(request: Request) {
         size: process.env.PROMPTEXA_IMAGE_SIZE || "1024x1024",
         quality: process.env.PROMPTEXA_IMAGE_QUALITY || "low",
         output_format: "webp",
+        background: "auto",
       }),
     });
 
@@ -147,7 +128,7 @@ export async function GET(request: Request) {
         preview_image_started_at: null,
       }).eq("id", promptRow.id);
     }
-    return fallback();
+    return new Response("Image generation failed for this prompt.", { status: 502 });
   } finally {
     clearTimeout(timeout);
   }
