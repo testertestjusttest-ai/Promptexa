@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import PromptActions from "./PromptActions";
 import GatedPrompt from "./GatedPrompt";
 import SavePrompt from "./SavePrompt";
+import ReferenceTry from "./ReferenceTry";
 
 const demoPrompts = [
   { slug:"cinematic-product-campaign", title:"Cinematic Product Campaign", type:"Image", model:"Flux", category:"Image Prompts", prompt:"A premium studio product shot with dramatic lighting, refined material detail, controlled reflections and a polished commercial aesthetic.", excerpt:"Premium product photography designed for cinematic commercial campaigns.", example:"Use this structure when you need a hero product visual with strong lighting direction and clean composition.", videoConcept:"Slow 3-second push-in, subtle parallax, controlled highlights and a final centered hero frame." },
@@ -35,10 +36,10 @@ export default async function PromptPage({params}:{params:Promise<{slug:string}>
  return <main className="detail">
   <nav className="detailnav"><a className="brand" href="/">PROMPT<span>EXA</span></a><a href="/#discover">← Back to discovery</a></nav>
   <article className="detailwrap">
-   <div className="detailvisual">{p.preview_image_url?<img src={p.preview_image_url} alt="" />:<Image src={"/api/prompt-image?title="+encodeURIComponent(p.title)+"&type="+encodeURIComponent(p.type)+"&model="+encodeURIComponent(p.model)} alt="" fill unoptimized sizes="(max-width: 600px) 100vw, 980px" priority />}</div>
+   <div className="detailvisual">{p.preview_image_url?<img src={p.preview_image_url} alt="" />:<Image src={"/api/prompt-image?slug="+encodeURIComponent(p.slug)+"&title="+encodeURIComponent(p.title)+"&type="+encodeURIComponent(p.type)+"&model="+encodeURIComponent(p.model)} alt="" fill unoptimized sizes="(max-width: 600px) 100vw, 980px" priority />}</div>
    <div className="detailmeta">{p.type} · {p.model} · {p.category}</div><h1>{p.title}</h1><p className="lead">{p.excerpt}</p>
    <section className="promptbox"><div><span className="eyebrow">PROMPT</span><div className="detailactions"><GatedPrompt slug={p.slug}/><SavePrompt promptId={p.id}/></div></div></section>
-   <div className="detailgrid"><section><span className="eyebrow">HOW TO USE</span><p>{p.example}</p></section><section><span className="eyebrow">VIDEO CONCEPT</span><p>{p.videoConcept}</p></section>{String(p.type).toLowerCase()==="image" && <section><span className="eyebrow">FACE / IDENTITY</span><p>If you provide a reference person, the prompt instructs the image model to preserve the same identity and facial features. This is an instruction for the model, not a guarantee across every generator.</p></section>}</div>
+   {String(p.type).toLowerCase()==="image" && <ReferenceTry slug={p.slug}/>}\n   <div className="detailgrid"><section><span className="eyebrow">HOW TO USE</span><p>{p.example}</p></section><section><span className="eyebrow">VIDEO CONCEPT</span><p>{p.videoConcept}</p></section>{String(p.type).toLowerCase()==="image" && <section><span className="eyebrow">FACE / IDENTITY</span><p>If you provide a reference person, the prompt instructs the image model to preserve the same identity and facial features. This is an instruction for the model, not a guarantee across every generator.</p></section>}</div>
   </article>
  </main>;
 }
