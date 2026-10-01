@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const to=from+limit-1;
 
   const supabase=await createClient();
-  let query=supabase.from("prompts").select("id,slug,title,excerpt,prompt_type,tags,preview_image_url,featured,copy_count,save_count,categories!inner(name,slug),ai_models(name,slug)",{count:"exact"}).eq("published",true);
+  let query=supabase.from("prompts").select("id,slug,title,excerpt,prompt_text,prompt_type,tags,preview_image_url,featured,copy_count,save_count,categories!inner(name,slug),ai_models(name,slug)",{count:"exact"}).eq("published",true);
   if(q) { const safe=q.replace(/[%,]/g," "); query=query.or(`title.ilike.%${safe}%,excerpt.ilike.%${safe}%,prompt_text.ilike.%${safe}%`); }
   if(type) query=query.eq("prompt_type",type);
   if(category) query=query.eq("categories.slug",category);
