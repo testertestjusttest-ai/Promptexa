@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 function escapeXml(value: string) {
   return value.replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[char] || char));
@@ -64,12 +65,18 @@ export async function GET(request: Request) {
     prompt,
   ].join("\n\n");
 
-  const response = await fetch("https://api.openai.com/v1/images/generations", {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 55_000);
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       "Content-Type": "application/json",
     },
+    signal: controller.signal,
     body: JSON.stringify({
       model: process.env.PROMPTEXA_IMAGE_MODEL || "gpt-image-2",
       prompt: generationPrompt,
@@ -78,20 +85,50 @@ export async function GET(request: Request) {
       output_format: "webp",
     }),
   });
+  } catch {
+    clearTimeout(timeout);
+    const svg = fallbackSvg(title, type, model, prompt);
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+        "X-Promptexa-Image-Source": "fallback-timeout-or-network-error",
+      },
+    });
+  }
+  clearTimeout(timeout);
 
   if (!response.ok) {
     const message = await response.text();
-    return new Response(message.slice(0, 800), { status: 502 });
+    const svg = fallbackSvg(title, type, model, prompt);
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+        "X-Promptexa-Image-Source": "fallback-openai-error",
+        "X-Promptexa-OpenAI-Error": message.slice(0, 180).replace(/[\r\n]+/g, " "),
+      },
+    });
   }
 
   const json = await response.json() as { data?: Array<{ b64_json?: string }> };
   const b64 = json.data?.[0]?.b64_json;
-  if (!b64) return new Response("Image provider returned no image.", { status: 502 });
+  if (!b64) {
+    const svg = fallbackSvg(title, type, model, prompt);
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+        "X-Promptexa-Image-Source": "fallback-empty-provider-response",
+      },
+    });
+  }
 
   return new Response(Buffer.from(b64, "base64"), {
     headers: {
       "Content-Type": "image/webp",
       "Cache-Control": "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable",
+      "X-Promptexa-Image-Source": "openai-gpt-image-2",
     },
   });
 }
