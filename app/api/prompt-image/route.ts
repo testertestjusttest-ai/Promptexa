@@ -1,20 +1,9 @@
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-async function getPrompt(slug: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return "";
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("prompts")
-    .select("prompt_text")
-    .eq("slug", slug)
-    .eq("published", true)
-    .maybeSingle();
-  return data?.prompt_text || "";
-}
 
 const fallbackImages = {
   portrait: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=85",
@@ -35,26 +24,71 @@ function fallbackImage(prompt: string, type: string) {
   return type.toLowerCase() === "image" ? fallbackImages.creative : fallbackImages.landscape;
 }
 
-function redirectToFallback(prompt: string, type: string) {
-  return Response.redirect(fallbackImage(prompt, type), 302);
+function adminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createSupabaseClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug") || "";
   const type = (searchParams.get("type") || "AI prompt").slice(0, 30);
-  const prompt = (await getPrompt(slug)) || searchParams.get("prompt") || searchParams.get("title") || "creative AI visual";
 
-  if (!process.env.OPENAI_API_KEY) {
-    return redirectToFallback(prompt, type);
+  if (!slug) return new Response("Missing slug", { status: 400 });
+
+  const supabase = await createClient();
+  const { data: promptRow } = await supabase
+    .from("prompts")
+    .select("id,slug,title,prompt_text,prompt_type,preview_image_url,preview_image_status,preview_image_started_at")
+    .eq("slug", slug)
+    .eq("published", true)
+    .maybeSingle();
+
+  const prompt = promptRow?.prompt_text || searchParams.get("prompt") || searchParams.get("title") || "creative AI visual";
+
+  if (promptRow?.preview_image_url && promptRow.preview_image_status === "ready") {
+    return Response.redirect(promptRow.preview_image_url, 302);
+  }
+
+  const fallback = () => Response.redirect(fallbackImage(prompt, type), 302);
+  const admin = adminClient();
+
+  if (!admin || !process.env.OPENAI_API_KEY) return fallback();
+
+  // Claim generation so repeated card renders do not create duplicate OpenAI jobs.
+  if (promptRow) {
+    const stale = promptRow.preview_image_status === "generating" &&
+      promptRow.preview_image_started_at &&
+      Date.now() - new Date(promptRow.preview_image_started_at).getTime() > 10 * 60 * 1000;
+
+    if (stale) {
+      await admin.from("prompts").update({ preview_image_status: "failed" }).eq("id", promptRow.id);
+    }
+
+    if (!stale && promptRow.preview_image_status === "generating") return fallback();
+
+    const { data: claimed } = await admin
+      .from("prompts")
+      .update({
+        preview_image_status: "generating",
+        preview_image_started_at: new Date().toISOString(),
+      })
+      .eq("id", promptRow.id)
+      .in("preview_image_status", ["pending", "failed"])
+      .select("id")
+      .maybeSingle();
+
+    if (!claimed) return fallback();
   }
 
   const generationPrompt = [
     "Create a photorealistic, production-quality visual preview for this AI prompt.",
     "Depict the actual subject and scene described by the prompt with realistic materials, lighting, composition, camera perspective and depth.",
-    "Do not create a placeholder, icon, illustration, geometric avatar, card, box, mockup, UI, diagram, logo, caption or text.",
-    "Do not add a person or human figure unless the supplied prompt explicitly asks for a person, portrait, model, face or human subject.",
-    "The output must look like a finished image a creator could use as a visual reference.",
+    "This is a visual reference, not a UI placeholder.",
+    "Never create a placeholder, icon, illustration, geometric avatar, card, box, mockup, UI, diagram, logo, caption or text.",
+    "Do not add a person or human figure unless the supplied prompt explicitly asks for one.",
     prompt,
   ].join("\n\n");
 
@@ -78,21 +112,42 @@ export async function GET(request: Request) {
       }),
     });
 
-    if (!response.ok) return redirectToFallback(prompt, type);
-
+    if (!response.ok) throw new Error("OpenAI image generation failed");
     const json = await response.json() as { data?: Array<{ b64_json?: string }> };
     const b64 = json.data?.[0]?.b64_json;
-    if (!b64) return redirectToFallback(prompt, type);
+    if (!b64) throw new Error("OpenAI returned no image");
 
-    return new Response(Buffer.from(b64, "base64"), {
-      headers: {
-        "Content-Type": "image/webp",
-        "Cache-Control": "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable",
-        "X-Promptexa-Image-Source": "openai-gpt-image-2",
-      },
-    });
+    const bytes = Buffer.from(b64, "base64");
+    const objectPath = `prompts/${promptRow?.id || encodeURIComponent(slug)}.webp`;
+    const { error: uploadError } = await admin.storage
+      .from("prompt-images")
+      .upload(objectPath, bytes, {
+        contentType: "image/webp",
+        cacheControl: "31536000",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrl } = admin.storage.from("prompt-images").getPublicUrl(objectPath);
+    if (promptRow) {
+      await admin.from("prompts").update({
+        preview_image_url: publicUrl.publicUrl,
+        preview_image_status: "ready",
+        preview_image_generated_at: new Date().toISOString(),
+        preview_image_started_at: null,
+      }).eq("id", promptRow.id);
+    }
+
+    return Response.redirect(publicUrl.publicUrl, 302);
   } catch {
-    return redirectToFallback(prompt, type);
+    if (promptRow) {
+      await admin.from("prompts").update({
+        preview_image_status: "failed",
+        preview_image_started_at: null,
+      }).eq("id", promptRow.id);
+    }
+    return fallback();
   } finally {
     clearTimeout(timeout);
   }
