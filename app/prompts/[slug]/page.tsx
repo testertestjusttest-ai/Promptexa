@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PromptActions from "./PromptActions";
@@ -33,7 +34,7 @@ export default async function PromptPage({params}:{params:Promise<{slug:string}>
  return <main className="detail">
   <nav className="detailnav"><a className="brand" href="/">PROMPT<span>EXA</span></a><a href="/#discover">← Back to discovery</a></nav>
   <article className="detailwrap">
-   <div className="detailvisual">{p.preview_image_url?<img src={p.preview_image_url} alt="" />:<span>{p.type.toUpperCase()}</span>}</div>
+   <div className="detailvisual">{p.preview_image_url?<img src={p.preview_image_url} alt="" />:<Image src={"/api/prompt-image?title="+encodeURIComponent(p.title)+"&type="+encodeURIComponent(p.type)+"&model="+encodeURIComponent(p.model)} alt="" fill sizes="(max-width: 600px) 100vw, 980px" priority />}</div>
    <div className="detailmeta">{p.type} · {p.model} · {p.category}</div><h1>{p.title}</h1><p className="lead">{p.excerpt}</p>
    <section className="promptbox"><div><span className="eyebrow">PROMPT</span><div className="detailactions"><PromptActions prompt={p.prompt}/><SavePrompt promptId={p.id}/></div></div><pre>{p.prompt}</pre></section>
    <div className="detailgrid"><section><span className="eyebrow">HOW TO USE</span><p>{p.example}</p></section><section><span className="eyebrow">VIDEO CONCEPT</span><p>{p.videoConcept}</p></section></div>
