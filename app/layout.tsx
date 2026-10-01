@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import InstallPrompt from "./InstallPrompt";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://promptexa.com"),
@@ -13,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<InstallPrompt /></body></html>;
 }
