@@ -62,6 +62,8 @@ export default function GatedPrompt({ slug }: { slug: string }) {
         }
       };
       googletag.pubads().addEventListener("rewardedSlotGranted", granted);
+      googletag.pubads().addEventListener("rewardedSlotClosed", (event: any) => { if (event.slot === slot) googletag.pubads().removeEventListener("rewardedSlotGranted", granted); });
+      googletag.enableServices();
       googletag.display(slot);
     });
   }
