@@ -5,8 +5,13 @@ export const runtime = "nodejs";
 async function getPrompt(slug: string) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return "";
   const supabase = await createClient();
-  const { data } = await supabase.from("prompts").select("prompt_text").eq("slug", slug).eq("published", true).maybeSingle();
-  return data?.prompt_text || "";
+  const { data } = await supabase
+    .from("prompts")
+    .select("prompt_text,preview_image_url,title")
+    .eq("slug", slug)
+    .eq("published", true)
+    .maybeSingle();
+  return data || { prompt_text: "", preview_image_url: "", title: "" };
 }
 
 export async function POST(request: Request) {
@@ -19,22 +24,37 @@ export async function POST(request: Request) {
   if (!file.type.startsWith("image/")) return Response.json({ error: "The reference file must be an image." }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return Response.json({ error: "Please use an image smaller than 8 MB." }, { status: 400 });
 
-  const prompt = (await getPrompt(slug)) || String(form.get("prompt") || "");
+  const promptRow = await getPrompt(slug);
+  const prompt = promptRow.prompt_text || String(form.get("prompt") || "");
   if (!prompt) return Response.json({ error: "Prompt not found." }, { status: 404 });
 
   const editPrompt = [
-    "Create a new image that follows the visual direction of the supplied AI prompt.",
-    "Use the uploaded image as the reference for the person or main subject when applicable.",
-    "Preserve the same person's recognizable identity, facial structure, proportions and distinctive facial features when a person is present.",
-    "Keep the reference person's identity; do not replace, redesign, beautify, age, de-age or otherwise change the face.",
-    "Match the composition, camera perspective, lighting, environment, styling, materials, color palette and mood described by the prompt so the result follows the same visual recipe as the prompt preview.",
-    "Do not add UI, captions, watermarks or unrelated objects unless explicitly requested by the prompt.",
+    "EDIT THE USER'S UPLOADED PHOTO. Do not generate a replacement person from scratch.",
+    "Use the uploaded user photo as the identity/source image and preserve the same person's recognizable identity, facial structure, proportions, skin details and distinctive features.",
+    "Use the prompt preview image, when supplied, as the visual style/composition reference. Recreate its camera angle, framing, lighting, environment, styling, materials, color palette and mood around the user's photo.",
+    "Do not copy a different person's face from the preview image. The uploaded user's identity always wins.",
+    "Do not add unrelated people, UI, captions, watermarks or logos unless the prompt explicitly requests them.",
     prompt,
   ].join("\n\n");
 
   const body = new FormData();
   body.append("model", process.env.PROMPTEXA_REFERENCE_MODEL || "gpt-image-1");
-  body.append("image", file, file.name || "reference.png");
+  body.append("image[]", file, file.name || "reference.png");
+
+  if (promptRow.preview_image_url) {
+    try {
+      const previewResponse = await fetch(promptRow.preview_image_url, { cache: "no-store" });
+      if (previewResponse.ok) {
+        const previewBuffer = await previewResponse.arrayBuffer();
+        const previewType = previewResponse.headers.get("content-type") || "image/webp";
+        body.append(
+          "image[]",
+          new File([previewBuffer], "prompt-preview.webp", { type: previewType }),
+          "prompt-preview.webp",
+        );
+      }
+    } catch {}
+  }
   body.append("prompt", editPrompt);
   body.append("input_fidelity", "high");
   body.append("size", process.env.PROMPTEXA_IMAGE_SIZE || "1024x1024");
