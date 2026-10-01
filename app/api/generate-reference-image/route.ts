@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 async function getPrompt(slug: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return "";
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return { prompt_text: "", preview_image_url: "", title: "" };
   const supabase = await createClient();
   const { data } = await supabase
     .from("prompts")
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   ].join("\n\n");
 
   const body = new FormData();
-  body.append("model", process.env.PROMPTEXA_REFERENCE_MODEL || "gpt-image-1");
+  body.append("model", process.env.PROMPTEXA_REFERENCE_MODEL || "gpt-image-2");
   body.append("image[]", file, file.name || "reference.png");
 
   if (promptRow.preview_image_url) {
