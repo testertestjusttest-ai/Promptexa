@@ -31,9 +31,9 @@ export default function InstallPrompt() {
 
   if (!visible || !event) return null;
 
-  async function install() {
-    await event.prompt();
-    const choice = await event.userChoice;
+  async function install(installEvent: BeforeInstallPromptEvent) {
+    await installEvent.prompt();
+    const choice = await installEvent.userChoice;
     if (choice.outcome === "accepted") setVisible(false);
   }
 
@@ -48,7 +48,7 @@ export default function InstallPrompt() {
         <strong>Install Promptexa</strong>
         <p>Keep your prompt library one tap away with the Promptexa app experience.</p>
         <div className="installprompt-actions">
-          <button className="install-primary" onClick={install}>Install app</button>
+          <button className="install-primary" onClick={() => install(event)}>Install app</button>
           <button onClick={dismiss}>Not now</button>
         </div>
       </div>
