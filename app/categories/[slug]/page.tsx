@@ -1,4 +1,4 @@
-import Image from "next/image";
+import PromptVisual from "@/components/PromptVisual";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -59,7 +59,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             return (
               <article className="promptcard" key={p.slug}>
                 <a href={`/prompts/${p.slug}`} className={`visual v${i % 4}`}>
-                  <Image src={p.preview_image_url || `/api/prompt-image?title=${encodeURIComponent(p.title)}&type=${encodeURIComponent(p.prompt_type)}&model=${encodeURIComponent(model)}`} alt="" fill sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 25vw" />
+                  <PromptVisual src={p.preview_image_url || `/api/prompt-image?slug=${encodeURIComponent(p.slug)}&title=${encodeURIComponent(p.title)}&type=${encodeURIComponent(p.prompt_type)}&model=${encodeURIComponent(model)}&v=4`} alt={p.title} priority={i<4} />
                   <span>{String(p.prompt_type).toUpperCase()}</span>
                 </a>
                 <div className="cardbody">
