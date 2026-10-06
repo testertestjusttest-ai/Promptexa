@@ -1,6 +1,7 @@
 import './globals.css'
 import './store-polish.css'
 import './marketplace-extra.css'
+import './payment-admin.css'
 import Link from 'next/link'
 import CartCount from './components/cart-count'
 
