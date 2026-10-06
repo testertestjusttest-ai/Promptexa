@@ -1,18 +1,4 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import InstallPrompt from "./InstallPrompt";
-
-export const metadata: Metadata = {
-  metadataBase: new URL("https://promptexa.com"),
-  title: { default: "Promptexa — Discover Better AI Prompts", template: "%s | Promptexa" },
-  description: "Discover visual AI prompts for image, video, writing, coding, marketing and more.",
-  applicationName: "Promptexa",
-  manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg", shortcut: "/icon.svg", apple: "/icon.svg" },
-  keywords: ["AI prompts","prompt library","image prompts","video prompts","ChatGPT prompts","Midjourney prompts"],
-  openGraph: { title: "Promptexa — Discover Better AI Prompts", description: "A visual AI prompt discovery platform.", type: "website" },
-};
-
-export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<InstallPrompt /></body></html>;
-}
+import './globals.css'
+import Link from 'next/link'
+export const metadata={title:'DigiPlyra — Digital Services Store',description:'Legal digital products and services with simple checkout and customer delivery.'}
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="bn"><body><header className="nav"><Link href="/" className="brand">DigiPlyra</Link><nav><Link href="/">Store</Link><Link href="/account">Account</Link><Link href="/checkout">Checkout</Link><Link href="/admin">Admin</Link></nav></header>{children}<footer>© {new Date().getFullYear()} DigiPlyra · Legal digital products & services</footer></body></html>}
