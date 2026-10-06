@@ -36,6 +36,11 @@ export async function GET(request: Request) {
 
   if (!admin || !process.env.OPENAI_API_KEY) return new Response("Image generation is not configured.", { status: 503 });
 
+  const fallback = () => new Response("Image generation is already in progress for this prompt.", {
+    status: 202,
+    headers: { "Retry-After": "15" },
+  });
+
   // Claim generation so repeated card renders do not create duplicate OpenAI jobs.
   if (promptRow) {
     const stale = promptRow.preview_image_status === "generating" &&
