@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getProducts } from "@/lib/catalog";
+import { getAdsConfig, getProductBySlug, getProducts } from "@/lib/catalog";
 import ProductBuy from "./ProductBuy";
 import ProductCard from "@/components/ProductCard";
+import AdSlot from "@/components/AdSlot";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const [product, ads] = await Promise.all([getProductBySlug(slug), getAdsConfig()]);
   if (!product) notFound();
 
   const related = (await getProducts())
@@ -34,6 +35,15 @@ export default async function ProductPage({
       <div className="grid gap-10 lg:grid-cols-2">
         {/* left: info */}
         <div>
+          {product.image_url && (
+            <div className="glass mb-6 overflow-hidden rounded-3xl">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="max-h-80 w-full object-cover"
+              />
+            </div>
+          )}
           <div className="flex items-center gap-5">
             <span
               className="grid h-20 w-20 place-items-center rounded-3xl text-4xl"
@@ -83,6 +93,12 @@ export default async function ProductPage({
           <ProductBuy product={product} />
         </div>
       </div>
+
+      {ads.enabled && ads.product_page && (
+        <div className="mt-14">
+          <AdSlot code={ads.product_page} />
+        </div>
+      )}
 
       {related.length > 0 && (
         <div className="mt-20">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import type { Product } from "@/lib/types";
+import { isSoldOut } from "@/lib/types";
 import { formatBDT, toBnDigits } from "@/lib/format";
 
 export default function ProductBuy({ product }: { product: Product }) {
@@ -17,6 +18,20 @@ export default function ProductBuy({ product }: { product: Product }) {
 
   const plan = plans.find((p) => p.id === planId);
   if (!plan) return null;
+
+  if (isSoldOut(product)) {
+    return (
+      <div className="glass rounded-3xl p-8 text-center">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-500/15 text-3xl">
+          📦
+        </div>
+        <h3 className="mt-4 font-display text-xl font-bold text-white">স্টক শেষ</h3>
+        <p className="mt-2 text-sm text-slate-400">
+          এই প্রোডাক্টের স্টক এখন শেষ। কিছুক্ষণ পর আবার চেক করুন অথবা সাপোর্টে জানান।
+        </p>
+      </div>
+    );
+  }
 
   const discount = plan.old_price_bdt
     ? Math.round((1 - plan.price_bdt / plan.old_price_bdt) * 100)

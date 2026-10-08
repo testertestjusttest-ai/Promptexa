@@ -7,9 +7,11 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-[#d7ff3f] to-[#8b5cf6] text-lg font-black text-[#060913]">
-              ✦
-            </span>
+            <img
+              src="/logo.png"
+              alt="DigiPlyra"
+              className="h-10 w-10 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+            />
             <span className="font-display text-xl">
               <span className="font-bold text-white">Digi</span>
               <span className="font-bold text-[#d7ff3f]">Plyra</span>

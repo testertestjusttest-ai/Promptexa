@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { formatBDT } from "@/lib/format";
+import { isSoldOut } from "@/lib/types";
 
 export default function ProductCard({ product }: { product: Product }) {
   const plans = product.plans ?? [];
@@ -8,17 +9,40 @@ export default function ProductCard({ product }: { product: Product }) {
   const hasDiscount = plans.some(
     (p) => p.old_price_bdt && p.old_price_bdt > p.price_bdt
   );
+  const soldOut = isSoldOut(product);
 
   return (
     <Link
-      href={`/product/${product.slug}`}
-      className="glass card-hover group relative flex flex-col overflow-hidden rounded-2xl p-5"
+      href={soldOut ? "#" : `/product/${product.slug}`}
+      onClick={soldOut ? (e) => e.preventDefault() : undefined}
+      className={`glass card-hover group relative flex flex-col overflow-hidden rounded-2xl p-5 ${
+        soldOut ? "opacity-75" : ""
+      }`}
     >
-      {hasDiscount && (
-        <span className="absolute right-4 top-4 rounded-full bg-[#f43f5e]/15 px-2.5 py-1 text-[11px] font-bold text-[#fda4af]">
-          ছাড় চলছে
+      {product.image_url ? (
+        <div className="relative -mx-5 -mt-5 mb-1 h-40 overflow-hidden">
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0b1120] via-transparent to-transparent" />
+        </div>
+      ) : null}
+
+      {soldOut ? (
+        <span className="absolute right-4 top-4 rounded-full bg-red-500/20 px-3 py-1 text-[11px] font-bold text-red-300 backdrop-blur">
+          স্টক শেষ
         </span>
+      ) : (
+        hasDiscount && (
+          <span className="absolute right-4 top-4 rounded-full bg-[#f43f5e]/15 px-2.5 py-1 text-[11px] font-bold text-[#fda4af]">
+            ছাড় চলছে
+          </span>
+        )
       )}
+
       <div className="flex items-start justify-between">
         <span
           className="grid h-14 w-14 place-items-center rounded-2xl text-2xl"
@@ -29,7 +53,9 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           {product.badge}
         </span>
-        {product.is_featured && <span className="chip chip-lime">জনপ্রিয়</span>}
+        {product.is_featured && !soldOut && (
+          <span className="chip chip-lime">জনপ্রিয়</span>
+        )}
       </div>
 
       <h3 className="mt-4 font-display text-lg font-bold text-white transition group-hover:text-[#d7ff3f]">
@@ -61,8 +87,14 @@ export default function ProductCard({ product }: { product: Product }) {
             {formatBDT(minPrice)}
           </p>
         </div>
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#d7ff3f]/10 text-[#d7ff3f] transition group-hover:bg-[#d7ff3f] group-hover:text-[#060913]">
-          →
+        <span
+          className={`grid h-10 w-10 place-items-center rounded-xl transition ${
+            soldOut
+              ? "bg-white/5 text-slate-500"
+              : "bg-[#d7ff3f]/10 text-[#d7ff3f] group-hover:bg-[#d7ff3f] group-hover:text-[#060913]"
+          }`}
+        >
+          {soldOut ? "✕" : "→"}
         </span>
       </div>
     </Link>
