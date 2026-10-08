@@ -32,8 +32,37 @@ export type Product = {
   category_id: string | null;
   is_featured: boolean;
   sort: number;
+  image_url: string | null;
+  sold_out_manual: boolean;
+  track_stock: boolean;
   category?: Category | null;
   plans?: Plan[];
+  /** unused-key count (populated by catalog helpers) */
+  stock?: number;
+};
+
+/** True when the product cannot be bought right now. */
+export function isSoldOut(p: {
+  sold_out_manual: boolean;
+  track_stock: boolean;
+  stock?: number;
+}): boolean {
+  if (p.sold_out_manual) return true;
+  if (p.track_stock && p.stock !== undefined && p.stock <= 0) return true;
+  return false;
+}
+
+export type Slide = {
+  id: string;
+  title_bn: string;
+  subtitle_bn: string;
+  cta_text: string;
+  cta_link: string;
+  image_url: string | null;
+  bg_from: string;
+  bg_to: string;
+  sort: number;
+  is_active: boolean;
 };
 
 export type CartItem = {
