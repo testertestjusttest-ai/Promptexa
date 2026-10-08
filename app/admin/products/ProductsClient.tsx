@@ -13,8 +13,10 @@ type Product = {
   description_bn: string; features_bn: string[]; delivery_note_bn: string;
   badge: string; badge_bg: string; category_id: string | null;
   is_active: boolean; is_featured: boolean; sort: number;
+  image_url: string | null; sold_out_manual: boolean; track_stock: boolean;
   category: { id: string; name_bn: string } | null;
   plans: Plan[];
+  stock?: number;
 };
 type Category = { id: string; name_bn: string; slug: string };
 
@@ -22,6 +24,7 @@ const EMPTY: Omit<Product, "id" | "category" | "plans"> = {
   slug: "", name: "", tagline_bn: "", description_bn: "",
   features_bn: [], delivery_note_bn: "", badge: "✦", badge_bg: "#8b5cf6",
   category_id: null, is_active: true, is_featured: false, sort: 0,
+  image_url: null, sold_out_manual: false, track_stock: true,
 };
 
 export default function ProductsClient({ categories }: { categories: Category[] }) {
@@ -31,6 +34,25 @@ export default function ProductsClient({ categories }: { categories: Category[] 
   const [featuresText, setFeaturesText] = useState("");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [msg, setMsg] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  async function uploadImage(file: File): Promise<string | null> {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "products");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      return data.url;
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "আপলোড হয়নি");
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -54,6 +76,8 @@ export default function ProductsClient({ categories }: { categories: Category[] 
       delivery_note_bn: p.delivery_note_bn, badge: p.badge, badge_bg: p.badge_bg,
       category_id: p.category_id, is_active: p.is_active,
       is_featured: p.is_featured, sort: p.sort,
+      image_url: p.image_url, sold_out_manual: p.sold_out_manual,
+      track_stock: p.track_stock,
     });
     setFeaturesText((p.features_bn ?? []).join("\n"));
     setPlans([...(p.plans ?? [])].sort((a, b) => a.sort - b.sort));
@@ -137,15 +161,28 @@ export default function ProductsClient({ categories }: { categories: Category[] 
           {products.map((p) => (
             <div key={p.id} className={`glass rounded-2xl p-5 ${!p.is_active ? "opacity-50" : ""}`}>
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl text-xl" style={{ background: p.badge_bg }}>
-                  {p.badge}
-                </span>
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.name} className="h-11 w-11 rounded-xl object-cover" />
+                ) : (
+                  <span className="grid h-11 w-11 place-items-center rounded-xl text-xl" style={{ background: p.badge_bg }}>
+                    {p.badge}
+                  </span>
+                )}
                 <div>
                   <p className="font-bold text-white">{p.name}</p>
                   <p className="text-xs text-slate-500">
                     {p.category?.name_bn ?? "—"} • {toBnDigits(p.plans?.length ?? 0)}টি প্ল্যান
-                    {!p.is_active && " • বন্ধ"}
+                    {!p.is_active && " • ⛔ বন্ধ"}
                     {p.is_featured && " • ⭐ ফিচার্ড"}
+                  </p>
+                  <p className="mt-1 text-xs">
+                    {p.sold_out_manual ? (
+                      <span className="font-bold text-red-400">🔴 স্টক শেষ (ম্যানুয়াল)</span>
+                    ) : p.track_stock && (p.stock ?? 0) <= 0 ? (
+                      <span className="font-bold text-amber-400">🟡 কী শেষ — অটো সোল্ড আউট</span>
+                    ) : (
+                      <span className="text-slate-500">🔑 {toBnDigits(p.stock ?? 0)}টি কী</span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -189,6 +226,25 @@ export default function ProductsClient({ categories }: { categories: Category[] 
                 <input value={editing.badge} onChange={(e) => setField("badge", e.target.value)} className="field" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">ব্যাজ কালার</label>
                 <input type="color" value={editing.badge_bg} onChange={(e) => setField("badge_bg", e.target.value)} className="field h-11 cursor-pointer" /></div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs text-slate-400">প্রোডাক্ট ছবি</label>
+                <div className="flex gap-2">
+                  <input value={editing.image_url ?? ""} onChange={(e) => setField("image_url", e.target.value || null)} className="field" placeholder="https://... বা আপলোড করুন" />
+                  <label className="btn-ghost shrink-0 cursor-pointer !py-2 text-sm">
+                    {uploading ? "..." : "📤 আপলোড"}
+                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        const url = await uploadImage(f);
+                        if (url) setField("image_url", url);
+                      }
+                    }} />
+                  </label>
+                </div>
+                {editing.image_url && (
+                  <img src={editing.image_url} alt="" className="mt-2 h-28 w-28 rounded-2xl border border-white/10 object-cover" />
+                )}
+              </div>
               <div><label className="mb-1 block text-xs text-slate-400">ক্যাটাগরি</label>
                 <select value={editing.category_id ?? ""} onChange={(e) => setField("category_id", e.target.value || null)} className="field">
                   <option value="">—</option>
@@ -200,6 +256,10 @@ export default function ProductsClient({ categories }: { categories: Category[] 
                 <input type="checkbox" checked={editing.is_active} onChange={(e) => setField("is_active", e.target.checked)} className="h-4 w-4 accent-[#d7ff3f]" /> সক্রিয়</label>
               <label className="flex items-center gap-2 text-sm text-slate-300">
                 <input type="checkbox" checked={editing.is_featured} onChange={(e) => setField("is_featured", e.target.checked)} className="h-4 w-4 accent-[#d7ff3f]" /> ফিচার্ড</label>
+              <label className="flex items-center gap-2 text-sm text-slate-300" title="চালু থাকলে কী শেষ হলে অটো 'স্টক শেষ' দেখাবে">
+                <input type="checkbox" checked={editing.track_stock} onChange={(e) => setField("track_stock", e.target.checked)} className="h-4 w-4 accent-[#d7ff3f]" /> স্টক ট্র্যাকিং</label>
+              <label className="flex items-center gap-2 text-sm text-slate-300" title="চালু করলে প্রোডাক্ট 'স্টক শেষ' হিসেবে দেখাবে">
+                <input type="checkbox" checked={editing.sold_out_manual} onChange={(e) => setField("sold_out_manual", e.target.checked)} className="h-4 w-4 accent-[#f43f5e]" /> জোর করে স্টক শেষ</label>
             </div>
 
             <h3 className="mt-6 font-bold text-white">💰 প্রাইস প্ল্যান</h3>

@@ -90,6 +90,27 @@ lib/                    # supabase clients, cart, sslcommerz, delivery, format
 supabase/               # migrations + seed
 ```
 
+## 🆕 v2 ফিচার
+
+- **কাস্টম লোগো** (`public/logo.png`) — Navbar/Footer/PWA-তে ব্যবহৃত
+- **হোম স্লাইডার** — Admin → Slides থেকে ব্যানার বানান (ছবি/কালার/বাটন/লিংক)
+- **প্রোডাক্ট ছবি** — Admin → Products → ছবি আপলোড (Supabase Storage `product-images` বাকেট)
+- **স্টক কন্ট্রোল** — কী শেষ হলে অটো "স্টক শেষ"; ম্যানুয়াল override + inactive টগল
+- **বিজ্ঞাপন** — Admin → Settings → Adsterra/Monetag কোড পেস্ট করলেই সাইটে শো (হোম উপর/নিচ, প্রোডাক্ট পেজ, পপআপ)
+- **PWA** — ইনস্টলযোগ্য অ্যাপ, অফলাইন ক্যাশ, হোম-স্ক্রিন ইনস্টল ব্যানার
+- **পুশ নোটিফিকেশন** — Admin → Settings → OneSignal App ID বসান
+
+### 📱 APK / Play Store
+
+1. সাইট ডিপ্লয় করুন (Vercel)
+2. [pwabuilder.com](https://www.pwabuilder.com) → URL দিন → **Android** প্যাকেজ বানান → `.aab` ডাউনলোড
+3. [Play Console](https://play.google.com/console)-এ আপলোড করুন
+4. Digital Asset Links-এর জন্য Play Console-এর SHA-256 দিয়ে `public/.well-known/assetlinks.json` বানান
+
+### 🗄️ v2 মাইগ্রেশন
+
+`supabase/migrations/002_v2_features.sql` চালান (001-এর পরে)।
+
 ## ⚠️ নোট
 - ডেমো কী-গুলো (`DEMO-...`) আসল কী দিয়ে রিপ্লেস করুন
-- প্রোডাক্টের ছবি/লোগো বর্তমানে ইমোজি-ব্যাজ — চাইলে `badge` ফিল্ডে কাস্টম SVG/URL ব্যবহার করা যাবে
+- অ্যাডমিন প্যানেল: `https://yourdomain.com/admin` — লগইন + `is_admin=true` লাগবে
