@@ -32,7 +32,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
           <img
-            src="/logo.png"
+            src="/logo.jpg"
             alt="DigiPlyra"
             className="h-10 w-10 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)]"
           />

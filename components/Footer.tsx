@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="md:col-span-2">
           <div className="flex items-center gap-2.5">
             <img
-              src="/logo.png"
+              src="/logo.jpg"
               alt="DigiPlyra"
               className="h-10 w-10 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)]"
             />

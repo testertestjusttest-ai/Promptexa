@@ -6,7 +6,7 @@ self.addEventListener("install", (event) => {
     caches
       .open(CACHE)
       .then((cache) =>
-        cache.addAll(["/", "/icon-192.png", "/icon-512.png", "/logo.png"])
+        cache.addAll(["/", "/icon-192.png", "/icon-512.jpg", "/logo.jpg"])
       )
       .then(() => self.skipWaiting())
       .catch(() => {})
