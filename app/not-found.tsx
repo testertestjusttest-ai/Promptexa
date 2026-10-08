@@ -1,1 +1,0 @@
-export default function NotFound(){return <main className="notfound"><div><div className="eyebrow">404</div><h1>Prompt not found.</h1><p>The prompt may have moved or is not published yet.</p><a href="/">← Back to Promptexa</a></div></main>;}
