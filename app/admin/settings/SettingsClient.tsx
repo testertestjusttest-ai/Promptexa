@@ -19,6 +19,7 @@ export default function SettingsClient() {
   });
   const [onesignal, setOnesignal] = useState("");
   const [market, setMarket] = useState({ fee_percent: 2, boost_price: 30, boost_days: 3 });
+  const [chat, setChat] = useState({ enabled: true });
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
@@ -32,6 +33,7 @@ export default function SettingsClient() {
           setSsl(d.sslcommerz);
           if (d.settings.ads) setAds((a) => ({ ...a, ...d.settings.ads }));
           if (d.settings.rewards) setRewards((r) => ({ ...r, ...d.settings.rewards }));
+          if (d.settings.community_chat) setChat((c) => ({ ...c, ...d.settings.community_chat }));
           if (d.settings.notifications?.onesignal_app_id) {
             setOnesignal(d.settings.notifications.onesignal_app_id);
           }
@@ -222,6 +224,25 @@ export default function SettingsClient() {
         </div>
         <button onClick={() => save("rewards", rewards)} className="btn-vault mt-4 !py-2.5 text-sm">
           💾 রিওয়ার্ড সেটিংস সেভ করুন
+        </button>
+      </div>
+
+      <div className="glass rounded-2xl p-6 lg:col-span-2">
+        <h2 className="font-display text-lg font-bold text-white">💬 কমিউনিটি চ্যাট</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          ইউজাররা একে অপরের সাথে প্রাইভেট চ্যাট করতে পারবে (শুধু দুজন + অ্যাডমিন দেখতে পাবে)। বন্ধ করলে /chat পেজে নোটিশ দেখাবে।
+        </p>
+        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-200">
+          <input
+            type="checkbox"
+            checked={chat.enabled}
+            onChange={(e) => setChat({ enabled: e.target.checked })}
+            className="h-4 w-4 accent-[#d7ff3f]"
+          />
+          কমিউনিটি চ্যাট চালু রাখুন
+        </label>
+        <button onClick={() => save("community_chat", chat)} className="btn-vault mt-4 !py-2.5 text-sm">
+          💾 চ্যাট সেটিংস সেভ করুন
         </button>
       </div>
 

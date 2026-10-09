@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-/** DigiPlyra demo shell — support banner on top, demo notice at bottom. */
+/** DigiPlyra demo shell — support banner on top, pitch + demo notice at bottom. */
 export function DemoShell({ name, type, children }: { name: string; type: string; children: React.ReactNode }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120]">
@@ -21,16 +21,48 @@ export function DemoShell({ name, type, children }: { name: string; type: string
           </div>
         </div>
       </div>
+
       <div className="min-h-[60vh]">{children}</div>
-      <div className="border-t border-white/10 bg-black/50 px-4 py-6 text-center">
-        <p className="mx-auto max-w-xl text-sm leading-relaxed text-slate-300">
-          💡 এটি শুধু একটি <b className="text-white">ডেমো</b> — আপনার ব্যবসার নাম, লোগো, ছবি ও
-          কনটেন্ট দিয়ে <b className="text-[#d7ff3f]">আপনার পছন্দমতো</b> প্রফেশনাল ওয়েবসাইট
-          বানিয়ে দেওয়া হবে।
+
+      {/* Why build with DigiPlyra — persuasive pitch inside the demo */}
+      <div className="border-t border-[#d7ff3f]/20 bg-gradient-to-br from-[#0d1424] to-[#060913] px-4 py-8">
+        <p className="text-center text-xl font-black text-white">
+          🚀 কেন <span className="text-[#d7ff3f]">DigiPlyra</span> দিয়েই ওয়েবসাইট বানাবেন?
         </p>
-        <Link href="/web-dev#quote" className="btn-vault mt-3 inline-flex !py-2.5 text-sm">
-          📝 ফ্রি কোট নিন
-        </Link>
+        <p className="mx-auto mt-2 max-w-xl text-center text-xs leading-relaxed text-slate-400">
+          উপরের ডেমোটা ঘেঁটে দেখলেন তো? আপনার ব্যবসার জন্য এরকমই — বরং এর চেয়েও ভালো —
+          প্রফেশনাল ওয়েবসাইট আমরা বানিয়ে দেবো, <b className="text-slate-200">আপনার চাহিদা মতো ১০০% কাস্টমাইজড</b>।
+        </p>
+        <div className="mx-auto mt-5 grid max-w-3xl grid-cols-2 gap-2.5 sm:grid-cols-3">
+          {[
+            ["🎨", "পছন্দমতো ডিজাইন", "আপনার ব্র্যান্ডের রঙ, লোগো ও স্টাইলে"],
+            ["📱", "মোবাইল রেসপন্সিভ", "ফোন-ট্যাব-ল্যাপটপ সবখানে পারফেক্ট"],
+            ["⚡", "৭–১৪ দিনে ডেলিভারি", "দ্রুত কাজ, নিয়মিত আপডেট"],
+            ["🛠️", "ফ্রি টেকনিক্যাল সাপোর্ট", "সমস্যা হলে আমরাই ঠিক করে দেবো"],
+            ["💰", "স্বল্প খরচে প্রিমিয়াম", "বাজেট অনুযায়ী প্যাকেজ"],
+            ["🔒", "নিরাপদ ও নির্ভরযোগ্য", "আপনার ডেটা সুরক্ষিত থাকবে"],
+          ].map(([e, t, d]) => (
+            <div key={t} className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
+              <p className="text-2xl">{e}</p>
+              <p className="mt-1.5 text-xs font-black text-white">{t}</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-slate-400">{d}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/5 p-4">
+          <p className="text-center text-xs font-black text-[#d7ff3f]">💬 আমরা যা যা সাপোর্ট দিই</p>
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+            {["ডোমেইন সেটআপ", "হোস্টিং", "বিকাশ/নগদ পেমেন্ট", "অনলাইন অর্ডার সিস্টেম", "গুগল SEO", "ফেসবুক পিক্সেল", "বাংলায় ট্রেনিং", "আজীবন পরামর্শ"].map((s) => (
+              <span key={s} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-slate-200">✓ {s}</span>
+            ))}
+          </div>
+        </div>
+        <div className="mt-5 text-center">
+          <Link href="/web-dev#quote" className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
+            📝 ফ্রি কোট নিন — আজই শুরু করুন
+          </Link>
+          <p className="mt-2 text-[11px] text-slate-500">💡 এটি শুধু একটি ডেমো — অর্ডার করলে আপনার নাম, ছবি ও কনটেন্ট দিয়ে বানিয়ে দেওয়া হবে।</p>
+        </div>
       </div>
     </div>
   );
@@ -41,6 +73,55 @@ function Toast({ msg }: { msg: string }) {
   return (
     <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 animate-pulse rounded-2xl bg-[#d7ff3f] px-6 py-3 text-sm font-black text-black shadow-2xl">
       {msg}
+    </div>
+  );
+}
+
+/** Shared mini cart drawer — every demo cart fully works. */
+function MiniCart({ items, onClose, onClear, accent }: {
+  items: { n: string; p: number }[];
+  onClose: () => void;
+  onClear: () => void;
+  accent: string;
+}) {
+  const [done, setDone] = useState(false);
+  const total = items.reduce((s, i) => s + i.p, 0);
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/70" onClick={onClose}>
+      <div className="absolute bottom-0 left-0 right-0 mx-auto max-h-[75vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[#101828] p-5 text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="font-black">🛒 আপনার কার্ট ({items.length})</p>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full bg-white/10">✕</button>
+        </div>
+        {done ? (
+          <div className="py-8 text-center">
+            <p className="text-5xl">🎉</p>
+            <p className="mt-3 font-black text-emerald-300">অর্ডার সফল! (ডেমো)</p>
+            <p className="mt-1 text-xs text-slate-400">আসল সাইটে এখানে পেমেন্ট অপশন আসবে।</p>
+            <button onClick={() => { onClear(); onClose(); }} className="mt-4 rounded-xl bg-white/10 px-6 py-2 text-sm font-bold">ঠিক আছে</button>
+          </div>
+        ) : items.length === 0 ? (
+          <p className="py-8 text-center text-sm text-slate-400">কার্ট খালি — কিছু যোগ করুন 🛒</p>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {items.map((i, idx) => (
+                <div key={idx} className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
+                  <span className="text-sm font-bold">{i.n}</span>
+                  <span className="text-sm font-black" style={{ color: accent }}>৳{i.p.toLocaleString("en-IN")}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+              <span className="font-bold">মোট</span>
+              <span className="text-xl font-black" style={{ color: accent }}>৳{total.toLocaleString("en-IN")}</span>
+            </div>
+            <button onClick={() => setDone(true)} className="mt-4 w-full rounded-2xl py-3 font-black text-black" style={{ background: accent }}>
+              ✅ অর্ডার কনফার্ম করুন
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -57,24 +138,27 @@ export function FullRestaurant() {
     { n: "আইসক্রিম", c: "ডেজার্ট", p: 150, e: "🍨" },
   ];
   const [cat, setCat] = useState<(typeof cats)[number]>("সব");
-  const [cart, setCart] = useState(0);
+  const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
   const show = items.filter((i) => cat === "সব" || i.c === cat);
-  function add(n: string) {
-    setCart((c) => c + 1);
-    setToast(`✅ ${n} কার্টে যোগ হয়েছে!`);
-    setTimeout(() => setToast(""), 1800);
+  function add(it: { n: string; p: number }) {
+    setCart((c) => [...c, it]);
+    setToast(`✅ ${it.n} কার্টে যোগ হয়েছে!`);
+    setTimeout(() => setToast(""), 1500);
   }
   return (
     <div className="bg-[#0a0a12] text-white">
       <Toast msg={toast} />
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#fb923c" />}
       <div className="flex items-center justify-between px-5 py-4">
         <span className="text-lg font-black">🍔 স্বাদের ঠিকানা</span>
-        <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold">🛒 কার্ট ({cart})</span>
+        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold hover:bg-white/20">🛒 কার্ট ({cart.length})</button>
       </div>
       <div className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-700 px-5 py-10">
         <p className="text-3xl font-black">ঘরেই পান<br />রেস্টুরেন্টের স্বাদ 🔥</p>
         <p className="mt-2 opacity-90">৩০ মিনিটে হোম ডেলিভারি • বিকাশে পেমেন্ট</p>
+        <button onClick={() => setCat("সব")} className="mt-4 rounded-xl bg-white px-6 py-2.5 text-sm font-black text-orange-700">🍽️ মেনু দেখুন</button>
       </div>
       <div className="flex gap-2 overflow-x-auto px-5 py-4">
         {cats.map((c) => (
@@ -87,8 +171,8 @@ export function FullRestaurant() {
           <div key={i.n} className="rounded-2xl bg-white/5 p-4 text-center">
             <div className="text-4xl">{i.e}</div>
             <p className="mt-2 text-sm font-bold">{i.n}</p>
-            <p className="text-amber-300 font-bold">৳{i.p}</p>
-            <button onClick={() => add(i.n)} className="mt-2 w-full rounded-xl bg-orange-500 py-2 text-sm font-bold hover:bg-orange-400">+ যোগ করুন</button>
+            <p className="font-bold text-amber-300">৳{i.p}</p>
+            <button onClick={() => add(i)} className="mt-2 w-full rounded-xl bg-orange-500 py-2 text-sm font-bold hover:bg-orange-400">+ যোগ করুন</button>
           </div>
         ))}
       </div>
@@ -108,15 +192,17 @@ export function FullFashion() {
     { n: "লোফার", c: "জুতা", p: 1900, e: "👞" },
   ];
   const [cat, setCat] = useState<(typeof cats)[number]>("সব");
-  const [cart, setCart] = useState<string[]>([]);
+  const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
   const show = items.filter((i) => cat === "সব" || i.c === cat);
   return (
     <div className="bg-white text-slate-800">
       <Toast msg={toast} />
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#db2777" />}
       <div className="flex items-center justify-between bg-gradient-to-r from-pink-600 to-fuchsia-600 px-5 py-4 text-white">
         <span className="text-lg font-black">👗 স্টাইল হাব</span>
-        <span className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold">🛒 {cart.length}টি</span>
+        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/30">🛒 {cart.length}টি</button>
       </div>
       <p className="bg-pink-50 px-5 py-2 text-center text-sm font-bold text-pink-700">🎉 ঈদ অফার — ৫০% পর্যন্ত ছাড়!</p>
       <div className="flex gap-2 px-5 py-4">
@@ -132,7 +218,7 @@ export function FullFashion() {
             <div className="p-3">
               <p className="text-sm font-bold">{i.n}</p>
               <p className="font-black text-pink-600">৳{i.p.toLocaleString("en-IN")}</p>
-              <button onClick={() => { setCart((c) => [...c, i.n]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
+              <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
                 className="mt-2 w-full rounded-xl bg-pink-600 py-2 text-sm font-bold text-white hover:bg-pink-500">কার্টে নিন</button>
             </div>
           </div>
@@ -150,6 +236,7 @@ export function FullPortfolio() {
     { e: "🌊", t: "সাগর — সেন্টমার্টিন" }, { e: "🎪", t: "মেলা — গ্রাম" },
   ];
   const [open, setOpen] = useState<number | null>(null);
+  const [booked, setBooked] = useState(false);
   return (
     <div className="bg-[#0a0a12] px-5 py-8 text-white">
       <p className="text-center text-[11px] tracking-[0.35em] text-slate-400">📸 লেন্স ও আলো</p>
@@ -173,7 +260,11 @@ export function FullPortfolio() {
       <div className="mx-auto mt-6 max-w-md rounded-2xl bg-white/5 p-4 text-center">
         <p className="text-sm font-bold">📅 বুকিং করুন</p>
         <p className="mt-1 text-xs text-slate-400">৫০০+ ইভেন্ট • ⭐ ৪.৯ রেটিং</p>
-        <button onClick={() => alert("ডেমো: বুকিং ফর্ম এখানে আসবে")} className="mt-3 rounded-xl bg-white px-6 py-2 text-sm font-bold text-black">বুক করুন</button>
+        {booked ? (
+          <p className="mt-3 rounded-xl bg-emerald-500/15 px-4 py-2.5 text-sm font-bold text-emerald-300">✅ বুকিং রিকোয়েস্ট পাঠানো হয়েছে! (ডেমো)</p>
+        ) : (
+          <button onClick={() => setBooked(true)} className="mt-3 rounded-xl bg-white px-6 py-2 text-sm font-bold text-black hover:bg-slate-200">বুক করুন</button>
+        )}
       </div>
     </div>
   );
@@ -308,9 +399,13 @@ export function FullTravel() {
   const total = dests[d].p * guests;
   return (
     <div className="bg-white text-slate-800">
+      <div className="flex items-center justify-between bg-white px-5 py-3 shadow-sm">
+        <span className="text-lg font-black">✈️ ঘুরে আসি</span>
+        <button onClick={() => setDone(false)} className="rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-5 py-2 text-sm font-bold text-white">বুক করুন</button>
+      </div>
       <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 px-5 py-8 text-white">
-        <p className="text-2xl font-black">✈️ ঘুরে আসি</p>
-        <p className="text-sm opacity-90">পৃথিবী ঘুরে দেখুন — বুকিং ২ মিনিটে!</p>
+        <p className="text-2xl font-black">পৃথিবী ঘুরে দেখুন</p>
+        <p className="text-sm opacity-90">কক্সবাজার থেকে মালদ্বীপ!</p>
       </div>
       <div className="mx-auto max-w-xl space-y-4 p-5">
         <div>
@@ -339,7 +434,11 @@ export function FullTravel() {
           <p className="text-2xl font-black">৳{total.toLocaleString("en-IN")}</p>
         </div>
         {done ? (
-          <p className="rounded-2xl bg-emerald-50 p-4 text-center text-sm font-bold text-emerald-700">✅ বুকিং সফল! (ডেমো) — আমাদের টিম কল করবে।</p>
+          <div className="rounded-2xl bg-emerald-50 p-4 text-center">
+            <p className="text-sm font-bold text-emerald-700">✅ বুকিং সফল! (ডেমো)</p>
+            <p className="mt-1 text-xs text-slate-500">{dests[d].n} • {guests} জন • ৳{total.toLocaleString("en-IN")} — আমাদের টিম কল করবে।</p>
+            <button onClick={() => setDone(false)} className="mt-2 text-xs font-bold text-teal-700 underline">নতুন বুকিং করুন</button>
+          </div>
         ) : (
           <button onClick={() => setDone(true)} className="w-full rounded-2xl bg-teal-600 py-3.5 font-black text-white hover:bg-teal-500">🎫 এখনই বুক করুন</button>
         )}
@@ -351,6 +450,7 @@ export function FullTravel() {
 /* ---------------- 8. SaaS ---------------- */
 export function FullSaas() {
   const [yearly, setYearly] = useState(false);
+  const [started, setStarted] = useState<string | null>(null);
   const plans = [
     { n: "বেসিক", m: 990, f: ["১০০ অর্ডার/মাস", "ইমেইল সাপোর্ট"] },
     { n: "প্রো", m: 2990, f: ["আনলিমিটেড অর্ডার", "২৪/৭ সাপোর্ট", "API অ্যাক্সেস"], hot: true },
@@ -374,10 +474,17 @@ export function FullSaas() {
             <p className="mt-2 font-black">{p.n}</p>
             <p className="mt-1"><span className="text-2xl font-black">৳{price(p.m).toLocaleString("en-IN")}</span><span className="text-xs text-slate-400">/{yearly ? "বছর" : "মাস"}</span></p>
             <ul className="mt-3 space-y-1 text-xs text-slate-300">{p.f.map((f) => <li key={f}>✓ {f}</li>)}</ul>
-            <button onClick={() => alert(`ডেমো: ${p.n} প্ল্যান সিলেক্ট হয়েছে`)} className="mt-4 w-full rounded-xl bg-indigo-600 py-2 text-sm font-bold hover:bg-indigo-500">শুরু করুন</button>
+            <button onClick={() => setStarted(p.n)} className="mt-4 w-full rounded-xl bg-indigo-600 py-2 text-sm font-bold hover:bg-indigo-500">শুরু করুন</button>
           </div>
         ))}
       </div>
+      {started && (
+        <div className="mx-auto mt-5 max-w-md rounded-2xl bg-emerald-500/15 p-4 text-center">
+          <p className="text-sm font-bold text-emerald-300">✅ "{started}" প্ল্যান সিলেক্ট হয়েছে! (ডেমো)</p>
+          <p className="mt-1 text-xs text-slate-400">আসল সাইটে এখানে রেজিস্ট্রেশন ফর্ম আসবে।</p>
+          <button onClick={() => setStarted(null)} className="mt-2 text-xs font-bold text-slate-300 underline">বন্ধ করুন</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -425,14 +532,16 @@ export function FullGadget() {
     { n: "এয়ারবাডস", p: 2990, e: "🎧", emi: "৳২৫০/মাস" },
     { n: "স্মার্টওয়াচ", p: 8990, e: "⌚", emi: "৳৭৫০/মাস" },
   ];
-  const [cart, setCart] = useState<string[]>([]);
+  const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
   return (
     <div className="bg-[#0a0a12] text-white">
       <Toast msg={toast} />
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#22d3ee" />}
       <div className="flex items-center justify-between bg-gradient-to-r from-cyan-600 to-blue-700 px-5 py-4">
         <span className="text-lg font-black">🔌 টেক জোন</span>
-        <span className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold">🛒 {cart.length}</span>
+        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/30">🛒 {cart.length}</button>
       </div>
       <p className="bg-cyan-500/10 px-5 py-2 text-center text-xs text-cyan-300">⚡ ০% EMI • অফিসিয়াল ওয়ারেন্টি • ২৪ ঘণ্টায় ডেলিভারি</p>
       <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
@@ -442,7 +551,7 @@ export function FullGadget() {
             <p className="mt-2 text-sm font-bold">{i.n}</p>
             <p className="font-black text-cyan-300">৳{i.p.toLocaleString("en-IN")}</p>
             <p className="text-[11px] text-slate-400">EMI {i.emi}</p>
-            <button onClick={() => { setCart((c) => [...c, i.n]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
+            <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
               className="mt-2 w-full rounded-xl bg-cyan-600 py-2 text-sm font-bold hover:bg-cyan-500">+ কার্ট</button>
           </div>
         ))}
