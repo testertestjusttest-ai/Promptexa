@@ -10,11 +10,7 @@ cfg as (
     array[52,55,58,60,62,65,68,70,72,75]::int[] as lvls,
     array[120,180,250,320,400,480,550]::int[] as skins,
     array['Diamond','Heroic','Grandmaster','Platinum','Master'] as ranks,
-    array['সব ক্যারেক্টার আনলক','ব্লু ফ্লেম ড্রাকো AK স্কিন','MP40 পোকার স্কিন','৫০০০+ ডায়মন্ড খরচ করা','রেয়ার বান্ডিল কালেকশন','ইভো গান ম্যাক্স','সিজন ১ প্লেয়ার','গিল্ড লিডার অ্যাকাউন্ট','টুর্নামেন্ট রেডি ID','ডিনো বান্ডিল সহ','ক্রিমিনাল বান্ডিল','সাকুরা বান্ডিল'] as extras,
-    array[
-      array['ff:char'], array['ff:weapons'], array['ff:trophy'],
-      array['ff:char','ff:weapons'], array['ff:weapons','ff:trophy'], array['ff:char','ff:trophy','ff:hero']
-    ] as imgsets
+    array['সব ক্যারেক্টার আনলক','ব্লু ফ্লেম ড্রাকো AK স্কিন','MP40 পোকার স্কিন','৫০০০+ ডায়মন্ড খরচ করা','রেয়ার বান্ডিল কালেকশন','ইভো গান ম্যাক্স','সিজন ১ প্লেয়ার','গিল্ড লিডার অ্যাকাউন্ট','টুর্নামেন্ট রেডি ID','ডিনো বান্ডিল সহ','ক্রিমিনাল বান্ডিল','সাকুরা বান্ডিল'] as extras
 ),
 gen as (
   select
@@ -23,7 +19,14 @@ gen as (
     skins[1 + (g * 13) % 7] as sk,
     ranks[1 + (g * 3) % 5] as rk,
     extras[1 + (g * 11) % 12] as ex,
-    imgsets[1 + (g % 6)] as imgs
+    case (g % 6)
+      when 0 then array['ff:char']
+      when 1 then array['ff:weapons']
+      when 2 then array['ff:trophy']
+      when 3 then array['ff:char','ff:weapons']
+      when 4 then array['ff:weapons','ff:trophy']
+      else array['ff:char','ff:trophy','ff:hero']
+    end as imgs
   from generate_series(1, 250) g, cfg
 )
 insert into public.id_listings (seller_id, title, description, price_bdt, game_uid, images, status, views, created_at)
