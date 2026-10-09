@@ -24,8 +24,10 @@ export default function CheckoutClient() {
   const [orderNumber, setOrderNumber] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [trxId, setTrxId] = useState("");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [walletBal, setWalletBal] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/public/settings")
@@ -36,6 +38,12 @@ export default function CheckoutClient() {
           setSslOn(!!d.sslcommerz_enabled);
           if (d.sslcommerz_enabled) setMethod("sslcommerz");
         }
+      })
+      .catch(() => {});
+    fetch("/api/wallet")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.ok) setWalletBal(Number(d.wallet.balance_bdt) || 0);
       })
       .catch(() => {});
   }, []);
@@ -58,8 +66,11 @@ export default function CheckoutClient() {
     setError("");
     if (!name.trim()) return setError("আপনার নাম লিখুন");
     if (!validPhone) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
-    if (method !== "sslcommerz" && !numbers[method]) {
+    if (method !== "sslcommerz" && method !== "wallet" && !numbers[method]) {
       return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
+    }
+    if (method === "wallet" && (walletBal === null || walletBal < total)) {
+      return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — অ্যাড দেখে আয় করুন!");
     }
     setLoading(true);
     try {
@@ -74,12 +85,19 @@ export default function CheckoutClient() {
             qty: i.qty,
           })),
           payment_method: method,
+          notes: notes.trim() || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "অর্ডার হয়নি");
 
       clear();
+
+      if (data.paid) {
+        // wallet: paid instantly → straight to success
+        router.push(`/checkout/success?order=${data.order_number}`);
+        return;
+      }
 
       if (method === "sslcommerz") {
         const init = await fetch("/api/payments/sslcommerz/initiate", {
@@ -157,12 +175,29 @@ export default function CheckoutClient() {
                 <MethodCard active={method === "sslcommerz"} onClick={() => setMethod("sslcommerz")}
                   icon="💳" title="কার্ড / মোবাইল ব্যাংকিং" desc="SSLCommerz — অটো কনফার্ম" />
               )}
+              <MethodCard active={method === "wallet"} onClick={() => setMethod("wallet")}
+                icon="💰" title="ওয়ালেট ব্যালেন্স"
+                desc={walletBal === null ? "লগইন করুন" : `ব্যালেন্স: ${formatBDT(walletBal)}`}
+                disabled={walletBal === null} />
               {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => (
                 <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
                   icon={m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
                   title={PAYMENT_METHOD_BN[m]} desc={numbers[m] ? `মার্চেন্ট: ${numbers[m]}` : "শীঘ্রই আসছে"}
                   disabled={!numbers[m]} />
               ))}
+            </div>
+
+            <div className="mt-5">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
+                অতিরিক্ত তথ্য / রিকোয়ারমেন্ট <span className="text-slate-500">(ঐচ্ছিক)</span>
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="ওয়েবসাইট অর্ডারের ক্ষেত্রে কী ধরনের সাইট চান, ফিচার, রেফারেন্স লিংক ইত্যাদি লিখুন"
+                className="field min-h-[90px]"
+                maxLength={2000}
+              />
             </div>
 
             {error && (

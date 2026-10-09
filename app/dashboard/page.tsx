@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { formatBDT } from "@/lib/format";
 import OrderCard, { type DashboardOrder } from "./OrderCard";
 
 export const dynamic = "force-dynamic";
@@ -57,11 +58,10 @@ export default async function DashboardPage() {
     });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: wallet }] = await Promise.all([
+    supabase.from("profiles").select("is_admin, referral_code").eq("id", user.id).single(),
+    supabase.from("wallets").select("balance_bdt").eq("user_id", user.id).single(),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -83,6 +83,25 @@ export default async function DashboardPage() {
               লগআউট
             </button>
           </form>
+        </div>
+      </div>
+
+      <div className="mb-8 grid gap-4 sm:grid-cols-2">
+        <Link href="/earn" className="glass card-hover rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-500">💰 ওয়ালেট ব্যালেন্স</p>
+          <p className="font-display mt-1 text-3xl font-bold text-[#d7ff3f]">
+            {formatBDT(Number(wallet?.balance_bdt ?? 0))}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">ব্যালেন্স দিয়ে কিনুন বা উত্তোলন করুন →</p>
+        </Link>
+        <div className="glass rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-500">👥 আপনার রেফারেল কোড</p>
+          <p className="font-display mt-1 font-mono text-2xl font-bold text-white">
+            {profile?.referral_code ?? "—"}
+          </p>
+          <Link href="/earn" className="mt-1 inline-block text-xs font-bold text-[#d7ff3f]">
+            রেফার করে আয় করুন →
+          </Link>
         </div>
       </div>
 

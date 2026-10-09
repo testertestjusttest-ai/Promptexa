@@ -65,7 +65,7 @@ export default async function HomePage() {
           sub="হাজারো কাস্টমারের বিশ্বস্ত পছন্দ — আজই আপনারটা নিন"
         />
         {showcase.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {showcase.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

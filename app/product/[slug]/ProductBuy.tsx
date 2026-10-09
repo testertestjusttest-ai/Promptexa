@@ -139,19 +139,36 @@ export default function ProductBuy({ product }: { product: Product }) {
         </span>
       </div>
 
+      {product.product_type === "service" && (
+        <p className="rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
+          🛠️ <b>সার্ভিস অর্ডার:</b> পেমেন্টের পর আমাদের টিম আপনার সাথে যোগাযোগ করে
+          রিকোয়ারমেন্ট অনুযায়ী কাজ শুরু করবে।
+        </p>
+      )}
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button onClick={handleAdd} className="btn-ghost">
           🛒 কার্টে যোগ করুন
         </button>
         <button onClick={handleBuyNow} className="btn-vault">
-          ⚡ এখনই কিনুন
+          {product.product_type === "service" ? "🛠️ অর্ডার করুন" : "⚡ এখনই কিনুন"}
         </button>
       </div>
 
       <div className="mt-5 space-y-2 text-xs text-slate-500">
-        <p>✓ পেমেন্টের ৫–৩০ মিনিটে ডেলিভারি</p>
-        <p>✓ বিকাশ / নগদ / রকেট / কার্ড সাপোর্টেড</p>
-        <p>✓ কোনো সমস্যায় রিপ্লেসমেন্ট গ্যারান্টি</p>
+        {product.product_type === "service" ? (
+          <>
+            <p>✓ অর্ডারের পর টিম যোগাযোগ করবে</p>
+            <p>✓ বিকাশ / নগদ / রকেট / কার্ড / ওয়ালেট সাপোর্টেড</p>
+            <p>✓ কাস্টম রিকোয়ারমেন্ট অনুযায়ী ডেলিভারি</p>
+          </>
+        ) : (
+          <>
+            <p>✓ পেমেন্টের ৫–৩০ মিনিটে ডেলিভারি</p>
+            <p>✓ বিকাশ / নগদ / রকেট / কার্ড সাপোর্টেড</p>
+            <p>✓ কোনো সমস্যায় রিপ্লেসমেন্ট গ্যারান্টি</p>
+          </>
+        )}
       </div>
     </div>
   );

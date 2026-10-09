@@ -85,6 +85,12 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
           ⏳ পেমেন্ট সম্পন্ন! আপনার কী প্রস্তুত করা হচ্ছে — কিছুক্ষণের মধ্যে এখানে দেখতে পাবেন।
         </p>
       )}
+
+      {order.status === "service_pending" && (
+        <p className="mt-4 rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
+          🛠️ সার্ভিস অর্ডার গৃহীত! আমাদের টিম শীঘ্রই আপনার সাথে যোগাযোগ করবে।
+        </p>
+      )}
       {(order.status === "pending" || order.status === "payment_pending") && (
         <p className="mt-4 rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
           ⏳ পেমেন্ট যাচাইয়ের অপেক্ষায় আছে। ম্যানুয়াল পেমেন্ট হলে সাধারণত ৫–৩০ মিনিট লাগে।
