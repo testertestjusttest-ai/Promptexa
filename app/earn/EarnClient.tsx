@@ -32,6 +32,29 @@ type WithdrawalRow = {
 const WATCH_SEC = 15;
 const BOX_WAIT_SEC = 15;
 
+/** Celebration jingle (Web Audio) — plays on round completion / claim. */
+function playCelebration() {
+  try {
+    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.type = "sine";
+      o.frequency.value = f;
+      const t = ctx.currentTime + i * 0.13;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      o.start(t);
+      o.stop(t + 0.45);
+    });
+  } catch {}
+}
+
 /** Renders raw ad code (Monetag/Adsterra/Monetag) with real <script> execution */
 function AdFrame({ code }: { code: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -172,8 +195,8 @@ export default function EarnClient({
   /** Click a box: open the direct ad link, run the 15s timer on the box. */
   function clickBox(i: number) {
     if (countingBox !== null || watchingBox || cardsDone.includes(i) || roundClaimed) return;
-    const link = config?.reward_direct_link?.trim();
-    if (link) window.open(link, "_blank", "noopener");
+    const link = config?.reward_direct_link?.trim() || "https://uplcm.com/4/11989836";
+    window.open(link, "_blank", "noopener");
     setCountingBox(i);
     setBoxSecs(BOX_WAIT_SEC);
     setMsg("");
@@ -195,7 +218,8 @@ export default function EarnClient({
       setRoundActive(true);
       setNowMs(Date.now());
       if ((d.cards_done ?? []).length >= CARDS_GOAL) {
-        setMsg(`🎉 ${toBnDigits(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${formatBDT(d.round_reward ?? roundReward)} বোনাস নিন!`);
+        setMsg(`🎉 ${toBnDigits(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${toBnDigits(d.round_reward ?? roundReward)} টাকা বোনাস নিন!`);
+        playCelebration();
       }
     } catch (e) {
       setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"} — আবার চেষ্টা করুন`);
@@ -213,7 +237,8 @@ export default function EarnClient({
       const res = await fetch("/api/rewards/claim-round", { method: "POST" });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg(`🎉 ${formatBDT(d.amount)} ওয়ালেটে যোগ হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর।`);
+      setMsg(`🎉 ${toBnDigits(d.amount)} টাকা ওয়ালেটে যোগ হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর।`);
+      playCelebration();
       load();
     } catch (e) {
       setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
@@ -367,7 +392,7 @@ export default function EarnClient({
           <h2 className="font-display text-lg font-bold text-white">🎬 অ্যাড দেখে আয়</h2>
           {config?.enabled && (
             <span className="rounded-full bg-[#d7ff3f]/15 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
-              প্রতি রাউন্ডে {formatBDT(roundReward)}
+              প্রতি রাউন্ডে {toBnDigits(roundReward)} টাকা
             </span>
           )}
         </div>
@@ -378,13 +403,13 @@ export default function EarnClient({
             <p className="mt-2 text-sm text-slate-400">
               💰 <b className="text-white">আর্ন নাও</b> চাপুন — {toBnDigits(CARDS_GOAL)}টি কার্ড
               আসবে। প্রতিটি কার্ডে ক্লিক করলে অ্যাড খুলবে, {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
-              পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{toBnDigits(CARDS_GOAL)}টি শেষ হলে একসাথে {formatBDT(roundReward)} ওয়ালেটে!</b>
+              পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{toBnDigits(CARDS_GOAL)}টি শেষ হলে একসাথে {toBnDigits(roundReward)} টাকা ওয়ালেটে!</b>
               <br />⏳ প্রতি রাউন্ড ১ ঘণ্টা — সময় শেষ হলে নতুন রাউন্ড শুরু হবে।
             </p>
 
             {!cardsOn ? (
               <button onClick={() => setCardsOn(true)} className="btn-vault mt-4 w-full !py-3.5 text-base font-bold">
-                💰 আর্ন নাও
+                💰 Earn Now
               </button>
             ) : (
               <div className="mt-4">
@@ -427,7 +452,7 @@ export default function EarnClient({
                         {done ? (
                           <>
                             <span className="text-2xl">✓</span>
-                            <span className="mt-0.5 text-[10px] text-[#d7ff3f]/80">লকড</span>
+                            <span className="mt-0.5 text-[10px] font-bold text-[#d7ff3f]/90">কমপ্লিট ✓</span>
                           </>
                         ) : counting ? (
                           <>
@@ -453,16 +478,25 @@ export default function EarnClient({
                   })}
                 </div>
                 {cardsDone.length >= CARDS_GOAL && !roundClaimed ? (
-                  <button
-                    onClick={claimRound}
-                    disabled={claimingRound}
-                    className="btn-vault mt-4 w-full !py-4 text-lg font-black shadow-[0_0_24px_rgba(215,255,63,0.4)]"
-                  >
-                    {claimingRound ? "⏳ বোনাস যোগ হচ্ছে..." : `🎉 ${formatBDT(roundReward)} বোনাস নিন!`}
-                  </button>
+                  <div className="mt-4 animate-pulse rounded-3xl border-2 border-[#d7ff3f]/60 bg-gradient-to-br from-[#d7ff3f]/20 via-lime-500/10 to-[#d7ff3f]/20 p-5 text-center">
+                    <p className="text-3xl">🎉🎊🎉</p>
+                    <p className="font-display mt-2 text-xl font-black text-white">
+                      {toBnDigits(CARDS_GOAL)}টি কার্ড কমপ্লিট!
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      আপনার {toBnDigits(roundReward)} টাকা বোনাস রেডি
+                    </p>
+                    <button
+                      onClick={claimRound}
+                      disabled={claimingRound}
+                      className="btn-vault mt-3 w-full !py-4 text-lg font-black shadow-[0_0_32px_rgba(215,255,63,0.5)]"
+                    >
+                      {claimingRound ? "⏳ বোনাস যোগ হচ্ছে..." : `🎁 ${toBnDigits(roundReward)} টাকা বোনাস নিন!`}
+                    </button>
+                  </div>
                 ) : roundClaimed ? (
                   <p className="mt-4 rounded-2xl bg-[#d7ff3f]/10 p-4 text-center text-sm font-bold text-[#d7ff3f]">
-                    ✅ এই রাউন্ডের {formatBDT(roundReward)} বোনাস নেওয়া হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর ⏳
+                    ✅ এই রাউন্ডের {toBnDigits(roundReward)} টাকা বোনাস নেওয়া হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর ⏳
                   </p>
                 ) : (
                   <p className="mt-3 text-center text-xs text-slate-500">

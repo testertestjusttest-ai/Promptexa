@@ -203,7 +203,9 @@ export default function WebDevClient() {
                 </div>
                 <p className="mt-1 text-xs text-slate-400">{d.type}</p>
                 <p className="mt-1 line-clamp-1 text-xs text-slate-500">{d.desc}</p>
-                <span className="mt-2 inline-block text-xs font-bold text-[#d7ff3f] group-hover:underline">👁️ পুরো ডেমো দেখুন →</span>
+                <span className="mt-2.5 block rounded-xl bg-[#d7ff3f]/10 px-3 py-2 text-center text-xs font-black text-[#d7ff3f] ring-1 ring-[#d7ff3f]/30 transition group-hover:bg-[#d7ff3f]/20">
+                  👁️ ডেমো ওয়েবসাইট দেখতে ক্লিক করুন
+                </span>
               </div>
             </Link>
           ))}

@@ -123,6 +123,7 @@ export default async function HomePage() {
               <div className="p-3">
                 <p className="text-sm font-bold text-white">{d.name}</p>
                 <p className="text-[11px] text-slate-500">{d.type}</p>
+                <p className="mt-1.5 text-[11px] font-bold text-[#d7ff3f]">👁️ ডেমো দেখতে ক্লিক করুন</p>
               </div>
             </Link>
           ))}
