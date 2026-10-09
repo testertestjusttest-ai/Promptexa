@@ -7,6 +7,15 @@ export default function SettingsClient() {
   const [store, setStore] = useState({ name: "DigiPlyra", tagline: "", support_whatsapp: "", notice_bn: "" });
   const [ssl, setSsl] = useState({ enabled: false, sandbox: true, configured: false });
   const [ads, setAds] = useState({ enabled: false, home_top: "", home_bottom: "", product_page: "", popup: "" });
+  const [rewards, setRewards] = useState({
+    enabled: true,
+    ad_reward_bdt: 2,
+    ad_cooldown_sec: 60,
+    ad_daily_limit: 20,
+    referral_bonus_bdt: 20,
+    min_withdraw_bdt: 500,
+    reward_ad_code: "",
+  });
   const [onesignal, setOnesignal] = useState("");
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -20,6 +29,7 @@ export default function SettingsClient() {
           setStore((s) => ({ ...s, ...d.settings.store }));
           setSsl(d.sslcommerz);
           if (d.settings.ads) setAds((a) => ({ ...a, ...d.settings.ads }));
+          if (d.settings.rewards) setRewards((r) => ({ ...r, ...d.settings.rewards }));
           if (d.settings.notifications?.onesignal_app_id) {
             setOnesignal(d.settings.notifications.onesignal_app_id);
           }
@@ -117,6 +127,60 @@ export default function SettingsClient() {
         </div>
         <button onClick={() => save("ads", ads)} className="btn-vault mt-4 !py-2.5 text-sm">
           💾 বিজ্ঞাপন সেভ করুন
+        </button>
+      </div>
+
+      <div className="glass rounded-2xl p-6 lg:col-span-2">
+        <h2 className="font-display text-lg font-bold text-white">💰 রিওয়ার্ড সিস্টেম (অ্যাড + রেফারেল + উত্তোলন)</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          কাস্টমার অ্যাড দেখে ও রেফার করে টাকা আয় করবে — সব রেট এখান থেকে নিয়ন্ত্রণ করুন।
+        </p>
+        <label className="mt-4 flex items-center gap-2 text-sm font-semibold text-slate-200">
+          <input
+            type="checkbox"
+            checked={rewards.enabled}
+            onChange={(e) => setRewards({ ...rewards, enabled: e.target.checked })}
+            className="h-4 w-4 accent-[#d7ff3f]"
+          />
+          রিওয়ার্ড সিস্টেম চালু করুন
+        </label>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {([
+            ["ad_reward_bdt", "প্রতি অ্যাডে বোনাস (৳)"],
+            ["ad_cooldown_sec", "দুই অ্যাডের ব্যবধান (সেকেন্ড)"],
+            ["ad_daily_limit", "দৈনিক সর্বোচ্চ অ্যাড"],
+            ["referral_bonus_bdt", "রেফারেল বোনাস (৳)"],
+            ["min_withdraw_bdt", "সর্বনিম্ন উত্তোলন (৳)"],
+          ] as const).map(([k, label]) => (
+            <div key={k}>
+              <label className="mb-1.5 block text-sm text-slate-300">{label}</label>
+              <input
+                type="number"
+                min={0}
+                value={rewards[k]}
+                onChange={(e) => setRewards({ ...rewards, [k]: Number(e.target.value) })}
+                className="field"
+              />
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <label className="mb-1.5 block text-sm text-slate-300">
+            রিওয়ার্ড অ্যাড কোড (Monetag / Adsterra / Monetag)
+          </label>
+          <textarea
+            value={rewards.reward_ad_code}
+            onChange={(e) => setRewards({ ...rewards, reward_ad_code: e.target.value })}
+            rows={4}
+            className="field font-mono text-xs"
+            placeholder="<script>...</script> — কাস্টমার 'অ্যাড দেখুন' চাপলে এই অ্যাড শো হবে"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            💡 Monetag-এর Rewarded Ad / Adsterra-এর Smartlink কোড এখানে বসান।
+          </p>
+        </div>
+        <button onClick={() => save("rewards", rewards)} className="btn-vault mt-4 !py-2.5 text-sm">
+          💾 রিওয়ার্ড সেটিংস সেভ করুন
         </button>
       </div>
 

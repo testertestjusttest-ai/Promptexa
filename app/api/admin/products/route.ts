@@ -43,6 +43,9 @@ export async function POST(req: Request) {
       is_active: body.is_active ?? true,
       is_featured: body.is_featured ?? false,
       sort: body.sort ?? 0,
+      product_type: ["key", "file", "service"].includes(body.product_type)
+        ? body.product_type
+        : "key",
     })
     .select("id")
     .single();

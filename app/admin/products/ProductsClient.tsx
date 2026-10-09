@@ -15,6 +15,7 @@ type Product = {
   badge: string; badge_bg: string; category_id: string | null;
   is_active: boolean; is_featured: boolean; sort: number;
   image_url: string | null; sold_out_manual: boolean; track_stock: boolean;
+  product_type: "key" | "file" | "service";
   category: { id: string; name_bn: string } | null;
   plans: Plan[];
   stock?: number;
@@ -26,6 +27,7 @@ const EMPTY: Omit<Product, "id" | "category" | "plans"> = {
   features_bn: [], delivery_note_bn: "", badge: "✦", badge_bg: "#8b5cf6",
   category_id: null, is_active: true, is_featured: false, sort: 0,
   image_url: null, sold_out_manual: false, track_stock: true,
+  product_type: "key",
 };
 
 export default function ProductsClient({ categories }: { categories: Category[] }) {
@@ -79,7 +81,7 @@ export default function ProductsClient({ categories }: { categories: Category[] 
       category_id: p.category_id, is_active: p.is_active,
       is_featured: p.is_featured, sort: p.sort,
       image_url: p.image_url, sold_out_manual: p.sold_out_manual,
-      track_stock: p.track_stock,
+      track_stock: p.track_stock, product_type: p.product_type ?? "key",
     });
     setFeaturesText((p.features_bn ?? []).join("\n"));
     setPlans([...(p.plans ?? [])].sort((a, b) => a.sort - b.sort));
@@ -255,6 +257,13 @@ export default function ProductsClient({ categories }: { categories: Category[] 
                   <option value="">—</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name_bn}</option>)}
                 </select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">প্রোডাক্ট টাইপ</label>
+                <select value={editing.product_type} onChange={(e) => setField("product_type", e.target.value as "key" | "file" | "service")} className="field">
+                  <option value="key">🔑 কী / অ্যাকাউন্ট</option>
+                  <option value="file">📁 ফাইল / APK</option>
+                  <option value="service">🛠️ সার্ভিস (যেমন: ওয়েবসাইট বানানো)</option>
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">সার্ভিস হলে পেমেন্টের পর অর্ডার ম্যানুয়ালি হ্যান্ডেল করবেন</p></div>
               <div><label className="mb-1 block text-xs text-slate-400">সর্ট অর্ডার</label>
                 <input type="number" value={editing.sort} onChange={(e) => setField("sort", Number(e.target.value))} className="field" /></div>
               <label className="flex items-center gap-2 text-sm text-slate-300">
