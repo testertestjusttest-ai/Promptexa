@@ -1,30 +1,21 @@
 /* DigiPlyra service worker — app-shell caching for installable PWA */
 
-/* Monetag ads service worker */
-self.options = {
-  "domain": "3nbf4.com",
-  "zoneId": 11989413
-};
-self.lary = "";
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+/* Monetag ads service workers — wrapped so a blocked/unreachable ad CDN
+ * can never break the PWA service worker itself. */
+function monetagSW(domain, zoneId, src) {
+  try {
+    self.options = { "domain": domain, "zoneId": zoneId };
+    self.lary = "";
+    importScripts(src);
+  } catch (e) {
+    /* ad network unreachable — PWA keeps working */
+  }
+}
+monetagSW("3nbf4.com", 11989413, 'https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+monetagSW("3nbf4.com", 11989803, 'https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+monetagSW("5gvci.com", 11989823, 'https://5gvci.com/act/files/service-worker.min.js?r=sw');
 
-/* Monetag ads service worker — zone 11989803 */
-self.options = {
-    "domain": "3nbf4.com",
-    "zoneId": 11989803
-};
-self.lary = "";
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
-
-/* Monetag ads service worker — zone 11989823 */
-self.options = {
-    "domain": "5gvci.com",
-    "zoneId": 11989823
-};
-self.lary = "";
-importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw');
-
-const CACHE = "digiplyra-v3";
+const CACHE = "digiplyra-v4";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
