@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { formatBDT, ORDER_STATUS_BN, PAYMENT_METHOD_BN, timeAgo } from "@/lib/format";
 import { StatusBadge } from "@/components/Section";
+import FileInstall from "@/components/FileInstall";
+import type { DownloadToken } from "@/lib/types";
 
 export type DashboardOrder = {
   id: string;
@@ -13,6 +15,7 @@ export type DashboardOrder = {
   created_at: string;
   items: { product_name: string; plan_label_bn: string; price_bdt: number; qty: number }[];
   keys: { key_text: string; key_note: string | null; delivered_at: string }[];
+  files: DownloadToken[];
 };
 
 export default function OrderCard({ order }: { order: DashboardOrder }) {
@@ -71,6 +74,10 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
             ))}
           </div>
         </div>
+      )}
+
+      {(order.status === "delivered" || order.status === "paid" || order.status === "keys_pending") && order.files.length > 0 && (
+        <FileInstall files={order.files} />
       )}
 
       {order.status === "keys_pending" && (

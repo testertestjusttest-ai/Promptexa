@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatBDT, toBnDigits } from "@/lib/format";
+import FilesManager from "./FilesManager";
 
 type Plan = {
   id: string; label_bn: string; duration_days: number | null;
@@ -35,6 +36,7 @@ export default function ProductsClient({ categories }: { categories: Category[] 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [msg, setMsg] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [filesFor, setFilesFor] = useState<Product | null>(null);
 
   async function uploadImage(file: File): Promise<string | null> {
     setUploading(true);
@@ -190,6 +192,9 @@ export default function ProductsClient({ categories }: { categories: Category[] 
                 <button onClick={() => openEdit(p)} className="flex-1 rounded-lg bg-white/10 py-2 text-sm font-semibold text-white hover:bg-white/15">
                   ✏️ এডিট
                 </button>
+                <button onClick={() => setFilesFor(p)} className="flex-1 rounded-lg bg-[#d7ff3f]/10 py-2 text-sm font-semibold text-[#d7ff3f] hover:bg-[#d7ff3f]/20">
+                  📁 APK/ফাইল
+                </button>
                 <button onClick={() => removeProduct(p.id)} className="rounded-lg bg-red-500/15 px-4 py-2 text-sm font-bold text-red-300">
                   🗑
                 </button>
@@ -301,6 +306,15 @@ export default function ProductsClient({ categories }: { categories: Category[] 
             </div>
           </div>
         </div>
+      )}
+
+      {filesFor && (
+        <FilesManager
+          productId={filesFor.id}
+          productName={filesFor.name}
+          plans={(filesFor.plans ?? []).map((p) => ({ id: p.id, label_bn: p.label_bn }))}
+          onClose={() => setFilesFor(null)}
+        />
       )}
     </div>
   );

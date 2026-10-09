@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 
   const enriched: DashboardOrder[] = [];
   for (const o of orders ?? []) {
-    const [{ data: items }, { data: keys }] = await Promise.all([
+    const [{ data: items }, { data: keys }, { data: files }] = await Promise.all([
       supabase
         .from("order_items")
         .select("product_name, plan_label_bn, price_bdt, qty")
@@ -36,6 +36,13 @@ export default async function DashboardPage() {
         .from("delivered_keys")
         .select("key_text, key_note, delivered_at")
         .eq("order_id", o.id),
+      supabase
+        .from("file_downloads")
+        .select(
+          "id, order_id, order_item_id, product_file_id, token, max_downloads, downloads_used, expires_at, created_at, product_file:product_files(file_name, version_label, file_size)"
+        )
+        .eq("order_id", o.id)
+        .order("created_at"),
     ]);
     enriched.push({
       id: o.id,
@@ -46,6 +53,7 @@ export default async function DashboardPage() {
       created_at: o.created_at,
       items: items ?? [],
       keys: keys ?? [],
+      files: (files ?? []) as unknown as DashboardOrder["files"],
     });
   }
 

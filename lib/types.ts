@@ -52,6 +52,32 @@ export function isSoldOut(p: {
   return false;
 }
 
+export type ProductFile = {
+  id: string;
+  product_id: string;
+  plan_id: string | null;
+  file_name: string;
+  version_label: string;
+  storage_path: string;
+  file_size: number;
+  mime_type: string;
+  sort: number;
+  is_active: boolean;
+};
+
+export type DownloadToken = {
+  id: string;
+  order_id: string;
+  order_item_id: string;
+  product_file_id: string;
+  token: string;
+  max_downloads: number;
+  downloads_used: number;
+  expires_at: string;
+  created_at: string;
+  product_file?: { file_name: string; version_label: string; file_size: number } | null;
+};
+
 export type Slide = {
   id: string;
   title_bn: string;

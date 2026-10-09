@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { randomBytes } from "crypto";
 
 /**
  * Assigns one unused product key per order item and records delivery.
@@ -124,5 +125,61 @@ export async function confirmOrderPayment(
   }
 
   await supabase.from("orders").update({ status: "paid" }).eq("id", orderId);
-  return deliverOrderKeys(supabase, orderId);
+  const keyResult = await deliverOrderKeys(supabase, orderId);
+  await issueFileTokens(supabase, orderId);
+  return keyResult;
+}
+
+/**
+ * Issues one single-use download token per product file for the order.
+ * Idempotent — skips items that already have tokens.
+ * Must be called with the SERVICE-ROLE client.
+ */
+export async function issueFileTokens(
+  supabase: SupabaseClient,
+  orderId: string
+): Promise<number> {
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("id, product_id, plan_id")
+    .eq("order_id", orderId);
+  if (!items) return 0;
+
+  let issued = 0;
+  for (const item of items) {
+    const { data: existing } = await supabase
+      .from("file_downloads")
+      .select("id")
+      .eq("order_item_id", item.id)
+      .limit(1);
+    if (existing && existing.length > 0) continue;
+
+    const { data: files } = await supabase
+      .from("product_files")
+      .select("id, plan_id")
+      .eq("product_id", item.product_id)
+      .eq("is_active", true)
+      .order("sort");
+    if (!files) continue;
+
+    // plan-specific files only for matching plan; general files for all
+    const applicable = files.filter(
+      (f) => !f.plan_id || f.plan_id === item.plan_id
+    );
+
+    for (const f of applicable) {
+      const token = randomBytes(32).toString("base64url");
+      const { error } = await supabase.from("file_downloads").insert({
+        order_id: orderId,
+        order_item_id: item.id,
+        product_file_id: f.id,
+        token,
+        max_downloads: 1,
+        downloads_used: 0,
+        expires_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
+      });
+      if (!error) issued++;
+    }
+  }
+  return issued;
 }
