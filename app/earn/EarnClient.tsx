@@ -441,12 +441,12 @@ export default function EarnClient({
                         key={i}
                         disabled={done || counting || watchingBox || roundClaimed}
                         onClick={() => clickBox(i)}
-                        className={`relative flex min-h-[76px] flex-col items-center justify-center overflow-hidden rounded-2xl border font-bold transition-all duration-300 ${
+                        className={`ad-card-shine relative flex min-h-[76px] flex-col items-center justify-center overflow-hidden rounded-2xl border font-bold transition-all duration-300 ${
                           done
                             ? "border-[#d7ff3f]/60 bg-gradient-to-br from-[#d7ff3f]/25 to-lime-500/10 text-[#d7ff3f] shadow-[0_0_16px_rgba(215,255,63,0.35)]"
                             : counting
                               ? "border-cyan-300/60 bg-cyan-400/10 text-cyan-200"
-                              : "border-white/10 bg-white/[0.04] text-white hover:border-[#d7ff3f]/50 hover:bg-[#d7ff3f]/10 active:scale-95"
+                              : "ad-card-glow ad-card-float border-white/10 bg-white/[0.04] text-white hover:border-[#d7ff3f]/50 hover:bg-[#d7ff3f]/10 active:scale-95"
                         } disabled:cursor-default`}
                       >
                         {done ? (

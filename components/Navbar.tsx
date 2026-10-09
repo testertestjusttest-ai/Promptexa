@@ -25,12 +25,16 @@ export default function Navbar() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const links = [
+  const directLinks = [
     { href: "/", label: t("nav_home") },
+    { href: "/web-dev", label: t("nav_webdev"), hot: true },
+  ];
+  const menuLinks = [
     { href: "/shop", label: t("nav_shop") },
     { href: "/earn", label: t("nav_earn") },
     { href: "/marketplace", label: t("nav_market") },
-    { href: "/web-dev", label: t("nav_webdev") },
+    { href: "/chat", label: t("nav_chat") },
+    { href: "/faq", label: t("nav_faq") },
     { href: "/dashboard", label: t("nav_dashboard") },
   ];
 
@@ -54,7 +58,7 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
+          {directLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -62,12 +66,20 @@ export default function Navbar() {
                 pathname === l.href
                   ? "bg-white/10 text-[#d7ff3f]"
                   : "text-slate-300 hover:bg-white/5 hover:text-white"
-              }`}
+              } ${l.hot ? "border border-[#d7ff3f]/40 bg-[#d7ff3f]/10 font-bold text-[#d7ff3f] shadow-[0_0_16px_rgba(215,255,63,0.25)]" : ""}`}
             >
               {l.label}
             </Link>
           ))}
         </nav>
+
+        {/* mobile: web-dev stays visible */}
+        <Link
+          href="/web-dev"
+          className="rounded-lg border border-[#d7ff3f]/40 bg-[#d7ff3f]/10 px-3 py-2 text-xs font-bold text-[#d7ff3f] md:hidden"
+        >
+          {t("nav_webdev")}
+        </Link>
 
         <div className="flex items-center gap-2">
           <LangToggle />
@@ -113,7 +125,7 @@ export default function Navbar() {
             </>
           )}
           <button
-            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 md:hidden"
+            className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-lg"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="মেনু"
           >
@@ -122,8 +134,8 @@ export default function Navbar() {
         </div>
       </div>
       {menuOpen && (
-        <nav className="border-t border-white/5 px-4 py-3 md:hidden">
-          {links.map((l) => (
+        <nav className="border-t border-white/5 px-4 py-3">
+          {menuLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}

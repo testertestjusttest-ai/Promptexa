@@ -217,3 +217,28 @@ select.field option { background: #0b1120; }
 .animate-orb { animation: orb-drift 12s ease-in-out infinite; }
 .tilt-card { transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .tilt-card:hover { transform: perspective(900px) rotateX(6deg) rotateY(-8deg) translateY(-6px); }
+
+/* ---------- earn ad-card motion ---------- */
+@keyframes card-shimmer {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(240%) skewX(-18deg); }
+}
+@keyframes card-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(215, 255, 63, 0); }
+  50% { box-shadow: 0 0 18px rgba(215, 255, 63, 0.35); }
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.ad-card-shine { position: relative; }
+.ad-card-shine::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  animation: card-shimmer 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.ad-card-glow { animation: card-glow 2.6s ease-in-out infinite; }
+.ad-card-float { animation: float-y 4s ease-in-out infinite; }

@@ -35,6 +35,8 @@ export default function Footer() {
           <ul className="space-y-2.5 text-sm text-slate-400">
             <li><Link href="/shop" className="hover:text-[#d7ff3f]">{t("ft_all_products")}</Link></li>
             <li><Link href="/dashboard" className="hover:text-[#d7ff3f]">{t("ft_my_orders")}</Link></li>
+            <li><Link href="/web-dev" className="hover:text-[#d7ff3f]">{t("nav_webdev")}</Link></li>
+            <li><Link href="/faq" className="hover:text-[#d7ff3f]">{t("nav_faq")}</Link></li>
             <li><Link href="/auth/login" className="hover:text-[#d7ff3f]">{t("ft_login")}</Link></li>
           </ul>
         </div>
