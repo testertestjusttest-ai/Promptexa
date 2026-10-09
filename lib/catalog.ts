@@ -249,3 +249,33 @@ export async function getStoreInfo(): Promise<{
     return fallback;
   }
 }
+
+export type MarketplaceSettings = {
+  fee_percent: number;
+  boost_price: number;
+  boost_days: number;
+};
+
+/** Marketplace commerce settings (admin fee %, featured-boost price). */
+export async function getMarketplaceSettings(): Promise<MarketplaceSettings> {
+  const fallback: MarketplaceSettings = { fee_percent: 2, boost_price: 30, boost_days: 3 };
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("site_settings")
+      .select("key, value")
+      .in("key", ["marketplace_fee_percent", "marketplace_boost_price", "marketplace_boost_days"]);
+    const m: Record<string, number> = {};
+    for (const r of data ?? []) {
+      const v = r.value;
+      m[r.key] = typeof v === "number" ? v : Number(v) || 0;
+    }
+    return {
+      fee_percent: m["marketplace_fee_percent"] || fallback.fee_percent,
+      boost_price: m["marketplace_boost_price"] || fallback.boost_price,
+      boost_days: m["marketplace_boost_days"] || fallback.boost_days,
+    };
+  } catch {
+    return fallback;
+  }
+}

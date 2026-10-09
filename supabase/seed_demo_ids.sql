@@ -29,7 +29,7 @@ gen as (
     end as imgs
   from generate_series(1, 250) g, cfg
 )
-insert into public.id_listings (seller_id, title, description, price_bdt, game_uid, images, status, views, created_at)
+insert into public.id_listings (seller_id, title, description, price_bdt, game_uid, images, status, views, created_at, is_demo)
 select
   (select admin_id from admin_pick),
   case (g % 4)
@@ -65,5 +65,6 @@ select
   imgs,
   'approved',
   40 + (g * 173) % 3000,
-  now() - ((g % 45) || ' days')::interval - (((g * 7) % 24) || ' hours')::interval
+  now() - ((g % 45) || ' days')::interval - (((g * 7) % 24) || ' hours')::interval,
+  true
 from gen;
