@@ -86,26 +86,27 @@ export default function EarnClient({
   const [claiming, setClaiming] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // 20-box interactive reward flow
+  // 20-box hourly round: watch all 20 → claim ৳20 lump sum
   const [cardsOn, setCardsOn] = useState(false);
-  const [doneCount, setDoneCount] = useState(0);
+  const [cardsDone, setCardsDone] = useState<number[]>([]);
+  const [roundClaimed, setRoundClaimed] = useState(false);
+  const [roundReward, setRoundReward] = useState(20);
+  const [roundSecsLeft, setRoundSecsLeft] = useState(0);
+  const [roundActive, setRoundActive] = useState(false);
   const [countingBox, setCountingBox] = useState<number | null>(null);
   const [boxSecs, setBoxSecs] = useState(BOX_WAIT_SEC);
-  const [claimingBox, setClaimingBox] = useState(false);
-  const [nextRoundAt, setNextRoundAt] = useState<string | null>(null);
+  const [watchingBox, setWatchingBox] = useState(false);
+  const [claimingRound, setClaimingRound] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
 
-  // tick for the round-cooldown countdown
+  // tick for the round countdown
   useEffect(() => {
-    if (!nextRoundAt) return;
+    if (!roundActive) return;
     const t = setInterval(() => setNowMs(Date.now()), 1000);
     return () => clearInterval(t);
-  }, [nextRoundAt]);
+  }, [roundActive]);
 
-  const roundWaitSec = nextRoundAt
-    ? Math.max(0, Math.floor((new Date(nextRoundAt).getTime() - nowMs) / 1000))
-    : 0;
-  const roundLocked = roundWaitSec > 0;
+  const roundWaitSec = roundActive ? Math.max(0, roundSecsLeft - Math.floor((Date.now() - nowMs) / 1000)) : 0;
 
   const [wdAmount, setWdAmount] = useState("");
   const [wdMethod, setWdMethod] = useState("bkash");
@@ -113,12 +114,14 @@ export default function EarnClient({
   const [wdLoading, setWdLoading] = useState(false);
 
   const load = useCallback(async () => {
-    const [wRes, cRes] = await Promise.all([
+    const [wRes, cRes, rRes] = await Promise.all([
       fetch("/api/wallet"),
       fetch("/api/rewards/config"),
+      fetch("/api/rewards/round"),
     ]);
     const w = await wRes.json();
     const c = await cRes.json();
+    const r = await rRes.json().catch(() => ({}));
     if (wRes.ok && w.ok) {
       setLoggedIn(true);
       setWallet(w.wallet);
@@ -132,8 +135,14 @@ export default function EarnClient({
     }
     if (c.ok) {
       setConfig(c.config);
-      setDoneCount(Math.min(c.config.ads_watched_today ?? 0, CARDS_GOAL));
-      setNextRoundAt(c.config.next_round_at ?? null);
+    }
+    if (r?.ok) {
+      setCardsDone(r.cards_done ?? []);
+      setRoundClaimed(!!r.claimed);
+      setRoundReward(Number(r.round_reward) || 20);
+      setRoundSecsLeft(Number(r.seconds_left) || 0);
+      setRoundActive(!!r.round_start);
+      setNowMs(Date.now());
     }
     setLoading(false);
   }, []);
@@ -149,11 +158,11 @@ export default function EarnClient({
     return () => clearTimeout(t);
   }, [adOpen, countdown]);
 
-  // box countdown → auto claim when it hits 0
+  // box countdown → mark watched when it hits 0
   useEffect(() => {
     if (countingBox === null) return;
     if (boxSecs <= 0) {
-      claimBox(countingBox);
+      watchBox(countingBox);
       return;
     }
     const t = setTimeout(() => setBoxSecs((s) => s - 1), 1000);
@@ -162,7 +171,7 @@ export default function EarnClient({
 
   /** Click a box: open the direct ad link, run the 15s timer on the box. */
   function clickBox(i: number) {
-    if (countingBox !== null || claimingBox) return;
+    if (countingBox !== null || watchingBox || cardsDone.includes(i) || roundClaimed) return;
     const link = config?.reward_direct_link?.trim();
     if (link) window.open(link, "_blank", "noopener");
     setCountingBox(i);
@@ -170,31 +179,46 @@ export default function EarnClient({
     setMsg("");
   }
 
-  async function claimBox(i: number) {
-    setClaimingBox(true);
+  async function watchBox(i: number) {
+    setWatchingBox(true);
     try {
-      const res = await fetch("/api/rewards/claim-card", {
+      const res = await fetch("/api/rewards/watch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ box: i, waited_sec: BOX_WAIT_SEC }),
       });
       const d = await res.json();
-      if (!res.ok) {
-        if (d.round_done) {
-          setMsg(`⏳ ${d.error}`);
-          load();
-          throw new Error(d.error);
-        }
-        throw new Error(d.error || "ব্যর্থ");
+      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
+      setCardsDone(d.cards_done ?? []);
+      setRoundClaimed(!!d.claimed);
+      setRoundSecsLeft(Number(d.seconds_left) || 0);
+      setRoundActive(true);
+      setNowMs(Date.now());
+      if ((d.cards_done ?? []).length >= CARDS_GOAL) {
+        setMsg(`🎉 ${toBnDigits(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${formatBDT(d.round_reward ?? roundReward)} বোনাস নিন!`);
       }
-      setDoneCount((c) => Math.min(c + 1, CARDS_GOAL));
-      setMsg(`🎉 বক্স ${toBnDigits(i + 1)} সম্পূর্ণ — ${formatBDT(d.amount)} ওয়ালেটে যোগ হয়েছে!`);
-      load();
     } catch (e) {
       setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"} — আবার চেষ্টা করুন`);
+      load();
     } finally {
       setCountingBox(null);
-      setClaimingBox(false);
+      setWatchingBox(false);
+    }
+  }
+
+  async function claimRound() {
+    if (claimingRound) return;
+    setClaimingRound(true);
+    try {
+      const res = await fetch("/api/rewards/claim-round", { method: "POST" });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
+      setMsg(`🎉 ${formatBDT(d.amount)} ওয়ালেটে যোগ হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর।`);
+      load();
+    } catch (e) {
+      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+    } finally {
+      setClaimingRound(false);
     }
   }
 
@@ -337,13 +361,13 @@ export default function EarnClient({
         </Link>
       </div>
 
-      {/* watch ad — interactive 20-box reward flow */}
+      {/* watch ad — 20-card hourly round, ৳20 lump sum */}
       <div className="glass mt-6 rounded-3xl p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-bold text-white">🎬 অ্যাড দেখে আয়</h2>
           {config?.enabled && (
             <span className="rounded-full bg-[#d7ff3f]/15 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
-              প্রতি কার্ডে {formatBDT(config.ad_reward_bdt)}
+              প্রতি রাউন্ডে {formatBDT(roundReward)}
             </span>
           )}
         </div>
@@ -352,51 +376,45 @@ export default function EarnClient({
         ) : (
           <>
             <p className="mt-2 text-sm text-slate-400">
-              💰 <b className="text-white">আর্ন নাও</b> চাপুন — {toBnDigits(CARDS_GOAL)}টি বক্স
-              আসবে। প্রতিটি বক্সে ক্লিক করলে অ্যাড খুলবে, {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
-              পর বক্সে ✓ পড়বে ও {formatBDT(config.ad_reward_bdt)} ওয়ালেটে যোগ হবে!
+              💰 <b className="text-white">আর্ন নাও</b> চাপুন — {toBnDigits(CARDS_GOAL)}টি কার্ড
+              আসবে। প্রতিটি কার্ডে ক্লিক করলে অ্যাড খুলবে, {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
+              পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{toBnDigits(CARDS_GOAL)}টি শেষ হলে একসাথে {formatBDT(roundReward)} ওয়ালেটে!</b>
+              <br />⏳ প্রতি রাউন্ড ১ ঘণ্টা — সময় শেষ হলে নতুন রাউন্ড শুরু হবে।
             </p>
 
-            {roundLocked ? (
-              <div className="mt-4 rounded-2xl bg-amber-400/10 p-6 text-center">
-                <div className="text-4xl">⏳</div>
-                <p className="mt-2 font-bold text-white">এই রাউন্ড সম্পূর্ণ!</p>
-                <p className="mt-1 text-sm text-slate-400">
-                  পরের {toBnDigits(CARDS_GOAL)}টি বক্স আসবে{" "}
-                  <b className="font-display text-xl text-[#d7ff3f]">
-                    {toBnDigits(Math.floor(roundWaitSec / 60))}:{toBnDigits(String(roundWaitSec % 60).padStart(2, "0"))}
-                  </b>{" "}
-                  পর
-                </p>
-              </div>
-            ) : !cardsOn ? (
+            {!cardsOn ? (
               <button onClick={() => setCardsOn(true)} className="btn-vault mt-4 w-full !py-3.5 text-base font-bold">
                 💰 আর্ন নাও
               </button>
             ) : (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">🎯 আজকের অগ্রগতি</span>
+                  <span className="text-slate-400">🎯 এই রাউন্ডের অগ্রগতি</span>
                   <span className="font-bold text-[#d7ff3f]">
-                    {toBnDigits(doneCount)}/{toBnDigits(CARDS_GOAL)} কার্ড
+                    {toBnDigits(cardsDone.length)}/{toBnDigits(CARDS_GOAL)} কার্ড
+                    {roundActive && (
+                      <span className="ml-2 text-slate-400">
+                        ⏳ {toBnDigits(Math.floor(roundWaitSec / 60))}:{toBnDigits(String(roundWaitSec % 60).padStart(2, "0"))}
+                      </span>
+                    )}
                   </span>
                 </div>
                 {/* progress bar */}
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.07]">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-lime-300 to-[#d7ff3f] transition-all duration-500"
-                    style={{ width: `${(doneCount / CARDS_GOAL) * 100}%` }}
+                    style={{ width: `${(cardsDone.length / CARDS_GOAL) * 100}%` }}
                   />
                 </div>
                 {/* 20 boxes, 3 columns */}
                 <div className="mt-4 grid grid-cols-3 gap-2.5">
                   {Array.from({ length: CARDS_GOAL }).map((_, i) => {
-                    const done = i < doneCount;
+                    const done = cardsDone.includes(i);
                     const counting = countingBox === i;
                     return (
                       <button
                         key={i}
-                        disabled={done || counting || claimingBox}
+                        disabled={done || counting || watchingBox || roundClaimed}
                         onClick={() => clickBox(i)}
                         className={`relative flex min-h-[76px] flex-col items-center justify-center overflow-hidden rounded-2xl border font-bold transition-all duration-300 ${
                           done
@@ -409,9 +427,7 @@ export default function EarnClient({
                         {done ? (
                           <>
                             <span className="text-2xl">✓</span>
-                            <span className="mt-0.5 text-[10px] text-[#d7ff3f]/80">
-                              +{formatBDT(config.ad_reward_bdt)}
-                            </span>
+                            <span className="mt-0.5 text-[10px] text-[#d7ff3f]/80">লকড</span>
                           </>
                         ) : counting ? (
                           <>
@@ -419,7 +435,6 @@ export default function EarnClient({
                               {toBnDigits(boxSecs)}
                             </span>
                             <span className="mt-0.5 text-[10px] text-slate-400">সেকেন্ড…</span>
-                            {/* countdown fill */}
                             <span
                               className="absolute bottom-0 left-0 h-1 bg-cyan-300/70 transition-all duration-1000"
                               style={{ width: `${((BOX_WAIT_SEC - boxSecs) / BOX_WAIT_SEC) * 100}%` }}
@@ -430,23 +445,29 @@ export default function EarnClient({
                             <span className="font-display text-xl text-slate-200">
                               {toBnDigits(i + 1)}
                             </span>
-                            <span className="mt-0.5 text-[10px] text-slate-500">
-                              {formatBDT(config.ad_reward_bdt)} জিতুন
-                            </span>
+                            <span className="mt-0.5 text-[10px] text-slate-500">অ্যাড দেখুন</span>
                           </>
                         )}
                       </button>
                     );
                   })}
                 </div>
-                {doneCount >= CARDS_GOAL ? (
+                {cardsDone.length >= CARDS_GOAL && !roundClaimed ? (
+                  <button
+                    onClick={claimRound}
+                    disabled={claimingRound}
+                    className="btn-vault mt-4 w-full !py-4 text-lg font-black shadow-[0_0_24px_rgba(215,255,63,0.4)]"
+                  >
+                    {claimingRound ? "⏳ বোনাস যোগ হচ্ছে..." : `🎉 ${formatBDT(roundReward)} বোনাস নিন!`}
+                  </button>
+                ) : roundClaimed ? (
                   <p className="mt-4 rounded-2xl bg-[#d7ff3f]/10 p-4 text-center text-sm font-bold text-[#d7ff3f]">
-                    🎉 {toBnDigits(CARDS_GOAL)}টি বক্স সম্পূর্ণ — {formatBDT(CARDS_GOAL * config.ad_reward_bdt)} আপনার ওয়ালেটে!
+                    ✅ এই রাউন্ডের {formatBDT(roundReward)} বোনাস নেওয়া হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর ⏳
                   </p>
                 ) : (
                   <p className="mt-3 text-center text-xs text-slate-500">
-                    💡 বক্সে ক্লিক → নতুন ট্যাবে অ্যাড খুলবে → {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
-                    অপেক্ষা → ✓ ও বোনাস!
+                    💡 কার্ডে ক্লিক → নতুন ট্যাবে অ্যাড খুলবে → {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
+                    অপেক্ষা → ✓ লকড (১ ঘণ্টা)
                   </p>
                 )}
               </div>
