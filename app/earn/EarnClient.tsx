@@ -15,6 +15,7 @@ type Config = {
   reward_ad_code: string;
   reward_direct_link: string;
   ads_watched_today: number;
+  next_round_at: string | null;
 };
 
 const CARDS_GOAL = 20;
@@ -91,6 +92,20 @@ export default function EarnClient({
   const [countingBox, setCountingBox] = useState<number | null>(null);
   const [boxSecs, setBoxSecs] = useState(BOX_WAIT_SEC);
   const [claimingBox, setClaimingBox] = useState(false);
+  const [nextRoundAt, setNextRoundAt] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(Date.now());
+
+  // tick for the round-cooldown countdown
+  useEffect(() => {
+    if (!nextRoundAt) return;
+    const t = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [nextRoundAt]);
+
+  const roundWaitSec = nextRoundAt
+    ? Math.max(0, Math.floor((new Date(nextRoundAt).getTime() - nowMs) / 1000))
+    : 0;
+  const roundLocked = roundWaitSec > 0;
 
   const [wdAmount, setWdAmount] = useState("");
   const [wdMethod, setWdMethod] = useState("bkash");
@@ -118,6 +133,7 @@ export default function EarnClient({
     if (c.ok) {
       setConfig(c.config);
       setDoneCount(Math.min(c.config.ads_watched_today ?? 0, CARDS_GOAL));
+      setNextRoundAt(c.config.next_round_at ?? null);
     }
     setLoading(false);
   }, []);
@@ -163,7 +179,14 @@ export default function EarnClient({
         body: JSON.stringify({ box: i, waited_sec: BOX_WAIT_SEC }),
       });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
+      if (!res.ok) {
+        if (d.round_done) {
+          setMsg(`⏳ ${d.error}`);
+          load();
+          throw new Error(d.error);
+        }
+        throw new Error(d.error || "ব্যর্থ");
+      }
       setDoneCount((c) => Math.min(c + 1, CARDS_GOAL));
       setMsg(`🎉 বক্স ${toBnDigits(i + 1)} সম্পূর্ণ — ${formatBDT(d.amount)} ওয়ালেটে যোগ হয়েছে!`);
       load();
@@ -334,7 +357,19 @@ export default function EarnClient({
               পর বক্সে ✓ পড়বে ও {formatBDT(config.ad_reward_bdt)} ওয়ালেটে যোগ হবে!
             </p>
 
-            {!cardsOn ? (
+            {roundLocked ? (
+              <div className="mt-4 rounded-2xl bg-amber-400/10 p-6 text-center">
+                <div className="text-4xl">⏳</div>
+                <p className="mt-2 font-bold text-white">এই রাউন্ড সম্পূর্ণ!</p>
+                <p className="mt-1 text-sm text-slate-400">
+                  পরের {toBnDigits(CARDS_GOAL)}টি বক্স আসবে{" "}
+                  <b className="font-display text-xl text-[#d7ff3f]">
+                    {toBnDigits(Math.floor(roundWaitSec / 60))}:{toBnDigits(String(roundWaitSec % 60).padStart(2, "0"))}
+                  </b>{" "}
+                  পর
+                </p>
+              </div>
+            ) : !cardsOn ? (
               <button onClick={() => setCardsOn(true)} className="btn-vault mt-4 w-full !py-3.5 text-base font-bold">
                 💰 আর্ন নাও
               </button>

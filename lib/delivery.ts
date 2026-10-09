@@ -140,6 +140,22 @@ export async function confirmOrderPayment(
   }
 
   await supabase.from("orders").update({ status: "paid" }).eq("id", orderId);
+
+  // valid referral: referred user's first paid order → ৳20 to the referrer
+  try {
+    const { data: ord } = await supabase
+      .from("orders")
+      .select("user_id")
+      .eq("id", orderId)
+      .single();
+    if (ord?.user_id) {
+      const { awardReferralBonus } = await import("@/lib/wallet");
+      await awardReferralBonus(supabase, ord.user_id);
+    }
+  } catch (e) {
+    console.error("referral hook error", e);
+  }
+
   const keyResult = await deliverOrderKeys(supabase, orderId);
   await issueFileTokens(supabase, orderId);
   return keyResult;

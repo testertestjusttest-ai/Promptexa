@@ -38,6 +38,55 @@ export async function getRewardSettings(): Promise<RewardSettings> {
 }
 
 /**
+ * Valid-referral bonus: when a referred user completes their FIRST paid
+ * order, the referrer earns referral_bonus_bdt (default ৳20).
+ * Idempotent — the referrals row is marked paid before crediting.
+ * Must be called with the SERVICE-ROLE client.
+ */
+export async function awardReferralBonus(
+  supabase: SupabaseClient,
+  referredUserId: string
+): Promise<void> {
+  try {
+    const { data: ref } = await supabase
+      .from("referrals")
+      .select("id, referrer_id")
+      .eq("referred_id", referredUserId)
+      .eq("bonus_bdt", 0)
+      .single();
+    if (!ref) return; // no pending referral
+
+    const { data: s } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "rewards")
+      .single();
+    const bonus = Number((s?.value as any)?.referral_bonus_bdt) || 20;
+    if (!(bonus > 0)) return;
+
+    // mark paid first (prevents double credit on retries)
+    const { data: marked } = await supabase
+      .from("referrals")
+      .update({ bonus_bdt: bonus })
+      .eq("id", ref.id)
+      .eq("bonus_bdt", 0)
+      .select("id");
+    if (!marked || marked.length === 0) return;
+
+    await creditWallet(
+      supabase,
+      ref.referrer_id,
+      bonus,
+      "referral_bonus",
+      "ভ্যালিড রেফারেল বোনাস (প্রথম কেনা)",
+      referredUserId
+    );
+  } catch (e) {
+    console.error("awardReferralBonus error", e);
+  }
+}
+
+/**
  * Credit a user's wallet. Must be called with the SERVICE-ROLE client.
  */
 export async function creditWallet(

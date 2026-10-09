@@ -35,6 +35,39 @@ export async function POST(req: Request) {
     }
 
     const svc = createServiceClient();
+
+    // hourly round limit: max 20 boxes per rolling 60 minutes
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count: hourly } = await svc
+      .from("ad_views")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", hourAgo);
+    if ((hourly ?? 0) >= 20) {
+      const { data: oldest } = await svc
+        .from("ad_views")
+        .select("created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", hourAgo)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .single();
+      const waitSec = oldest
+        ? Math.max(
+            60,
+            3600 - Math.floor((Date.now() - new Date(oldest.created_at).getTime()) / 1000)
+          )
+        : 3600;
+      return NextResponse.json(
+        {
+          error: `এই রাউন্ড শেষ! পরের রাউন্ড ${Math.floor(waitSec / 60)} মিনিট পর`,
+          wait_sec: waitSec,
+          round_done: true,
+        },
+        { status: 429 }
+      );
+    }
+
     // 20s pacing between boxes (15s timer + margin), same daily cap
     const { data, error } = await svc.rpc("claim_ad_reward", {
       p_user: user.id,

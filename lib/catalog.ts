@@ -185,7 +185,33 @@ export function activeSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[]
   return ads.slots.filter((s) => s.placement === placement && s.enabled && s.code.trim() !== "");
 }
 
-export async function getPaymentNumbers(): Promise<Record<string, string>> {
+export type PaymentNumberInfo = {
+  number: string;
+  kind: "merchant" | "sendmoney";
+  image: string;
+};
+
+/** Normalize legacy string values → { number, kind, image }. */
+export function normalizePaymentNumbers(
+  raw: Record<string, unknown>
+): Record<string, PaymentNumberInfo> {
+  const out: Record<string, PaymentNumberInfo> = {};
+  for (const [k, v] of Object.entries(raw ?? {})) {
+    if (typeof v === "string") {
+      out[k] = { number: v, kind: "merchant", image: "" };
+    } else if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      out[k] = {
+        number: String(o.number ?? ""),
+        kind: o.kind === "sendmoney" ? "sendmoney" : "merchant",
+        image: String(o.image ?? ""),
+      };
+    }
+  }
+  return out;
+}
+
+export async function getPaymentNumbers(): Promise<Record<string, PaymentNumberInfo>> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -193,7 +219,7 @@ export async function getPaymentNumbers(): Promise<Record<string, string>> {
       .select("value")
       .eq("key", "payment_numbers")
       .single();
-    return (data?.value as Record<string, string>) ?? {};
+    return normalizePaymentNumbers((data?.value as Record<string, unknown>) ?? {});
   } catch {
     return {};
   }

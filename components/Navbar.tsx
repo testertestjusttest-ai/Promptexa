@@ -26,8 +26,18 @@ export default function Navbar() {
     { href: "/", label: "হোম" },
     { href: "/shop", label: "শপ" },
     { href: "/earn", label: "💰 আয় করুন" },
+    { href: "/marketplace", label: "🎮 ID বাজার" },
+    { href: "/web-dev", label: "🌐 ওয়েবসাইট বানান" },
     { href: "/dashboard", label: "আমার অর্ডার" },
   ];
+
+  async function logout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setMenuOpen(false);
+    window.location.href = "/";
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-[#060913]/85 backdrop-blur-xl">
@@ -70,16 +80,32 @@ export default function Navbar() {
             )}
           </button>
           {user ? (
-            <Link
-              href="/dashboard"
-              className="hidden rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:block"
-            >
-              ড্যাশবোর্ড
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                className="hidden rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:block"
+              >
+                ড্যাশবোর্ড
+              </Link>
+              <button
+                onClick={logout}
+                className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-red-400/50 hover:text-red-300 sm:block"
+              >
+                লগআউট
+              </button>
+            </>
           ) : (
-            <Link href="/auth/login" className="btn-vault hidden !px-4 !py-2 text-sm sm:inline-flex">
-              লগইন
-            </Link>
+            <>
+              <Link href="/auth/login" className="btn-vault hidden !px-4 !py-2 text-sm sm:inline-flex">
+                লগইন
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-[#d7ff3f]/50 sm:block"
+              >
+                সাইন আপ
+              </Link>
+            </>
           )}
           <button
             className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 md:hidden"
@@ -102,14 +128,30 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          {!user && (
-            <Link
-              href="/auth/login"
-              onClick={() => setMenuOpen(false)}
-              className="mt-1 block rounded-lg bg-[#d7ff3f] px-3 py-2.5 text-center text-sm font-bold text-[#060913]"
+          {!user ? (
+            <>
+              <Link
+                href="/auth/login"
+                onClick={() => setMenuOpen(false)}
+                className="mt-1 block rounded-lg bg-[#d7ff3f] px-3 py-2.5 text-center text-sm font-bold text-[#060913]"
+              >
+                লগইন
+              </Link>
+              <Link
+                href="/auth/signup"
+                onClick={() => setMenuOpen(false)}
+                className="mt-1 block rounded-lg border border-white/10 px-3 py-2.5 text-center text-sm font-bold text-white"
+              >
+                সাইন আপ
+              </Link>
+            </>
+          ) : (
+            <button
+              onClick={logout}
+              className="mt-1 block w-full rounded-lg border border-red-400/30 px-3 py-2.5 text-center text-sm font-bold text-red-300"
             >
-              লগইন
-            </Link>
+              🚪 লগআউট
+            </button>
           )}
         </nav>
       )}

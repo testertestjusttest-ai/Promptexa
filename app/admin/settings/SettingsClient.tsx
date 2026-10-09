@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function SettingsClient() {
-  const [numbers, setNumbers] = useState({ bkash: "", nagad: "", rocket: "" });
+  const [numbers, setNumbers] = useState<Record<string, any>>({ bkash: "", nagad: "", rocket: "" });
   const [store, setStore] = useState({ name: "DigiPlyra", tagline: "", support_whatsapp: "", notice_bn: "" });
   const [ssl, setSsl] = useState({ enabled: false, sandbox: true, configured: false });
   const [ads, setAds] = useState({ enabled: false, home_top: "", home_bottom: "", product_page: "", popup: "" });
@@ -58,14 +58,31 @@ export default function SettingsClient() {
       <div className="glass rounded-2xl p-6">
         <h2 className="font-display text-lg font-bold text-white">💳 ম্যানুয়াল পেমেন্ট নম্বর</h2>
         <p className="mt-1 text-xs text-slate-500">চেকআউটে কাস্টমার এই নম্বরগুলো দেখবে। খালি রাখলে সেই মাধ্যম বন্ধ থাকবে।</p>
-        <div className="mt-4 space-y-4">
-          {([["bkash", "বিকাশ"], ["nagad", "নগদ"], ["rocket", "রকেট"]] as const).map(([k, label]) => (
-            <div key={k}>
-              <label className="mb-1.5 block text-sm text-slate-300">{label} মার্চেন্ট নম্বর</label>
-              <input value={numbers[k]} onChange={(e) => setNumbers({ ...numbers, [k]: e.target.value })}
-                placeholder="01XXXXXXXXX" className="field" inputMode="numeric" />
-            </div>
-          ))}
+        <div className="mt-4 space-y-5">
+          {([["bkash", "বিকাশ"], ["nagad", "নগদ"], ["rocket", "রকেট"]] as const).map(([k, label]) => {
+            const info = numbers[k] && typeof numbers[k] === "object" ? numbers[k] : { number: numbers[k] ?? "", kind: "merchant", image: "" };
+            const set = (patch: Partial<{ number: string; kind: string; image: string }>) =>
+              setNumbers({ ...numbers, [k]: { ...info, ...patch } });
+            return (
+              <div key={k} className="rounded-xl bg-black/20 p-4">
+                <p className="mb-2 text-sm font-bold text-white">{label}</p>
+                <label className="mb-1 block text-xs text-slate-400">নম্বর</label>
+                <input value={info.number} onChange={(e) => set({ number: e.target.value })}
+                  placeholder="01XXXXXXXXX" className="field" inputMode="numeric" />
+                <div className="mt-2 flex gap-2">
+                  {(["merchant", "sendmoney"] as const).map((kind) => (
+                    <button key={kind} onClick={() => set({ kind })}
+                      className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${info.kind === kind ? "bg-[#d7ff3f] text-black" : "bg-white/10 text-slate-300"}`}>
+                      {kind === "merchant" ? "🏪 মার্চেন্ট" : "📤 সেন্ড মানি"}
+                    </button>
+                  ))}
+                </div>
+                <label className="mb-1 mt-2 block text-xs text-slate-400">{label} লোগো/ছবি URL (ঐচ্ছিক)</label>
+                <input value={info.image} onChange={(e) => set({ image: e.target.value })}
+                  placeholder="https://...png" className="field font-mono text-xs" dir="ltr" />
+              </div>
+            );
+          })}
           <button onClick={() => save("payment_numbers", numbers)} className="btn-vault w-full !py-2.5 text-sm">
             💾 নম্বর সেভ করুন
           </button>

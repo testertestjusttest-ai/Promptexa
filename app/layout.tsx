@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import PwaInit from "@/components/PwaInit";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 import AdSlot from "@/components/AdSlot";
 import { getAdsConfig, activeSlots } from "@/lib/catalog";
 
@@ -62,6 +63,7 @@ export default async function RootLayout({
           <Footer />
           <CartDrawer />
           <PwaInit />
+          <WhatsAppFloat />
           {sitewide.map((slot) => (
             <AdSlot key={slot.id} code={slot.code} label="" />
           ))}

@@ -17,7 +17,14 @@ export default function CheckoutClient() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("bkash");
-  const [numbers, setNumbers] = useState<Record<string, string>>({});
+  const [numbers, setNumbers] = useState<Record<string, { number: string; kind: string; image: string }>>({});
+
+  function payInfo(m: string) {
+    const raw: any = (numbers as any)[m];
+    if (!raw) return { number: "", kind: "merchant", image: "" };
+    if (typeof raw === "string") return { number: raw, kind: "merchant", image: "" };
+    return { number: raw.number ?? "", kind: raw.kind ?? "merchant", image: raw.image ?? "" };
+  }
   const [sslOn, setSslOn] = useState(false);
   const [step, setStep] = useState<Step>("info");
   const [orderId, setOrderId] = useState("");
@@ -66,7 +73,7 @@ export default function CheckoutClient() {
     setError("");
     if (!name.trim()) return setError("আপনার নাম লিখুন");
     if (!validPhone) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
-    if (method !== "sslcommerz" && method !== "wallet" && !numbers[method]) {
+    if (method !== "sslcommerz" && method !== "wallet" && !payInfo(method).number) {
       return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
     }
     if (method === "wallet" && (walletBal === null || walletBal < total)) {
@@ -179,12 +186,17 @@ export default function CheckoutClient() {
                 icon="💰" title="ওয়ালেট ব্যালেন্স"
                 desc={walletBal === null ? "লগইন করুন" : `ব্যালেন্স: ${formatBDT(walletBal)}`}
                 disabled={walletBal === null} />
-              {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => (
-                <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
-                  icon={m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
-                  title={PAYMENT_METHOD_BN[m]} desc={numbers[m] ? `মার্চেন্ট: ${numbers[m]}` : "শীঘ্রই আসছে"}
-                  disabled={!numbers[m]} />
-              ))}
+              {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => {
+                const info = payInfo(m);
+                const kindBn = info.kind === "sendmoney" ? "সেন্ড মানি" : "মার্চেন্ট";
+                return (
+                  <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
+                    icon={info.image ? "" : m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
+                    img={info.image || undefined}
+                    title={PAYMENT_METHOD_BN[m]} desc={info.number ? `${kindBn}: ${info.number}` : "শীঘ্রই আসছে"}
+                    disabled={!info.number} />
+                );
+              })}
             </div>
 
             <div className="mt-5">
@@ -220,8 +232,10 @@ export default function CheckoutClient() {
               <p className="font-display text-lg font-bold text-[#d7ff3f]">{orderNumber}</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-slate-400">পাঠাবেন এই নম্বরে ({methodLabel})</p>
-                  <p className="font-display text-2xl font-bold text-white">{numbers[method]}</p>
+                  <p className="text-sm text-slate-400">
+                    পাঠাবেন এই নম্বরে ({methodLabel} — {payInfo(method).kind === "sendmoney" ? "সেন্ড মানি" : "মার্চেন্ট"})
+                  </p>
+                  <p className="font-display text-2xl font-bold text-white">{payInfo(method).number}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">টাকার পরিমাণ</p>
@@ -229,7 +243,7 @@ export default function CheckoutClient() {
                 </div>
               </div>
               <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-slate-400">
-                <li><b className="text-white">Send Money</b> করে উপরের নম্বরে টাকা পাঠান</li>
+                <li><b className="text-white">{payInfo(method).kind === "sendmoney" ? "Send Money" : "Payment"}</b> করে উপরের নম্বরে টাকা পাঠান</li>
                 <li>ট্রানজেকশন আইডি (TrxID) কপি করুন</li>
                 <li>নিচের ফর্মে সেন্ডার নম্বর ও TrxID দিয়ে জমা দিন</li>
               </ol>
@@ -287,8 +301,8 @@ export default function CheckoutClient() {
   );
 }
 
-function MethodCard({ active, onClick, icon, title, desc, disabled }: {
-  active: boolean; onClick: () => void; icon: string; title: string; desc: string; disabled?: boolean;
+function MethodCard({ active, onClick, icon, img, title, desc, disabled }: {
+  active: boolean; onClick: () => void; icon: string; img?: string; title: string; desc: string; disabled?: boolean;
 }) {
   return (
     <button
@@ -298,7 +312,11 @@ function MethodCard({ active, onClick, icon, title, desc, disabled }: {
         active ? "border-[#d7ff3f]/60 bg-[#d7ff3f]/5" : "border-white/10 bg-white/[0.02] hover:border-white/25"
       } ${disabled ? "opacity-40" : ""}`}
     >
-      <div className="text-2xl">{icon}</div>
+      {img ? (
+        <img src={img} alt={title} className="h-8 w-8 rounded-lg object-contain" />
+      ) : (
+        <div className="text-2xl">{icon}</div>
+      )}
       <p className="mt-2 font-bold text-white">{title}</p>
       <p className="text-xs text-slate-500">{desc}</p>
     </button>

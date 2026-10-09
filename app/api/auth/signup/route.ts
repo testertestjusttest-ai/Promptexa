@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import {
-  creditWallet,
-  generateUniqueReferralCode,
-  getRewardSettings,
-} from "@/lib/wallet";
+import { generateUniqueReferralCode } from "@/lib/wallet";
 
 /**
  * POST /api/auth/signup
@@ -83,25 +79,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "রেজিস্ট্রেশন হয়নি" }, { status: 500 });
     }
 
-    // referral bonus → referrer wallet
+    // record the referral — bonus is paid only when the referred user
+    // completes their FIRST paid order (valid referral = ৳20)
     if (referrerId) {
-      const rewards = await getRewardSettings();
-      const bonus = Number(rewards.referral_bonus_bdt) || 0;
       await svc.from("referrals").insert({
         referrer_id: referrerId,
         referred_id: userId,
-        bonus_bdt: bonus,
+        bonus_bdt: 0,
       });
-      if (bonus > 0) {
-        await creditWallet(
-          svc,
-          referrerId,
-          bonus,
-          "referral_bonus",
-          "রেফারেল বোনাস",
-          userId
-        );
-      }
     }
 
     return NextResponse.json({ ok: true });
