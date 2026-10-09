@@ -126,6 +126,12 @@ const DEFAULT_ADS: AdsConfig = {
       code: '<script data-cfasync="false" async type="text/javascript" src="//3nbf4.com/act/files/tag.min.js?z=3524319"></script>',
       enabled: true,
     },
+    { id: "monetag_tag_292918", name: "Monetag Tag 292918", placement: "sitewide", code: '<script src="https://quge5.com/88/tag.min.js" data-zone="292918" async data-cfasync="false"></script>', enabled: false },
+    { id: "monetag_tag_11989815", name: "Monetag Tag 11989815", placement: "sitewide", code: '<script>(function(s){s.dataset.zone=\'11989815\',s.src=\'https://al5sm.com/tag.min.js\'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement(\'script\')))</script>', enabled: false },
+    { id: "monetag_tag_11989823", name: "Monetag Tag 11989823", placement: "sitewide", code: '<script src="https://5gvci.com/act/files/tag.min.js?z=11989823" data-cfasync="false" async></script>', enabled: false },
+    { id: "monetag_tag_11989833", name: "Monetag Tag 11989833", placement: "sitewide", code: '<script>(function(s){s.dataset.zone=\'11989833\',s.src=\'https://nap5k.com/tag.min.js\'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement(\'script\')))</script>', enabled: false },
+    { id: "monetag_vignette_11989834", name: "Monetag Vignette 11989834", placement: "sitewide", code: '<script>(function(s){s.dataset.zone=\'11989834\',s.src=\'https://n6wxm.com/vignette.min.js\'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement(\'script\')))</script>', enabled: false },
+    { id: "monetag_smartlink_11989836", name: "Monetag SmartLink 11989836", placement: "sitewide", code: '<!-- Monetag SmartLink: https://uplcm.com/4/11989836 -->', enabled: false },
   ],
 };
 

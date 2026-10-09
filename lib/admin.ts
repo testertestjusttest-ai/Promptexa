@@ -1,6 +1,32 @@
 import { redirect } from "next/navigation";
 import { createClient, createServiceClient } from "./supabase/server";
 
+/**
+ * Owner emails auto-promoted to admin. Set in Vercel →
+ * Settings → Environment Variables as ADMIN_EMAILS
+ * (comma-separated, e.g. "you@gmail.com,partner@gmail.com").
+ * Any account signing in with one of these emails becomes admin
+ * automatically — no SQL needed.
+ */
+export function getAdminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+/** Promote the user to admin if their email is in ADMIN_EMAILS. */
+async function autoPromoteOwner(
+  svc: ReturnType<typeof createServiceClient>,
+  userId: string,
+  email: string | undefined
+): Promise<boolean> {
+  if (!email) return false;
+  if (!getAdminEmails().includes(email.toLowerCase())) return false;
+  await svc.from("profiles").update({ is_admin: true }).eq("id", userId);
+  return true;
+}
+
 /** Page guard: redirects non-admins away. Returns service client + profile. */
 export async function requireAdminPage() {
   const supabase = await createClient();
@@ -16,7 +42,11 @@ export async function requireAdminPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile?.is_admin) redirect("/");
+  if (!profile?.is_admin) {
+    const promoted = await autoPromoteOwner(svc, user.id, user.email);
+    if (!promoted) redirect("/");
+    return { svc, profile: { ...profile, is_admin: true }, user };
+  }
   return { svc, profile, user };
 }
 
@@ -42,9 +72,12 @@ export async function requireAdminApi(): Promise<
       .eq("id", user.id)
       .single();
     if (!profile?.is_admin) {
-      return {
-        error: Response.json({ error: "অনুমতি নেই" }, { status: 403 }),
-      };
+      const promoted = await autoPromoteOwner(svc, user.id, user.email);
+      if (!promoted) {
+        return {
+          error: Response.json({ error: "অনুমতি নেই" }, { status: 403 }),
+        };
+      }
     }
     return { svc };
   } catch {

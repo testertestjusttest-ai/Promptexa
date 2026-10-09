@@ -1,5 +1,6 @@
 "use client";
 
+import SiteLogo from "@/components/SiteLogo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart";
@@ -32,11 +33,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-white/5 bg-[#060913]/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2.5">
-          <img
-            src="/logo.jpg?v=3"
-            alt="DigiPlyra"
-            className="h-10 w-10 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)]"
-          />
+          <SiteLogo className="h-11 w-11 rounded-xl" />
           <span className="font-display text-xl font-bold tracking-tight">
             <span className="font-bold text-white">Digi</span>
             <span className="font-bold text-[#d7ff3f]">Plyra</span>

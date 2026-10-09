@@ -12,7 +12,10 @@ type Config = {
   ad_daily_limit: number;
   min_withdraw_bdt: number;
   reward_ad_code: string;
+  ads_watched_today: number;
 };
+
+const CARDS_GOAL = 20;
 
 type WithdrawalRow = {
   id: string;
@@ -264,6 +267,47 @@ export default function EarnClient() {
               অ্যাডটি {toBnDigits(WATCH_SEC)} সেকেন্ড দেখুন, বোনাস সাথে সাথে ওয়ালেটে!
               দৈনিক সর্বোচ্চ {toBnDigits(config.ad_daily_limit)}টি অ্যাড।
             </p>
+
+            {/* 20-card daily progress */}
+            {(() => {
+              const watched = Math.min(config.ads_watched_today ?? 0, CARDS_GOAL);
+              const done = watched >= CARDS_GOAL;
+              return (
+                <div className="mt-4 rounded-2xl bg-black/30 p-4">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">🎯 আজকের অগ্রগতি</span>
+                    <span className="font-bold text-[#d7ff3f]">
+                      {toBnDigits(watched)}/{toBnDigits(CARDS_GOAL)} কার্ড
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-10 gap-1.5">
+                    {Array.from({ length: CARDS_GOAL }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex aspect-square items-center justify-center rounded-lg text-xs font-bold transition ${
+                          i < watched
+                            ? "bg-[#d7ff3f] text-black shadow-[0_0_8px_rgba(215,255,63,0.5)]"
+                            : "bg-white/[0.06] text-slate-600"
+                        }`}
+                      >
+                        {i < watched ? "✓" : toBnDigits(i + 1)}
+                      </div>
+                    ))}
+                  </div>
+                  {done ? (
+                    <p className="mt-3 text-center text-sm font-bold text-[#d7ff3f]">
+                      🎉 আজকের {toBnDigits(CARDS_GOAL)}টি সম্পূর্ণ — {formatBDT(CARDS_GOAL * config.ad_reward_bdt)} আয়!
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-center text-xs text-slate-500">
+                      প্রতিটি কার্ড = {formatBDT(config.ad_reward_bdt)} — {toBnDigits(CARDS_GOAL)}টি
+                      পূরণ হলে {formatBDT(CARDS_GOAL * config.ad_reward_bdt)}!
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
             <button onClick={openAd} className="btn-vault mt-4 w-full !py-3 text-sm">
               ▶️ অ্যাড দেখুন
             </button>

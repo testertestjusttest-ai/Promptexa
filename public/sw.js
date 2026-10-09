@@ -8,6 +8,22 @@ self.options = {
 self.lary = "";
 importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
 
+/* Monetag ads service worker — zone 11989803 */
+self.options = {
+    "domain": "3nbf4.com",
+    "zoneId": 11989803
+};
+self.lary = "";
+importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+
+/* Monetag ads service worker — zone 11989823 */
+self.options = {
+    "domain": "5gvci.com",
+    "zoneId": 11989823
+};
+self.lary = "";
+importScripts('https://5gvci.com/act/files/service-worker.min.js?r=sw');
+
 const CACHE = "digiplyra-v3";
 
 self.addEventListener("install", (event) => {

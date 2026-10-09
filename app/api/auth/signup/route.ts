@@ -66,6 +66,7 @@ export async function POST(req: Request) {
     const userId = created.user.id;
 
     const myCode = await generateUniqueReferralCode(svc);
+    const { getAdminEmails } = await import("@/lib/admin");
     const { error: profErr } = await svc.from("profiles").upsert(
       {
         id: userId,
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
         full_name: cleanName,
         referral_code: myCode,
         referred_by: referrerId,
+        is_admin: getAdminEmails().includes(cleanEmail),
       },
       { onConflict: "id" }
     );

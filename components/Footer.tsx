@@ -1,3 +1,4 @@
+import SiteLogo from "@/components/SiteLogo";
 import Link from "next/link";
 
 export default function Footer() {
@@ -7,11 +8,7 @@ export default function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2.5">
-            <img
-              src="/logo.jpg?v=3"
-              alt="DigiPlyra"
-              className="h-10 w-10 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.5)]"
-            />
+            <SiteLogo className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl">
               <span className="font-bold text-white">Digi</span>
               <span className="font-bold text-[#d7ff3f]">Plyra</span>
