@@ -51,18 +51,69 @@ export default function FilesManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** Direct browser → Supabase upload with real progress (bypasses Vercel limits) */
+  function putWithProgress(
+    url: string,
+    file: File,
+    onPct: (pct: number) => void
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", url);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onPct(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () =>
+        xhr.status >= 200 && xhr.status < 300
+          ? resolve()
+          : reject(new Error(`আপলোড ব্যর্থ (HTTP ${xhr.status})`));
+      xhr.onerror = () => reject(new Error("নেটওয়ার্ক সমস্যা — আবার চেষ্টা করুন"));
+      xhr.send(file);
+    });
+  }
+
   async function doUpload(file: File) {
     setUploading(true);
-    setProgress("আপলোড হচ্ছে... (বড় APK-তে কয়েক মিনিট লাগতে পারে)");
+    setProgress("সাইন URL নেওয়া হচ্ছে...");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("product_id", productId);
-      if (planId) fd.append("plan_id", planId);
-      if (version.trim()) fd.append("version_label", version.trim());
-      const res = await fetch("/api/admin/files", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "আপলোড হয়নি");
+      // 1. signed upload URL
+      const signRes = await fetch("/api/admin/files/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: productId,
+          file_name: file.name,
+          file_size: file.size,
+          mime_type: file.type,
+        }),
+      });
+      const sign = await signRes.json();
+      if (!signRes.ok || !sign.ok) throw new Error(sign.error || "সাইন URL হয়নি");
+
+      // 2. direct PUT to Supabase with progress
+      await putWithProgress(sign.signedUrl, file, (pct) =>
+        setProgress(`আপলোড হচ্ছে... ${toBnDigits(pct)}%`)
+      );
+
+      // 3. confirm + register
+      setProgress("যাচাই করা হচ্ছে...");
+      const confRes = await fetch("/api/admin/files/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: productId,
+          plan_id: planId || null,
+          version_label: version.trim(),
+          file_name: file.name,
+          storage_path: sign.path,
+          file_size: file.size,
+          mime_type: file.type,
+        }),
+      });
+      const conf = await confRes.json();
+      if (!confRes.ok || !conf.ok) throw new Error(conf.error || "সেভ হয়নি");
+
       setVersion("");
       setProgress("✓ আপলোড সম্পন্ন!");
       load();
@@ -116,7 +167,7 @@ export default function FilesManager({
             <p className="mt-2 text-sm font-semibold text-white">
               {uploading ? "আপলোড হচ্ছে..." : "APK / ফাইল সিলেক্ট করুন"}
             </p>
-            <p className="text-xs text-slate-500">সর্বোচ্চ ২০০MB</p>
+            <p className="text-xs text-slate-500">সর্বোচ্চ ২GB • সরাসরি আপলোড (দ্রুত)</p>
             <input
               type="file"
               className="hidden"
@@ -128,7 +179,22 @@ export default function FilesManager({
               }}
             />
           </label>
-          {progress && <p className="mt-2 text-center text-sm text-slate-300">{progress}</p>}
+          {progress && (
+            <div className="mt-3">
+              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#d7ff3f] to-[#8b5cf6] transition-all"
+                  style={{
+                    width: `${(() => {
+                      const m = progress.match(/(\d+)%/);
+                      return m ? m[1] : progress.includes("✓") ? 100 : 5;
+                    })()}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-1.5 text-center text-sm text-slate-300">{progress}</p>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 space-y-2">
