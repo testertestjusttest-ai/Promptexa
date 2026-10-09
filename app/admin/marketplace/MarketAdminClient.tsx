@@ -79,6 +79,7 @@ export default function MarketAdminClient() {
               <div className="mt-4 flex gap-2">
                 <button onClick={() => act("approve_listing", l.id)} className="btn-vault !py-2 text-sm">✅ অনুমোদন</button>
                 <button onClick={() => act("reject_listing", l.id)} className="rounded-xl border border-red-400/30 px-4 py-2 text-sm font-bold text-red-300">❌ বাতিল</button>
+                <button onClick={() => { if (confirm("পোস্টটি ডিলিট করবেন?")) act("delete_listing", l.id); }} className="rounded-xl border border-white/10 px-4 py-2 text-sm font-bold text-slate-400">🗑️ ডিলিট</button>
                 <Link href={`/marketplace/${l.id}`} target="_blank" className="rounded-xl bg-white/5 px-4 py-2 text-sm font-bold text-slate-300">👁️ দেখুন + চ্যাট</Link>
               </div>
             </div>
@@ -131,7 +132,10 @@ export default function MarketAdminClient() {
                   <td className="p-3 text-[#d7ff3f]">{formatBDT(Number(l.price_bdt))}</td>
                   <td className="p-3 text-slate-400">{l.status}</td>
                   <td className="p-3 text-slate-500">{timeAgo(l.created_at)}</td>
-                  <td className="p-3"><Link href={`/marketplace/${l.id}`} target="_blank" className="text-[#d7ff3f]">দেখুন</Link></td>
+                  <td className="p-3 flex gap-3">
+                    <Link href={`/marketplace/${l.id}`} target="_blank" className="text-[#d7ff3f]">দেখুন</Link>
+                    <button onClick={() => { if (confirm("পোস্টটি ডিলিট করবেন?")) act("delete_listing", l.id); }} className="text-red-300">🗑️</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

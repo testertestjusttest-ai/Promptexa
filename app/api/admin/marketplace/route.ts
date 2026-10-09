@@ -49,6 +49,8 @@ export async function POST(req: Request) {
       await svc.from("escrow_deals").update({ status: "refunded", admin_note: (note || "ক্রেতাকে রিফান্ড").slice(0, 500), updated_at: new Date().toISOString() }).eq("id", id);
     } else if (action === "deal_note") {
       await svc.from("escrow_deals").update({ admin_note: (note || "").slice(0, 500), updated_at: new Date().toISOString() }).eq("id", id);
+    } else if (action === "delete_listing") {
+      await svc.from("id_listings").delete().eq("id", id);
     } else {
       return NextResponse.json({ error: "ভুল অ্যাকশন" }, { status: 400 });
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatBDT, toBnDigits } from "@/lib/format";
+import { FF_HERO, resolveListingImage } from "@/lib/ffAssets";
 
 type Listing = {
   id: string;
@@ -31,18 +32,37 @@ export default function MarketClient() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="glass ring-conic rounded-3xl p-8 text-center">
-        <p className="text-5xl">🎮</p>
-        <h1 className="font-display mt-3 text-3xl font-bold text-white">
-          Free Fire <span className="text-[#d7ff3f]">ID বাজার</span>
-        </h1>
-        <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-400">
-          ১০০% নিরাপদে ID বেচাকেনা — টাকা আগে <b className="text-white">অ্যাডমিনের কাছে</b> জমা থাকে,
-          আইডি হাতে পেয়ে কনফার্ম করলেই বিক্রেতা টাকা পায়। 🛡️
-        </p>
-        <Link href="/marketplace/sell" className="btn-vault mt-5 inline-flex !px-8 !py-3 text-sm">
-          📢 আমার ID বিক্রি করুন
-        </Link>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${FF_HERO})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/70 to-[#060913]/30" />
+        <div className="relative p-8 text-center sm:p-12">
+          <span className="inline-block rounded-full bg-red-500/20 px-4 py-1.5 text-xs font-bold tracking-widest text-red-300 ring-1 ring-red-400/40">
+            🔥 বাংলাদেশের সবচেয়ে নিরাপদ ID বাজার
+          </span>
+          <h1 className="font-display mt-4 text-4xl font-black text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] sm:text-5xl">
+            Free Fire <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-400 bg-clip-text text-transparent">ID বাজার</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl rounded-2xl bg-black/50 px-5 py-3 text-sm leading-relaxed text-slate-200 backdrop-blur-sm">
+            ১০০% নিরাপদে ID বেচাকেনা — টাকা আগে <b className="text-[#d7ff3f]">অ্যাডমিনের কাছে</b> জমা থাকে,
+            আইডি হাতে পেয়ে কনফার্ম করলেই বিক্রেতা টাকা পায়। <b className="text-white">প্রতারণার কোনো সুযোগ নেই!</b> 🛡️
+          </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/marketplace/sell" className="btn-vault inline-flex !px-8 !py-3 text-sm shadow-[0_0_24px_rgba(215,255,63,0.35)]">
+              📢 আমার ID বিক্রি করুন
+            </Link>
+            <a href="#listings" className="inline-flex rounded-xl border border-white/20 bg-black/40 px-8 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:border-[#d7ff3f]/60">
+              🎮 ID দেখুন
+            </a>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold">
+            {["✅ এসক্রো সুরক্ষা", "💬 ইন-সাইট চ্যাট", "⚡ দ্রুত ডিল", "🛡️ অ্যাডমিন যাচাই"].map((t) => (
+              <span key={t} className="rounded-full bg-white/10 px-3 py-1.5 text-slate-200 backdrop-blur-sm">{t}</span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* how escrow works */}
@@ -61,7 +81,7 @@ export default function MarketClient() {
         ))}
       </div>
 
-      <h2 className="font-display mt-10 text-xl font-bold text-white">
+      <h2 id="listings" className="font-display mt-10 scroll-mt-24 text-xl font-bold text-white">
         🆕 বিক্রির জন্য ID ({toBnDigits(listings.length)})
       </h2>
 
@@ -79,9 +99,14 @@ export default function MarketClient() {
             <Link key={l.id} href={`/marketplace/${l.id}`} className="glass group overflow-hidden rounded-3xl transition hover:border-[#d7ff3f]/40">
               <div className="relative aspect-video overflow-hidden bg-black/30">
                 {l.images[0] ? (
-                  <img src={l.images[0]} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" />
+                  <img src={resolveListingImage(l.images[0])} alt={l.title} className="h-full w-full object-cover transition group-hover:scale-105" />
                 ) : (
-                  <div className="grid h-full place-items-center text-4xl">🎮</div>
+                  <div className="grid h-full place-items-center bg-gradient-to-br from-orange-900/40 via-[#0b1120] to-cyan-900/30">
+                    <div className="text-center">
+                      <div className="text-5xl">🎮</div>
+                      <p className="mt-2 text-[10px] font-bold tracking-widest text-amber-300/80">FF ID</p>
+                    </div>
+                  </div>
                 )}
                 <span className="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
                   {formatBDT(Number(l.price_bdt))}

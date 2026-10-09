@@ -14,7 +14,10 @@ export default function WhatsAppFloat() {
     fetch("/api/public/settings")
       .then((r) => r.json())
       .then((d) => {
-        const n = String(d?.store?.support_whatsapp ?? "").replace(/\D/g, "");
+        let n = String(d?.store?.support_whatsapp ?? "").replace(/\D/g, "");
+        // normalize to full international format for wa.me
+        if (/^0/.test(n)) n = "880" + n.slice(1); // 018... → 88018...
+        else if (/^1[3-9]\d{8}$/.test(n)) n = "880" + n; // 1XXXXXXXXX → 8801...
         if (n) setNumber(n);
       })
       .catch(() => {});

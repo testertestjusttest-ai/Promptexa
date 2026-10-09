@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { formatBDT, toBnDigits, timeAgo } from "@/lib/format";
 import { DEAL_BN, DEAL_STEPS } from "@/lib/escrow";
+import { resolveListingImage } from "@/lib/ffAssets";
 
 type Deal = {
   id: string;
@@ -141,9 +142,14 @@ export default function DetailClient({ id }: { id: string }) {
           <div className="glass overflow-hidden rounded-3xl">
             <div className="relative aspect-video bg-black/40">
               {images[imgIdx] ? (
-                <img src={images[imgIdx]} alt={l.title} className="h-full w-full object-contain" />
+                <img src={resolveListingImage(images[imgIdx])} alt={l.title} className="h-full w-full object-contain" />
               ) : (
-                <div className="grid h-full place-items-center text-6xl">🎮</div>
+                <div className="grid h-full place-items-center bg-gradient-to-br from-orange-900/40 via-[#0b1120] to-cyan-900/30">
+                  <div className="text-center">
+                    <div className="text-6xl">🎮</div>
+                    <p className="mt-2 text-xs font-bold tracking-widest text-amber-300/80">FREE FIRE ID</p>
+                  </div>
+                </div>
               )}
             </div>
             {images.length > 1 && (
@@ -151,7 +157,7 @@ export default function DetailClient({ id }: { id: string }) {
                 {images.map((u, i) => (
                   <button key={i} onClick={() => setImgIdx(i)}
                     className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl ${i === imgIdx ? "ring-2 ring-[#d7ff3f]" : "opacity-60"}`}>
-                    <img src={u} alt="" className="h-full w-full object-cover" />
+                    <img src={resolveListingImage(u)} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
