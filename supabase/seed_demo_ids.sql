@@ -21,7 +21,7 @@ gen as (
     g,
     lvls[1 + (g * 7) % 10] as lv,
     skins[1 + (g * 13) % 7] as sk,
-    ranks[1 + (g * 5) % 5] as rk,
+    ranks[1 + (g * 3) % 5] as rk,
     extras[1 + (g * 11) % 12] as ex,
     imgsets[1 + (g % 6)] as imgs
   from generate_series(1, 250) g, cfg
