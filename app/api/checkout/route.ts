@@ -2,21 +2,23 @@ import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { generateOrderNumber } from "@/lib/format";
 import { isSslEnabled } from "@/lib/sslcommerz";
+import { confirmOrderPayment } from "@/lib/delivery";
 
 type CheckoutItem = { product_id: string; plan_id: string; qty: number };
 
 /**
  * POST /api/checkout
- * Body: { customer: {name, phone, email?}, items: [{product_id, plan_id, qty}], payment_method }
+ * Body: { customer: {name, phone, email?}, items: [{product_id, plan_id, qty}], payment_method, notes? }
  * Prices are ALWAYS read from the database — never trusted from the client.
  */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { customer, items, payment_method } = body as {
+    const { customer, items, payment_method, notes } = body as {
       customer: { name: string; phone: string; email?: string };
       items: CheckoutItem[];
       payment_method: string;
+      notes?: string;
     };
 
     if (!customer?.name?.trim() || !customer?.phone?.trim()) {
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
     if (!Array.isArray(items) || items.length === 0 || items.length > 20) {
       return NextResponse.json({ error: "কার্ট খালি" }, { status: 400 });
     }
-    const validMethods = ["sslcommerz", "bkash", "nagad", "rocket"];
+    const validMethods = ["sslcommerz", "bkash", "nagad", "rocket", "wallet"];
     if (!validMethods.includes(payment_method)) {
       return NextResponse.json({ error: "ভুল পেমেন্ট মাধ্যম" }, { status: 400 });
     }
@@ -36,6 +38,24 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "কার্ড পেমেন্ট এখন বন্ধ আছে" },
         { status: 400 }
+      );
+    }
+
+    // Link to signed-in user if any (guest checkout allowed, but wallet needs login)
+    let userId: string | null = null;
+    try {
+      const client = await createClient();
+      const {
+        data: { user },
+      } = await client.auth.getUser();
+      userId = user?.id ?? null;
+    } catch {
+      /* guest */
+    }
+    if (payment_method === "wallet" && !userId) {
+      return NextResponse.json(
+        { error: "ওয়ালেট দিয়ে কিনতে লগইন করুন" },
+        { status: 401 }
       );
     }
 
@@ -91,16 +111,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ভুল অর্ডার" }, { status: 400 });
     }
 
-    // Link to signed-in user if any (guest checkout allowed)
-    let userId: string | null = null;
-    try {
-      const client = await createClient();
-      const {
-        data: { user },
-      } = await client.auth.getUser();
-      userId = user?.id ?? null;
-    } catch {
-      /* guest */
+    // wallet: atomic debit BEFORE creating the order
+    if (payment_method === "wallet") {
+      const { data: spendRes, error: spendErr } = await supabase.rpc("wallet_spend", {
+        p_user: userId,
+        p_amount: total,
+        p_note: "DigiPlyra অর্ডার",
+        p_ref: null,
+      });
+      if (spendErr || !(spendRes as { ok: boolean })?.ok) {
+        return NextResponse.json(
+          { error: "ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — অ্যাড দেখে আয় করুন!" },
+          { status: 400 }
+        );
+      }
     }
 
     const order_number = generateOrderNumber();
@@ -113,9 +137,15 @@ export async function POST(req: Request) {
         customer_name: customer.name.trim(),
         customer_phone: customer.phone.trim(),
         customer_email: customer.email?.trim() || null,
-        status: payment_method === "sslcommerz" ? "payment_pending" : "pending",
+        status:
+          payment_method === "wallet"
+            ? "paid"
+            : payment_method === "sslcommerz"
+              ? "payment_pending"
+              : "pending",
         payment_method,
         total_bdt: total,
+        notes: (notes || "").trim().slice(0, 2000) || null,
       })
       .select("id, order_number")
       .single();
@@ -135,8 +165,20 @@ export async function POST(req: Request) {
       order_id: order.id,
       method: payment_method,
       amount_bdt: total,
-      status: "pending",
+      status: payment_method === "wallet" ? "success" : "pending",
     });
+
+    // wallet = instant payment → deliver immediately
+    if (payment_method === "wallet") {
+      await confirmOrderPayment(supabase, order.id, { method: "wallet" });
+      return NextResponse.json({
+        ok: true,
+        order_id: order.id,
+        order_number: order.order_number,
+        total_bdt: total,
+        paid: true,
+      });
+    }
 
     return NextResponse.json({
       ok: true,

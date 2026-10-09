@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const auth = await requireAdminApi();
   if (auth.error) return auth.error;
   const { key, value } = (await req.json()) as { key: string; value: unknown };
-  if (!["payment_numbers", "store", "ads", "notifications"].includes(key)) {
+  if (!["payment_numbers", "store", "ads", "notifications", "rewards"].includes(key)) {
     return NextResponse.json({ error: "অনুমোদিত কী নয়" }, { status: 400 });
   }
   const { error } = await auth.svc
