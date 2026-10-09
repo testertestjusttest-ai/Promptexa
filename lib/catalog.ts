@@ -97,7 +97,14 @@ export async function getSlides(): Promise<Slide[]> {
   }
 }
 
-export type AdPlacement = "home_top" | "home_bottom" | "product_page" | "popup" | "sitewide";
+export type AdPlacement =
+  | "home_top"
+  | "home_bottom"
+  | "product_page"
+  | "popup"
+  | "sitewide"
+  | "earn_top"
+  | "earn_bottom";
 
 export interface AdSlotDef {
   id: string;
@@ -119,6 +126,8 @@ const DEFAULT_ADS: AdsConfig = {
     { id: "home_bottom", name: "হোম পেজ — নিচে", placement: "home_bottom", code: "", enabled: true },
     { id: "product_page", name: "প্রোডাক্ট পেজ", placement: "product_page", code: "", enabled: true },
     { id: "popup", name: "পপআপ", placement: "popup", code: "", enabled: false },
+    { id: "earn_top", name: "আয় পেজ — উপরে", placement: "earn_top", code: "", enabled: true },
+    { id: "earn_bottom", name: "আয় পেজ — নিচে", placement: "earn_bottom", code: "", enabled: true },
     {
       id: "monetag_3524319",
       name: "Monetag Zone 3524319",

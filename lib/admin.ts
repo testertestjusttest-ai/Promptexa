@@ -27,27 +27,47 @@ async function autoPromoteOwner(
   return true;
 }
 
-/** Page guard: redirects non-admins away. Returns service client + profile. */
-export async function requireAdminPage() {
+export type AdminAccess =
+  | { ok: true; svc: ReturnType<typeof createServiceClient>; user: { id: string; email?: string } }
+  | { ok: false; reason: "login" }
+  | { ok: false; reason: "denied"; email: string };
+
+/** Check admin access without redirecting — lets the UI explain the problem. */
+export async function getAdminAccess(): Promise<AdminAccess> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login?next=/admin");
+  if (!user) return { ok: false, reason: "login" };
 
   const svc = createServiceClient();
   const { data: profile } = await svc
     .from("profiles")
-    .select("id, email, full_name, is_admin")
+    .select("id, email, is_admin")
     .eq("id", user.id)
     .single();
 
   if (!profile?.is_admin) {
     const promoted = await autoPromoteOwner(svc, user.id, user.email);
-    if (!promoted) redirect("/");
-    return { svc, profile: { ...profile, is_admin: true }, user };
+    if (promoted) return { ok: true, svc, user };
+    return { ok: false, reason: "denied", email: user.email ?? profile?.email ?? "?" };
   }
-  return { svc, profile, user };
+  return { ok: true, svc, user };
+}
+
+/** Page guard: redirects non-admins away. Returns service client + profile. */
+export async function requireAdminPage() {
+  const access = await getAdminAccess();
+  if (!access.ok) {
+    redirect("/auth/login?next=/admin");
+  }
+  const svc = access.svc;
+  const { data: profile } = await svc
+    .from("profiles")
+    .select("id, email, full_name, is_admin")
+    .eq("id", access.user.id)
+    .single();
+  return { svc, profile, user: access.user };
 }
 
 /** API guard: returns service client or a 403 Response. */

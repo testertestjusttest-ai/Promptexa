@@ -24,7 +24,13 @@ DECLARE
      "enabled":false},
     {"id":"monetag_smartlink_11989836","name":"Monetag SmartLink 11989836","placement":"sitewide",
      "code":"<!-- Monetag SmartLink: https://uplcm.com/4/11989836 -->",
-     "enabled":false}
+     "enabled":false},
+    {"id":"earn_top","name":"আয় পেজ — উপরে","placement":"earn_top",
+     "code":"",
+     "enabled":true},
+    {"id":"earn_bottom","name":"আয় পেজ — নিচে","placement":"earn_bottom",
+     "code":"",
+     "enabled":true}
   ]';
   s jsonb;
   cur jsonb;

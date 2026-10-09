@@ -9,6 +9,8 @@ const PLACEMENTS: { id: AdPlacement; label: string }[] = [
   { id: "product_page", label: "প্রোডাক্ট পেজ" },
   { id: "popup", label: "পপআপ" },
   { id: "sitewide", label: "সব পেজে" },
+  { id: "earn_top", label: "আয় পেজ — উপরে" },
+  { id: "earn_bottom", label: "আয় পেজ — নিচে" },
 ];
 
 function newSlot(): AdSlotDef {

@@ -15,6 +15,7 @@ export default function SettingsClient() {
     referral_bonus_bdt: 20,
     min_withdraw_bdt: 500,
     reward_ad_code: "",
+    reward_direct_link: "",
   });
   const [onesignal, setOnesignal] = useState("");
   const [loading, setLoading] = useState(true);
@@ -177,6 +178,21 @@ export default function SettingsClient() {
           />
           <p className="mt-1 text-xs text-slate-500">
             💡 Monetag-এর Rewarded Ad / Adsterra-এর Smartlink কোড এখানে বসান।
+          </p>
+        </div>
+        <div className="mt-4">
+          <label className="mb-1.5 block text-sm text-slate-300">
+            রিওয়ার্ড ডাইরেক্ট লিংক (কার্ডে ক্লিক করলে যেখানে যাবে)
+          </label>
+          <input
+            value={rewards.reward_direct_link ?? ""}
+            onChange={(e) => setRewards({ ...rewards, reward_direct_link: e.target.value })}
+            className="field font-mono text-xs"
+            placeholder="https://... — Adsterra Direct Link / Smartlink"
+            dir="ltr"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            💡 ২০-বক্স ফ্লোতে প্রতিটি বক্সে ক্লিক করলে এই লিংক নতুন ট্যাবে খুলবে।
           </p>
         </div>
         <button onClick={() => save("rewards", rewards)} className="btn-vault mt-4 !py-2.5 text-sm">

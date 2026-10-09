@@ -9,6 +9,7 @@ export type RewardSettings = {
   referral_bonus_bdt: number;
   min_withdraw_bdt: number;
   reward_ad_code: string;
+  reward_direct_link: string;
 };
 
 const REWARD_FALLBACK: RewardSettings = {
@@ -19,6 +20,7 @@ const REWARD_FALLBACK: RewardSettings = {
   referral_bonus_bdt: 20,
   min_withdraw_bdt: 500,
   reward_ad_code: "",
+  reward_direct_link: "https://uplcm.com/4/11989836",
 };
 
 export async function getRewardSettings(): Promise<RewardSettings> {

@@ -33,6 +33,7 @@ export async function GET() {
       ad_daily_limit: r.ad_daily_limit,
       min_withdraw_bdt: r.min_withdraw_bdt,
       reward_ad_code: r.reward_ad_code,
+      reward_direct_link: r.reward_direct_link,
       ads_watched_today: adsWatchedToday,
     },
   });
