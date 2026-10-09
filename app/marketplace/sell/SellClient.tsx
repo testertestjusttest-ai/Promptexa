@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLang } from "@/lib/i18n";
 
 export default function SellClient() {
+  const { t } = useLang();
   const router = useRouter();
-  const [form, setForm] = useState({ title: "", description: "", price_bdt: "", game_uid: "" });
+  const [form, setForm] = useState({ title: "", description: "", price_bdt: "", game_uid: "", seller_phone: "" });
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -38,6 +40,7 @@ export default function SellClient() {
     setMsg("");
     if (!form.title.trim()) return setMsg("⚠️ টাইটেল দিন (যেমন: লেভেল ৬৫, ৩০০+ স্কিন)");
     if (!(Number(form.price_bdt) > 0)) return setMsg("⚠️ সঠিক দাম দিন");
+    if (!/^01[3-9]\d{8}$/.test(form.seller_phone.trim())) return setMsg("⚠️ সঠিক মোবাইল নম্বর দিন");
     if (images.length === 0) return setMsg("⚠️ কমপক্ষে ১টি স্ক্রিনশট আপলোড করুন");
     setSending(true);
     try {
@@ -59,37 +62,43 @@ export default function SellClient() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <div className="glass rounded-3xl p-6 sm:p-8">
-        <h1 className="font-display text-2xl font-bold text-white">📢 ID বিক্রির পোস্ট দিন</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          অ্যাডমিন যাচাই করে পোস্টটি লাইভ করবে। টাকা সরাসরি আপনার কাছে আসবে না —
-          ক্রেতা অ্যাডমিনকে দেবে, আইডি বুঝিয়ে দিলে টাকা পাবেন। 🛡️
-        </p>
+        <h1 className="font-display text-2xl font-bold text-white">{t("s_title")}</h1>
+        <p className="mt-1 text-sm text-slate-400">{t("s_sub")}</p>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">টাইটেল *</label>
+            <label className="mb-1.5 block text-sm text-slate-300">{t("s_form_title")}</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
               className="field" placeholder="যেমন: লেভেল ৬৮ ID, ৪০০+ স্কিন, সব ক্যারেক্টার" maxLength={120} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-sm text-slate-300">দাম (৳) *</label>
+              <label className="mb-1.5 block text-sm text-slate-300">{t("s_price")}</label>
               <input value={form.price_bdt} onChange={(e) => setForm({ ...form, price_bdt: e.target.value })}
                 className="field" placeholder="5000" inputMode="numeric" type="number" min={1} />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm text-slate-300">Free Fire UID</label>
+              <label className="mb-1.5 block text-sm text-slate-300">{t("s_uid")}</label>
               <input value={form.game_uid} onChange={(e) => setForm({ ...form, game_uid: e.target.value })}
                 className="field" placeholder="UID (ঐচ্ছিক)" maxLength={60} />
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">বিস্তারিত *</label>
+            <label className="mb-1.5 block text-sm text-slate-300">{t("s_phone")}</label>
+            <input value={form.seller_phone} onChange={(e) => setForm({ ...form, seller_phone: e.target.value })}
+              className="field" placeholder="01XXXXXXXXX" inputMode="tel" maxLength={20} />
+            <p className="mt-1 text-xs text-slate-500">{t("s_phone_hint")}</p>
+          </div>
+          <p className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-xs text-amber-200">
+            {t("s_fee_note")}
+          </p>
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">{t("s_desc")}</label>
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="field min-h-[120px]" maxLength={3000}
               placeholder="ID-টি কেমন — লেভেল, স্কিন সংখ্যা, ক্যারেক্টার, পেট, ডায়মন্ড, র‍্যাংক... বিস্তারিত লিখুন" />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">স্ক্রিনশট * (সর্বোচ্চ ৬টি)</label>
+            <label className="mb-1.5 block text-sm text-slate-300">{t("s_shots")}</label>
             <div className="grid grid-cols-3 gap-2">
               {images.map((u, i) => (
                 <div key={i} className="relative aspect-square overflow-hidden rounded-xl bg-black/30">
@@ -108,7 +117,7 @@ export default function SellClient() {
           </div>
           {msg && <p className="rounded-xl bg-white/5 px-4 py-3 text-sm text-amber-200">{msg}</p>}
           <button type="submit" disabled={sending || uploading} className="btn-vault w-full !py-3.5 text-base">
-            {sending ? "পাঠানো হচ্ছে..." : "📨 রিভিউয়ের জন্য পাঠান"}
+            {sending ? t("s_sending") : t("s_submit")}
           </button>
         </form>
       </div>

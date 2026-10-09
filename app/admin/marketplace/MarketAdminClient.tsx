@@ -9,7 +9,7 @@ export default function MarketAdminClient() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
-  const [tab, setTab] = useState<"pending" | "deals" | "all">("pending");
+  const [tab, setTab] = useState<"pending" | "deals" | "all" | "chats">("pending");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,13 +41,14 @@ export default function MarketAdminClient() {
   const pending = data?.pending ?? [];
   const deals = data?.deals ?? [];
   const listings = data?.listings ?? [];
+  const chats = data?.chats ?? [];
 
   return (
     <div>
       {msg && <p className="mb-4 rounded-xl bg-[#d7ff3f]/10 px-4 py-3 text-sm text-[#d7ff3f]">{msg}</p>}
 
       <div className="mb-6 flex gap-2">
-        {([["pending", `⏳ পেন্ডিং (${toBnDigits(pending.length)})`], ["deals", `💰 এসক্রো ডিল (${toBnDigits(deals.length)})`], ["all", "📋 সব লিস্টিং"]] as const).map(([t, label]) => (
+        {([["pending", `⏳ পেন্ডিং (${toBnDigits(pending.length)})`], ["deals", `💰 এসক্রো ডিল (${toBnDigits(deals.length)})`], ["chats", `💬 সব চ্যাট (${toBnDigits(chats.length)})`], ["all", "📋 সব লিস্টিং"]] as const).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`rounded-xl px-4 py-2.5 text-sm font-bold ${tab === t ? "bg-[#d7ff3f] text-black" : "bg-white/5 text-slate-300"}`}>
             {label}
@@ -101,6 +102,11 @@ export default function MarketAdminClient() {
               <p className="mt-1 text-xs text-slate-500">
                 TrxID: <b className="text-slate-300">{d.buyer_trxid || "—"}</b> • সেন্ডার: {d.buyer_sender_number || "—"} • {timeAgo(d.created_at)}
               </p>
+              {(d.fee_bdt > 0 || d.status === "completed") && (
+                <p className="mt-1 text-xs text-amber-200/80">
+                  💰 ফি (২%): {formatBDT(Number(d.fee_bdt || 0))} • বিক্রেতা পাবে: {formatBDT(Number(d.seller_payout_bdt || 0))}
+                </p>
+              )}
               {d.admin_note && <p className="mt-1 text-xs text-slate-500">📝 {d.admin_note}</p>}
               <div className="mt-3 flex flex-wrap gap-2">
                 {["paid_to_admin", "id_delivered", "disputed"].includes(d.status) && (
@@ -113,6 +119,24 @@ export default function MarketAdminClient() {
                 <Link href={`/marketplace/${d.listing_id}`} target="_blank" className="rounded-xl bg-white/5 px-4 py-2 text-sm font-bold text-slate-300">💬 চ্যাট দেখুন</Link>
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "chats" && (
+        <div className="glass overflow-hidden rounded-2xl">
+          <p className="border-b border-white/5 px-4 py-3 text-xs text-slate-500">
+            সব লিস্টিংয়ের ক্রেতা-বিক্রেতা কথোপকথন — যেকোনো চ্যাটে ঢুকে রিপ্লাই দিতে পারবেন।
+          </p>
+          {chats.length === 0 && <p className="px-4 py-8 text-center text-slate-500">এখনো কোনো মেসেজ নেই</p>}
+          {chats.map((c: any) => (
+            <Link key={c.id} href={`/marketplace/${c.listing_id}`} target="_blank"
+              className="block border-b border-white/5 px-4 py-3 transition hover:bg-white/5">
+              <p className="text-sm font-bold text-white line-clamp-1">
+                {(c.id_listings as any)?.title || "লিস্টিং"} <span className="font-normal text-slate-500">• {timeAgo(c.created_at)}</span>
+              </p>
+              <p className="mt-0.5 text-sm text-slate-400 line-clamp-1">{c.body}</p>
+            </Link>
           ))}
         </div>
       )}

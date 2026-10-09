@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatBDT, toBnDigits } from "@/lib/format";
+import { WEBDEV_HERO } from "@/lib/webdevArt";
 
 const PACKAGES = [
   {
@@ -58,15 +59,18 @@ export default function WebDevClient() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       {/* hero */}
-      <div className="glass ring-conic rounded-3xl p-8 text-center sm:p-12">
-        <p className="text-5xl">🌐</p>
-        <h1 className="font-display mt-4 text-3xl font-bold text-white sm:text-4xl">
-          আপনার <span className="text-[#d7ff3f]">ওয়েবসাইট</span> বানিয়ে নিন
-        </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-400">
-          DigiPlyra টিমের মাধ্যমে প্রফেশনাল ওয়েবসাইট — ডিজাইন থেকে ডেলিভারি পর্যন্ত সব দায়িত্ব আমাদের।
-          নিচে প্যাকেজ দেখুন অথবা কাস্টম কোটের জন্য ফর্ম পূরণ করুন।
-        </p>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${WEBDEV_HERO})` }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/60 to-[#060913]/25" />
+        <div className="glass relative p-8 text-center sm:p-12">
+          <h1 className="font-display mt-4 text-3xl font-bold text-white sm:text-4xl">
+            আপনার <span className="text-[#d7ff3f]">ওয়েবসাইট</span> বানিয়ে নিন
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-slate-300">
+            DigiPlyra টিমের মাধ্যমে প্রফেশনাল ওয়েবসাইট — ডিজাইন থেকে ডেলিভারি পর্যন্ত সব দায়িত্ব আমাদের।
+            নিচে প্যাকেজ দেখুন অথবা কাস্টম কোটের জন্য ফর্ম পূরণ করুন।
+          </p>
+        </div>
       </div>
 
       {/* packages */}

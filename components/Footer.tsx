@@ -1,7 +1,11 @@
+"use client";
+
 import SiteLogo from "@/components/SiteLogo";
 import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 
 export default function Footer() {
+  const { t } = useLang();
   return (
     <footer className="relative mt-24 border-t border-white/5">
       <div className="divider-glow" />
@@ -15,8 +19,7 @@ export default function Footer() {
             </span>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
-            বাংলাদেশের বিশ্বস্ত ডিজিটাল প্রোডাক্ট স্টোর। অরিজিনাল প্রিমিয়াম
-            সাবস্ক্রিপশন — দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট, ২৪/৭ সাপোর্ট।
+            {t("ft_tagline")}
           </p>
           <div className="mt-5 flex gap-2">
             <span className="chip">বিকাশ</span>
@@ -27,27 +30,27 @@ export default function Footer() {
         </div>
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-300">
-            কুইক লিংক
+            {t("ft_quick")}
           </h4>
           <ul className="space-y-2.5 text-sm text-slate-400">
-            <li><Link href="/shop" className="hover:text-[#d7ff3f]">সব প্রোডাক্ট</Link></li>
-            <li><Link href="/dashboard" className="hover:text-[#d7ff3f]">আমার অর্ডার</Link></li>
-            <li><Link href="/auth/login" className="hover:text-[#d7ff3f]">লগইন / রেজিস্টার</Link></li>
+            <li><Link href="/shop" className="hover:text-[#d7ff3f]">{t("ft_all_products")}</Link></li>
+            <li><Link href="/dashboard" className="hover:text-[#d7ff3f]">{t("ft_my_orders")}</Link></li>
+            <li><Link href="/auth/login" className="hover:text-[#d7ff3f]">{t("ft_login")}</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-300">
-            সহায়তা
+            {t("ft_help")}
           </h4>
           <ul className="space-y-2.5 text-sm text-slate-400">
-            <li>ডেলিভারি: পেমেন্টের ৫–৩০ মিনিটে</li>
-            <li>সাপোর্ট: প্রতিদিন সকাল ৯টা – রাত ১১টা</li>
-            <li>পেমেন্ট: ১০০% নিরাপদ</li>
+            <li>{t("ft_delivery")}</li>
+            <li>{t("ft_support")}</li>
+            <li>{t("ft_payment")}</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} DigiPlyra — সর্বস্বত্ব সংরক্ষিত।
+        © {new Date().getFullYear()} DigiPlyra — {t("ft_rights")}
       </div>
     </footer>
   );

@@ -18,6 +18,7 @@ export default function SettingsClient() {
     reward_direct_link: "",
   });
   const [onesignal, setOnesignal] = useState("");
+  const [market, setMarket] = useState({ fee_percent: 2, boost_price: 30, boost_days: 3 });
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
@@ -33,6 +34,13 @@ export default function SettingsClient() {
           if (d.settings.rewards) setRewards((r) => ({ ...r, ...d.settings.rewards }));
           if (d.settings.notifications?.onesignal_app_id) {
             setOnesignal(d.settings.notifications.onesignal_app_id);
+          }
+          if (d.settings.marketplace_fee_percent != null) {
+            setMarket({
+              fee_percent: Number(d.settings.marketplace_fee_percent) || 2,
+              boost_price: Number(d.settings.marketplace_boost_price) || 30,
+              boost_days: Number(d.settings.marketplace_boost_days) || 3,
+            });
           }
         }
         setLoading(false);
@@ -263,6 +271,43 @@ export default function SettingsClient() {
             <li>Redeploy করলেই কার্ড পেমেন্ট চালু হয়ে যাবে ✅</li>
           </ol>
         </div>
+      </div>
+
+      <div className="glass rounded-2xl p-6">
+        <h2 className="font-display text-lg font-bold text-white">🎮 মার্কেটপ্লেস (ID বাজার)</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">অ্যাডমিন ফি (%)</label>
+            <input type="number" min={0} max={50} value={market.fee_percent}
+              onChange={(e) => setMarket({ ...market, fee_percent: Number(e.target.value) })}
+              className="field" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">বুস্ট প্রাইস (৳)</label>
+            <input type="number" min={1} value={market.boost_price}
+              onChange={(e) => setMarket({ ...market, boost_price: Number(e.target.value) })}
+              className="field" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm text-slate-300">বুস্ট মেয়াদ (দিন)</label>
+            <input type="number" min={1} value={market.boost_days}
+              onChange={(e) => setMarket({ ...market, boost_days: Number(e.target.value) })}
+              className="field" />
+          </div>
+        </div>
+        <button
+          onClick={async () => {
+            await save("marketplace_fee_percent", market.fee_percent);
+            await save("marketplace_boost_price", market.boost_price);
+            await save("marketplace_boost_days", market.boost_days);
+          }}
+          className="btn-vault mt-4 !py-2.5 text-sm"
+        >
+          💾 মার্কেটপ্লেস সেটিংস সেভ
+        </button>
+        <p className="mt-2 text-xs text-slate-500">
+          প্রতিটি সফল ডিলে দামের {market.fee_percent}% অ্যাডমিন ফি হিসেবে কাটা হবে।
+        </p>
       </div>
 
       {msg && (

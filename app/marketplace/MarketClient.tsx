@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatBDT, toBnDigits } from "@/lib/format";
 import { FF_HERO, resolveListingImage } from "@/lib/ffAssets";
+import { useLang } from "@/lib/i18n";
 
 type Listing = {
   id: string;
@@ -14,9 +15,11 @@ type Listing = {
   images: string[];
   views: number;
   created_at: string;
+  featured_until?: string | null;
 };
 
 export default function MarketClient() {
+  const { t } = useLang();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,21 +43,20 @@ export default function MarketClient() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/70 to-[#060913]/30" />
         <div className="relative p-8 text-center sm:p-12">
           <span className="inline-block rounded-full bg-red-500/20 px-4 py-1.5 text-xs font-bold tracking-widest text-red-300 ring-1 ring-red-400/40">
-            🔥 বাংলাদেশের সবচেয়ে নিরাপদ ID বাজার
+            {t("m_badge")}
           </span>
           <h1 className="font-display mt-4 text-4xl font-black text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] sm:text-5xl">
-            Free Fire <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-400 bg-clip-text text-transparent">ID বাজার</span>
+            {t("m_title_a")} <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-400 bg-clip-text text-transparent">{t("m_title_b")}</span>
           </h1>
           <p className="mx-auto mt-3 max-w-2xl rounded-2xl bg-black/50 px-5 py-3 text-sm leading-relaxed text-slate-200 backdrop-blur-sm">
-            ১০০% নিরাপদে ID বেচাকেনা — টাকা আগে <b className="text-[#d7ff3f]">অ্যাডমিনের কাছে</b> জমা থাকে,
-            আইডি হাতে পেয়ে কনফার্ম করলেই বিক্রেতা টাকা পায়। <b className="text-white">প্রতারণার কোনো সুযোগ নেই!</b> 🛡️
+            {t("m_sub")}
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Link href="/marketplace/sell" className="btn-vault inline-flex !px-8 !py-3 text-sm shadow-[0_0_24px_rgba(215,255,63,0.35)]">
-              📢 আমার ID বিক্রি করুন
+              {t("m_sell")}
             </Link>
             <a href="#listings" className="inline-flex rounded-xl border border-white/20 bg-black/40 px-8 py-3 text-sm font-bold text-white backdrop-blur-sm transition hover:border-[#d7ff3f]/60">
-              🎮 ID দেখুন
+              {t("m_browse")}
             </a>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold">
@@ -82,16 +84,16 @@ export default function MarketClient() {
       </div>
 
       <h2 id="listings" className="font-display mt-10 scroll-mt-24 text-xl font-bold text-white">
-        🆕 বিক্রির জন্য ID ({toBnDigits(listings.length)})
+        🆕 {t("m_listings")} ({toBnDigits(listings.length)})
       </h2>
 
       {loading ? (
-        <p className="mt-6 text-center text-slate-500">লোড হচ্ছে...</p>
+        <p className="mt-6 text-center text-slate-500">{t("c_loading")}</p>
       ) : listings.length === 0 ? (
         <div className="glass mt-6 rounded-3xl p-10 text-center">
           <p className="text-4xl">🏝️</p>
-          <p className="mt-3 font-bold text-white">এখনো কোনো ID বিক্রির জন্য নেই</p>
-          <p className="mt-1 text-sm text-slate-400">প্রথম বিক্রেতা হয়ে যান!</p>
+          <p className="mt-3 font-bold text-white">{t("m_empty_t")}</p>
+          <p className="mt-1 text-sm text-slate-400">{t("m_empty_s")}</p>
         </div>
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,11 +113,16 @@ export default function MarketClient() {
                 <span className="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
                   {formatBDT(Number(l.price_bdt))}
                 </span>
+                {l.featured_until && new Date(l.featured_until).getTime() > Date.now() && (
+                  <span className="absolute left-3 top-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-black">
+                    {t("c_featured")}
+                  </span>
+                )}
               </div>
               <div className="p-4">
                 <h3 className="font-bold text-white line-clamp-1">{l.title}</h3>
                 <p className="mt-1 text-xs text-slate-500 line-clamp-2">{l.description}</p>
-                <p className="mt-2 text-[11px] text-slate-500">👁️ {toBnDigits(l.views ?? 0)} বার দেখা হয়েছে</p>
+                <p className="mt-2 text-[11px] text-slate-500">👁️ {toBnDigits(l.views ?? 0)} {t("c_views")}</p>
               </div>
             </Link>
           ))}

@@ -6,9 +6,12 @@ import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import NotificationBell from "@/components/NotificationBell";
+import { useLang, LangToggle } from "@/lib/i18n";
 
 export default function Navbar() {
   const { count, openCart } = useCart();
+  const { t } = useLang();
   const pathname = usePathname();
   const [user, setUser] = useState<{ email?: string } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,12 +26,12 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { href: "/", label: "হোম" },
-    { href: "/shop", label: "শপ" },
-    { href: "/earn", label: "💰 আয় করুন" },
-    { href: "/marketplace", label: "🎮 ID বাজার" },
-    { href: "/web-dev", label: "🌐 ওয়েবসাইট বানান" },
-    { href: "/dashboard", label: "আমার অর্ডার" },
+    { href: "/", label: t("nav_home") },
+    { href: "/shop", label: t("nav_shop") },
+    { href: "/earn", label: t("nav_earn") },
+    { href: "/marketplace", label: t("nav_market") },
+    { href: "/web-dev", label: t("nav_webdev") },
+    { href: "/dashboard", label: t("nav_dashboard") },
   ];
 
   async function logout() {
@@ -67,6 +70,8 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LangToggle />
+          {user && <NotificationBell />}
           <button
             onClick={openCart}
             className="relative grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-lg transition hover:border-[#d7ff3f]/50"
@@ -85,25 +90,25 @@ export default function Navbar() {
                 href="/dashboard"
                 className="hidden rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15 sm:block"
               >
-                ড্যাশবোর্ড
+                {t("nav_dashboard_btn")}
               </Link>
               <button
                 onClick={logout}
                 className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-red-400/50 hover:text-red-300 sm:block"
               >
-                লগআউট
+                {t("nav_logout")}
               </button>
             </>
           ) : (
             <>
               <Link href="/auth/login" className="btn-vault hidden !px-4 !py-2 text-sm sm:inline-flex">
-                লগইন
+                {t("nav_login")}
               </Link>
               <Link
                 href="/auth/signup"
                 className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-[#d7ff3f]/50 sm:block"
               >
-                সাইন আপ
+                {t("nav_signup")}
               </Link>
             </>
           )}
@@ -135,14 +140,14 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className="mt-1 block rounded-lg bg-[#d7ff3f] px-3 py-2.5 text-center text-sm font-bold text-[#060913]"
               >
-                লগইন
+                {t("nav_login")}
               </Link>
               <Link
                 href="/auth/signup"
                 onClick={() => setMenuOpen(false)}
                 className="mt-1 block rounded-lg border border-white/10 px-3 py-2.5 text-center text-sm font-bold text-white"
               >
-                সাইন আপ
+                {t("nav_signup")}
               </Link>
             </>
           ) : (
@@ -150,7 +155,7 @@ export default function Navbar() {
               onClick={logout}
               className="mt-1 block w-full rounded-lg border border-red-400/30 px-3 py-2.5 text-center text-sm font-bold text-red-300"
             >
-              🚪 লগআউট
+              🚪 {t("nav_logout")}
             </button>
           )}
         </nav>

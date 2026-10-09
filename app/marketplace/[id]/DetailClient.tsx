@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatBDT, toBnDigits, timeAgo } from "@/lib/format";
 import { DEAL_BN, DEAL_STEPS } from "@/lib/escrow";
 import { resolveListingImage } from "@/lib/ffAssets";
+import { useLang } from "@/lib/i18n";
 
 type Deal = {
   id: string;
@@ -20,6 +21,7 @@ type Deal = {
 type Msg = { id: string; sender_id: string; body: string; created_at: string };
 
 export default function DetailClient({ id }: { id: string }) {
+  const { t } = useLang();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -30,7 +32,28 @@ export default function DetailClient({ id }: { id: string }) {
   const [senderNo, setSenderNo] = useState("");
   const [acting, setActing] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
+  const [boosting, setBoosting] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  async function boost() {
+    if (boosting || !confirm("৳৩০ ওয়ালেট থেকে কেটে ৩ দিন ফিচার্ড করবেন?")) return;
+    setBoosting(true);
+    try {
+      const res = await fetch("/api/marketplace/boost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listing_id: id }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
+      setMsg("🎉 বুস্ট সফল! ৩ দিন সবার উপরে দেখাবে।");
+      load(true);
+    } catch (e) {
+      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+    } finally {
+      setBoosting(false);
+    }
+  }
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -173,7 +196,15 @@ export default function DetailClient({ id }: { id: string }) {
               {l.game_uid && <> • 🆔 UID: <b className="text-slate-300">{l.game_uid}</b></>}
               {" "}• 👁️ {toBnDigits(l.views ?? 0)}
             </p>
+            {l.seller_phone && (
+              <a href={`tel:${l.seller_phone}`} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-bold text-emerald-300 transition hover:bg-emerald-400/20">
+                📞 {l.seller_phone} — {t("c_call")}
+              </a>
+            )}
             <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-300">{l.description}</p>
+            <p className="mt-4 rounded-xl border border-sky-400/20 bg-sky-400/5 px-4 py-3 text-xs leading-relaxed text-sky-200">
+              {t("d_safety")}
+            </p>
           </div>
         </div>
 
@@ -183,7 +214,7 @@ export default function DetailClient({ id }: { id: string }) {
 
           {/* escrow steps */}
           <div className="glass rounded-3xl p-6">
-            <h3 className="font-bold text-white">🛡️ নিরাপদ এসক্রো সিস্টেম</h3>
+            <h3 className="font-bold text-white">{t("d_escrow_title")}</h3>
             <ol className="mt-3 space-y-2">
               {DEAL_STEPS.map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
@@ -220,6 +251,16 @@ export default function DetailClient({ id }: { id: string }) {
                   <DealBox key={d.id} deal={d} role="seller" acting={acting} onAction={(a, e) => dealAction(d, a, e)} />
                 ))}
               </div>
+            </div>
+          )}
+
+          {isSeller && l.status === "approved" && !(l.featured_until && new Date(l.featured_until).getTime() > Date.now()) && (
+            <div className="glass rounded-3xl border-amber-400/20 p-6">
+              <h3 className="font-bold text-white">{t("d_boost_t")}</h3>
+              <p className="mt-1 text-xs text-slate-400">{t("d_boost_d")}</p>
+              <button onClick={boost} disabled={boosting} className="btn-vault mt-3 w-full !py-2.5 text-sm">
+                {boosting ? t("d_boosting") : t("d_boost_b")}
+              </button>
             </div>
           )}
 
