@@ -44,16 +44,27 @@ export async function POST(req: Request) {
       now.getTime() - new Date(round.round_start).getTime() >= ROUND_SECONDS * 1000;
 
     if (expired) {
+      // Fresh round: create it WITH this card already marked —
+      // no empty rounds, and no false "slow down" on the first card.
       const { data: fresh, error } = await svc
         .from("ad_rounds")
         .upsert(
-          { user_id: user.id, round_start: now.toISOString(), cards_done: [], claimed: false, updated_at: now.toISOString() },
+          { user_id: user.id, round_start: now.toISOString(), cards_done: [box], claimed: false, updated_at: now.toISOString() },
           { onConflict: "user_id" }
         )
         .select("round_start, cards_done, claimed, updated_at")
         .single();
       if (error || !fresh) throw error ?? new Error("round init failed");
-      round = fresh;
+      await svc.from("ad_views").insert({ user_id: user.id });
+      const elapsed = Math.floor((now.getTime() - new Date(fresh.round_start).getTime()) / 1000);
+      return NextResponse.json({
+        ok: true,
+        cards_done: [box],
+        claimed: false,
+        round_start: fresh.round_start,
+        seconds_left: Math.max(0, ROUND_SECONDS - elapsed),
+        round_reward: Number(rewards.round_reward_bdt) || 20,
+      });
     }
     const r = round!;
 
