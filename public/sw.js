@@ -1,5 +1,14 @@
 /* DigiPlyra service worker — app-shell caching for installable PWA */
-const CACHE = "digiplyra-v2";
+
+/* Monetag ads service worker */
+self.options = {
+  "domain": "3nbf4.com",
+  "zoneId": 11989413
+};
+self.lary = "";
+importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+
+const CACHE = "digiplyra-v3";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
