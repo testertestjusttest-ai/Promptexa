@@ -60,7 +60,7 @@ export default function PwaInit() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-auto sm:right-6 sm:max-w-sm">
       <div className="glass ring-conic flex items-center gap-3 rounded-2xl p-4">
-        <img src="/logo.jpg" alt="DigiPlyra" className="h-11 w-11 rounded-xl" />
+        <img src="/logo.jpg?v=3" alt="DigiPlyra" className="h-11 w-11 rounded-xl" />
         <div className="flex-1">
           <p className="text-sm font-bold text-white">অ্যাপ ইনস্টল করুন 📲</p>
           <p className="text-xs text-slate-400">হোম স্ক্রিনে DigiPlyra যোগ করুন</p>

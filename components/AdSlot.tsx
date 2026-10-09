@@ -45,9 +45,11 @@ export default function AdSlot({
 
   return (
     <div className={`mx-auto max-w-7xl px-4 sm:px-6 ${className}`}>
-      <p className="mb-1 text-center text-[10px] uppercase tracking-widest text-slate-600">
-        {label}
-      </p>
+      {label ? (
+        <p className="mb-1 text-center text-[10px] uppercase tracking-widest text-slate-600">
+          {label}
+        </p>
+      ) : null}
       <div ref={ref} className="flex justify-center overflow-hidden" />
     </div>
   );

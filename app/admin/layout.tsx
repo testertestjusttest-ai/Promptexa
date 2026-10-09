@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/products", label: "📦 প্রোডাক্ট" },
   { href: "/admin/slides", label: "🎠 স্লাইডার" },
   { href: "/admin/withdrawals", label: "💸 উত্তোলন" },
+  { href: "/admin/ads", label: "📢 বিজ্ঞাপন" },
   { href: "/admin/settings", label: "⚙️ সেটিংস" },
 ];
 

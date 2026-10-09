@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import PwaInit from "@/components/PwaInit";
+import AdSlot from "@/components/AdSlot";
+import { getAdsConfig, activeSlots } from "@/lib/catalog";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -43,11 +45,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const sitewide = activeSlots(await getAdsConfig(), "sitewide");
   return (
     <html lang="bn">
       <body
@@ -59,6 +62,9 @@ export default function RootLayout({
           <Footer />
           <CartDrawer />
           <PwaInit />
+          {sitewide.map((slot) => (
+            <AdSlot key={slot.id} code={slot.code} label="" />
+          ))}
         </CartProvider>
       </body>
     </html>

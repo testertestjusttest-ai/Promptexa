@@ -97,14 +97,60 @@ export async function getSlides(): Promise<Slide[]> {
   }
 }
 
-export async function getAdsConfig(): Promise<{
+export type AdPlacement = "home_top" | "home_bottom" | "product_page" | "popup" | "sitewide";
+
+export interface AdSlotDef {
+  id: string;
+  name: string;
+  placement: AdPlacement;
+  code: string;
   enabled: boolean;
-  home_top: string;
-  home_bottom: string;
-  product_page: string;
-  popup: string;
-}> {
-  const fallback = { enabled: false, home_top: "", home_bottom: "", product_page: "", popup: "" };
+}
+
+export interface AdsConfig {
+  master_enabled: boolean;
+  slots: AdSlotDef[];
+}
+
+const DEFAULT_ADS: AdsConfig = {
+  master_enabled: true,
+  slots: [
+    { id: "home_top", name: "হোম পেজ — উপরে", placement: "home_top", code: "", enabled: true },
+    { id: "home_bottom", name: "হোম পেজ — নিচে", placement: "home_bottom", code: "", enabled: true },
+    { id: "product_page", name: "প্রোডাক্ট পেজ", placement: "product_page", code: "", enabled: true },
+    { id: "popup", name: "পপআপ", placement: "popup", code: "", enabled: false },
+    {
+      id: "monetag_3524319",
+      name: "Monetag Zone 3524319",
+      placement: "sitewide",
+      code: '<script data-cfasync="false" async type="text/javascript" src="//3nbf4.com/act/files/tag.min.js?z=3524319"></script>',
+      enabled: true,
+    },
+  ],
+};
+
+/** Normalize old flat ads config (v2) into the slot structure. */
+function normalizeAds(raw: unknown): AdsConfig {
+  const v = (raw ?? {}) as Record<string, unknown>;
+  if (Array.isArray(v.slots)) {
+    return {
+      master_enabled: v.master_enabled !== false,
+      slots: (v.slots as AdSlotDef[]).filter((s) => s && typeof s.id === "string"),
+    };
+  }
+  // legacy flat shape → slots
+  const str = (k: string) => (typeof v[k] === "string" ? (v[k] as string) : "");
+  return {
+    master_enabled: v.enabled !== false,
+    slots: DEFAULT_ADS.slots.map((s) =>
+      s.id === "monetag_3524319"
+        ? s
+        : { ...s, code: str(s.placement === "popup" ? "popup" : s.id) }
+    ),
+  };
+}
+
+export async function getAdsConfig(): Promise<AdsConfig> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -112,10 +158,16 @@ export async function getAdsConfig(): Promise<{
       .select("value")
       .eq("key", "ads")
       .single();
-    return { ...fallback, ...((data?.value as object) ?? {}) };
+    return normalizeAds(data?.value);
   } catch {
-    return fallback;
+    return DEFAULT_ADS;
   }
+}
+
+/** Slots currently allowed to render (master on + slot enabled + has code). */
+export function activeSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[] {
+  if (!ads.master_enabled) return [];
+  return ads.slots.filter((s) => s.placement === placement && s.enabled && s.code.trim() !== "");
 }
 
 export async function getPaymentNumbers(): Promise<Record<string, string>> {

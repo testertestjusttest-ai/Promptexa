@@ -4,6 +4,7 @@ import { getAdsConfig, getProductBySlug, getProducts } from "@/lib/catalog";
 import ProductBuy from "./ProductBuy";
 import ProductCard from "@/components/ProductCard";
 import AdSlot from "@/components/AdSlot";
+import { activeSlots } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -94,11 +95,11 @@ export default async function ProductPage({
         </div>
       </div>
 
-      {ads.enabled && ads.product_page && (
-        <div className="mt-14">
-          <AdSlot code={ads.product_page} />
+      {activeSlots(ads, "product_page").map((slot) => (
+        <div key={slot.id} className="mt-14">
+          <AdSlot code={slot.code} />
         </div>
-      )}
+      ))}
 
       {related.length > 0 && (
         <div className="mt-20">

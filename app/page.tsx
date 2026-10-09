@@ -4,6 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import { SectionHeading } from "@/components/Section";
 import HeroSlider from "@/components/HeroSlider";
 import AdSlot, { AdPopup } from "@/components/AdSlot";
+import { activeSlots } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -41,11 +42,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {ads.enabled && ads.home_top && (
-        <div className="py-6">
-          <AdSlot code={ads.home_top} />
+      {activeSlots(ads, "home_top").map((slot) => (
+        <div key={slot.id} className="py-6">
+          <AdSlot code={slot.code} />
         </div>
-      )}
+      ))}
 
       {/* ================= PAYMENT STRIP ================= */}
       <section className="border-y border-white/5 bg-white/[0.02]">
@@ -166,11 +167,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {ads.enabled && ads.home_bottom && (
-        <div className="py-6">
-          <AdSlot code={ads.home_bottom} />
+      {activeSlots(ads, "home_bottom").map((slot) => (
+        <div key={slot.id} className="py-6">
+          <AdSlot code={slot.code} />
         </div>
-      )}
+      ))}
 
       {/* ================= CTA ================= */}
       <section className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
@@ -190,7 +191,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {ads.enabled && ads.popup && <AdPopup code={ads.popup} />}
+      {activeSlots(ads, "popup").map((slot) => (
+        <AdPopup key={slot.id} code={slot.code} />
+      ))}
     </div>
   );
 }
