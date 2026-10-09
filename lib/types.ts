@@ -32,8 +32,92 @@ export type Product = {
   category_id: string | null;
   is_featured: boolean;
   sort: number;
+  image_url: string | null;
+  product_type: "key" | "file" | "service";
+  sold_out_manual: boolean;
+  track_stock: boolean;
   category?: Category | null;
   plans?: Plan[];
+  /** unused-key count (populated by catalog helpers) */
+  stock?: number;
+};
+
+/** True when the product cannot be bought right now. */
+export function isSoldOut(p: {
+  sold_out_manual: boolean;
+  track_stock: boolean;
+  stock?: number;
+}): boolean {
+  if (p.sold_out_manual) return true;
+  if (p.track_stock && p.stock !== undefined && p.stock <= 0) return true;
+  return false;
+}
+
+export type Wallet = {
+  user_id: string;
+  balance_bdt: number;
+  total_earned_bdt: number;
+  total_spent_bdt: number;
+  total_withdrawn_bdt: number;
+};
+
+export type WalletTxn = {
+  id: string;
+  amount_bdt: number;
+  type: string;
+  note: string | null;
+  created_at: string;
+};
+
+export type Withdrawal = {
+  id: string;
+  user_id: string;
+  amount_bdt: number;
+  method: string;
+  account_number: string;
+  status: "pending" | "approved" | "rejected";
+  admin_note: string | null;
+  created_at: string;
+  user_email?: string | null;
+};
+
+export type ProductFile = {
+  id: string;
+  product_id: string;
+  plan_id: string | null;
+  file_name: string;
+  version_label: string;
+  storage_path: string;
+  file_size: number;
+  mime_type: string;
+  sort: number;
+  is_active: boolean;
+};
+
+export type DownloadToken = {
+  id: string;
+  order_id: string;
+  order_item_id: string;
+  product_file_id: string;
+  token: string;
+  max_downloads: number;
+  downloads_used: number;
+  expires_at: string;
+  created_at: string;
+  product_file?: { file_name: string; version_label: string; file_size: number } | null;
+};
+
+export type Slide = {
+  id: string;
+  title_bn: string;
+  subtitle_bn: string;
+  cta_text: string;
+  cta_link: string;
+  image_url: string | null;
+  bg_from: string;
+  bg_to: string;
+  sort: number;
+  is_active: boolean;
 };
 
 export type CartItem = {
@@ -51,7 +135,7 @@ export type OrderStatus =
   | "refunded"
   | "keys_pending";
 
-export type PaymentMethod = "sslcommerz" | "bkash" | "nagad" | "rocket";
+export type PaymentMethod = "sslcommerz" | "bkash" | "nagad" | "rocket" | "wallet";
 
 export type Order = {
   id: string;

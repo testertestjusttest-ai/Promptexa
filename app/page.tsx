@@ -1,73 +1,51 @@
 import Link from "next/link";
-import { getCategories, getProducts, getStoreInfo } from "@/lib/catalog";
+import { getAdsConfig, getCategories, getProducts, getSlides, getStoreInfo } from "@/lib/catalog";
 import ProductCard from "@/components/ProductCard";
 import { SectionHeading } from "@/components/Section";
+import HeroSlider from "@/components/HeroSlider";
+import AdSlot, { AdPopup } from "@/components/AdSlot";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featured, categories, store] = await Promise.all([
+  const [featured, categories, store, slides, ads] = await Promise.all([
     getProducts(true),
     getCategories(),
     getStoreInfo(),
+    getSlides(),
+    getAdsConfig(),
   ]);
   const showcase = featured.length > 0 ? featured : [];
 
   return (
     <div>
-      {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden">
-        <div className="dot-grid absolute inset-0" />
-        <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="chip chip-lime">✦ বাংলাদেশের ডিজিটাল ভল্ট</span>
-            <h1 className="mt-6 font-display text-4xl font-bold leading-tight text-white sm:text-6xl">
-              অরিজিনাল <span className="text-[#d7ff3f] text-glow-lime">প্রিমিয়াম</span>
-              <br />
-              সাবস্ক্রিপশন, সবচেয়ে কম দামে
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-slate-400">
-              {store.tagline}। CapCut Pro, Canva Pro, YouTube Premium সহ সব
-              জনপ্রিয় অ্যাপের প্রিমিয়াম — পেমেন্টের কয়েক মিনিটেই ডেলিভারি।
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/shop" className="btn-vault text-base">
-                🛍️ এখনই কিনুন
-              </Link>
-              <Link href="#how" className="btn-ghost text-base">
-                কীভাবে কাজ করে?
-              </Link>
-            </div>
+      {/* ================= HERO SLIDER ================= */}
+      <HeroSlider slides={slides} />
 
-            <div className="mx-auto mt-12 grid max-w-2xl grid-cols-3 gap-3">
-              {[
-                ["⚡", "৫–৩০ মিনিট", "দ্রুত ডেলিভারি"],
-                ["🛡️", "১০০%", "অরিজিনাল গ্যারান্টি"],
-                ["💬", "২৪/৭", "সাপোর্ট"],
-              ].map(([icon, big, small]) => (
-                <div key={small} className="glass rounded-2xl px-3 py-4">
-                  <div className="text-2xl">{icon}</div>
-                  <div className="mt-1 font-display text-lg font-bold text-[#d7ff3f]">
-                    {big}
-                  </div>
-                  <div className="text-xs text-slate-400">{small}</div>
-                </div>
-              ))}
+      {/* trust stats strip */}
+      <section className="border-b border-white/5">
+        <div className="mx-auto grid max-w-4xl grid-cols-3 gap-3 px-4 py-8 sm:px-6">
+          {[
+            ["⚡", "৫–৩০ মিনিট", "দ্রুত ডেলিভারি"],
+            ["🛡️", "১০০%", "অরিজিনাল গ্যারান্টি"],
+            ["💬", "২৪/৭", "সাপোর্ট"],
+          ].map(([icon, big, small]) => (
+            <div key={small} className="glass rounded-2xl px-3 py-4 text-center">
+              <div className="text-2xl">{icon}</div>
+              <div className="mt-1 font-display text-lg font-bold text-[#d7ff3f]">
+                {big}
+              </div>
+              <div className="text-xs text-slate-400">{small}</div>
             </div>
-          </div>
-
-          {/* floating badges */}
-          <div className="pointer-events-none absolute left-[6%] top-24 hidden animate-float lg:block">
-            <span className="glass rounded-2xl px-4 py-3 text-sm font-bold text-white">✂ CapCut Pro</span>
-          </div>
-          <div className="pointer-events-none absolute right-[7%] top-40 hidden animate-float lg:block" style={{ animationDelay: "1.5s" }}>
-            <span className="glass rounded-2xl px-4 py-3 text-sm font-bold text-white">🅲 Canva Pro</span>
-          </div>
-          <div className="pointer-events-none absolute bottom-24 left-[10%] hidden animate-float lg:block" style={{ animationDelay: "3s" }}>
-            <span className="glass rounded-2xl px-4 py-3 text-sm font-bold text-white">▶ YouTube Premium</span>
-          </div>
+          ))}
         </div>
       </section>
+
+      {ads.enabled && ads.home_top && (
+        <div className="py-6">
+          <AdSlot code={ads.home_top} />
+        </div>
+      )}
 
       {/* ================= PAYMENT STRIP ================= */}
       <section className="border-y border-white/5 bg-white/[0.02]">
@@ -87,7 +65,7 @@ export default async function HomePage() {
           sub="হাজারো কাস্টমারের বিশ্বস্ত পছন্দ — আজই আপনারটা নিন"
         />
         {showcase.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {showcase.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -188,6 +166,12 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {ads.enabled && ads.home_bottom && (
+        <div className="py-6">
+          <AdSlot code={ads.home_bottom} />
+        </div>
+      )}
+
       {/* ================= CTA ================= */}
       <section className="mx-auto max-w-7xl px-4 pb-4 sm:px-6">
         <div className="glass ring-conic relative overflow-hidden rounded-3xl px-6 py-14 text-center sm:px-12">
@@ -205,6 +189,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {ads.enabled && ads.popup && <AdPopup code={ads.popup} />}
     </div>
   );
 }

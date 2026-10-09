@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import type { Product } from "@/lib/types";
+import { isSoldOut } from "@/lib/types";
 import { formatBDT, toBnDigits } from "@/lib/format";
 
 export default function ProductBuy({ product }: { product: Product }) {
@@ -17,6 +18,20 @@ export default function ProductBuy({ product }: { product: Product }) {
 
   const plan = plans.find((p) => p.id === planId);
   if (!plan) return null;
+
+  if (isSoldOut(product)) {
+    return (
+      <div className="glass rounded-3xl p-8 text-center">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-500/15 text-3xl">
+          📦
+        </div>
+        <h3 className="mt-4 font-display text-xl font-bold text-white">স্টক শেষ</h3>
+        <p className="mt-2 text-sm text-slate-400">
+          এই প্রোডাক্টের স্টক এখন শেষ। কিছুক্ষণ পর আবার চেক করুন অথবা সাপোর্টে জানান।
+        </p>
+      </div>
+    );
+  }
 
   const discount = plan.old_price_bdt
     ? Math.round((1 - plan.price_bdt / plan.old_price_bdt) * 100)
@@ -124,19 +139,36 @@ export default function ProductBuy({ product }: { product: Product }) {
         </span>
       </div>
 
+      {product.product_type === "service" && (
+        <p className="rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
+          🛠️ <b>সার্ভিস অর্ডার:</b> পেমেন্টের পর আমাদের টিম আপনার সাথে যোগাযোগ করে
+          রিকোয়ারমেন্ট অনুযায়ী কাজ শুরু করবে।
+        </p>
+      )}
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button onClick={handleAdd} className="btn-ghost">
           🛒 কার্টে যোগ করুন
         </button>
         <button onClick={handleBuyNow} className="btn-vault">
-          ⚡ এখনই কিনুন
+          {product.product_type === "service" ? "🛠️ অর্ডার করুন" : "⚡ এখনই কিনুন"}
         </button>
       </div>
 
       <div className="mt-5 space-y-2 text-xs text-slate-500">
-        <p>✓ পেমেন্টের ৫–৩০ মিনিটে ডেলিভারি</p>
-        <p>✓ বিকাশ / নগদ / রকেট / কার্ড সাপোর্টেড</p>
-        <p>✓ কোনো সমস্যায় রিপ্লেসমেন্ট গ্যারান্টি</p>
+        {product.product_type === "service" ? (
+          <>
+            <p>✓ অর্ডারের পর টিম যোগাযোগ করবে</p>
+            <p>✓ বিকাশ / নগদ / রকেট / কার্ড / ওয়ালেট সাপোর্টেড</p>
+            <p>✓ কাস্টম রিকোয়ারমেন্ট অনুযায়ী ডেলিভারি</p>
+          </>
+        ) : (
+          <>
+            <p>✓ পেমেন্টের ৫–৩০ মিনিটে ডেলিভারি</p>
+            <p>✓ বিকাশ / নগদ / রকেট / কার্ড সাপোর্টেড</p>
+            <p>✓ কোনো সমস্যায় রিপ্লেসমেন্ট গ্যারান্টি</p>
+          </>
+        )}
       </div>
     </div>
   );

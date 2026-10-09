@@ -43,6 +43,12 @@ export default async function AdminOrderDetail({
             <div className="flex justify-between"><dt className="text-slate-500">ইমেইল</dt><dd className="text-white">{order.customer_email ?? "—"}</dd></div>
             <div className="flex justify-between"><dt className="text-slate-500">সময়</dt><dd className="text-white">{timeAgo(order.created_at)}</dd></div>
           </dl>
+          {order.notes && (
+            <div className="mt-4 rounded-xl bg-[#8b5cf6]/10 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-violet-300">📝 কাস্টমার রিকোয়ারমেন্ট</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-slate-200">{order.notes}</p>
+            </div>
+          )}
           <h3 className="mt-6 font-bold text-white">🧾 আইটেম</h3>
           <ul className="mt-3 space-y-2 text-sm">
             {(items ?? []).map((it) => (

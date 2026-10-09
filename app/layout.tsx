@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/lib/cart";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import PwaInit from "@/components/PwaInit";
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -24,6 +25,22 @@ export const metadata: Metadata = {
   title: "DigiPlyra — অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন",
   description:
     "CapCut Pro, Canva Pro, YouTube Premium সহ সব জনপ্রিয় অ্যাপের অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন — সবচেয়ে কম দামে, দ্রুত ডেলিভারি।",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "DigiPlyra",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#060913",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -41,6 +58,7 @@ export default function RootLayout({
           <main className="relative">{children}</main>
           <Footer />
           <CartDrawer />
+          <PwaInit />
         </CartProvider>
       </body>
     </html>

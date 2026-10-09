@@ -27,6 +27,7 @@ export const ORDER_STATUS_BN: Record<string, string> = {
   paid: "পেমেন্ট সম্পন্ন",
   delivered: "ডেলিভারি সম্পন্ন",
   keys_pending: "কী প্রস্তুত হচ্ছে",
+  service_pending: "সার্ভিস অর্ডার",
   cancelled: "বাতিল",
   refunded: "রিফান্ডেড",
 };
@@ -36,6 +37,7 @@ export const PAYMENT_METHOD_BN: Record<string, string> = {
   bkash: "বিকাশ",
   nagad: "নগদ",
   rocket: "রকেট",
+  wallet: "ওয়ালেট ব্যালেন্স",
 };
 
 export function timeAgo(iso: string): string {

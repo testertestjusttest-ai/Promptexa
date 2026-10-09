@@ -10,7 +10,17 @@ export async function GET() {
     .select("*, category:categories(id, name_bn), plans(*)")
     .order("sort");
   if (error) return NextResponse.json({ error: "লোড হয়নি" }, { status: 500 });
-  return NextResponse.json({ ok: true, products: data });
+  // attach unused-key stock counts
+  const { data: stockRows } = await auth.svc.rpc("get_product_stock");
+  const stockMap: Record<string, number> = {};
+  for (const r of (stockRows ?? []) as { product_id: string; stock: number }[]) {
+    stockMap[r.product_id] = r.stock;
+  }
+  const products = (data ?? []).map((p: Record<string, unknown>) => ({
+    ...p,
+    stock: stockMap[p.id as string] ?? 0,
+  }));
+  return NextResponse.json({ ok: true, products });
 }
 
 /** POST — create product */
@@ -33,6 +43,9 @@ export async function POST(req: Request) {
       is_active: body.is_active ?? true,
       is_featured: body.is_featured ?? false,
       sort: body.sort ?? 0,
+      product_type: ["key", "file", "service"].includes(body.product_type)
+        ? body.product_type
+        : "key",
     })
     .select("id")
     .single();

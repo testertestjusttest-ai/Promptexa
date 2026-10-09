@@ -1,5 +1,21 @@
 import { createClient } from "./supabase/server";
-import type { Category, Product } from "./types";
+import type { Category, Product, Slide } from "./types";
+
+/** product_id → unused key count (public-safe RPC, no key text exposed) */
+async function getStockMap(): Promise<Record<string, number>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.rpc("get_product_stock");
+    if (error || !data) return {};
+    const map: Record<string, number> = {};
+    for (const row of data as { product_id: string; stock: number }[]) {
+      map[row.product_id] = row.stock;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
 
 /** Safe catalogue reads — return [] when DB/env is unavailable (build-safe). */
 export async function getCategories(): Promise<Category[]> {
@@ -32,9 +48,11 @@ export async function getProducts(featuredOnly = false): Promise<Product[]> {
     const { data, error } = await q;
     if (error) throw error;
     const products = (data ?? []) as Product[];
-    // sort plans inside each product
+    const stock = await getStockMap();
+    // sort plans inside each product + attach stock
     for (const p of products) {
       p.plans = (p.plans ?? []).sort((a, b) => a.sort - b.sort);
+      if (stock[p.id] !== undefined) p.stock = stock[p.id];
     }
     return products;
   } catch {
@@ -56,9 +74,47 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     product.plans = (product.plans ?? [])
       .filter((p) => p.is_active !== false)
       .sort((a, b) => a.sort - b.sort);
+    const stock = await getStockMap();
+    if (stock[product.id] !== undefined) product.stock = stock[product.id];
     return product;
   } catch {
     return null;
+  }
+}
+
+export async function getSlides(): Promise<Slide[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("slides")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort");
+    if (error) throw error;
+    return (data ?? []) as Slide[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getAdsConfig(): Promise<{
+  enabled: boolean;
+  home_top: string;
+  home_bottom: string;
+  product_page: string;
+  popup: string;
+}> {
+  const fallback = { enabled: false, home_top: "", home_bottom: "", product_page: "", popup: "" };
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "ads")
+      .single();
+    return { ...fallback, ...((data?.value as object) ?? {}) };
+  } catch {
+    return fallback;
   }
 }
 

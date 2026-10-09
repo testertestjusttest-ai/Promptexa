@@ -9,6 +9,8 @@ const NAV = [
   { href: "/admin/payments", label: "💳 পেমেন্ট যাচাই" },
   { href: "/admin/keys", label: "🔑 কী ইনভেন্টরি" },
   { href: "/admin/products", label: "📦 প্রোডাক্ট" },
+  { href: "/admin/slides", label: "🎠 স্লাইডার" },
+  { href: "/admin/withdrawals", label: "💸 উত্তোলন" },
   { href: "/admin/settings", label: "⚙️ সেটিংস" },
 ];
 

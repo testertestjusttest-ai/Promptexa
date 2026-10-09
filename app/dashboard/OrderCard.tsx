@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { formatBDT, ORDER_STATUS_BN, PAYMENT_METHOD_BN, timeAgo } from "@/lib/format";
 import { StatusBadge } from "@/components/Section";
+import FileInstall from "@/components/FileInstall";
+import type { DownloadToken } from "@/lib/types";
 
 export type DashboardOrder = {
   id: string;
@@ -13,6 +15,7 @@ export type DashboardOrder = {
   created_at: string;
   items: { product_name: string; plan_label_bn: string; price_bdt: number; qty: number }[];
   keys: { key_text: string; key_note: string | null; delivered_at: string }[];
+  files: DownloadToken[];
 };
 
 export default function OrderCard({ order }: { order: DashboardOrder }) {
@@ -73,9 +76,19 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
         </div>
       )}
 
+      {(order.status === "delivered" || order.status === "paid" || order.status === "keys_pending") && order.files.length > 0 && (
+        <FileInstall files={order.files} />
+      )}
+
       {order.status === "keys_pending" && (
         <p className="mt-4 rounded-xl bg-violet-500/10 px-4 py-3 text-sm text-violet-300">
           ⏳ পেমেন্ট সম্পন্ন! আপনার কী প্রস্তুত করা হচ্ছে — কিছুক্ষণের মধ্যে এখানে দেখতে পাবেন।
+        </p>
+      )}
+
+      {order.status === "service_pending" && (
+        <p className="mt-4 rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
+          🛠️ সার্ভিস অর্ডার গৃহীত! আমাদের টিম শীঘ্রই আপনার সাথে যোগাযোগ করবে।
         </p>
       )}
       {(order.status === "pending" || order.status === "payment_pending") && (
