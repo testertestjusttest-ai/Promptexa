@@ -5,7 +5,7 @@ import { formatBDT, toBnDigits } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export default async function AdminOverview() {
-  const { svc } = await requireAdminPage();
+  const { svc, role } = await requireAdminPage();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -14,10 +14,18 @@ export default async function AdminOverview() {
     { data: orders },
     { data: pendingPayments },
     { data: keyStock },
+    { count: pendingListings },
+    { count: activeDeals },
+    { count: newServiceReqs },
+    { count: pendingWithdrawals },
   ] = await Promise.all([
     svc.from("orders").select("total_bdt, status, created_at").neq("status", "cancelled"),
     svc.from("payments").select("id", { count: "exact" }).eq("status", "pending").in("method", ["bkash", "nagad", "rocket"]),
     svc.from("product_keys").select("product_id, is_used").eq("is_used", false),
+    svc.from("id_listings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    svc.from("escrow_deals").select("id", { count: "exact", head: true }).not("status", "in", "(completed,refunded,cancelled)"),
+    svc.from("service_requests").select("id", { count: "exact", head: true }).eq("status", "new"),
+    svc.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const revenue = (orders ?? [])
@@ -37,11 +45,15 @@ export default async function AdminOverview() {
   const lowStock = (products ?? []).filter((p) => (stockByProduct[p.id] ?? 0) < 5);
 
   const cards = [
-    { icon: "💰", label: "মোট রেভিনিউ", value: formatBDT(revenue), href: "/admin/orders" },
-    { icon: "🧾", label: "আজকের অর্ডার", value: toBnDigits(todayOrders), href: "/admin/orders" },
-    { icon: "⏳", label: "পেমেন্ট যাচাই বাকি", value: toBnDigits(pendingCount), href: "/admin/payments" },
-    { icon: "🔑", label: "অব্যবহৃত কী", value: toBnDigits(keyStock?.length ?? 0), href: "/admin/keys" },
-  ];
+    { icon: "💰", label: "মোট রেভিনিউ", value: formatBDT(revenue), href: "/admin/orders", roles: ["admin"] },
+    { icon: "🧾", label: "আজকের অর্ডার", value: toBnDigits(todayOrders), href: "/admin/orders", roles: ["admin", "support"] },
+    { icon: "⏳", label: "পেমেন্ট যাচাই বাকি", value: toBnDigits(pendingCount), href: "/admin/payments", roles: ["admin"] },
+    { icon: "🔑", label: "অব্যবহৃত কী", value: toBnDigits(keyStock?.length ?? 0), href: "/admin/keys", roles: ["admin"] },
+    { icon: "🎮", label: "ID পোস্ট পেন্ডিং", value: toBnDigits(pendingListings ?? 0), href: "/admin/marketplace", roles: ["admin", "support"] },
+    { icon: "💸", label: "চলমান এসক্রো ডিল", value: toBnDigits(activeDeals ?? 0), href: "/admin/marketplace", roles: ["admin", "support"] },
+    { icon: "🌐", label: "নতুন সার্ভিস রিকোয়েস্ট", value: toBnDigits(newServiceReqs ?? 0), href: "/admin/services", roles: ["admin", "support"] },
+    { icon: "💳", label: "উত্তোলন পেন্ডিং", value: toBnDigits(pendingWithdrawals ?? 0), href: "/admin/withdrawals", roles: ["admin"] },
+  ].filter((c) => (c.roles as string[]).includes(role));
 
   return (
     <div>
@@ -74,9 +86,23 @@ export default async function AdminOverview() {
       <div className="glass mt-6 rounded-2xl p-6">
         <h2 className="font-display text-lg font-bold text-white">🚀 দ্রুত কাজ</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <Link href="/admin/payments" className="btn-ghost !justify-start">💳 পেমেন্ট যাচাই করুন</Link>
-          <Link href="/admin/keys" className="btn-ghost !justify-start">🔑 নতুন কী যোগ করুন</Link>
-          <Link href="/admin/products" className="btn-ghost !justify-start">📦 প্রোডাক্ট ম্যানেজ করুন</Link>
+          {role === "admin" && (
+            <>
+              <Link href="/admin/payments" className="btn-ghost !justify-start">💳 পেমেন্ট যাচাই করুন</Link>
+              <Link href="/admin/keys" className="btn-ghost !justify-start">🔑 নতুন কী যোগ করুন</Link>
+              <Link href="/admin/products" className="btn-ghost !justify-start">📦 প্রোডাক্ট ম্যানেজ করুন</Link>
+              <Link href="/admin/marketplace" className="btn-ghost !justify-start">🎮 ID পোস্ট যাচাই করুন</Link>
+              <Link href="/admin/services" className="btn-ghost !justify-start">🌐 সার্ভিস রিকোয়েস্ট দেখুন</Link>
+              <Link href="/admin/staff" className="btn-ghost !justify-start">👥 সাপোর্ট স্টাফ ম্যানেজ করুন</Link>
+            </>
+          )}
+          {role === "support" && (
+            <>
+              <Link href="/admin/orders" className="btn-ghost !justify-start">🧾 অর্ডার দেখুন</Link>
+              <Link href="/admin/marketplace" className="btn-ghost !justify-start">💬 ID বাজার চ্যাটে সাহায্য করুন</Link>
+              <Link href="/admin/services" className="btn-ghost !justify-start">🌐 সার্ভিস রিকোয়েস্ট দেখুন</Link>
+            </>
+          )}
         </div>
       </div>
     </div>

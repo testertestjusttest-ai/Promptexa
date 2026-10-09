@@ -3,16 +3,19 @@ import { getAdminAccess } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-const NAV = [
-  { href: "/admin", label: "📊 ওভারভিউ", exact: true },
-  { href: "/admin/orders", label: "🧾 অর্ডার" },
-  { href: "/admin/payments", label: "💳 পেমেন্ট যাচাই" },
-  { href: "/admin/keys", label: "🔑 কী ইনভেন্টরি" },
-  { href: "/admin/products", label: "📦 প্রোডাক্ট" },
-  { href: "/admin/slides", label: "🎠 স্লাইডার" },
-  { href: "/admin/withdrawals", label: "💸 উত্তোলন" },
-  { href: "/admin/ads", label: "📢 বিজ্ঞাপন" },
-  { href: "/admin/settings", label: "⚙️ সেটিংস" },
+const NAV: { href: string; label: string; exact?: boolean; roles: ("admin" | "support")[] }[] = [
+  { href: "/admin", label: "📊 ওভারভিউ", exact: true, roles: ["admin"] },
+  { href: "/admin/orders", label: "🧾 অর্ডার", roles: ["admin", "support"] },
+  { href: "/admin/payments", label: "💳 পেমেন্ট যাচাই", roles: ["admin"] },
+  { href: "/admin/keys", label: "🔑 কী ইনভেন্টরি", roles: ["admin"] },
+  { href: "/admin/products", label: "📦 প্রোডাক্ট", roles: ["admin"] },
+  { href: "/admin/slides", label: "🎠 স্লাইডার", roles: ["admin"] },
+  { href: "/admin/withdrawals", label: "💸 উত্তোলন", roles: ["admin"] },
+  { href: "/admin/marketplace", label: "🎮 ID বাজার", roles: ["admin", "support"] },
+  { href: "/admin/services", label: "🌐 সার্ভিস", roles: ["admin", "support"] },
+  { href: "/admin/ads", label: "📢 বিজ্ঞাপন", roles: ["admin"] },
+  { href: "/admin/staff", label: "👥 স্টাফ", roles: ["admin"] },
+  { href: "/admin/settings", label: "⚙️ সেটিংস", roles: ["admin"] },
 ];
 
 export default async function AdminLayout({
@@ -73,18 +76,26 @@ export default async function AdminLayout({
     );
   }
 
+  const role = access.role;
+  const nav = NAV.filter((n) => n.roles.includes(role));
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-bold text-white">
-          🛠️ অ্যাডমিন প্যানেল
+          {role === "support" ? "🛡️ সাপোর্ট প্যানেল" : "🛠️ অ্যাডমিন প্যানেল"}
         </h1>
         <Link href="/" className="btn-ghost !py-2 text-sm">
           ← সাইট দেখুন
         </Link>
       </div>
+      {role === "support" && (
+        <p className="mb-4 rounded-xl bg-cyan-400/10 px-4 py-3 text-sm text-cyan-200">
+          👀 আপনি <b>সাপোর্ট অ্যাডমিন</b> — অর্ডার দেখতে ও চ্যাটে সাহায্য করতে পারবেন, কিন্তু কিছু পরিবর্তন করতে পারবেন না।
+        </p>
+      )}
       <div className="no-scrollbar mb-8 flex gap-2 overflow-x-auto">
-        {NAV.map((n) => (
+        {nav.map((n) => (
           <Link
             key={n.href}
             href={n.href}

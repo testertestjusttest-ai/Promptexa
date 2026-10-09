@@ -5,6 +5,7 @@ import { SectionHeading } from "@/components/Section";
 import HeroSlider from "@/components/HeroSlider";
 import AdSlot, { AdPopup } from "@/components/AdSlot";
 import { activeSlots } from "@/lib/catalog";
+import ReviewsSection from "@/components/ReviewsSection";
 
 export const dynamic = "force-dynamic";
 
@@ -132,18 +133,7 @@ export default async function HomePage() {
       <section className="border-y border-white/5 bg-white/[0.02]">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <SectionHeading kicker="রিভিউ" title="কাস্টমাররা যা বলছেন" />
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              ["রাহাত H.", "CapCut Pro নিয়েছিলাম — ১০ মিনিটে ডেলিভারি পেয়েছি। একদম অরিজিনাল! ⭐⭐⭐⭐⭐"],
-              ["নুসরাত J.", "দাম অন্য জায়গার চেয়ে অনেক কম। সাপোর্টও খুব ভালো, রাতে মেসেজ দিলেও রিপ্লাই পেয়েছি। ⭐⭐⭐⭐⭐"],
-              ["তানভীর K.", "YouTube Premium ফ্যামিলি প্যাক নিয়েছি। পেমেন্ট থেকে অ্যাক্টিভেশন — সব স্মুথ। ⭐⭐⭐⭐⭐"],
-            ].map(([name, text]) => (
-              <div key={name} className="glass rounded-2xl p-6">
-                <p className="text-sm leading-relaxed text-slate-300">“{text}”</p>
-                <p className="mt-4 font-bold text-[#d7ff3f]">— {name}</p>
-              </div>
-            ))}
-          </div>
+          <ReviewsSection />
         </div>
       </section>
 

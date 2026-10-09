@@ -27,8 +27,10 @@ async function autoPromoteOwner(
   return true;
 }
 
+export type AdminRole = "admin" | "support";
+
 export type AdminAccess =
-  | { ok: true; svc: ReturnType<typeof createServiceClient>; user: { id: string; email?: string } }
+  | { ok: true; svc: ReturnType<typeof createServiceClient>; user: { id: string; email?: string }; role: AdminRole }
   | { ok: false; reason: "login" }
   | { ok: false; reason: "denied"; email: string };
 
@@ -43,19 +45,19 @@ export async function getAdminAccess(): Promise<AdminAccess> {
   const svc = createServiceClient();
   const { data: profile } = await svc
     .from("profiles")
-    .select("id, email, is_admin")
+    .select("id, email, is_admin, is_support")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.is_admin) {
-    const promoted = await autoPromoteOwner(svc, user.id, user.email);
-    if (promoted) return { ok: true, svc, user };
-    return { ok: false, reason: "denied", email: user.email ?? profile?.email ?? "?" };
-  }
-  return { ok: true, svc, user };
+  if (profile?.is_admin) return { ok: true, svc, user, role: "admin" };
+  if (profile?.is_support) return { ok: true, svc, user, role: "support" };
+
+  const promoted = await autoPromoteOwner(svc, user.id, user.email);
+  if (promoted) return { ok: true, svc, user, role: "admin" };
+  return { ok: false, reason: "denied", email: user.email ?? profile?.email ?? "?" };
 }
 
-/** Page guard: redirects non-admins away. Returns service client + profile. */
+/** Page guard: redirects non-admins away. Returns service client + profile + role. */
 export async function requireAdminPage() {
   const access = await getAdminAccess();
   if (!access.ok) {
@@ -67,13 +69,17 @@ export async function requireAdminPage() {
     .select("id, email, full_name, is_admin")
     .eq("id", access.user.id)
     .single();
-  return { svc, profile, user: access.user };
+  return { svc, profile, user: access.user, role: access.role };
 }
 
 /** API guard: returns service client or a 403 Response. */
-export async function requireAdminApi(): Promise<
-  | { svc: ReturnType<typeof createServiceClient>; error?: undefined }
-  | { svc?: undefined; error: Response }
+/**
+ * API guard. Set opts.support = "read" to allow support-admins read-only
+ * access (they can view + chat, but never change data).
+ */
+export async function requireAdminApi(opts?: { support?: "read" }): Promise<
+  | { svc: ReturnType<typeof createServiceClient>; role: AdminRole; user: { id: string }; error?: undefined }
+  | { svc?: undefined; role?: undefined; user?: undefined; error: Response }
 > {
   try {
     const supabase = await createClient();
@@ -88,18 +94,22 @@ export async function requireAdminApi(): Promise<
     const svc = createServiceClient();
     const { data: profile } = await svc
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, is_support")
       .eq("id", user.id)
       .single();
-    if (!profile?.is_admin) {
+    let role: AdminRole | null = null;
+    if (profile?.is_admin) role = "admin";
+    else if (profile?.is_support && opts?.support === "read") role = "support";
+    if (!role) {
       const promoted = await autoPromoteOwner(svc, user.id, user.email);
       if (!promoted) {
         return {
           error: Response.json({ error: "অনুমতি নেই" }, { status: 403 }),
         };
       }
+      role = "admin";
     }
-    return { svc };
+    return { svc, role, user: { id: user.id } };
   } catch {
     return {
       error: Response.json({ error: "সার্ভার সমস্যা" }, { status: 500 }),
