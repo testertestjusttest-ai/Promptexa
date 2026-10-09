@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { formatBDT, toBnDigits } from "@/lib/format";
 import { WEBDEV_HERO } from "@/lib/webdevArt";
+import { DEMOS } from "./demos/demos";
 
 const PACKAGES = [
   {
@@ -27,6 +29,31 @@ const PACKAGES = [
 ];
 
 const SITE_TYPES = ["বিজনেস ওয়েবসাইট", "ই-কমার্স শপ", "পোর্টফোলিও", "ব্লগ / নিউজ", "মার্কেটপ্লেস", "অন্যান্য"];
+
+const TECH = ["⚡ Next.js", "🎨 Tailwind", "📱 PWA", "🔍 SEO", "💳 পেমেন্ট গেটওয়ে", "🌍 বহুভাষিক", "🛡️ সিকিউর", "🚀 ফাস্ট লোডিং"];
+
+/** Tiny floating website mockup for the hero. */
+function MiniSite({ title, hue }: { title: string; hue: string }) {
+  return (
+    <div className="w-40 overflow-hidden rounded-xl border border-white/20 bg-[#0b1120]/90 shadow-2xl backdrop-blur-sm">
+      <div className="flex items-center gap-1 bg-white/10 px-2 py-1.5">
+        <span className="h-2 w-2 rounded-full bg-red-400" />
+        <span className="h-2 w-2 rounded-full bg-amber-300" />
+        <span className="h-2 w-2 rounded-full bg-emerald-400" />
+      </div>
+      <div className={`bg-gradient-to-br ${hue} px-2 py-3`}>
+        <p className="text-[10px] font-black text-white">{title}</p>
+        <div className="mt-1.5 h-1.5 w-3/4 rounded bg-white/70" />
+        <div className="mt-1 h-1.5 w-1/2 rounded bg-white/40" />
+      </div>
+      <div className="grid grid-cols-3 gap-1 p-1.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-6 rounded bg-white/10" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function WebDevClient() {
   const [form, setForm] = useState({ name: "", phone: "", site_type: SITE_TYPES[0], features: "", budget_range: "৫–১৫ হাজার", details: "" });
@@ -61,15 +88,54 @@ export default function WebDevClient() {
       {/* hero */}
       <div className="relative overflow-hidden rounded-3xl border border-white/10">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${WEBDEV_HERO})` }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/60 to-[#060913]/25" />
-        <div className="glass relative p-8 text-center sm:p-12">
-          <h1 className="font-display mt-4 text-3xl font-bold text-white sm:text-4xl">
-            আপনার <span className="text-[#d7ff3f]">ওয়েবসাইট</span> বানিয়ে নিন
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/45 to-[#060913]/10" />
+        {/* drifting glow orbs */}
+        <div className="animate-orb pointer-events-none absolute -left-10 top-10 h-48 w-48 rounded-full bg-[#d7ff3f]/20 blur-3xl" />
+        <div className="animate-orb pointer-events-none absolute -right-10 bottom-10 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl" style={{ animationDelay: "-6s" }} />
+        {/* floating mini website mockups */}
+        <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block" aria-hidden>
+          <div className="animate-float-slow absolute left-[4%] top-[12%]" style={{ ["--tilt" as any]: "-8deg" }}>
+            <MiniSite title="রেস্টুরেন্ট" hue="from-orange-400 to-red-500" />
+          </div>
+          <div className="animate-float-slow absolute right-[5%] top-[18%]" style={{ ["--tilt" as any]: "7deg", animationDelay: "-3s" }}>
+            <MiniSite title="ফ্যাশন শপ" hue="from-pink-400 to-fuchsia-600" />
+          </div>
+          <div className="animate-float-slow absolute bottom-[10%] left-[10%]" style={{ ["--tilt" as any]: "5deg", animationDelay: "-5s" }}>
+            <MiniSite title="নিউজ পোর্টাল" hue="from-sky-400 to-indigo-600" />
+          </div>
+          <div className="animate-float-slow absolute bottom-[14%] right-[9%]" style={{ ["--tilt" as any]: "-6deg", animationDelay: "-2s" }}>
+            <MiniSite title="ট্রাভেল" hue="from-teal-300 to-emerald-600" />
+          </div>
+        </div>
+        <div className="relative p-8 text-center sm:p-12">
+          <span className="inline-block rounded-full bg-[#d7ff3f]/15 px-4 py-1.5 text-xs font-bold tracking-widest text-[#d7ff3f] ring-1 ring-[#d7ff3f]/40 backdrop-blur-sm">
+            ✨ ১০০+ প্রজেক্ট ডেলিভারিড
+          </span>
+          <h1 className="font-display mt-4 text-3xl font-black text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] sm:text-5xl">
+            আপনার <span className="bg-gradient-to-r from-lime-300 via-[#d7ff3f] to-emerald-300 bg-clip-text text-transparent">ওয়েবসাইট</span> বানিয়ে নিন
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-slate-300">
+          <p className="mx-auto mt-3 max-w-2xl rounded-2xl bg-black/55 px-5 py-3 text-sm leading-relaxed text-slate-200 backdrop-blur-md">
             DigiPlyra টিমের মাধ্যমে প্রফেশনাল ওয়েবসাইট — ডিজাইন থেকে ডেলিভারি পর্যন্ত সব দায়িত্ব আমাদের।
-            নিচে প্যাকেজ দেখুন অথবা কাস্টম কোটের জন্য ফর্ম পূরণ করুন।
+            নিচে <b className="text-white">১০টি লাইভ ডেমো</b> দেখুন অথবা কাস্টম কোটের জন্য ফর্ম পূরণ করুন।
           </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <a href="#demos" className="btn-vault inline-flex !px-8 !py-3 text-sm shadow-[0_0_24px_rgba(215,255,63,0.35)]">
+              🖥️ ডেমো দেখুন
+            </a>
+            <a href="#quote" className="inline-flex rounded-xl border border-white/25 bg-black/45 px-8 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:border-[#d7ff3f]/60">
+              📝 কোট চান
+            </a>
+          </div>
+          {/* scrolling tech marquee */}
+          <div className="pointer-events-none relative mt-8 overflow-hidden rounded-xl" aria-hidden>
+            <div className="animate-marquee-x flex w-max gap-3">
+              {[...TECH, ...TECH].map((t, i) => (
+                <span key={i} className="whitespace-nowrap rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-slate-200 backdrop-blur-sm ring-1 ring-white/15">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -117,8 +183,35 @@ export default function WebDevClient() {
         ))}
       </div>
 
+      {/* demo gallery */}
+      <div id="demos" className="mt-14 scroll-mt-24">
+        <h2 className="font-display text-center text-2xl font-bold text-white">🖥️ লাইভ ডেমো গ্যালারি</h2>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-slate-400">
+          ১০ ধরনের প্রফেশনাল ওয়েবসাইটের ডেমো — কার্ডে ক্লিক করলে পুরো ডেমো দেখতে পারবেন।
+          আপনার ব্যবসার জন্য এরকম সাইট বানিয়ে দেব!
+        </p>
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {DEMOS.map((d) => (
+            <Link key={d.slug} href={`/web-dev/demo/${d.slug}`} className="tilt-card group block overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40">
+              <div className="pointer-events-none max-h-[300px] overflow-hidden [&_*]:!cursor-default">
+                {d.render()}
+              </div>
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold text-white">{d.name}</p>
+                  <span className="rounded-full bg-[#d7ff3f]/15 px-2.5 py-1 text-[10px] font-bold text-[#d7ff3f]">{d.price}</span>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">{d.type}</p>
+                <p className="mt-1 line-clamp-1 text-xs text-slate-500">{d.desc}</p>
+                <span className="mt-2 inline-block text-xs font-bold text-[#d7ff3f] group-hover:underline">👁️ পুরো ডেমো দেখুন →</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* quote form */}
-      <div className="glass mt-12 rounded-3xl p-6 sm:p-8">
+      <div id="quote" className="glass mt-12 scroll-mt-24 rounded-3xl p-6 sm:p-8">
         <h2 className="font-display text-2xl font-bold text-white">📋 ফ্রি কোট রিকোয়েস্ট</h2>
         <p className="mt-1 text-sm text-slate-400">ফর্মটি পূরণ করুন — ২৪ ঘণ্টার মধ্যে কল পাবেন।</p>
         <form onSubmit={submit} className="mt-6 grid gap-4 sm:grid-cols-2">

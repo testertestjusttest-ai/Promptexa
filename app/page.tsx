@@ -6,6 +6,7 @@ import HeroSlider from "@/components/HeroSlider";
 import AdSlot, { AdPopup } from "@/components/AdSlot";
 import { activeSlots } from "@/lib/catalog";
 import ReviewsSection from "@/components/ReviewsSection";
+import { DEMOS } from "./web-dev/demos/demos";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +102,37 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ================= WEB DEV DEMOS ================= */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <SectionHeading
+          kicker="ওয়েবসাইট বানান"
+          title="ডেমো ওয়েবসাইট দেখুন"
+          sub="আপনার ব্যবসার জন্য এরকম প্রফেশনাল সাইট বানিয়ে দেব"
+        />
+        <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
+          {DEMOS.slice(0, 4).map((d) => (
+            <Link
+              key={d.slug}
+              href={`/web-dev/demo/${d.slug}`}
+              className="tilt-card w-64 shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40 sm:w-auto"
+            >
+              <div className="pointer-events-none max-h-[220px] overflow-hidden">
+                {d.render()}
+              </div>
+              <div className="p-3">
+                <p className="text-sm font-bold text-white">{d.name}</p>
+                <p className="text-[11px] text-slate-500">{d.type}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-8 text-center">
+          <Link href="/web-dev#demos" className="btn-ghost">
+            সব ১০টি ডেমো দেখুন →
+          </Link>
+        </div>
+      </section>
 
       {/* ================= HOW IT WORKS ================= */}
       <section id="how" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">

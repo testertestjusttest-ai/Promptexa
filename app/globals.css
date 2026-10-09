@@ -198,3 +198,22 @@ select.field option { background: #0b1120; }
 /* thin scrollbars for panels */
 .thin-scroll::-webkit-scrollbar { width: 6px; }
 .thin-scroll::-webkit-scrollbar-thumb { background: #26314d; border-radius: 4px; }
+
+/* ---------- web-dev showcase motion ---------- */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-16px) rotate(var(--tilt, 0deg)); }
+}
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.15); }
+}
+.animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+.animate-marquee-x { animation: marquee-x 30s linear infinite; }
+.animate-orb { animation: orb-drift 12s ease-in-out infinite; }
+.tilt-card { transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.tilt-card:hover { transform: perspective(900px) rotateX(6deg) rotateY(-8deg) translateY(-6px); }

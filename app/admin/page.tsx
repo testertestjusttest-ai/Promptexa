@@ -84,6 +84,31 @@ export default async function AdminOverview() {
       )}
 
       <div className="glass mt-6 rounded-2xl p-6">
+        <h2 className="font-display text-lg font-bold text-white">🗺️ সেকশন গাইড — কোথায় কী করবেন</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            ["🧾 অর্ডার", "সব অর্ডারের লিস্ট, স্ট্যাটাস আপডেট", "/admin/orders"],
+            ["💳 পেমেন্ট যাচাই", "বিকাশ/নগদ/রকেট TrxID মিলিয়ে পেমেন্ট approve", "/admin/payments"],
+            ["🔑 কী ইনভেন্টরি", "লাইসেন্স কী স্টক — বিক্রি হলে অটো ডেলিভারি হয়", "/admin/keys"],
+            ["📦 প্রোডাক্ট", "প্রোডাক্ট যোগ/এডিট, দাম, ছবি, APK আপলোড", "/admin/products"],
+            ["🎠 স্লাইডার", "হোমপেজ হিরো স্লাইডের ছবি ও লেখা", "/admin/slides"],
+            ["💸 উত্তোলন", "ইউজারদের টাকা তোলার আবেদন approve/বাতিল", "/admin/withdrawals"],
+            ["🎮 ID বাজার", "ID পোস্ট approve, এসক্রো ডিল ম্যানেজ, সব চ্যাট দেখুন", "/admin/marketplace"],
+            ["🌐 সার্ভিস", "ওয়েবসাইট বানানোর রিকোয়েস্ট ও স্ট্যাটাস", "/admin/services"],
+            ["📢 বিজ্ঞাপন", "বিজ্ঞাপন স্লট চালু/বন্ধ ও কোড", "/admin/ads"],
+            ["👥 স্টাফ", "সাপোর্ট অ্যাডমিন বানান বা বাদ দিন", "/admin/staff"],
+            ["⚙️ সেটিংস", "পেমেন্ট নম্বর, ফি %, রিওয়ার্ড, WhatsApp — সব", "/admin/settings"],
+          ].filter(([, , href]) => role === "admin" || ["/admin/orders", "/admin/marketplace", "/admin/services"].includes(href))
+            .map(([label, desc, href]) => (
+              <Link key={href + label} href={href} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-[#d7ff3f]/40">
+                <p className="text-sm font-bold text-white">{label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">{desc}</p>
+              </Link>
+            ))}
+        </div>
+      </div>
+
+      <div className="glass mt-6 rounded-2xl p-6">
         <h2 className="font-display text-lg font-bold text-white">🚀 দ্রুত কাজ</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           {role === "admin" && (

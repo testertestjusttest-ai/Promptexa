@@ -3,19 +3,19 @@ import { getAdminAccess } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-const NAV: { href: string; label: string; exact?: boolean; roles: ("admin" | "support")[] }[] = [
-  { href: "/admin", label: "📊 ওভারভিউ", exact: true, roles: ["admin"] },
-  { href: "/admin/orders", label: "🧾 অর্ডার", roles: ["admin", "support"] },
-  { href: "/admin/payments", label: "💳 পেমেন্ট যাচাই", roles: ["admin"] },
-  { href: "/admin/keys", label: "🔑 কী ইনভেন্টরি", roles: ["admin"] },
-  { href: "/admin/products", label: "📦 প্রোডাক্ট", roles: ["admin"] },
-  { href: "/admin/slides", label: "🎠 স্লাইডার", roles: ["admin"] },
-  { href: "/admin/withdrawals", label: "💸 উত্তোলন", roles: ["admin"] },
-  { href: "/admin/marketplace", label: "🎮 ID বাজার", roles: ["admin", "support"] },
-  { href: "/admin/services", label: "🌐 সার্ভিস", roles: ["admin", "support"] },
-  { href: "/admin/ads", label: "📢 বিজ্ঞাপন", roles: ["admin"] },
-  { href: "/admin/staff", label: "👥 স্টাফ", roles: ["admin"] },
-  { href: "/admin/settings", label: "⚙️ সেটিংস", roles: ["admin"] },
+const NAV: { href: string; label: string; desc: string; exact?: boolean; roles: ("admin" | "support")[] }[] = [
+  { href: "/admin", label: "📊 ওভারভিউ", desc: "সব মিলিয়ে আজকের অবস্থা — রেভিনিউ, পেন্ডিং কাজ", exact: true, roles: ["admin"] },
+  { href: "/admin/orders", label: "🧾 অর্ডার", desc: "সব অর্ডার দেখুন, স্ট্যাটাস বদলান", roles: ["admin", "support"] },
+  { href: "/admin/payments", label: "💳 পেমেন্ট যাচাই", desc: "বিকাশ/নগদ TrxID যাচাই করে পেমেন্ট approve", roles: ["admin"] },
+  { href: "/admin/keys", label: "🔑 কী ইনভেন্টরি", desc: "লাইসেন্স কী যোগ/দেখুন — বিক্রিতে অটো ডেলিভারি", roles: ["admin"] },
+  { href: "/admin/products", label: "📦 প্রোডাক্ট", desc: "প্রোডাক্ট, দাম, ছবি, APK ফাইল ম্যানেজ", roles: ["admin"] },
+  { href: "/admin/slides", label: "🎠 স্লাইডার", desc: "হোমপেজের হিরো স্লাইড বদলান", roles: ["admin"] },
+  { href: "/admin/withdrawals", label: "💸 উত্তোলন", desc: "ইউজারদের টাকা তোলার রিকোয়েস্ট approve", roles: ["admin"] },
+  { href: "/admin/marketplace", label: "🎮 ID বাজার", desc: "ID পোস্ট approve, এসক্রো ডিল, সব চ্যাট দেখুন", roles: ["admin", "support"] },
+  { href: "/admin/services", label: "🌐 সার্ভিস", desc: "ওয়েবসাইট বানানোর রিকোয়েস্ট ম্যানেজ", roles: ["admin", "support"] },
+  { href: "/admin/ads", label: "📢 বিজ্ঞাপন", desc: "বিজ্ঞাপন স্লট চালু/বন্ধ, কোড বসান", roles: ["admin"] },
+  { href: "/admin/staff", label: "👥 স্টাফ", desc: "সাপোর্ট অ্যাডমিন যোগ/বাদ দিন", roles: ["admin"] },
+  { href: "/admin/settings", label: "⚙️ সেটিংস", desc: "পেমেন্ট নম্বর, ফি, রিওয়ার্ড — সব সেটিংস", roles: ["admin"] },
 ];
 
 export default async function AdminLayout({
@@ -99,6 +99,7 @@ export default async function AdminLayout({
           <Link
             key={n.href}
             href={n.href}
+            title={n.desc}
             className="shrink-0 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-[#d7ff3f]/40 hover:text-white"
           >
             {n.label}
