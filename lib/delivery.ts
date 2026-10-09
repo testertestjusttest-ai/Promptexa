@@ -13,14 +13,21 @@ export async function deliverOrderKeys(
 ): Promise<{ delivered: number; missing: number }> {
   const { data: items, error } = await supabase
     .from("order_items")
-    .select("id, product_id, plan_id")
+    .select("id, product_id, plan_id, product:products!inner(product_type)")
     .eq("order_id", orderId);
   if (error || !items) throw new Error("Could not load order items");
 
   let delivered = 0;
   let missing = 0;
+  let hasService = false;
 
   for (const item of items) {
+    const ptype = (item.product as unknown as { product_type: string } | null)
+      ?.product_type;
+    if (ptype === "service") {
+      hasService = true;
+      continue; // service orders are handled manually by admin
+    }
     // already delivered? skip
     const { data: existing } = await supabase
       .from("delivered_keys")
@@ -84,10 +91,13 @@ export async function deliverOrderKeys(
     delivered++;
   }
 
-  await supabase
-    .from("orders")
-    .update({ status: missing > 0 ? "keys_pending" : "delivered" })
-    .eq("id", orderId);
+  const finalStatus =
+    hasService && delivered === 0 && missing === 0
+      ? "service_pending"
+      : missing > 0
+        ? "keys_pending"
+        : "delivered";
+  await supabase.from("orders").update({ status: finalStatus }).eq("id", orderId);
 
   return { delivered, missing };
 }
@@ -120,7 +130,12 @@ export async function confirmOrderPayment(
     .eq("id", orderId)
     .single();
 
-  if (order && (order.status === "delivered" || order.status === "keys_pending")) {
+  if (
+    order &&
+    (order.status === "delivered" ||
+      order.status === "keys_pending" ||
+      order.status === "service_pending")
+  ) {
     return { delivered: 0, missing: 0 }; // already handled
   }
 

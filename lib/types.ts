@@ -33,6 +33,7 @@ export type Product = {
   is_featured: boolean;
   sort: number;
   image_url: string | null;
+  product_type: "key" | "file" | "service";
   sold_out_manual: boolean;
   track_stock: boolean;
   category?: Category | null;
@@ -51,6 +52,34 @@ export function isSoldOut(p: {
   if (p.track_stock && p.stock !== undefined && p.stock <= 0) return true;
   return false;
 }
+
+export type Wallet = {
+  user_id: string;
+  balance_bdt: number;
+  total_earned_bdt: number;
+  total_spent_bdt: number;
+  total_withdrawn_bdt: number;
+};
+
+export type WalletTxn = {
+  id: string;
+  amount_bdt: number;
+  type: string;
+  note: string | null;
+  created_at: string;
+};
+
+export type Withdrawal = {
+  id: string;
+  user_id: string;
+  amount_bdt: number;
+  method: string;
+  account_number: string;
+  status: "pending" | "approved" | "rejected";
+  admin_note: string | null;
+  created_at: string;
+  user_email?: string | null;
+};
 
 export type ProductFile = {
   id: string;
@@ -106,7 +135,7 @@ export type OrderStatus =
   | "refunded"
   | "keys_pending";
 
-export type PaymentMethod = "sslcommerz" | "bkash" | "nagad" | "rocket";
+export type PaymentMethod = "sslcommerz" | "bkash" | "nagad" | "rocket" | "wallet";
 
 export type Order = {
   id: string;

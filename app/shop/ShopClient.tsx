@@ -69,7 +69,7 @@ export default function ShopClient({
       </div>
 
       {filtered.length > 0 ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

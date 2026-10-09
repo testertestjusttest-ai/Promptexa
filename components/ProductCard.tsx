@@ -15,12 +15,12 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link
       href={soldOut ? "#" : `/product/${product.slug}`}
       onClick={soldOut ? (e) => e.preventDefault() : undefined}
-      className={`glass card-hover group relative flex flex-col overflow-hidden rounded-2xl p-5 ${
+      className={`glass card-hover group relative flex flex-col overflow-hidden rounded-2xl p-4 sm:p-5 ${
         soldOut ? "opacity-75" : ""
       }`}
     >
       {product.image_url ? (
-        <div className="relative -mx-5 -mt-5 mb-1 h-40 overflow-hidden">
+        <div className="relative -mx-4 -mt-4 mb-1 h-40 overflow-hidden sm:-mx-5 sm:-mt-5">
           <img
             src={product.image_url}
             alt={product.name}
@@ -31,21 +31,9 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       ) : null}
 
-      {soldOut ? (
-        <span className="absolute right-4 top-4 rounded-full bg-red-500/20 px-3 py-1 text-[11px] font-bold text-red-300 backdrop-blur">
-          স্টক শেষ
-        </span>
-      ) : (
-        hasDiscount && (
-          <span className="absolute right-4 top-4 rounded-full bg-[#f43f5e]/15 px-2.5 py-1 text-[11px] font-bold text-[#fda4af]">
-            ছাড় চলছে
-          </span>
-        )
-      )}
-
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <span
-          className="grid h-14 w-14 place-items-center rounded-2xl text-2xl"
+          className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-2xl"
           style={{
             background: product.badge_bg,
             boxShadow: `0 8px 28px -8px ${product.badge_bg}`,
@@ -53,9 +41,24 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           {product.badge}
         </span>
-        {product.is_featured && !soldOut && (
-          <span className="chip chip-lime">জনপ্রিয়</span>
-        )}
+        <span className="flex flex-col items-end gap-1.5">
+          {soldOut ? (
+            <span className="rounded-full bg-red-500/20 px-3 py-1 text-[11px] font-bold text-red-300 backdrop-blur">
+              স্টক শেষ
+            </span>
+          ) : (
+            <>
+              {hasDiscount && (
+                <span className="rounded-full bg-[#f43f5e]/15 px-2.5 py-1 text-[11px] font-bold text-[#fda4af]">
+                  ছাড় চলছে
+                </span>
+              )}
+              {product.is_featured && (
+                <span className="chip chip-lime">জনপ্রিয়</span>
+              )}
+            </>
+          )}
+        </span>
       </div>
 
       <h3 className="mt-4 font-display text-lg font-bold text-white transition group-hover:text-[#d7ff3f]">

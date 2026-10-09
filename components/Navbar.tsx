@@ -24,6 +24,7 @@ export default function Navbar() {
   const links = [
     { href: "/", label: "হোম" },
     { href: "/shop", label: "শপ" },
+    { href: "/earn", label: "💰 আয় করুন" },
     { href: "/dashboard", label: "আমার অর্ডার" },
   ];
 
