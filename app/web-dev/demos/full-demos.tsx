@@ -5,10 +5,14 @@ import Link from "next/link";
 import { Toast, MiniCart, ProductModal, DemoCheckout } from "./demo-ui";
 import SiteShell from "./site-shell";
 import { toBnDigits } from "@/lib/format";
+import QuoteModal from "./demosite/quote";
 
 /** DigiPlyra demo shell — slim browser chrome on top, pitch below the demo. */
 export function DemoShell({ name, type, slug, children }: { name: string; type: string; slug: string; children: React.ReactNode }) {
+  const [quote, setQuote] = useState(false);
   return (
+    <>
+    {quote && <QuoteModal demoName={name} slug={slug} onClose={() => setQuote(false)} />}
     <div className="bg-[#0b1120]">
       {/* slim browser chrome — feels like entering the real website */}
       <div className="sticky top-16 z-40 border-y border-white/10 bg-[#060913]/95 backdrop-blur-xl">
@@ -27,9 +31,9 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
           <span className="hidden shrink-0 rounded-full bg-[#d7ff3f]/15 px-2.5 py-1 text-[10px] font-black text-[#d7ff3f] sm:inline">
             ⓘ ডেমো
           </span>
-          <Link href="/#quote" className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
+          <button onClick={() => setQuote(true)} className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
             📝 এরকম সাইট চাই
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -70,13 +74,14 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
           </div>
         </div>
         <div className="mt-5 text-center">
-          <Link href="/#quote" className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
+          <button onClick={() => setQuote(true)} className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
             📝 ফ্রি কোট নিন — আজই শুরু করুন
-          </Link>
+          </button>
           <p className="mt-2 text-[11px] text-slate-500">💡 এটি শুধু একটি ডেমো — অর্ডার করলে আপনার নাম, ছবি ও কনটেন্ট দিয়ে বানিয়ে দেওয়া হবে।</p>
         </div>
       </div>
     </div>
+    </>
   );
 }
 
