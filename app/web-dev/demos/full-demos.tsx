@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Toast, MiniCart, ProductModal } from "./demo-ui";
+import { Toast, MiniCart, ProductModal, DemoCheckout } from "./demo-ui";
 import SiteShell from "./site-shell";
 import { toBnDigits } from "@/lib/format";
 
@@ -94,6 +94,7 @@ export function FullRestaurant() {
   const [cat, setCat] = useState<(typeof cats)[number]>("সব");
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkout, setCheckout] = useState(false);
   const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
@@ -105,13 +106,14 @@ export function FullRestaurant() {
     setTimeout(() => setToast(""), 1500);
   }
   return (
-    <SiteShell logo="🍔 স্বাদের ঠিকানা" accent="#fb923c" dark
+    <SiteShell logo="🍔 স্বাদের ঠিকানা" accent="#fb923c" dark demoSlug="restaurant"
       links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🍽️ মেনু", href: "#res-menu" }, { label: "🎁 অফার", href: "#res-offer" }]}
       categories={[...cats]} onCategory={(c) => setCat(c as (typeof cats)[number])} activeCategory={cat}
       onSearch={setQuery} searchPlaceholder="🔍 খাবার খুঁজুন..."
       cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
-      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#fb923c" />}
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#fb923c" onCheckout={() => { setCartOpen(false); setCheckout(true); }} />}
+      {checkout && <DemoCheckout slug="restaurant" shopName="স্বাদের ঠিকানা" items={cart} accent="#fb923c" onClose={() => setCheckout(false)} onClear={() => setCart([])} />}
       {detail && <ProductModal product={detail} accent="#fb923c" related={items.filter((x) => x.n !== detail.n && x.c === detail.c)} onClose={() => setDetail(null)} onAdd={(pr, qty) => add(pr, qty)} />}
       <div id="site-top" className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-700 px-5 py-10">
         <p className="text-3xl font-black">ঘরেই পান<br />রেস্টুরেন্টের স্বাদ 🔥</p>
@@ -156,6 +158,7 @@ export function FullFashion() {
   const [cat, setCat] = useState<(typeof cats)[number]>("সব");
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkout, setCheckout] = useState(false);
   const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
@@ -167,13 +170,14 @@ export function FullFashion() {
     setTimeout(() => setToast(""), 1500);
   };
   return (
-    <SiteShell logo="👗 স্টাইল হাব" accent="#db2777" dark={false}
+    <SiteShell logo="👗 স্টাইল হাব" accent="#db2777" dark={false} demoSlug="fashion"
       links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "👗 কালেকশন", href: "#fash-grid" }]}
       categories={[...cats]} onCategory={(c) => setCat(c as (typeof cats)[number])} activeCategory={cat}
       onSearch={setQuery} searchPlaceholder="🔍 পোশাক খুঁজুন..."
       cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
-      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#db2777" />}
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#db2777" onCheckout={() => { setCartOpen(false); setCheckout(true); }} />}
+      {checkout && <DemoCheckout slug="fashion" shopName="স্টাইল হাব" items={cart} accent="#db2777" dark={false} onClose={() => setCheckout(false)} onClear={() => setCart([])} />}
       {detail && <ProductModal product={detail} accent="#db2777" dark={false} related={items.filter((x) => x.n !== detail.n && x.c === detail.c)} onClose={() => setDetail(null)} onAdd={(pr, qty) => addQ(pr, qty)} />}
       <div id="site-top" className="bg-gradient-to-r from-pink-600 to-fuchsia-600 px-5 py-8 text-white">
         <p className="text-2xl font-black">ঈদ কালেকশন ২০২৬</p>
@@ -544,6 +548,7 @@ export function FullGadget() {
   ];
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkout, setCheckout] = useState(false);
   const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
@@ -555,12 +560,13 @@ export function FullGadget() {
     setTimeout(() => setToast(""), 1500);
   };
   return (
-    <SiteShell logo="🔌 টেক জোন" accent="#22d3ee" dark
+    <SiteShell logo="🔌 টেক জোন" accent="#22d3ee" dark demoSlug="gadget"
       links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🔌 গ্যাজেট", href: "#gad-grid" }]}
       onSearch={setQuery} searchPlaceholder="🔍 গ্যাজেট খুঁজুন..."
       cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
-      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#22d3ee" />}
+      {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#22d3ee" onCheckout={() => { setCartOpen(false); setCheckout(true); }} />}
+      {checkout && <DemoCheckout slug="gadget" shopName="টেক জোন" items={cart} accent="#22d3ee" onClose={() => setCheckout(false)} onClear={() => setCart([])} />}
       {detail && <ProductModal product={{ ...detail, c: "গ্যাজেট" }} accent="#22d3ee" related={items.filter((x) => x.n !== detail.n).slice(0, 4)} onClose={() => setDetail(null)} onAdd={(pr, qty) => addQ(pr, qty)} />}
       <div id="site-top" className="bg-gradient-to-r from-cyan-600 to-blue-700 px-5 py-8 text-white">
         <p className="text-2xl font-black">🔌 টেক জোন</p>

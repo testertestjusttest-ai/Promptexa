@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Toast, MiniCart, ProductModal, type DemoProduct } from "./demo-ui";
+import { Toast, MiniCart, ProductModal, DemoCheckout, type DemoProduct } from "./demo-ui";
 import SiteShell from "./site-shell";
 import type { EngineDef } from "./engine-data";
 import { ENGINE_DEFS } from "./engine-data";
@@ -35,6 +35,7 @@ function EngineShop({ def }: { def: EngineDef }) {
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState<DemoProduct[]>([]);
   const [open, setOpen] = useState(false);
+  const [checkout, setCheckout] = useState(false);
   const [toast, setToast] = useState("");
   const [detail, setDetail] = useState<DemoProduct | null>(null);
 
@@ -51,6 +52,7 @@ function EngineShop({ def }: { def: EngineDef }) {
   return (
     <SiteShell
       {...shellProps(def)}
+      demoSlug={def.slug}
       links={[
         { label: "🏠 হোম", href: "#site-top" },
         { label: "🛍️ পণ্যসমূহ", href: "#shop-products" },
@@ -65,7 +67,8 @@ function EngineShop({ def }: { def: EngineDef }) {
       onCartOpen={() => setOpen(true)}
     >
       <Toast msg={toast} />
-      {open && <MiniCart items={cart} onClose={() => setOpen(false)} onClear={() => setCart([])} accent={def.accent} />}
+      {open && <MiniCart items={cart} onClose={() => setOpen(false)} onClear={() => setCart([])} accent={def.accent} onCheckout={() => { setOpen(false); setCheckout(true); }} />}
+      {checkout && <DemoCheckout slug={def.slug} shopName={def.name} items={cart} accent={def.accent} onClose={() => setCheckout(false)} onClear={() => setCart([])} />}
       {detail && (
         <ProductModal product={detail} accent={def.accent}
           related={def.items.filter((i) => i.n !== detail.n && i.c === detail.c)}
