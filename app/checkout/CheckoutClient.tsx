@@ -29,6 +29,8 @@ export default function CheckoutClient() {
   const [step, setStep] = useState<Step>("info");
   const [orderId, setOrderId] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
+  const [orderTotal, setOrderTotal] = useState(0);
+  const [orderItems, setOrderItems] = useState<typeof items>([]);
   const [senderNumber, setSenderNumber] = useState("");
   const [trxId, setTrxId] = useState("");
   const [notes, setNotes] = useState("");
@@ -98,6 +100,9 @@ export default function CheckoutClient() {
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "অর্ডার হয়নি");
 
+      // snapshot totals BEFORE clearing — step 2 shows these
+      setOrderTotal(Number(data.total_bdt) || total);
+      setOrderItems(items);
       clear();
 
       if (data.paid) {
@@ -239,7 +244,7 @@ export default function CheckoutClient() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">টাকার পরিমাণ</p>
-                  <p className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(total)}</p>
+                  <p className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(orderTotal)}</p>
                 </div>
               </div>
               <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-slate-400">
@@ -275,7 +280,7 @@ export default function CheckoutClient() {
         <div className="glass sticky top-24 rounded-3xl p-6">
           <h3 className="font-display text-lg font-bold text-white">🧾 অর্ডার সামারি</h3>
           <ul className="mt-4 space-y-3">
-            {items.map((i) => (
+            {(step === "manual-pay" ? orderItems : items).map((i) => (
               <li key={i.plan.id} className="flex items-center justify-between gap-3 text-sm">
                 <div className="flex items-center gap-2.5">
                   <span className="grid h-9 w-9 place-items-center rounded-lg text-base" style={{ background: i.product.badge_bg }}>
@@ -293,7 +298,7 @@ export default function CheckoutClient() {
           <div className="divider-glow my-4" />
           <div className="flex items-center justify-between">
             <span className="text-slate-400">সর্বমোট</span>
-            <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(total)}</span>
+            <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(step === "manual-pay" ? orderTotal : total)}</span>
           </div>
         </div>
       </div>
