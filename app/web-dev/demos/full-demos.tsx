@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Toast, MiniCart } from "./demo-ui";
+import { Toast, MiniCart, ProductModal } from "./demo-ui";
+import SiteShell from "./site-shell";
+import { toBnDigits } from "@/lib/format";
 
 /** DigiPlyra demo shell — slim browser chrome on top, pitch below the demo. */
 export function DemoShell({ name, type, slug, children }: { name: string; type: string; slug: string; children: React.ReactNode }) {
@@ -93,26 +95,33 @@ export function FullRestaurant() {
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const show = items.filter((i) => cat === "সব" || i.c === cat);
-  function add(it: { n: string; p: number }) {
-    setCart((c) => [...c, it]);
+  const [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
+  const q = query.trim();
+  const show = items.filter((i) => (cat === "সব" || i.c === cat) && (!q || i.n.includes(q)));
+  function add(it: { n: string; p: number }, qty = 1) {
+    setCart((c) => [...c, ...Array(qty).fill(it)]);
     setToast(`✅ ${it.n} কার্টে যোগ হয়েছে!`);
     setTimeout(() => setToast(""), 1500);
   }
   return (
-    <div className="bg-[#0a0a12] text-white">
+    <SiteShell logo="🍔 স্বাদের ঠিকানা" accent="#fb923c" dark
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🍽️ মেনু", href: "#res-menu" }, { label: "🎁 অফার", href: "#res-offer" }]}
+      categories={[...cats]} onCategory={(c) => setCat(c as (typeof cats)[number])} activeCategory={cat}
+      onSearch={setQuery} searchPlaceholder="🔍 খাবার খুঁজুন..."
+      cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
       {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#fb923c" />}
-      <div className="flex items-center justify-between px-5 py-4">
-        <span className="text-lg font-black">🍔 স্বাদের ঠিকানা</span>
-        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold hover:bg-white/20">🛒 কার্ট ({cart.length})</button>
-      </div>
-      <div className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-700 px-5 py-10">
+      {detail && <ProductModal product={detail} accent="#fb923c" related={items.filter((x) => x.n !== detail.n && x.c === detail.c)} onClose={() => setDetail(null)} onAdd={(pr, qty) => add(pr, qty)} />}
+      <div id="site-top" className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-700 px-5 py-10">
         <p className="text-3xl font-black">ঘরেই পান<br />রেস্টুরেন্টের স্বাদ 🔥</p>
         <p className="mt-2 opacity-90">৩০ মিনিটে হোম ডেলিভারি • বিকাশে পেমেন্ট</p>
         <button onClick={() => setCat("সব")} className="mt-4 rounded-xl bg-white px-6 py-2.5 text-sm font-black text-orange-700">🍽️ মেনু দেখুন</button>
       </div>
-      <div className="flex gap-2 overflow-x-auto px-5 py-4">
+      <div id="res-offer" className="flex items-center justify-between bg-orange-500/10 px-5 py-2.5 text-sm font-bold text-orange-300">
+        <span>🎉 ঈদ অফার — সব খাবারে ছাড়!</span><span className="text-xs text-slate-400">🚚 ৩০ মিনিটে ডেলিভারি</span>
+      </div>
+      <div id="res-menu" className="flex gap-2 overflow-x-auto px-5 py-4">
         {cats.map((c) => (
           <button key={c} onClick={() => setCat(c)}
             className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold ${cat === c ? "bg-orange-500 text-white" : "bg-white/10 text-slate-300"}`}>{c}</button>
@@ -120,15 +129,16 @@ export function FullRestaurant() {
       </div>
       <div className="grid grid-cols-2 gap-3 px-5 pb-6 sm:grid-cols-3">
         {show.map((i) => (
-          <div key={i.n} className="rounded-2xl bg-white/5 p-4 text-center">
+          <div key={i.n} onClick={() => setDetail(i)} className="cursor-pointer rounded-2xl bg-white/5 p-4 text-center transition hover:-translate-y-1 hover:bg-white/10">
             <div className="text-4xl">{i.e}</div>
             <p className="mt-2 text-sm font-bold">{i.n}</p>
-            <p className="font-bold text-amber-300">{i.p} টাকা</p>
-            <button onClick={() => add(i)} className="mt-2 w-full rounded-xl bg-orange-500 py-2 text-sm font-bold hover:bg-orange-400">+ যোগ করুন</button>
+            <p className="font-bold text-amber-300">{toBnDigits(i.p.toLocaleString("en-IN"))} টাকা</p>
+            <button onClick={(e) => { e.stopPropagation(); add(i); }} className="btn-demo mt-2 w-full !py-2 !text-[13px]" style={{ background: "#fb923c" }}>+ যোগ করুন</button>
           </div>
         ))}
       </div>
-    </div>
+      {show.length === 0 && <p className="pb-8 text-center text-sm text-slate-500">😅 কিছু পাওয়া যায়নি</p>}
+    </SiteShell>
   );
 }
 
@@ -147,36 +157,49 @@ export function FullFashion() {
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const show = items.filter((i) => cat === "সব" || i.c === cat);
+  const [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
+  const q = query.trim();
+  const show = items.filter((i) => (cat === "সব" || i.c === cat) && (!q || i.n.includes(q)));
+  const addQ = (it: { n: string; p: number }, qty = 1) => {
+    setCart((c) => [...c, ...Array(qty).fill(it)]);
+    setToast(`✅ ${it.n} কার্টে!`);
+    setTimeout(() => setToast(""), 1500);
+  };
   return (
-    <div className="bg-white text-slate-800">
+    <SiteShell logo="👗 স্টাইল হাব" accent="#db2777" dark={false}
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "👗 কালেকশন", href: "#fash-grid" }]}
+      categories={[...cats]} onCategory={(c) => setCat(c as (typeof cats)[number])} activeCategory={cat}
+      onSearch={setQuery} searchPlaceholder="🔍 পোশাক খুঁজুন..."
+      cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
       {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#db2777" />}
-      <div className="flex items-center justify-between bg-gradient-to-r from-pink-600 to-fuchsia-600 px-5 py-4 text-white">
-        <span className="text-lg font-black">👗 স্টাইল হাব</span>
-        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/30">🛒 {cart.length}টি</button>
+      {detail && <ProductModal product={detail} accent="#db2777" dark={false} related={items.filter((x) => x.n !== detail.n && x.c === detail.c)} onClose={() => setDetail(null)} onAdd={(pr, qty) => addQ(pr, qty)} />}
+      <div id="site-top" className="bg-gradient-to-r from-pink-600 to-fuchsia-600 px-5 py-8 text-white">
+        <p className="text-2xl font-black">ঈদ কালেকশন ২০২৬</p>
+        <p className="mt-1 text-sm opacity-90">🎉 ৫০% পর্যন্ত ছাড়!</p>
       </div>
-      <p className="bg-pink-50 px-5 py-2 text-center text-sm font-bold text-pink-700">🎉 ঈদ অফার — ৫০% পর্যন্ত ছাড়!</p>
       <div className="flex gap-2 px-5 py-4">
         {cats.map((c) => (
           <button key={c} onClick={() => setCat(c)}
             className={`rounded-full px-4 py-2 text-sm font-bold ${cat === c ? "bg-pink-600 text-white" : "bg-slate-100 text-slate-600"}`}>{c}</button>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-3 px-5 pb-6 sm:grid-cols-3">
+      <div id="fash-grid" className="grid grid-cols-2 gap-3 px-5 py-6 sm:grid-cols-3">
         {show.map((i) => (
-          <div key={i.n} className="overflow-hidden rounded-2xl border border-slate-200">
+          <div key={i.n} onClick={() => setDetail(i)} className="cursor-pointer overflow-hidden rounded-2xl border border-slate-200 transition hover:-translate-y-1 hover:shadow-xl">
             <div className="grid h-28 place-items-center bg-gradient-to-br from-pink-100 to-fuchsia-100 text-5xl">{i.e}</div>
             <div className="p-3">
               <p className="text-sm font-bold">{i.n}</p>
-              <p className="font-black text-pink-600">{i.p.toLocaleString("en-IN")} টাকা</p>
-              <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
-                className="mt-2 w-full rounded-xl bg-pink-600 py-2 text-sm font-bold text-white hover:bg-pink-500">কার্টে নিন</button>
+              <p className="font-black text-pink-600">{toBnDigits(i.p.toLocaleString("en-IN"))} টাকা</p>
+              <button onClick={(e) => { e.stopPropagation(); addQ(i); }}
+                className="btn-demo mt-2 w-full !py-2 !text-[13px]" style={{ background: "#db2777" }}>কার্টে নিন</button>
             </div>
           </div>
         ))}
       </div>
-    </div>
+      {show.length === 0 && <p className="pb-8 text-center text-sm text-slate-500">😅 কিছু পাওয়া যায়নি</p>}
+    </SiteShell>
   );
 }
 
@@ -190,11 +213,13 @@ export function FullPortfolio() {
   const [open, setOpen] = useState<number | null>(null);
   const [booked, setBooked] = useState(false);
   return (
-    <div className="bg-[#0a0a12] px-5 py-8 text-white">
+    <SiteShell logo="📸 লেন্স ও আলো" accent="#e2e8f0" dark
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🖼️ গ্যালারি", href: "#pf-gal" }, { label: "📅 বুকিং", href: "#pf-book" }]}>
+    <div id="site-top" className="bg-[#0a0a12] px-5 py-8 text-white">
       <p className="text-center text-[11px] tracking-[0.35em] text-slate-400">📸 লেন্স ও আলো</p>
       <p className="mt-2 text-center text-2xl font-black">মুহূর্তগুলো ধরে রাখি<br />চিরদিনের জন্য</p>
       <p className="mt-2 text-center text-xs text-slate-500">👆 যেকোনো ছবিতে ক্লিক করে বড় করে দেখুন</p>
-      <div className="mx-auto mt-6 grid max-w-3xl grid-cols-3 gap-2">
+      <div id="pf-gal" className="mx-auto mt-6 grid max-w-3xl grid-cols-3 gap-2">
         {shots.map((s, i) => (
           <button key={i} onClick={() => setOpen(i)}
             className="grid h-28 place-items-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-4xl transition hover:scale-105">{s.e}</button>
@@ -209,16 +234,17 @@ export function FullPortfolio() {
           </div>
         </div>
       )}
-      <div className="mx-auto mt-6 max-w-md rounded-2xl bg-white/5 p-4 text-center">
+      <div id="pf-book" className="mx-auto mt-6 max-w-md rounded-2xl bg-white/5 p-4 text-center">
         <p className="text-sm font-bold">📅 বুকিং করুন</p>
         <p className="mt-1 text-xs text-slate-400">৫০০+ ইভেন্ট • ⭐ ৪.৯ রেটিং</p>
         {booked ? (
           <p className="mt-3 rounded-xl bg-emerald-500/15 px-4 py-2.5 text-sm font-bold text-emerald-300">✅ বুকিং রিকোয়েস্ট পাঠানো হয়েছে! (ডেমো)</p>
         ) : (
-          <button onClick={() => setBooked(true)} className="mt-3 rounded-xl bg-white px-6 py-2 text-sm font-bold text-black hover:bg-slate-200">বুক করুন</button>
+          <button onClick={() => setBooked(true)} className="btn-demo mt-3 !px-8" style={{ background: "#e2e8f0" }}>বুক করুন</button>
         )}
       </div>
     </div>
+    </SiteShell>
   );
 }
 
@@ -234,14 +260,19 @@ export function FullNews() {
   ];
   const [cat, setCat] = useState<(typeof cats)[number]>("সব");
   const [read, setRead] = useState<string | null>(null);
-  const show = news.filter((n) => cat === "সব" || n.c === cat);
+  const [query, setQuery] = useState("");
+  const q = query.trim();
+  const show = news.filter((n) => (cat === "সব" || n.c === cat) && (!q || n.t.includes(q)));
   return (
-    <div className="bg-white text-slate-800">
-      <div className="bg-red-600 px-5 py-3 text-white">
-        <span className="text-xl font-black">খবর ২৪</span>
-        <span className="ml-2 animate-pulse rounded bg-white/25 px-2 py-0.5 text-xs font-bold">🔴 লাইভ</span>
+    <SiteShell logo="📰 খবর ২৪" accent="#ef4444" dark={false}
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "⚡ সর্বশেষ", href: "#news-list" }]}
+      categories={[...cats]} onCategory={(c) => setCat(c as (typeof cats)[number])} activeCategory={cat}
+      onSearch={setQuery} searchPlaceholder="🔍 খবর খুঁজুন...">
+      <div id="site-top" className="flex items-center gap-2 bg-red-600 px-5 py-3 text-white">
+        <span className="animate-pulse rounded bg-white/25 px-2 py-0.5 text-xs font-bold">🔴 লাইভ</span>
+        <span className="text-sm font-bold">সর্বশেষ খবর সবার আগে</span>
       </div>
-      <div className="flex gap-2 bg-slate-100 px-4 py-2">
+      <div id="news-list" className="flex gap-2 bg-slate-100 px-4 py-2">
         {cats.map((c) => (
           <button key={c} onClick={() => setCat(c)}
             className={`rounded-full px-3 py-1 text-xs font-bold ${cat === c ? "bg-red-600 text-white" : "bg-white text-slate-600"}`}>{c}</button>
@@ -249,17 +280,18 @@ export function FullNews() {
       </div>
       <div className="space-y-2 p-4">
         {show.map((n, i) => (
-          <button key={i} onClick={() => setRead(read === n.t ? null : n.t)} className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left hover:bg-slate-100">
-            <span className="text-3xl">{n.e}</span>
-            <span>
+          <button key={i} onClick={() => setRead(read === n.t ? null : n.t)} className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-3 text-left transition hover:bg-slate-100 hover:shadow">
+            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-red-50 text-3xl">{n.e}</span>
+            <span className="flex-1">
               <p className="text-sm font-bold">{n.t}</p>
               <p className="text-[11px] text-slate-400">{n.c} • {n.time} {read === n.t ? "▲" : "▼"}</p>
-              {read === n.t && <p className="mt-1 text-xs text-slate-500">এটি ডেমো নিউজ — ক্লিক করে পুরো খবর পড়া যাবে। আপনার নিউজ পোর্টালে এখানে আসল খবর থাকবে।</p>}
+              {read === n.t && <p className="mt-1 text-xs leading-relaxed text-slate-500">এটি ডেমো নিউজ — আপনার নিউজ পোর্টালে এখানে পুরো খবর, ছবি ও ভিডিও থাকবে। শেয়ার, বুকমার্ক ও কমেন্ট — সব ফিচার কাজ করবে।</p>}
             </span>
           </button>
         ))}
+        {show.length === 0 && <p className="py-8 text-center text-sm text-slate-400">😅 কোনো খবর পাওয়া যায়নি</p>}
       </div>
-    </div>
+    </SiteShell>
   );
 }
 
@@ -273,11 +305,17 @@ export function FullRealEstate() {
   ];
   const [max, setMax] = useState(999);
   const [toast, setToast] = useState("");
-  const show = props.filter((p) => p.price <= max);
+  const [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string; d?: string } | null>(null);
+  const q = query.trim();
+  const show = props.filter((p) => p.price <= max && (!q || (p.n + p.loc).includes(q)));
   return (
-    <div className="bg-white text-slate-800">
+    <SiteShell logo="🏠 স্বপ্ন নিবাস" accent="#f59e0b" dark={false}
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🏢 প্রপার্টি", href: "#re-list" }]}
+      onSearch={setQuery} searchPlaceholder="🔍 এলাকা/নাম খুঁজুন...">
       <Toast msg={toast} />
-      <div className="bg-gradient-to-br from-blue-700 to-indigo-900 px-5 py-8 text-white">
+      {detail && <ProductModal product={detail} accent="#f59e0b" dark={false} related={[]} onClose={() => setDetail(null)} onAdd={() => { setToast(`✅ ভিজিট বুক হয়েছে! কল পাবেন।`); setTimeout(() => setToast(""), 2000); }} />}
+      <div id="site-top" className="bg-gradient-to-br from-blue-700 to-indigo-900 px-5 py-8 text-white">
         <p className="text-2xl font-black">🏠 স্বপ্ন নিবাস</p>
         <p className="mt-1 text-sm opacity-80">আপনার স্বপ্নের ঠিকানা খুঁজুন</p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -287,22 +325,23 @@ export function FullRealEstate() {
           ))}
         </div>
       </div>
-      <div className="grid gap-3 p-4 sm:grid-cols-2">
+      <div id="re-list" className="grid gap-3 p-4 sm:grid-cols-2">
         {show.map((p) => (
-          <div key={p.n} className="overflow-hidden rounded-2xl border border-slate-200">
+          <div key={p.n} onClick={() => setDetail({ n: p.n, p: p.price * 100000, e: p.e, c: p.loc, d: `🛏️ ${p.beds} বেডরুম • 📍 ${p.loc} — স্পেসিয়াস ফ্ল্যাট, ২৪/৭ সিকিউরিটি, পার্কিংসহ। ভিজিট করে দেখুন!` })}
+            className="cursor-pointer overflow-hidden rounded-2xl border border-slate-200 transition hover:-translate-y-1 hover:shadow-xl">
             <div className="grid h-32 place-items-center bg-gradient-to-br from-blue-100 to-indigo-200 text-6xl">{p.e}</div>
             <div className="p-4">
               <p className="font-bold">{p.n}</p>
-              <p className="text-xs text-slate-500">📍 {p.loc} • 🛏️ {p.beds} বেড</p>
-              <p className="mt-1 text-lg font-black text-blue-700">{p.price} লাখ টাকা</p>
-              <button onClick={() => { setToast(`✅ ${p.n}-এ ভিজিট বুক হয়েছে! কল পাবেন।`); setTimeout(() => setToast(""), 2000); }}
-                className="mt-2 w-full rounded-xl bg-blue-700 py-2 text-sm font-bold text-white hover:bg-blue-600">📅 ভিজিট বুক করুন</button>
+              <p className="text-xs text-slate-500">📍 {p.loc} • 🛏️ {toBnDigits(p.beds)} বেড</p>
+              <p className="mt-1 text-lg font-black text-blue-700">{toBnDigits(p.price)} লাখ টাকা</p>
+              <button onClick={(e) => { e.stopPropagation(); setToast(`✅ ${p.n}-এ ভিজিট বুক হয়েছে! কল পাবেন।`); setTimeout(() => setToast(""), 2000); }}
+                className="btn-demo mt-2 w-full !py-2 !text-[13px]" style={{ background: "#f59e0b" }}>📅 ভিজিট বুক করুন</button>
             </div>
           </div>
         ))}
         {show.length === 0 && <p className="col-span-2 py-8 text-center text-slate-400">এই বাজেটে কোনো প্রপার্টি নেই</p>}
       </div>
-    </div>
+    </SiteShell>
   );
 }
 
@@ -316,12 +355,14 @@ export function FullGym() {
   const [sel, setSel] = useState(1);
   const [toast, setToast] = useState("");
   return (
-    <div className="bg-[#0a0a12] px-5 py-8 text-white">
+    <SiteShell logo="💪 পাওয়ার জিম" accent="#ef4444" dark
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "📋 প্ল্যান", href: "#gym-plans" }]}>
       <Toast msg={toast} />
+    <div id="site-top" className="bg-[#0a0a12] px-5 py-8 text-white">
       <p className="text-center text-2xl font-black">💪 পাওয়ার জিম</p>
       <p className="mt-1 text-center text-xs tracking-widest text-red-400">NO PAIN • NO GAIN</p>
       <p className="mt-4 text-center text-sm text-slate-400">👆 প্ল্যান সিলেক্ট করুন</p>
-      <div className="mx-auto mt-4 grid max-w-3xl gap-3 sm:grid-cols-3">
+      <div id="gym-plans" className="mx-auto mt-4 grid max-w-3xl gap-3 sm:grid-cols-3">
         {plans.map((pl, i) => (
           <button key={pl.n} onClick={() => setSel(i)}
             className={`rounded-2xl border-2 p-5 text-left transition ${sel === i ? "border-red-500 bg-red-600/15 shadow-[0_0_24px_rgba(239,68,68,0.35)]" : "border-white/10 bg-white/5"}`}>
@@ -334,9 +375,15 @@ export function FullGym() {
       </div>
       <div className="mt-6 text-center">
         <button onClick={() => { setToast(`🎉 ${plans[sel].n} প্ল্যানে জয়েন সফল! (ডেমো)`); setTimeout(() => setToast(""), 2000); }}
-          className="rounded-2xl bg-red-600 px-10 py-3 font-black hover:bg-red-500">🔥 {plans[sel].n} প্ল্যানে জয়েন করুন</button>
+          className="btn-demo !px-10 !py-3.5 text-base" style={{ background: "#ef4444", color: "#fff" }}>🔥 {plans[sel].n} প্ল্যানে জয়েন করুন</button>
+      </div>
+      <div className="mx-auto mt-6 grid max-w-3xl grid-cols-3 gap-2 px-5 pb-4 text-center">
+        {[["🏋️", "আধুনিক ইকুইপমেন্ট"], ["🥗", "ডায়েট প্ল্যান"], ["👨‍🏫", "সার্টিফাইড ট্রেইনার"]].map(([e, t]) => (
+          <div key={t} className="rounded-2xl bg-white/5 p-3"><p className="text-2xl">{e}</p><p className="mt-1 text-[11px] text-slate-300">{t}</p></div>
+        ))}
       </div>
     </div>
+    </SiteShell>
   );
 }
 
@@ -350,16 +397,14 @@ export function FullTravel() {
   const [done, setDone] = useState(false);
   const total = dests[d].p * guests;
   return (
+    <SiteShell logo="✈️ ঘুরে আসি" accent="#14b8a6" dark={false}
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🎫 বুকিং", href: "#trv-book" }]}>
     <div className="bg-white text-slate-800">
-      <div className="flex items-center justify-between bg-white px-5 py-3 shadow-sm">
-        <span className="text-lg font-black">✈️ ঘুরে আসি</span>
-        <button onClick={() => setDone(false)} className="rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-5 py-2 text-sm font-bold text-white">বুক করুন</button>
-      </div>
-      <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 px-5 py-8 text-white">
+      <div id="site-top" className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 px-5 py-8 text-white">
         <p className="text-2xl font-black">পৃথিবী ঘুরে দেখুন</p>
         <p className="text-sm opacity-90">কক্সবাজার থেকে মালদ্বীপ!</p>
       </div>
-      <div className="mx-auto max-w-xl space-y-4 p-5">
+      <div id="trv-book" className="mx-auto max-w-xl space-y-4 p-5">
         <div>
           <p className="mb-2 text-sm font-bold">📍 গন্তব্য বেছে নিন</p>
           <div className="grid grid-cols-3 gap-2">
@@ -368,7 +413,7 @@ export function FullTravel() {
                 className={`rounded-2xl border-2 p-3 text-center ${d === i ? "border-teal-500 bg-teal-50" : "border-slate-200"}`}>
                 <div className="text-3xl">{x.e}</div>
                 <p className="mt-1 text-xs font-bold">{x.n}</p>
-                <p className="text-xs text-teal-700">{x.p.toLocaleString("en-IN")} টাকা</p>
+                <p className="text-xs text-teal-700">{toBnDigits(x.p.toLocaleString("en-IN"))} টাকা</p>
               </button>
             ))}
           </div>
@@ -383,19 +428,20 @@ export function FullTravel() {
         </div>
         <div className="flex items-center justify-between rounded-2xl bg-teal-600 p-4 text-white">
           <p className="font-bold">মোট খরচ</p>
-          <p className="text-2xl font-black">{total.toLocaleString("en-IN")} টাকা</p>
+          <p className="text-2xl font-black">{toBnDigits(total.toLocaleString("en-IN"))} টাকা</p>
         </div>
         {done ? (
           <div className="rounded-2xl bg-emerald-50 p-4 text-center">
             <p className="text-sm font-bold text-emerald-700">✅ বুকিং সফল! (ডেমো)</p>
-            <p className="mt-1 text-xs text-slate-500">{dests[d].n} • {guests} জন • {total.toLocaleString("en-IN")} টাকা — আমাদের টিম কল করবে।</p>
+            <p className="mt-1 text-xs text-slate-500">{dests[d].n} • {toBnDigits(guests)} জন • {toBnDigits(total.toLocaleString("en-IN"))} টাকা — আমাদের টিম কল করবে।</p>
             <button onClick={() => setDone(false)} className="mt-2 text-xs font-bold text-teal-700 underline">নতুন বুকিং করুন</button>
           </div>
         ) : (
-          <button onClick={() => setDone(true)} className="w-full rounded-2xl bg-teal-600 py-3.5 font-black text-white hover:bg-teal-500">🎫 এখনই বুক করুন</button>
+          <button onClick={() => setDone(true)} className="btn-demo w-full !py-4 text-base" style={{ background: "#14b8a6", color: "#fff" }}>🎫 এখনই বুক করুন</button>
         )}
       </div>
     </div>
+    </SiteShell>
   );
 }
 
@@ -410,7 +456,9 @@ export function FullSaas() {
   ];
   const price = (m: number) => yearly ? Math.round(m * 10) : m;
   return (
-    <div className="bg-[#0a0a12] px-5 py-8 text-white">
+    <SiteShell logo="☁️ ক্লাউড সেবা" accent="#818cf8" dark
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "📋 প্ল্যান", href: "#saas-plans" }, { label: "✨ ফিচার", href: "#saas-feat" }]}>
+    <div id="site-top" className="bg-[#0a0a12] px-5 py-8 text-white">
       <p className="text-center text-2xl font-black">☁️ ক্লাউড সেবা</p>
       <p className="mt-1 text-center text-sm text-slate-400">ব্যবসা চালান অটোপাইলটে</p>
       <div className="mt-4 flex justify-center">
@@ -419,14 +467,14 @@ export function FullSaas() {
           <button onClick={() => setYearly(true)} className={`rounded-full px-5 py-1.5 ${yearly ? "bg-indigo-600 text-white" : "text-slate-400"}`}>বাৎসরিক <span className="text-[10px] text-emerald-300">−১৭%</span></button>
         </div>
       </div>
-      <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
+      <div id="saas-plans" className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-3">
         {plans.map((p) => (
           <div key={p.n} className={`rounded-2xl border p-5 ${p.hot ? "border-indigo-500 bg-indigo-600/15 shadow-[0_0_24px_rgba(99,102,241,0.3)]" : "border-white/10 bg-white/5"}`}>
             {p.hot && <span className="rounded-full bg-indigo-600 px-2.5 py-0.5 text-[10px] font-bold">🔥 জনপ্রিয়</span>}
             <p className="mt-2 font-black">{p.n}</p>
-            <p className="mt-1"><span className="text-2xl font-black">{price(p.m).toLocaleString("en-IN")} টাকা</span><span className="text-xs text-slate-400">/{yearly ? "বছর" : "মাস"}</span></p>
+            <p className="mt-1"><span className="text-2xl font-black">{toBnDigits(price(p.m).toLocaleString("en-IN"))} টাকা</span><span className="text-xs text-slate-400">/{yearly ? "বছর" : "মাস"}</span></p>
             <ul className="mt-3 space-y-1 text-xs text-slate-300">{p.f.map((f) => <li key={f}>✓ {f}</li>)}</ul>
-            <button onClick={() => setStarted(p.n)} className="mt-4 w-full rounded-xl bg-indigo-600 py-2 text-sm font-bold hover:bg-indigo-500">শুরু করুন</button>
+            <button onClick={() => setStarted(p.n)} className="btn-demo mt-4 w-full !py-2.5 !text-sm" style={{ background: "#818cf8", color: "#fff" }}>শুরু করুন</button>
           </div>
         ))}
       </div>
@@ -437,7 +485,13 @@ export function FullSaas() {
           <button onClick={() => setStarted(null)} className="mt-2 text-xs font-bold text-slate-300 underline">বন্ধ করুন</button>
         </div>
       )}
+      <div id="saas-feat" className="mx-auto mt-8 grid max-w-3xl grid-cols-2 gap-2 px-5 pb-4 sm:grid-cols-4">
+        {[["⚡", "সুপার ফাস্ট"], ["🔒", "নিরাপদ"], ["📊", "রিপোর্ট"], ["🤝", "২৪/৭ সাপোর্ট"]].map(([e, t]) => (
+          <div key={t} className="rounded-2xl bg-white/5 p-3 text-center"><p className="text-2xl">{e}</p><p className="mt-1 text-[11px] text-slate-300">{t}</p></div>
+        ))}
+      </div>
     </div>
+    </SiteShell>
   );
 }
 
@@ -451,21 +505,24 @@ export function FullSalon() {
   ];
   const [booked, setBooked] = useState<string | null>(null);
   return (
+    <SiteShell logo="💅 রূপচর্চা" accent="#f472b6" dark={false}
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "💅 সার্ভিস", href: "#sal-svc" }]}>
     <div className="bg-white text-slate-800">
-      <div className="bg-gradient-to-br from-rose-400 via-pink-500 to-fuchsia-600 px-5 py-8 text-white">
+      <div id="site-top" className="bg-gradient-to-br from-rose-400 via-pink-500 to-fuchsia-600 px-5 py-8 text-white">
         <p className="text-2xl font-black">💅 রূপচর্চা বিউটি পার্লার</p>
         <p className="text-sm opacity-90">এক্সপার্ট বিউটিশিয়ান • প্রিমিয়াম প্রোডাক্ট</p>
       </div>
-      <div className="mx-auto max-w-xl space-y-3 p-5">
+      <div id="sal-svc" className="mx-auto max-w-xl space-y-3 p-5">
         {services.map((s) => (
           <div key={s.n} className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 p-4">
             <span className="text-4xl">{s.e}</span>
             <div className="flex-1">
               <p className="font-bold">{s.n}</p>
-              <p className="text-xs text-slate-500">⏱️ {s.t} • <b className="text-rose-600">{s.p} টাকা</b></p>
+              <p className="text-xs text-slate-500">⏱️ {s.t} • <b className="text-rose-600">{toBnDigits(s.p.toLocaleString("en-IN"))} টাকা</b></p>
             </div>
             <button onClick={() => setBooked(s.n)}
-              className={`rounded-xl px-4 py-2 text-sm font-bold ${booked === s.n ? "bg-emerald-500 text-white" : "bg-rose-500 text-white hover:bg-rose-400"}`}>
+              className={`btn-demo !px-4 !py-2 !text-[13px] ${booked === s.n ? "!bg-emerald-500" : ""}`}
+              style={booked !== s.n ? { background: "#f472b6", color: "#fff" } : undefined}>
               {booked === s.n ? "✓ বুকড" : "বুক করুন"}
             </button>
           </div>
@@ -473,42 +530,56 @@ export function FullSalon() {
         {booked && <p className="rounded-2xl bg-emerald-50 p-4 text-center text-sm font-bold text-emerald-700">✅ "{booked}" বুকিং সফল! (ডেমো) — কনফার্মেশন SMS পাবেন।</p>}
       </div>
     </div>
+    </SiteShell>
   );
 }
 
 /* ---------------- 10. Gadget ---------------- */
 export function FullGadget() {
   const items = [
-    { n: "স্মার্টফোন X", p: 25990, e: "📱", emi: "২,১৬৬ টাকা/মাস" },
-    { n: "ল্যাপটপ প্রো", p: 75990, e: "💻", emi: "৬,৩৩৩ টাকা/মাস" },
-    { n: "এয়ারবাডস", p: 2990, e: "🎧", emi: "২৫০ টাকা/মাস" },
-    { n: "স্মার্টওয়াচ", p: 8990, e: "⌚", emi: "৭৫০ টাকা/মাস" },
+    { n: "স্মার্টফোন X", p: 25990, e: "📱", c: "গ্যাজেট", emi: "২,১৬৬ টাকা/মাস" },
+    { n: "ল্যাপটপ প্রো", p: 75990, e: "💻", c: "গ্যাজেট", emi: "৬,৩৩৩ টাকা/মাস" },
+    { n: "এয়ারবাডস", p: 2990, e: "🎧", c: "গ্যাজেট", emi: "২৫০ টাকা/মাস" },
+    { n: "স্মার্টওয়াচ", p: 8990, e: "⌚", c: "গ্যাজেট", emi: "৭৫০ টাকা/মাস" },
   ];
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [query, setQuery] = useState("");
+  const [detail, setDetail] = useState<{ n: string; p: number; e: string; c: string } | null>(null);
+  const q = query.trim();
+  const showItems = items.filter((i) => !q || i.n.includes(q));
+  const addQ = (it: { n: string; p: number }, qty = 1) => {
+    setCart((c) => [...c, ...Array(qty).fill(it)]);
+    setToast(`✅ ${it.n} কার্টে!`);
+    setTimeout(() => setToast(""), 1500);
+  };
   return (
-    <div className="bg-[#0a0a12] text-white">
+    <SiteShell logo="🔌 টেক জোন" accent="#22d3ee" dark
+      links={[{ label: "🏠 হোম", href: "#site-top" }, { label: "🔌 গ্যাজেট", href: "#gad-grid" }]}
+      onSearch={setQuery} searchPlaceholder="🔍 গ্যাজেট খুঁজুন..."
+      cartCount={cart.length} onCartOpen={() => setCartOpen(true)}>
       <Toast msg={toast} />
       {cartOpen && <MiniCart items={cart} onClose={() => setCartOpen(false)} onClear={() => setCart([])} accent="#22d3ee" />}
-      <div className="flex items-center justify-between bg-gradient-to-r from-cyan-600 to-blue-700 px-5 py-4">
-        <span className="text-lg font-black">🔌 টেক জোন</span>
-        <button onClick={() => setCartOpen(true)} className="rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold hover:bg-white/30">🛒 {cart.length}</button>
+      {detail && <ProductModal product={{ ...detail, c: "গ্যাজেট" }} accent="#22d3ee" related={items.filter((x) => x.n !== detail.n).slice(0, 4)} onClose={() => setDetail(null)} onAdd={(pr, qty) => addQ(pr, qty)} />}
+      <div id="site-top" className="bg-gradient-to-r from-cyan-600 to-blue-700 px-5 py-8 text-white">
+        <p className="text-2xl font-black">🔌 টেক জোন</p>
+        <p className="mt-1 text-sm opacity-90">⚡ ০% EMI • অফিসিয়াল ওয়ারেন্টি • ২৪ ঘণ্টায় ডেলিভারি</p>
       </div>
-      <p className="bg-cyan-500/10 px-5 py-2 text-center text-xs text-cyan-300">⚡ ০% EMI • অফিসিয়াল ওয়ারেন্টি • ২৪ ঘণ্টায় ডেলিভারি</p>
-      <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
-        {items.map((i) => (
-          <div key={i.n} className="rounded-2xl bg-white/5 p-4 text-center">
+      <div id="gad-grid" className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">
+        {showItems.map((i) => (
+          <div key={i.n} onClick={() => setDetail(i)} className="cursor-pointer rounded-2xl bg-white/5 p-4 text-center transition hover:-translate-y-1 hover:bg-white/10">
             <div className="text-5xl">{i.e}</div>
             <p className="mt-2 text-sm font-bold">{i.n}</p>
-            <p className="font-black text-cyan-300">{i.p.toLocaleString("en-IN")} টাকা</p>
+            <p className="font-black text-cyan-300">{toBnDigits(i.p.toLocaleString("en-IN"))} টাকা</p>
             <p className="text-[11px] text-slate-400">EMI {i.emi}</p>
-            <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
-              className="mt-2 w-full rounded-xl bg-cyan-600 py-2 text-sm font-bold hover:bg-cyan-500">+ কার্ট</button>
+            <button onClick={(e) => { e.stopPropagation(); addQ(i); }}
+              className="btn-demo mt-2 w-full !py-2 !text-[13px]" style={{ background: "#22d3ee" }}>+ কার্ট</button>
           </div>
         ))}
       </div>
-    </div>
+      {showItems.length === 0 && <p className="pb-8 text-center text-sm text-slate-500">😅 কিছু পাওয়া যায়নি</p>}
+    </SiteShell>
   );
 }
 
