@@ -6,12 +6,12 @@ export type Lang = "bn" | "en";
 
 const STR = {
   bn: {
-    nav_home: "হোম",
-    nav_shop: "শপ",
+    nav_home: "🏠 হোম",
+    nav_shop: "🛍️ শপ",
     nav_earn: "💰 আয় করুন",
     nav_market: "🎮 ID বাজার",
     nav_webdev: "🌐 ওয়েবসাইট বানান",
-    nav_dashboard: "আমার অর্ডার",
+    nav_dashboard: "📦 আমার অর্ডার",
     nav_login: "লগইন",
     nav_signup: "সাইন আপ",
     nav_logout: "লগআউট",
@@ -64,12 +64,12 @@ const STR = {
     d_boosting: "বুস্ট হচ্ছে...",
   },
   en: {
-    nav_home: "Home",
-    nav_shop: "Shop",
+    nav_home: "🏠 Home",
+    nav_shop: "🛍️ Shop",
     nav_earn: "💰 Earn",
     nav_market: "🎮 ID Market",
     nav_webdev: "🌐 Build Website",
-    nav_dashboard: "My Orders",
+    nav_dashboard: "📦 My Orders",
     nav_login: "Login",
     nav_signup: "Sign up",
     nav_logout: "Logout",

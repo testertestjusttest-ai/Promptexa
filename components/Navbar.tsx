@@ -27,6 +27,7 @@ export default function Navbar() {
 
   const directLinks = [{ href: "/", label: t("nav_home") }];
   const menuLinks = [
+    { href: "/", label: t("nav_home") },
     { href: "/shop", label: t("nav_shop") },
     { href: "/earn", label: t("nav_earn") },
     { href: "/marketplace", label: t("nav_market") },
