@@ -32,16 +32,23 @@ export type Demo = {
   type: string;
   desc: string;
   price: string;
+  group?: string;
   render: () => React.ReactNode;
 };
 
-export const DEMOS: Demo[] = [
+export const HAND_GROUPS: Record<string, string> = {
+  restaurant: "🍔 খাবার", fashion: "🛍️ শপিং", portfolio: "🎨 পোর্টফোলিও",
+  news: "📰 মিডিয়া", realestate: "🏠 প্রপার্টি", gym: "💪 ফিটনেস",
+  travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
+};
+
+const HAND_DEMOS: Demo[] = [
   {
     slug: "restaurant",
     name: "স্বাদের ঠিকানা",
     type: "রেস্টুরেন্ট ওয়েবসাইট",
     desc: "মেনু, অনলাইন অর্ডার, টেবিল বুকিংসহ সম্পূর্ণ রেস্টুরেন্ট সাইট।",
-    price: "৳৪,৯৯৯ থেকে",
+    price: "৪,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame dark>
         <Nav logo="🍔 স্বাদের ঠিকানা" links={["মেনু", "অফার", "রিভিউ"]} cta="অর্ডার করুন" light />
@@ -55,7 +62,7 @@ export const DEMOS: Demo[] = [
           {["🍕 পিজ্জা", "🍗 চিকেন", "🍰 ডেজার্ট"].map((f) => (
             <div key={f} className="rounded-xl bg-white/5 p-2 text-center text-[11px] text-white">
               <div className="text-xl">{f.split(" ")[0]}</div><p className="mt-1 opacity-80">{f.split(" ")[1]}</p>
-              <p className="font-bold text-amber-300">৳২৫০</p>
+              <p className="font-bold text-amber-300">২৫০ টাকা</p>
             </div>
           ))}
         </div>
@@ -68,7 +75,7 @@ export const DEMOS: Demo[] = [
     name: "স্টাইল হাব",
     type: "ফ্যাশন ই-কমার্স",
     desc: "কার্ট, বিকাশ পেমেন্ট, অর্ডার ট্র্যাকিংসহ ফ্যাশন শপ।",
-    price: "৳১২,৯৯৯ থেকে",
+    price: "১২,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame>
         <Nav logo="👗 স্টাইল হাব" links={["শাড়ি", "পাঞ্জাবি", "অফার"]} cta="কার্ট (২)" />
@@ -80,7 +87,7 @@ export const DEMOS: Demo[] = [
           {["👚", "👔", "👠", "👜"].map((e, i) => (
             <div key={i} className="rounded-xl bg-slate-100 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-slate-700">৳{(i + 1) * 499}</p>
+              <p className="mt-1 text-[10px] font-bold text-slate-700">{(i + 1) * 499} টাকা</p>
             </div>
           ))}
         </div>
@@ -95,7 +102,7 @@ export const DEMOS: Demo[] = [
     name: "লেন্স ও আলো",
     type: "ফটোগ্রাফার পোর্টফোলিও",
     desc: "গ্যালারি, বুকিং ফর্মসহ মিনিমাল পোর্টফোলিও সাইট।",
-    price: "৳৪,৯৯৯ থেকে",
+    price: "৪,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame dark>
         <Nav logo="📸 লেন্স ও আলো" links={["গ্যালারি", "সার্ভিস", "যোগাযোগ"]} cta="বুক করুন" light />
@@ -117,7 +124,7 @@ export const DEMOS: Demo[] = [
     name: "খবর ২৪",
     type: "নিউজ পোর্টাল",
     desc: "লাইভ আপডেট, ক্যাটাগরি, বিজ্ঞাপন স্লটসহ নিউজ সাইট।",
-    price: "৳৯,৯৯৯ থেকে",
+    price: "৯,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame>
         <div className="bg-red-600 px-4 py-2.5 text-white">
@@ -149,7 +156,7 @@ export const DEMOS: Demo[] = [
     name: "স্বপ্ন নিবাস",
     type: "রিয়েল এস্টেট",
     desc: "প্রপার্টি লিস্টিং, ফিল্টার, ভিজিট বুকিংসহ হাউজিং সাইট।",
-    price: "৳১২,৯৯৯ থেকে",
+    price: "১২,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame>
         <Nav logo="🏠 স্বপ্ন নিবাস" links={["ফ্ল্যাট", "প্লট", "বাণিজ্যিক"]} cta="যোগাযোগ" />
@@ -167,7 +174,7 @@ export const DEMOS: Demo[] = [
             <div key={i} className="overflow-hidden rounded-xl border border-slate-200">
               <div className="grid h-16 place-items-center bg-gradient-to-br from-blue-100 to-indigo-200 text-3xl">{i === 0 ? "🏢" : "🏡"}</div>
               <p className="p-2 text-[11px] font-bold text-slate-800">{t}</p>
-              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">৳{(i + 1) * 85} লাখ</p>
+              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">{(i + 1) * 85} লাখ টাকা</p>
             </div>
           ))}
         </div>
@@ -179,7 +186,7 @@ export const DEMOS: Demo[] = [
     name: "পাওয়ার জিম",
     type: "জিম ও ফিটনেস",
     desc: "মেম্বারশিপ প্ল্যান, ট্রেইনার, শিডিউলসহ ফিটনেস সাইট।",
-    price: "৳৪,৯৯৯ থেকে",
+    price: "৪,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame dark>
         <Nav logo="💪 পাওয়ার জিম" links={["প্ল্যান", "ট্রেইনার", "গ্যালারি"]} cta="জয়েন করুন" light />
@@ -189,7 +196,7 @@ export const DEMOS: Demo[] = [
           <span className="mt-3 inline-block rounded-full bg-red-600 px-4 py-1.5 text-[11px] font-bold">ফ্রি ট্রায়াল নিন</span>
         </div>
         <div className="grid grid-cols-3 gap-2 p-3 text-center">
-          {["মাসিক ৳১৫০০", "৬ মাস ৳৭০০০", "বাৎসরিক ৳১২০০০"].map((p, i) => (
+          {["মাসিক ১,৫০০ টাকা", "৬ মাস ৭,০০০ টাকা", "বাৎসরিক ১২,০০০ টাকা"].map((p, i) => (
             <div key={i} className={`rounded-xl p-2 text-[10px] ${i === 1 ? "bg-red-600 text-white" : "bg-white/5 text-slate-300"}`}>
               <p className="font-bold">{p}</p>
             </div>
@@ -203,7 +210,7 @@ export const DEMOS: Demo[] = [
     name: "ঘুরে আসি",
     type: "ট্রাভেল এজেন্সি",
     desc: "ট্যুর প্যাকেজ, বুকিং, রিভিউসহ ট্রাভেল সাইট।",
-    price: "৳৯,৯৯৯ থেকে",
+    price: "৯,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame>
         <Nav logo="✈️ ঘুরে আসি" links={["দেশি", "বিদেশি", "হোটেল"]} cta="বুক করুন" />
@@ -220,7 +227,7 @@ export const DEMOS: Demo[] = [
             <div key={i} className="rounded-xl bg-teal-50 p-2 text-center">
               <div className="text-2xl">{t.split(" ")[0]}</div>
               <p className="text-[10px] font-bold text-teal-800">{t.split(" ")[1]}</p>
-              <p className="text-[10px] text-teal-600">৳{(i + 2) * 4500}</p>
+              <p className="text-[10px] text-teal-600">{(i + 2) * 4500} টাকা</p>
             </div>
           ))}
         </div>
@@ -232,7 +239,7 @@ export const DEMOS: Demo[] = [
     name: "ক্লাউড সেবা",
     type: "টেক স্টার্টআপ (SaaS)",
     desc: "ল্যান্ডিং পেজ, প্রাইসিং, সাইনআপসহ SaaS সাইট।",
-    price: "৳১২,৯৯৯ থেকে",
+    price: "১২,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame dark>
         <Nav logo="☁️ ক্লাউড সেবা" links={["ফিচার", "প্রাইসিং", "ডকস"]} cta="ফ্রি ট্রায়াল" light />
@@ -242,7 +249,7 @@ export const DEMOS: Demo[] = [
           <p className="mt-2 text-[11px] text-slate-400">১০,০০০+ কোম্পানির বিশ্বস্ত প্ল্যাটফর্ম</p>
         </div>
         <div className="mx-4 mb-3 grid grid-cols-3 gap-2 text-center">
-          {["বেসিক ৳৯৯০", "প্রো ৳২৯৯০", "এন্টারপ্রাইজ"].map((p, i) => (
+          {["বেসিক ৯৯০ টাকা", "প্রো ২,৯৯০ টাকা", "এন্টারপ্রাইজ"].map((p, i) => (
             <div key={i} className={`rounded-xl p-2 text-[10px] ${i === 1 ? "bg-indigo-600 text-white" : "bg-white/5 text-slate-300"}`}>
               <p className="font-bold">{p}</p>
             </div>
@@ -256,7 +263,7 @@ export const DEMOS: Demo[] = [
     name: "রূপচর্চা",
     type: "বিউটি পার্লার",
     desc: "সার্ভিস মেনু, অ্যাপয়েন্টমেন্ট বুকিংসহ পার্লার সাইট।",
-    price: "৳৪,৯৯৯ থেকে",
+    price: "৪,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame>
         <Nav logo="💅 রূপচর্চা" links={["সার্ভিস", "গ্যালারি", "অফার"]} cta="বুকিং দিন" />
@@ -265,7 +272,7 @@ export const DEMOS: Demo[] = [
           <p className="mt-1 text-[11px] opacity-90">এক্সপার্ট বিউটিশিয়ান • প্রিমিয়াম প্রোডাক্ট</p>
         </div>
         <div className="space-y-2 p-3">
-          {["💇 হেয়ার কাট ৳৩০০", "💆 ফেসিয়াল ৳৮০০", "💅 ম্যানিকিউর ৳৫০০"].map((s, i) => (
+          {["💇 হেয়ার কাট ৩০০ টাকা", "💆 ফেসিয়াল ৮০০ টাকা", "💅 ম্যানিকিউর ৫০০ টাকা"].map((s, i) => (
             <div key={i} className="flex items-center justify-between rounded-xl bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-900">
               <span>{s}</span><span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] text-white">বুক</span>
             </div>
@@ -279,7 +286,7 @@ export const DEMOS: Demo[] = [
     name: "টেক জোন",
     type: "ইলেকট্রনিক্স শপ",
     desc: "প্রোডাক্ট ক্যাটালগ, EMI, ওয়ারেন্টিসহ গ্যাজেট শপ।",
-    price: "৳১২,৯৯৯ থেকে",
+    price: "১২,৯৯৯ টাকা থেকে",
     render: () => (
       <Frame dark>
         <Nav logo="🔌 টেক জোন" links={["মোবাইল", "ল্যাপটপ", "অ্যাক্সেসরিজ"]} cta="কার্ট" light />
@@ -291,7 +298,7 @@ export const DEMOS: Demo[] = [
           {["📱", "💻", "🎧", "⌚"].map((e, i) => (
             <div key={i} className="rounded-xl bg-white/5 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-cyan-300">৳{(i + 1) * 8990}</p>
+              <p className="mt-1 text-[10px] font-bold text-cyan-300">{(i + 1) * 8990} টাকা</p>
             </div>
           ))}
         </div>
@@ -300,3 +307,11 @@ export const DEMOS: Demo[] = [
     ),
   },
 ];
+
+/* ---- merge engine demos (40) ---- */
+import { ENGINE_DEMOS } from "./engine-demos";
+
+const WITH_GROUPS: Demo[] = HAND_DEMOS.map((d) => ({ ...d, group: HAND_GROUPS[d.slug] ?? "🌐 অন্যান্য" }));
+
+/** All demos: 10 hand-crafted + 40 engine-driven = 50. */
+export const DEMOS: Demo[] = [...WITH_GROUPS, ...ENGINE_DEMOS];

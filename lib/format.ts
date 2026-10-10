@@ -5,10 +5,10 @@ export function toBnDigits(input: string | number): string {
   return String(input).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
 }
 
-/** 1999 -> "৳১,৯৯৯" */
+/** 1999 -> "১,৯৯৯ টাকা" (৳ glyph renders like ৮ on some phones — use the word) */
 export function formatBDT(amount: number): string {
   const grouped = amount.toLocaleString("en-IN");
-  return `৳${toBnDigits(grouped)}`;
+  return `${toBnDigits(grouped)} টাকা`;
 }
 
 /** "DP-20261008-A1B2" style order numbers */

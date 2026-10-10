@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Toast, MiniCart } from "./demo-ui";
 
 /** DigiPlyra demo shell — slim browser chrome on top, pitch below the demo. */
 export function DemoShell({ name, type, slug, children }: { name: string; type: string; slug: string; children: React.ReactNode }) {
@@ -10,7 +11,7 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
       {/* slim browser chrome — feels like entering the real website */}
       <div className="sticky top-16 z-40 border-y border-white/10 bg-[#060913]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
-          <Link href="/web-dev#demos" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20" aria-label="পেছনে">
+          <Link href="/#demos" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20" aria-label="পেছনে">
             ←
           </Link>
           <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg bg-white/[0.07] px-3 py-1.5">
@@ -24,7 +25,7 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
           <span className="hidden shrink-0 rounded-full bg-[#d7ff3f]/15 px-2.5 py-1 text-[10px] font-black text-[#d7ff3f] sm:inline">
             ⓘ ডেমো
           </span>
-          <Link href="/web-dev#quote" className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
+          <Link href="/#quote" className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
             📝 এরকম সাইট চাই
           </Link>
         </div>
@@ -67,69 +68,11 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
           </div>
         </div>
         <div className="mt-5 text-center">
-          <Link href="/web-dev#quote" className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
+          <Link href="/#quote" className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
             📝 ফ্রি কোট নিন — আজই শুরু করুন
           </Link>
           <p className="mt-2 text-[11px] text-slate-500">💡 এটি শুধু একটি ডেমো — অর্ডার করলে আপনার নাম, ছবি ও কনটেন্ট দিয়ে বানিয়ে দেওয়া হবে।</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Toast({ msg }: { msg: string }) {
-  if (!msg) return null;
-  return (
-    <div className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 animate-pulse rounded-2xl bg-[#d7ff3f] px-6 py-3 text-sm font-black text-black shadow-2xl">
-      {msg}
-    </div>
-  );
-}
-
-/** Shared mini cart drawer — every demo cart fully works. */
-function MiniCart({ items, onClose, onClear, accent }: {
-  items: { n: string; p: number }[];
-  onClose: () => void;
-  onClear: () => void;
-  accent: string;
-}) {
-  const [done, setDone] = useState(false);
-  const total = items.reduce((s, i) => s + i.p, 0);
-  return (
-    <div className="fixed inset-0 z-[70] bg-black/70" onClick={onClose}>
-      <div className="absolute bottom-0 left-0 right-0 mx-auto max-h-[75vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-[#101828] p-5 text-white" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="font-black">🛒 আপনার কার্ট ({items.length})</p>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full bg-white/10">✕</button>
-        </div>
-        {done ? (
-          <div className="py-8 text-center">
-            <p className="text-5xl">🎉</p>
-            <p className="mt-3 font-black text-emerald-300">অর্ডার সফল! (ডেমো)</p>
-            <p className="mt-1 text-xs text-slate-400">আসল সাইটে এখানে পেমেন্ট অপশন আসবে।</p>
-            <button onClick={() => { onClear(); onClose(); }} className="mt-4 rounded-xl bg-white/10 px-6 py-2 text-sm font-bold">ঠিক আছে</button>
-          </div>
-        ) : items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-400">কার্ট খালি — কিছু যোগ করুন 🛒</p>
-        ) : (
-          <>
-            <div className="space-y-2">
-              {items.map((i, idx) => (
-                <div key={idx} className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2.5">
-                  <span className="text-sm font-bold">{i.n}</span>
-                  <span className="text-sm font-black" style={{ color: accent }}>৳{i.p.toLocaleString("en-IN")}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
-              <span className="font-bold">মোট</span>
-              <span className="text-xl font-black" style={{ color: accent }}>৳{total.toLocaleString("en-IN")}</span>
-            </div>
-            <button onClick={() => setDone(true)} className="mt-4 w-full rounded-2xl py-3 font-black text-black" style={{ background: accent }}>
-              ✅ অর্ডার কনফার্ম করুন
-            </button>
-          </>
-        )}
       </div>
     </div>
   );
@@ -180,7 +123,7 @@ export function FullRestaurant() {
           <div key={i.n} className="rounded-2xl bg-white/5 p-4 text-center">
             <div className="text-4xl">{i.e}</div>
             <p className="mt-2 text-sm font-bold">{i.n}</p>
-            <p className="font-bold text-amber-300">৳{i.p}</p>
+            <p className="font-bold text-amber-300">{i.p} টাকা</p>
             <button onClick={() => add(i)} className="mt-2 w-full rounded-xl bg-orange-500 py-2 text-sm font-bold hover:bg-orange-400">+ যোগ করুন</button>
           </div>
         ))}
@@ -226,7 +169,7 @@ export function FullFashion() {
             <div className="grid h-28 place-items-center bg-gradient-to-br from-pink-100 to-fuchsia-100 text-5xl">{i.e}</div>
             <div className="p-3">
               <p className="text-sm font-bold">{i.n}</p>
-              <p className="font-black text-pink-600">৳{i.p.toLocaleString("en-IN")}</p>
+              <p className="font-black text-pink-600">{i.p.toLocaleString("en-IN")} টাকা</p>
               <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
                 className="mt-2 w-full rounded-xl bg-pink-600 py-2 text-sm font-bold text-white hover:bg-pink-500">কার্টে নিন</button>
             </div>
@@ -351,7 +294,7 @@ export function FullRealEstate() {
             <div className="p-4">
               <p className="font-bold">{p.n}</p>
               <p className="text-xs text-slate-500">📍 {p.loc} • 🛏️ {p.beds} বেড</p>
-              <p className="mt-1 text-lg font-black text-blue-700">৳{p.price} লাখ</p>
+              <p className="mt-1 text-lg font-black text-blue-700">{p.price} লাখ টাকা</p>
               <button onClick={() => { setToast(`✅ ${p.n}-এ ভিজিট বুক হয়েছে! কল পাবেন।`); setTimeout(() => setToast(""), 2000); }}
                 className="mt-2 w-full rounded-xl bg-blue-700 py-2 text-sm font-bold text-white hover:bg-blue-600">📅 ভিজিট বুক করুন</button>
             </div>
@@ -366,9 +309,9 @@ export function FullRealEstate() {
 /* ---------------- 6. Gym ---------------- */
 export function FullGym() {
   const plans = [
-    { n: "মাসিক", p: "৳১,৫০০", f: ["সব ইকুইপমেন্ট", "লকার"] },
-    { n: "৬ মাস", p: "৳৭,০০০", f: ["সব ইকুইপমেন্ট", "ডায়েট চার্ট", "ট্রেইনার"] },
-    { n: "বাৎসরিক", p: "৳১২,০০০", f: ["সব সুবিধা", "পার্সোনাল ট্রেইনার", "সাপ্লিমেন্ট ছাড়"] },
+    { n: "মাসিক", p: "১,৫০০ টাকা", f: ["সব ইকুইপমেন্ট", "লকার"] },
+    { n: "৬ মাস", p: "৭,০০০ টাকা", f: ["সব ইকুইপমেন্ট", "ডায়েট চার্ট", "ট্রেইনার"] },
+    { n: "বাৎসরিক", p: "১২,০০০ টাকা", f: ["সব সুবিধা", "পার্সোনাল ট্রেইনার", "সাপ্লিমেন্ট ছাড়"] },
   ];
   const [sel, setSel] = useState(1);
   const [toast, setToast] = useState("");
@@ -425,7 +368,7 @@ export function FullTravel() {
                 className={`rounded-2xl border-2 p-3 text-center ${d === i ? "border-teal-500 bg-teal-50" : "border-slate-200"}`}>
                 <div className="text-3xl">{x.e}</div>
                 <p className="mt-1 text-xs font-bold">{x.n}</p>
-                <p className="text-xs text-teal-700">৳{x.p.toLocaleString("en-IN")}</p>
+                <p className="text-xs text-teal-700">{x.p.toLocaleString("en-IN")} টাকা</p>
               </button>
             ))}
           </div>
@@ -440,12 +383,12 @@ export function FullTravel() {
         </div>
         <div className="flex items-center justify-between rounded-2xl bg-teal-600 p-4 text-white">
           <p className="font-bold">মোট খরচ</p>
-          <p className="text-2xl font-black">৳{total.toLocaleString("en-IN")}</p>
+          <p className="text-2xl font-black">{total.toLocaleString("en-IN")} টাকা</p>
         </div>
         {done ? (
           <div className="rounded-2xl bg-emerald-50 p-4 text-center">
             <p className="text-sm font-bold text-emerald-700">✅ বুকিং সফল! (ডেমো)</p>
-            <p className="mt-1 text-xs text-slate-500">{dests[d].n} • {guests} জন • ৳{total.toLocaleString("en-IN")} — আমাদের টিম কল করবে।</p>
+            <p className="mt-1 text-xs text-slate-500">{dests[d].n} • {guests} জন • {total.toLocaleString("en-IN")} টাকা — আমাদের টিম কল করবে।</p>
             <button onClick={() => setDone(false)} className="mt-2 text-xs font-bold text-teal-700 underline">নতুন বুকিং করুন</button>
           </div>
         ) : (
@@ -481,7 +424,7 @@ export function FullSaas() {
           <div key={p.n} className={`rounded-2xl border p-5 ${p.hot ? "border-indigo-500 bg-indigo-600/15 shadow-[0_0_24px_rgba(99,102,241,0.3)]" : "border-white/10 bg-white/5"}`}>
             {p.hot && <span className="rounded-full bg-indigo-600 px-2.5 py-0.5 text-[10px] font-bold">🔥 জনপ্রিয়</span>}
             <p className="mt-2 font-black">{p.n}</p>
-            <p className="mt-1"><span className="text-2xl font-black">৳{price(p.m).toLocaleString("en-IN")}</span><span className="text-xs text-slate-400">/{yearly ? "বছর" : "মাস"}</span></p>
+            <p className="mt-1"><span className="text-2xl font-black">{price(p.m).toLocaleString("en-IN")} টাকা</span><span className="text-xs text-slate-400">/{yearly ? "বছর" : "মাস"}</span></p>
             <ul className="mt-3 space-y-1 text-xs text-slate-300">{p.f.map((f) => <li key={f}>✓ {f}</li>)}</ul>
             <button onClick={() => setStarted(p.n)} className="mt-4 w-full rounded-xl bg-indigo-600 py-2 text-sm font-bold hover:bg-indigo-500">শুরু করুন</button>
           </div>
@@ -519,7 +462,7 @@ export function FullSalon() {
             <span className="text-4xl">{s.e}</span>
             <div className="flex-1">
               <p className="font-bold">{s.n}</p>
-              <p className="text-xs text-slate-500">⏱️ {s.t} • <b className="text-rose-600">৳{s.p}</b></p>
+              <p className="text-xs text-slate-500">⏱️ {s.t} • <b className="text-rose-600">{s.p} টাকা</b></p>
             </div>
             <button onClick={() => setBooked(s.n)}
               className={`rounded-xl px-4 py-2 text-sm font-bold ${booked === s.n ? "bg-emerald-500 text-white" : "bg-rose-500 text-white hover:bg-rose-400"}`}>
@@ -536,10 +479,10 @@ export function FullSalon() {
 /* ---------------- 10. Gadget ---------------- */
 export function FullGadget() {
   const items = [
-    { n: "স্মার্টফোন X", p: 25990, e: "📱", emi: "৳২,১৬৬/মাস" },
-    { n: "ল্যাপটপ প্রো", p: 75990, e: "💻", emi: "৳৬,৩৩৩/মাস" },
-    { n: "এয়ারবাডস", p: 2990, e: "🎧", emi: "৳২৫০/মাস" },
-    { n: "স্মার্টওয়াচ", p: 8990, e: "⌚", emi: "৳৭৫০/মাস" },
+    { n: "স্মার্টফোন X", p: 25990, e: "📱", emi: "২,১৬৬ টাকা/মাস" },
+    { n: "ল্যাপটপ প্রো", p: 75990, e: "💻", emi: "৬,৩৩৩ টাকা/মাস" },
+    { n: "এয়ারবাডস", p: 2990, e: "🎧", emi: "২৫০ টাকা/মাস" },
+    { n: "স্মার্টওয়াচ", p: 8990, e: "⌚", emi: "৭৫০ টাকা/মাস" },
   ];
   const [cart, setCart] = useState<{ n: string; p: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -558,7 +501,7 @@ export function FullGadget() {
           <div key={i.n} className="rounded-2xl bg-white/5 p-4 text-center">
             <div className="text-5xl">{i.e}</div>
             <p className="mt-2 text-sm font-bold">{i.n}</p>
-            <p className="font-black text-cyan-300">৳{i.p.toLocaleString("en-IN")}</p>
+            <p className="font-black text-cyan-300">{i.p.toLocaleString("en-IN")} টাকা</p>
             <p className="text-[11px] text-slate-400">EMI {i.emi}</p>
             <button onClick={() => { setCart((c) => [...c, i]); setToast(`✅ ${i.n} কার্টে!`); setTimeout(() => setToast(""), 1500); }}
               className="mt-2 w-full rounded-xl bg-cyan-600 py-2 text-sm font-bold hover:bg-cyan-500">+ কার্ট</button>
