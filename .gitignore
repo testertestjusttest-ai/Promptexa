@@ -1,0 +1,4 @@
+
+# generated demo images (decoded at build from demo-img-src)
+public/demo-img/
+!public/demo-img/.gitkeep

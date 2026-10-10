@@ -5,6 +5,7 @@
 
 import { ENGINE_DEFS, type EngineItem } from "../engine-data";
 import type { DemoGalleryItem, DemoNewsItem, DemoProduct, DemoServiceItem, DemoSiteDef } from "./types";
+import { DEMO_IMGS } from "./demo-img";
 
 const CONTACT = "০১৮৩৩৪০২৫৮৬";
 const ADDRESS = "বাড়ি ১২, রোড ৫, ধানমন্ডি, ঢাকা-১২০৫";
@@ -235,6 +236,19 @@ const HAND_DEFS: DemoSiteDef[] = [
 ];
 
 export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED];
+
+/* Attach real photo assets (hero + category images) to every demo def. */
+for (const d of DEMO_DEFS) {
+  const im = DEMO_IMGS[d.slug];
+  if (im) {
+    d.heroImg = im.hero;
+    d.catImgs = im.cats;
+    for (const pr of d.products) {
+      const u = im.cats[pr.c];
+      if (u) pr.img = u;
+    }
+  }
+}
 
 export function getDemoDef(slug: string): DemoSiteDef | undefined {
   return DEMO_DEFS.find((d) => d.slug === slug);
