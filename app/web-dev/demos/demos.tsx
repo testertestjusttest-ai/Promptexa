@@ -1,3 +1,5 @@
+import { toBnDigits } from "@/lib/format";
+
 /** 10 demo website mockups — each renders a convincing mini website. */
 
 function Frame({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
@@ -87,7 +89,7 @@ const HAND_DEMOS: Demo[] = [
           {["👚", "👔", "👠", "👜"].map((e, i) => (
             <div key={i} className="rounded-xl bg-slate-100 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-slate-700">{(i + 1) * 499} টাকা</p>
+              <p className="mt-1 text-[10px] font-bold text-slate-700">{toBnDigits(((i + 1) * 499).toLocaleString("en-IN"))} টাকা</p>
             </div>
           ))}
         </div>
@@ -174,7 +176,7 @@ const HAND_DEMOS: Demo[] = [
             <div key={i} className="overflow-hidden rounded-xl border border-slate-200">
               <div className="grid h-16 place-items-center bg-gradient-to-br from-blue-100 to-indigo-200 text-3xl">{i === 0 ? "🏢" : "🏡"}</div>
               <p className="p-2 text-[11px] font-bold text-slate-800">{t}</p>
-              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">{(i + 1) * 85} লাখ টাকা</p>
+              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">{toBnDigits((i + 1) * 85)} লাখ টাকা</p>
             </div>
           ))}
         </div>
@@ -227,7 +229,7 @@ const HAND_DEMOS: Demo[] = [
             <div key={i} className="rounded-xl bg-teal-50 p-2 text-center">
               <div className="text-2xl">{t.split(" ")[0]}</div>
               <p className="text-[10px] font-bold text-teal-800">{t.split(" ")[1]}</p>
-              <p className="text-[10px] text-teal-600">{(i + 2) * 4500} টাকা</p>
+              <p className="text-[10px] text-teal-600">{toBnDigits(((i + 2) * 4500).toLocaleString("en-IN"))} টাকা</p>
             </div>
           ))}
         </div>
@@ -298,7 +300,7 @@ const HAND_DEMOS: Demo[] = [
           {["📱", "💻", "🎧", "⌚"].map((e, i) => (
             <div key={i} className="rounded-xl bg-white/5 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-cyan-300">{(i + 1) * 8990} টাকা</p>
+              <p className="mt-1 text-[10px] font-bold text-cyan-300">{toBnDigits(((i + 1) * 8990).toLocaleString("en-IN"))} টাকা</p>
             </div>
           ))}
         </div>
