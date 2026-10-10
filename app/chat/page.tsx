@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import MotionBg from "@/components/MotionBg";
 
 type Thread = { id: string; other_id: string; other_name: string; last_body: string; last_mine: boolean; last_at: string };
 type Msg = { id: string; sender_id: string; body: string; created_at: string; mine: boolean };
@@ -124,8 +125,11 @@ function ChatInner() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="font-display text-2xl font-black text-white">💬 কমিউনিটি চ্যাট</h1>
-      <p className="mt-1 text-xs text-slate-500">শুধু আপনি আর যার সাথে কথা বলছেন — তৃতীয় কেউ দেখতে পাবে না (অ্যাডমিন ছাড়া)।</p>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 px-6 py-6">
+        <MotionBg intensity="soft" />
+        <h1 className="font-display relative text-2xl font-black text-white">💬 কমিউনিটি চ্যাট</h1>
+        <p className="relative mt-1 text-xs text-slate-500">শুধু আপনি আর যার সাথে কথা বলছেন — তৃতীয় কেউ দেখতে পাবে না (অ্যাডমিন ছাড়া)।</p>
+      </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-[300px_1fr]">
         {/* Thread list / search */}

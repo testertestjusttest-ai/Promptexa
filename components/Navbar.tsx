@@ -30,6 +30,7 @@ export default function Navbar() {
     { href: "/shop", label: t("nav_shop") },
     { href: "/earn", label: t("nav_earn") },
     { href: "/marketplace", label: t("nav_market") },
+    { href: "/demos", label: t("nav_demos") },
     { href: "/chat", label: t("nav_chat") },
     { href: "/faq", label: t("nav_faq") },
     { href: "/dashboard", label: t("nav_dashboard") },

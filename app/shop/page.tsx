@@ -114,7 +114,7 @@ export default async function HomePage() {
           {DEMOS.slice(0, 4).map((d) => (
             <Link
               key={d.slug}
-              href={`/web-dev/demo/${d.slug}`}
+              href={`/demo${d.slug}`}
               className="tilt-card w-64 shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40 sm:w-auto"
             >
               <div className="pointer-events-none max-h-[220px] overflow-hidden">
@@ -129,8 +129,8 @@ export default async function HomePage() {
           ))}
         </div>
         <div className="mt-8 text-center">
-          <Link href="/web-dev#demos" className="btn-ghost">
-            সব ১০টি ডেমো দেখুন →
+          <Link href="/demos" className="btn-ghost">
+            সব ৫০টি ডেমো দেখুন →
           </Link>
         </div>
       </section>

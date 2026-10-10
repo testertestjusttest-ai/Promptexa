@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import MotionBg from "@/components/MotionBg";
 
 type QA = { q: string; a: string; keys: string[]; cat: string };
 
@@ -62,8 +63,11 @@ export default function FaqPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="font-display text-center text-3xl font-black text-white">❓ সাধারণ জিজ্ঞাসা</h1>
-      <p className="mt-2 text-center text-sm text-slate-400">প্রশ্ন লিখুন — অটোমেটিক উত্তর পাবেন ⚡</p>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 px-6 py-8 text-center">
+        <MotionBg intensity="soft" />
+        <h1 className="font-display relative text-3xl font-black text-white">❓ সাধারণ জিজ্ঞাসা</h1>
+        <p className="relative mt-2 text-sm text-slate-400">প্রশ্ন লিখুন — অটোমেটিক উত্তর পাবেন ⚡</p>
+      </div>
 
       {/* Auto-answer ask box */}
       <div className="glass mt-6 rounded-3xl p-5">

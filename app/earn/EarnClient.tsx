@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatBDT, toBnDigits, timeAgo } from "@/lib/format";
 import type { Wallet, WalletTxn } from "@/lib/types";
 import AdSlot from "@/components/AdSlot";
+import MotionBg from "@/components/MotionBg";
 
 type Config = {
   enabled: boolean;
@@ -160,11 +161,13 @@ export default function EarnClient({
       setConfig(c.config);
     }
     if (r?.ok) {
-      setCardsDone(r.cards_done ?? []);
+      const done: number[] = r.cards_done ?? [];
+      setCardsDone(done);
       setRoundClaimed(!!r.claimed);
       setRoundReward(Number(r.round_reward) || 20);
       setRoundSecsLeft(Number(r.seconds_left) || 0);
-      setRoundActive(!!r.round_start);
+      // The 1-hour countdown is only shown after all 20 cards are complete.
+      setRoundActive(!!r.round_start && done.length >= CARDS_GOAL);
       setNowMs(Date.now());
     }
     setLoading(false);
@@ -212,10 +215,12 @@ export default function EarnClient({
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setCardsDone(d.cards_done ?? []);
+      const done: number[] = d.cards_done ?? [];
+      setCardsDone(done);
       setRoundClaimed(!!d.claimed);
       setRoundSecsLeft(Number(d.seconds_left) || 0);
-      setRoundActive(true);
+      // Only arm the 1-hour countdown once all 20 cards are done.
+      setRoundActive(done.length >= CARDS_GOAL);
       setNowMs(Date.now());
       if ((d.cards_done ?? []).length >= CARDS_GOAL) {
         setMsg(`🎉 ${toBnDigits(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${toBnDigits(d.round_reward ?? roundReward)} টাকা বোনাস নিন!`);
@@ -360,7 +365,9 @@ export default function EarnClient({
       ))}
 
       {/* wallet hero */}
-      <div className="glass ring-conic mt-6 rounded-3xl p-6">
+      <div className="glass ring-conic relative mt-6 overflow-hidden rounded-3xl p-6">
+        <MotionBg intensity="soft" />
+        <div className="relative">
         <p className="text-xs uppercase tracking-wide text-slate-500">
           ওয়ালেট ব্যালেন্স
         </p>
@@ -384,6 +391,7 @@ export default function EarnClient({
         <Link href="/shop" className="btn-vault mt-4 inline-flex w-full !py-3 text-sm">
           🛒 ব্যালেন্স দিয়ে কিনুন
         </Link>
+        </div>
       </div>
 
       {/* watch ad — 20-card hourly round, ৳20 lump sum */}
@@ -404,7 +412,7 @@ export default function EarnClient({
               💰 <b className="text-white">আর্ন নাও</b> চাপুন — {toBnDigits(CARDS_GOAL)}টি কার্ড
               আসবে। প্রতিটি কার্ডে ক্লিক করলে অ্যাড খুলবে, {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
               পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{toBnDigits(CARDS_GOAL)}টি শেষ হলে একসাথে {toBnDigits(roundReward)} টাকা ওয়ালেটে!</b>
-              <br />⏳ প্রতি রাউন্ড ১ ঘণ্টা — সময় শেষ হলে নতুন রাউন্ড শুরু হবে।
+              <br />⏳ {toBnDigits(CARDS_GOAL)}টি কার্ড শেষ হলে বাকি রাউন্ড-টাইমার দেখা যাবে — রাউন্ডের ১ ঘণ্টা শেষ হলে নতুন রাউন্ড শুরু হবে।
             </p>
 
             {!cardsOn ? (

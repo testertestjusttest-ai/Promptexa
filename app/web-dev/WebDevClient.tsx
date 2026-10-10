@@ -187,12 +187,12 @@ export default function WebDevClient() {
       <div id="demos" className="mt-14 scroll-mt-24">
         <h2 className="font-display text-center text-2xl font-bold text-white">🖥️ লাইভ ডেমো গ্যালারি</h2>
         <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-slate-400">
-          ১০ ধরনের প্রফেশনাল ওয়েবসাইটের ডেমো — কার্ডে ক্লিক করলে পুরো ডেমো দেখতে পারবেন।
+          {DEMOS.length} ধরনের প্রফেশনাল ওয়েবসাইটের ডেমো — কার্ডে ক্লিক করলে পুরো ডেমো দেখতে পারবেন।
           আপনার ব্যবসার জন্য এরকম সাইট বানিয়ে দেব!
         </p>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {DEMOS.map((d) => (
-            <Link key={d.slug} href={`/web-dev/demo/${d.slug}`} className="tilt-card group block overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40">
+          {DEMOS.slice(0, 9).map((d) => (
+            <Link key={d.slug} href={`/demo${d.slug}`} className="tilt-card group block overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40">
               <div className="pointer-events-none max-h-[300px] overflow-hidden [&_*]:!cursor-default">
                 {d.render()}
               </div>
@@ -209,6 +209,11 @@ export default function WebDevClient() {
               </div>
             </Link>
           ))}
+        </div>
+        <div className="mt-8 text-center">
+          <Link href="/demos" className="btn-vault inline-flex !px-10 !py-3.5 text-base">
+            🖥️ সব {DEMOS.length}টি ডেমো দেখুন →
+          </Link>
         </div>
       </div>
 
