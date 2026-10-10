@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     });
     if (spendErr || !(spendRes as { ok: boolean })?.ok) {
       return NextResponse.json(
-        { error: `ওয়ালেটে ৳${price} নেই — /earn থেকে আয় করুন!`, need_topup: true },
+        { error: `ওয়ালেটে ${price} টাকা নেই — /earn থেকে আয় করুন!`, need_topup: true },
         { status: 400 }
       );
     }

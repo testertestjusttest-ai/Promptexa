@@ -36,7 +36,7 @@ export default function DetailClient({ id }: { id: string }) {
   const chatRef = useRef<HTMLDivElement>(null);
 
   async function boost() {
-    if (boosting || !confirm("৳৩০ ওয়ালেট থেকে কেটে ৩ দিন ফিচার্ড করবেন?")) return;
+    if (boosting || !confirm("৩০ টাকা ওয়ালেট থেকে কেটে ৩ দিন ফিচার্ড করবেন?")) return;
     setBoosting(true);
     try {
       const res = await fetch("/api/marketplace/boost", {

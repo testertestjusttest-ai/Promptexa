@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         fee = Math.round((amt * pct) / 100);
         payout = amt - fee;
       }
-      await svc.from("escrow_deals").update({ status: "completed", fee_bdt: fee, seller_payout_bdt: payout, admin_note: (note || `টাকা বিক্রেতাকে বুঝিয়ে দেওয়া হয়েছে (ফি ৳${fee})`).slice(0, 500), updated_at: new Date().toISOString() }).eq("id", id);
+      await svc.from("escrow_deals").update({ status: "completed", fee_bdt: fee, seller_payout_bdt: payout, admin_note: (note || `টাকা বিক্রেতাকে বুঝিয়ে দেওয়া হয়েছে (ফি ${fee} টাকা)`).slice(0, 500), updated_at: new Date().toISOString() }).eq("id", id);
       if (deal) await svc.from("id_listings").update({ status: "sold" }).eq("id", deal.listing_id);
     } else if (action === "refund_deal") {
       await svc.from("escrow_deals").update({ status: "refunded", admin_note: (note || "ক্রেতাকে রিফান্ড").slice(0, 500), updated_at: new Date().toISOString() }).eq("id", id);

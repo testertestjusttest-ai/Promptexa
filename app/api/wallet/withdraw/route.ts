@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const amt = Math.floor(Number(amount) || 0);
     if (amt < minW) {
       return NextResponse.json(
-        { error: `সর্বনিম্ন উত্তোলন ৳${minW}` },
+        { error: `সর্বনিম্ন উত্তোলন ${minW} টাকা` },
         { status: 400 }
       );
     }

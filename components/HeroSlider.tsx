@@ -67,6 +67,27 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
           <div key={s.id} className="w-full shrink-0">
             <div className="relative">
               <div className="dot-grid absolute inset-0" />
+              {/* video-like animated background */}
+              <div className="animate-aurora-a pointer-events-none absolute -left-20 top-0 h-96 w-96 rounded-full bg-violet-600/25 blur-[110px]" />
+              <div className="animate-aurora-b pointer-events-none absolute -right-16 bottom-0 h-[420px] w-[420px] rounded-full bg-[#d7ff3f]/15 blur-[120px]" />
+              <div className="animate-aurora-c pointer-events-none absolute left-1/3 top-1/4 h-72 w-72 rounded-full bg-cyan-500/15 blur-[100px]" />
+              <div className="animate-sweep pointer-events-none absolute inset-y-0 w-1/4 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+              {/* floating editing/product elements */}
+              <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block" aria-hidden>
+                {[
+                  ["✂️", "8%", "18%", "0s", "CapCut"],
+                  ["🎨", "88%", "12%", "-2s", "Canva"],
+                  ["▶️", "82%", "68%", "-4s", "YouTube"],
+                  ["🎬", "12%", "72%", "-1s", ""],
+                  ["🎧", "70%", "30%", "-3s", ""],
+                  ["📱", "22%", "38%", "-5s", ""],
+                ].map(([e, left, top, delay, label], i) => (
+                  <div key={i} className="animate-float-slow absolute text-center" style={{ left, top, animationDelay: delay }}>
+                    <span className="text-4xl drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">{e}</span>
+                    {label && <p className="mt-1 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">{label}</p>}
+                  </div>
+                ))}
+              </div>
               <div
                 className="absolute inset-0 opacity-25"
                 style={{

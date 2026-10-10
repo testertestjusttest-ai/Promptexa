@@ -174,11 +174,11 @@ export default function SettingsClient() {
         </label>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {([
-            ["ad_reward_bdt", "প্রতি অ্যাডে বোনাস (৳)"],
+            ["ad_reward_bdt", "প্রতি অ্যাডে বোনাস (টাকা)"],
             ["ad_cooldown_sec", "দুই অ্যাডের ব্যবধান (সেকেন্ড)"],
             ["ad_daily_limit", "দৈনিক সর্বোচ্চ অ্যাড"],
-            ["referral_bonus_bdt", "রেফারেল বোনাস (৳)"],
-            ["min_withdraw_bdt", "সর্বনিম্ন উত্তোলন (৳)"],
+            ["referral_bonus_bdt", "রেফারেল বোনাস (টাকা)"],
+            ["min_withdraw_bdt", "সর্বনিম্ন উত্তোলন (টাকা)"],
           ] as const).map(([k, label]) => (
             <div key={k}>
               <label className="mb-1.5 block text-sm text-slate-300">{label}</label>
@@ -304,7 +304,7 @@ export default function SettingsClient() {
               className="field" />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm text-slate-300">বুস্ট প্রাইস (৳)</label>
+            <label className="mb-1.5 block text-sm text-slate-300">বুস্ট প্রাইস (টাকা)</label>
             <input type="number" min={1} value={market.boost_price}
               onChange={(e) => setMarket({ ...market, boost_price: Number(e.target.value) })}
               className="field" />
