@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo, type DemoStore } from "./store";
 import type { DemoSiteDef, DemoServiceItem, DemoGalleryItem, DemoNewsItem } from "./types";
-import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint } from "./ui";
+import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider } from "./ui";
 import { ShopLogin, ShopSignup, ShopAccount } from "./shop-pages";
 
 /* ================= auth aliases (reuse shop auth — no duplicates) ================= */
@@ -265,17 +265,14 @@ export function SvcHome() {
   ];
   return (
     <>
-      <div className={`bg-gradient-to-br ${def.grad} px-4 py-12 text-white`}>
-        <div className="mx-auto max-w-6xl text-center">
-          <p className="text-6xl">{def.heroEmoji}</p>
-          <h1 className="mt-3 text-3xl font-black">{def.heroTitle}</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm opacity-90">{def.heroSub}</p>
-          <div className="mt-5 flex justify-center gap-2">
-            <Cta href={`${base}/services`} accent={def.accent}>🛠️ সার্ভিস দেখুন</Cta>
-            <Cta href={`${base}/bookings`} accent={def.accent} ghost>📋 আমার বুকিং</Cta>
-          </div>
-        </div>
-      </div>
+      <HeroSlider
+        accent={def.accent}
+        slides={[
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛠️ সার্ভিস দেখুন", href: "/services", grad: def.grad },
+          { emoji: "📅", title: "অনলাইনে বুকিং করুন", sub: "পছন্দের তারিখ ও সময় বেছে নিন — কনফার্মেশন সাথে সাথে", cta: "📅 বুক করুন", href: "/services", grad: def.grad },
+          { emoji: "⭐", title: "সন্তুষ্ট গ্রাহকদের পছন্দ", sub: "রিভিউ পড়ে নিশ্চিন্তে সার্ভিস নিন", cta: "⭐ রিভিউ দেখুন", href: "/reviews", grad: def.grad },
+        ]}
+      />
       <Page>
         <SectionTitle t="🔥 জনপ্রিয় সার্ভিস" link={`${base}/services`} />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -598,17 +595,14 @@ export function GalHome() {
   const { def, base } = useDemo();
   return (
     <>
-      <div className={`bg-gradient-to-br ${def.grad} px-4 py-12 text-white`}>
-        <div className="mx-auto max-w-6xl text-center">
-          <p className="text-6xl">{def.heroEmoji}</p>
-          <h1 className="mt-3 text-3xl font-black">{def.heroTitle}</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm opacity-90">{def.heroSub}</p>
-          <div className="mt-5 flex justify-center gap-2">
-            <Cta href={`${base}/gallery`} accent={def.accent}>🖼️ গ্যালারি দেখুন</Cta>
-            <Cta href={`${base}/book`} accent={def.accent} ghost>📸 বুক করুন</Cta>
-          </div>
-        </div>
-      </div>
+      <HeroSlider
+        accent={def.accent}
+        slides={[
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🖼️ গ্যালারি দেখুন", href: "/gallery", grad: def.grad },
+          { emoji: "💰", title: "স্বচ্ছ প্রাইসিং", sub: "প্যাকেজ দেখে বাজেট অনুযায়ী বেছে নিন", cta: "💰 প্রাইসিং", href: "/pricing", grad: def.grad },
+          { emoji: "📸", title: "আপনার ইভেন্টের জন্য বুক করুন", sub: "তারিখ কনফার্ম করুন মিনিটেই", cta: "📸 বুক করুন", href: "/book", grad: def.grad },
+        ]}
+      />
       <Page>
         <div className="mb-3 flex flex-wrap gap-2">
           {def.cats.slice(0, 5).map((c) => (
@@ -692,8 +686,9 @@ export function GalDetail({ id }: { id: string }) {
   return (
     <Page narrow>
       <Back href={`${base}/gallery`} label="গ্যালারি" />
-      <div className={`grid place-items-center rounded-3xl p-16 text-9xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
-        {g.e}
+      <div className={`relative grid place-items-center overflow-hidden rounded-3xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+        {def.heroImg && <img src={def.heroImg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />}
+        <div className="relative p-16 text-9xl drop-shadow-lg">{g.e}</div>
       </div>
       <h1 className="mt-4 text-2xl font-black">{g.t}</h1>
       <p className={`mt-1 text-sm ${subCls(def)}`}>🏷️ {g.c}</p>
@@ -868,12 +863,16 @@ export function BookHome() {
   const feat = def.products.slice(0, 4);
   return (
     <>
-      <div className={`bg-gradient-to-br ${def.grad} px-4 pb-10 pt-12 text-white`}>
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-6xl">{def.heroEmoji}</p>
-          <h1 className="mt-3 text-3xl font-black">{def.heroTitle}</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm opacity-90">{def.heroSub}</p>
-          <div className={`mx-auto mt-6 max-w-2xl rounded-3xl p-4 text-left ${def.dark ? "bg-black/40" : "bg-white/90"}`}>
+      <HeroSlider
+        accent={def.accent}
+        slides={[
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🏨 লিস্টিং দেখুন", href: "/stays", grad: def.grad },
+          { emoji: "💳", title: "সহজ বুকিং, নিরাপদ পেমেন্ট", sub: "অনলাইনে বুক করে নিশ্চিন্তে ঘুরুন", cta: "📅 বুক করুন", href: "/stays", grad: def.grad },
+        ]}
+      />
+      <div className="px-4">
+        <div className="mx-auto -mt-2 max-w-4xl text-center">
+          <div className={`mx-auto mt-6 max-w-2xl rounded-3xl p-4 text-left ${def.dark ? "bg-black/40" : "bg-white/90 shadow-xl"}`}>
             <F dark={def.dark} value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="📍 কোথায় যেতে চান? (যেমন: কক্সবাজার)" />
             <div className="mt-3 flex items-center justify-between rounded-2xl px-1">
               <span className={`text-sm font-bold ${def.dark ? "text-white" : "text-slate-700"}`}>👥 অতিথি</span>
@@ -1194,8 +1193,13 @@ export function NewsHome() {
       <Page>
         {first && (
           <Link href={`${base}/a/${first.id}`} className={`${cardCls(def)} group mb-5 block !p-0 overflow-hidden`}>
-            <div className={`grid place-items-center p-10 text-7xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
-              {first.e}
+            <div className={`relative grid place-items-center overflow-hidden p-10 text-7xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+              {def.heroImg ? (
+                <img src={def.heroImg} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              ) : (
+                <span className="relative">{first.e}</span>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
             <div className="p-4">
               <span className="rounded-full bg-red-500/15 px-2.5 py-1 text-[10px] font-black text-red-400">⚡ ব্রেকিং</span>

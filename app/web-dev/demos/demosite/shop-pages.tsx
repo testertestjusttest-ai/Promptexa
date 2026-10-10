@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoProduct } from "./types";
-import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint } from "./ui";
+import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider } from "./ui";
 
 const FREE_DELIVERY_AT = 1000;
 const DELIVERY_FEE = 60;
@@ -93,21 +93,14 @@ export function ShopHome() {
   const featured = def.products.slice(0, 8);
   return (
     <div>
-      <div className="px-4 pt-6" style={def.grad ? { background: def.grad } : { background: `linear-gradient(135deg, ${def.accent}, #0a0a12)` }}>
-        <div className="mx-auto max-w-6xl py-10 text-center text-white">
-          <p className="text-6xl">{def.heroEmoji}</p>
-          <h1 className="mt-3 text-3xl font-black sm:text-4xl">{def.heroTitle}</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm opacity-90">{def.heroSub}</p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Link href={`${base}/shop`} className="btn-demo" style={{ background: "#fff", color: "#111" }}>
-              🛍️ কেনাকাটা শুরু করুন
-            </Link>
-            <Link href={`${base}/offers`} className="btn-demo-ghost !text-white">
-              🎁 অফার দেখুন
-            </Link>
-          </div>
-        </div>
-      </div>
+      <HeroSlider
+        accent={def.accent}
+        slides={[
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛍️ কেনাকাটা শুরু করুন", href: "/shop", grad: def.grad },
+          { emoji: "🎁", title: "সীমিত সময়ের অফার", sub: "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!", cta: "🎁 অফার দেখুন", href: "/offers", grad: def.grad },
+          { emoji: "🚚", title: "সারাদেশে হোম ডেলিভারি", sub: "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি", cta: "🛍️ শপ করুন", href: "/shop", grad: def.grad },
+        ]}
+      />
       <Page>
         <div className="mb-5 flex flex-wrap gap-2">
           {def.cats.slice(1).map((c) => (
@@ -228,8 +221,12 @@ export function ShopProduct({ id }: { id: string }) {
     <Page>
       <Back href={`${base}/shop`} label="শপ" />
       <div className={`grid gap-6 overflow-hidden p-5 sm:grid-cols-2 ${card}`}>
-        <div className="relative grid min-h-64 place-items-center rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-10 text-8xl">
-          {p.e}
+        <div className="relative min-h-64 overflow-hidden rounded-2xl bg-gradient-to-br from-white/10 to-transparent">
+          {p.img ? (
+            <img src={p.img} alt={p.n} className="h-full min-h-64 w-full object-cover" />
+          ) : (
+            <div className="grid min-h-64 place-items-center p-10 text-8xl">{p.e}</div>
+          )}
           {off > 0 && (
             <span className="absolute left-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-black text-white">
               −{bn(off)}% ছাড়
