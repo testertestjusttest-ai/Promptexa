@@ -25,10 +25,7 @@ export default function Navbar() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const directLinks = [
-    { href: "/", label: t("nav_home") },
-    { href: "/web-dev", label: t("nav_webdev"), hot: true },
-  ];
+  const directLinks = [{ href: "/", label: t("nav_home") }];
   const menuLinks = [
     { href: "/shop", label: t("nav_shop") },
     { href: "/earn", label: t("nav_earn") },
@@ -66,20 +63,12 @@ export default function Navbar() {
                 pathname === l.href
                   ? "bg-white/10 text-[#d7ff3f]"
                   : "text-slate-300 hover:bg-white/5 hover:text-white"
-              } ${l.hot ? "border border-[#d7ff3f]/40 bg-[#d7ff3f]/10 font-bold text-[#d7ff3f] shadow-[0_0_16px_rgba(215,255,63,0.25)]" : ""}`}
+              }`}
             >
               {l.label}
             </Link>
           ))}
         </nav>
-
-        {/* mobile: web-dev stays visible */}
-        <Link
-          href="/web-dev"
-          className="rounded-lg border border-[#d7ff3f]/40 bg-[#d7ff3f]/10 px-3 py-2 text-xs font-bold text-[#d7ff3f] md:hidden"
-        >
-          {t("nav_webdev")}
-        </Link>
 
         <div className="flex items-center gap-2">
           <LangToggle />

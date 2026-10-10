@@ -242,3 +242,46 @@ select.field option { background: #0b1120; }
 }
 .ad-card-glow { animation: card-glow 2.6s ease-in-out infinite; }
 .ad-card-float { animation: float-y 4s ease-in-out infinite; }
+
+/* ---------- web-dev video-like hero motion ---------- */
+@keyframes aurora-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(70px, -50px) scale(1.25); }
+  66% { transform: translate(-50px, 40px) scale(0.9); }
+}
+@keyframes aurora-b {
+  0%, 100% { transform: translate(0, 0) scale(1.1); }
+  50% { transform: translate(-80px, 60px) scale(0.85); }
+}
+@keyframes aurora-c {
+  0%, 100% { transform: translate(0, 0) scale(0.95); }
+  40% { transform: translate(50px, -60px) scale(1.2); }
+  75% { transform: translate(-60px, -20px) scale(1.05); }
+}
+@keyframes grid-pan {
+  from { background-position-y: 0; }
+  to { background-position-y: 52px; }
+}
+@keyframes rise-fade {
+  0% { transform: translateY(0); opacity: 0; }
+  12% { opacity: 0.9; }
+  85% { opacity: 0.5; }
+  100% { transform: translateY(-340px); opacity: 0; }
+}
+@keyframes sweep-x {
+  0% { transform: translateX(-120%) skewX(-12deg); }
+  55%, 100% { transform: translateX(420%) skewX(-12deg); }
+}
+.animate-aurora-a { animation: aurora-a 19s ease-in-out infinite; }
+.animate-aurora-b { animation: aurora-b 24s ease-in-out infinite; }
+.animate-aurora-c { animation: aurora-c 21s ease-in-out infinite; }
+.animate-grid-pan { animation: grid-pan 1.6s linear infinite; }
+.animate-rise { animation: rise-fade 12s linear infinite; }
+.animate-sweep { animation: sweep-x 7s ease-in-out infinite; }
+
+/* ---------- demo showcase slider ---------- */
+@keyframes slide-zoom {
+  from { transform: scale(1.06); }
+  to { transform: scale(1); }
+}
+.demo-slide-active { animation: slide-zoom 0.7s ease-out; }

@@ -3,26 +3,35 @@
 import { useState } from "react";
 import Link from "next/link";
 
-/** DigiPlyra demo shell — support banner on top, pitch + demo notice at bottom. */
-export function DemoShell({ name, type, children }: { name: string; type: string; children: React.ReactNode }) {
+/** DigiPlyra demo shell — slim browser chrome on top, pitch below the demo. */
+export function DemoShell({ name, type, slug, children }: { name: string; type: string; slug: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120]">
-      <div className="border-b border-[#d7ff3f]/25 bg-[#060913] px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-bold text-white">
-            🖥️ <span className="text-[#d7ff3f]">DigiPlyra</span> ডেমো প্রিভিউ
-            <span className="ml-2 font-normal text-slate-400">• {type}</span>
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="hidden text-[11px] text-slate-400 sm:inline">📞 ২৪/৭ সাপোর্ট • আপনার পছন্দমতো বানিয়ে দেওয়া হবে</span>
-            <Link href="/web-dev#quote" className="rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black">
-              📝 এরকম সাইট চাই
-            </Link>
+    <div className="bg-[#0b1120]">
+      {/* slim browser chrome — feels like entering the real website */}
+      <div className="sticky top-16 z-40 border-y border-white/10 bg-[#060913]/95 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+          <Link href="/web-dev#demos" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20" aria-label="পেছনে">
+            ←
+          </Link>
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg bg-white/[0.07] px-3 py-1.5">
+            <span className="flex shrink-0 gap-1">
+              <i className="h-2 w-2 rounded-full bg-red-400" />
+              <i className="h-2 w-2 rounded-full bg-amber-300" />
+              <i className="h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="truncate font-mono text-[11px] text-slate-400">demo.digiplyra.com/{slug}</span>
           </div>
+          <span className="hidden shrink-0 rounded-full bg-[#d7ff3f]/15 px-2.5 py-1 text-[10px] font-black text-[#d7ff3f] sm:inline">
+            ⓘ ডেমো
+          </span>
+          <Link href="/web-dev#quote" className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
+            📝 এরকম সাইট চাই
+          </Link>
         </div>
       </div>
 
-      <div className="min-h-[60vh]">{children}</div>
+      {/* the website itself — full bleed, fully explorable */}
+      <div className="min-h-[70vh]">{children}</div>
 
       {/* Why build with DigiPlyra — persuasive pitch inside the demo */}
       <div className="border-t border-[#d7ff3f]/20 bg-gradient-to-br from-[#0d1424] to-[#060913] px-4 py-8">

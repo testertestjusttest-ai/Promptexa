@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatBDT, toBnDigits } from "@/lib/format";
-import { WEBDEV_HERO } from "@/lib/webdevArt";
+import WebDevHeroBg from "./WebDevHeroBg";
+import DemoSlider from "./DemoSlider";
 import { DEMOS } from "./demos/demos";
 
 const PACKAGES = [
@@ -85,13 +86,9 @@ export default function WebDevClient() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      {/* hero */}
+      {/* hero — video-like animated background */}
       <div className="relative overflow-hidden rounded-3xl border border-white/10">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${WEBDEV_HERO})` }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#060913] via-[#060913]/45 to-[#060913]/10" />
-        {/* drifting glow orbs */}
-        <div className="animate-orb pointer-events-none absolute -left-10 top-10 h-48 w-48 rounded-full bg-[#d7ff3f]/20 blur-3xl" />
-        <div className="animate-orb pointer-events-none absolute -right-10 bottom-10 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl" style={{ animationDelay: "-6s" }} />
+        <WebDevHeroBg />
         {/* floating mini website mockups */}
         <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block" aria-hidden>
           <div className="animate-float-slow absolute left-[4%] top-[12%]" style={{ ["--tilt" as any]: "-8deg" }}>
@@ -138,6 +135,9 @@ export default function WebDevClient() {
           </div>
         </div>
       </div>
+
+      {/* demo showcase slider */}
+      <DemoSlider />
 
       {/* packages */}
       <h2 className="font-display mt-12 text-center text-2xl font-bold text-white">💎 প্যাকেজ ও আনুমানিক প্রাইস</h2>
