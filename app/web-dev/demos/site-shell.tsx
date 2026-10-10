@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DemoOrders } from "./demo-ui";
 
 export type SiteNavLink = { label: string; href: string };
 
@@ -22,6 +23,7 @@ export default function SiteShell({
   cartCount,
   onCartOpen,
   contact = "📞 ০১XXXXXXXXX",
+  demoSlug,
   children,
 }: {
   logo: string;
@@ -36,10 +38,12 @@ export default function SiteShell({
   cartCount?: number;
   onCartOpen?: () => void;
   contact?: string;
+  demoSlug?: string;
   children: React.ReactNode;
 }) {
   const [drawer, setDrawer] = useState(false);
   const [q, setQ] = useState("");
+  const [ordersOpen, setOrdersOpen] = useState(false);
   const bg = dark ? "bg-[#0a0a12] text-white" : "bg-white text-slate-800";
   const barBg = dark ? "bg-[#0d1322]/95" : "bg-white/95";
   const muted = dark ? "text-slate-400" : "text-slate-500";
@@ -84,6 +88,12 @@ export default function SiteShell({
               ))}
             </div>
           </>
+        )}
+        {demoSlug && (
+          <button onClick={() => { setDrawer(false); setOrdersOpen(true); }}
+            className="mt-4 flex w-full items-center justify-between rounded-2xl bg-white/5 px-4 py-3.5 font-bold text-white transition hover:bg-white/10">
+            <span>📦 আমার অর্ডার</span><span>→</span>
+          </button>
         )}
         <div className="mt-6 rounded-2xl bg-white/5 p-4">
           <p className="text-sm font-bold text-white">📞 যোগাযোগ</p>
@@ -135,6 +145,10 @@ export default function SiteShell({
             {drawerBody}
           </div>
         </div>
+      )}
+
+      {demoSlug && ordersOpen && (
+        <DemoOrders slug={demoSlug} accent={accent} dark={dark} onClose={() => setOrdersOpen(false)} />
       )}
 
       {/* ===== page content ===== */}
