@@ -20,15 +20,7 @@ export default function QuoteModal({ demoName, slug, onClose }: { demoName: stri
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
-    fetch("/api/public/settings")
-      .then((r) => r.json())
-      .then((d) => {
-        let n = String(d?.store?.support_whatsapp ?? "").replace(/\D/g, "");
-        if (/^0/.test(n)) n = "880" + n.slice(1);
-        else if (/^1[3-9]\d{8}$/.test(n)) n = "880" + n;
-        if (n) setWa(n);
-      })
-      .catch(() => {});
+    setWa("8801833402586");
   }, []);
 
   function send() {

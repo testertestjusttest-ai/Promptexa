@@ -3,6 +3,7 @@
 /** Shared UI bits for DemoSite pages. */
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import type { DemoProduct } from "./types";
 import { useDemo } from "./store";
@@ -103,8 +104,12 @@ export function ProductCard({ p }: { p: DemoProduct }) {
         def.dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"
       }`}
     >
-      <div className={`relative grid h-32 place-items-center text-5xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
-        {p.e}
+      <div className={`relative h-36 overflow-hidden ${def.dark ? "bg-white/[0.03]" : "bg-slate-100"}`}>
+        {p.img ? (
+          <img src={p.img} alt={p.n} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        ) : (
+          <div className="grid h-full place-items-center text-5xl">{p.e}</div>
+        )}
         {off > 0 && (
           <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">
             −{toBnDigits(off)}%
@@ -145,6 +150,98 @@ export function LoginHint() {
   return (
     <div className={`rounded-2xl p-4 text-center text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
       💡 <Link href={`${base}/login`} className="font-bold underline">লগইন</Link> করলে অর্ডার হিস্ট্রি ও ওয়ালেট সুবিধা পাবেন
+    </div>
+  );
+}
+
+/* ================= Hero slider — auto RTL (right → left) ================= */
+
+export interface HeroSlide {
+  img?: string;
+  emoji: string;
+  title: string;
+  sub: string;
+  cta?: string;
+  href?: string;
+  grad?: string;
+}
+
+export function HeroSlider({ slides, accent }: { slides: HeroSlide[]; accent: string }) {
+  const { base } = useDemo();
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const n = slides.length;
+  useEffect(() => {
+    if (paused || n < 2) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % n), 4000);
+    return () => clearInterval(t);
+  }, [paused, n]);
+  if (n === 0) return null;
+  const s = slides[idx];
+  return (
+    <div
+      className="relative overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)}
+    >
+      {/* track slides right → left */}
+      <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
+        {slides.map((sl, i) => (
+          <div key={i} className="relative w-full shrink-0">
+            <div className={`relative overflow-hidden bg-gradient-to-br ${sl.grad ?? "from-slate-800 to-slate-900"}`}>
+              {sl.img && (
+                <img src={sl.img} alt="" className="absolute inset-0 h-full w-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25" />
+              <div className="relative mx-auto flex max-w-6xl items-center gap-4 px-4 py-12 sm:py-16">
+                <div className="flex-1">
+                  <p className="text-4xl sm:text-5xl">{sl.emoji}</p>
+                  <h1 className="mt-2 text-2xl font-black text-white drop-shadow-lg sm:text-4xl">{sl.title}</h1>
+                  <p className="mt-1 text-sm text-white/85 drop-shadow sm:text-base">{sl.sub}</p>
+                  {sl.cta && (
+                    <Link
+                      href={sl.href?.startsWith("http") ? sl.href : `${base}${sl.href ?? ""}`}
+                      className="btn-demo mt-4 inline-block !px-8 !py-3"
+                      style={{ background: accent }}
+                    >
+                      {sl.cta}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {n > 1 && (
+        <>
+          <button
+            onClick={() => setIdx((idx - 1 + n) % n)}
+            aria-label="আগের"
+            className="absolute left-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-lg text-white backdrop-blur transition hover:bg-black/60"
+          >
+            ‹
+          </button>
+          <button
+            onClick={() => setIdx((idx + 1) % n)}
+            aria-label="পরের"
+            className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-lg text-white backdrop-blur transition hover:bg-black/60"
+          >
+            ›
+          </button>
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                aria-label={`স্লাইড ${i + 1}`}
+                className={`h-2 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-2 bg-white/40 hover:bg-white/70"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

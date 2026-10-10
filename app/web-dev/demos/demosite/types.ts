@@ -18,6 +18,7 @@ export interface DemoProduct {
   stock: number;
   oldPrice?: number;
   priceNote?: string;
+  img?: string;
 }
 
 export interface DemoServiceItem {
@@ -58,6 +59,8 @@ export interface DemoSiteDef {
   heroTitle: string;
   heroSub: string;
   heroEmoji: string;
+  heroImg?: string;
+  catImgs?: Record<string, string>;
   cats: string[];
   products: DemoProduct[];
   services: DemoServiceItem[];

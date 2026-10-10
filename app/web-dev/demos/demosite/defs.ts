@@ -6,7 +6,7 @@
 import { ENGINE_DEFS, type EngineItem } from "../engine-data";
 import type { DemoGalleryItem, DemoNewsItem, DemoProduct, DemoServiceItem, DemoSiteDef } from "./types";
 
-const CONTACT = "০৯৬৩৮-০০০০০০";
+const CONTACT = "০১৮৩৩৪০২৫৮৬";
 const ADDRESS = "বাড়ি ১২, রোড ৫, ধানমন্ডি, ঢাকা-১২০৫";
 const HOURS = "প্রতিদিন সকাল ৯টা – রাত ১০টা";
 
