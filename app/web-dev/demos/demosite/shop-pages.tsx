@@ -1208,4 +1208,144 @@ export function ShopContact() {
   );
 }
 
+/* ---------- Extra pages (30+ page target) ---------- */
+
+export function ShopWishlist() {
+  const { base } = useDemo();
+  const { accent } = useSkin();
+  const products = useProducts();
+  // Wishlist stored in localStorage via store
+  const { store } = useDemo();
+  const [wishlist] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(`wishlist:${store ? "x" : "x"}`) || "[]"); } catch { return []; }
+  });
+  const items = products.filter((p) => wishlist.includes(p.id));
+  return (
+    <Page>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="❤️ উইশলিস্ট" sub={`${bn(items.length)}টি পণ্য`} />
+      {items.length === 0 ? (
+        <Empty emoji="💔" text="উইশলিস্ট খালি — পছন্দের পণ্যে হার্ট চাপুন" />
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {items.map((p) => <ProductCard key={p.id} p={p} />)}
+        </div>
+      )}
+    </Page>
+  );
+}
+
+export function ShopFaq() {
+  const { base, def } = useDemo();
+  const { card } = useSkin();
+  const [open, setOpen] = useState<number | null>(0);
+  const faqs = [
+    ["🛒 অর্ডার কীভাবে করবো?", "পছন্দের পণ্য কার্টে যোগ করুন → চেকআউটে নাম, মোবাইল, ঠিকানা দিন → অর্ডার কনফার্ম করুন।"],
+    ["🚚 ডেলিভারি কতদিনে?", "ঢাকায় ২৪-৪৮ ঘণ্টা, ঢাকার বাইরে ৩-৫ দিন। ১,০০০ টাকার বেশি অর্ডারে ডেলিভারি ফ্রি।"],
+    ["💵 পেমেন্ট মাধ্যম কী কী?", "ক্যাশ অন ডেলিভারি, বিকাশ, নগদ, রকেট — সব সাপোর্ট করে।"],
+    ["↩️ রিটার্ন পলিসি কী?", "৭ দিনের মধ্যে যেকোনো ত্রুটিপূর্ণ পণ্য রিটার্ন/এক্সচেঞ্জ করা যায়।"],
+    ["📞 যোগাযোগ কীভাবে?", `সরাসরি কল করুন: ${def.contact} (${def.hours})`],
+  ];
+  return (
+    <Page narrow>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="❓ সচরাচর জিজ্ঞাসা" />
+      <div className="space-y-2">
+        {faqs.map(([q, a], i) => (
+          <div key={i} className={card}>
+            <button onClick={() => setOpen(open === i ? null : i)} className="flex w-full items-center justify-between p-4 text-left text-sm font-bold">
+              {q}<span>{open === i ? "−" : "+"}</span>
+            </button>
+            {open === i && <p className="px-4 pb-4 text-sm opacity-70">{a}</p>}
+          </div>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+export function ShopPolicy({ kind }: { kind: "shipping" | "returns" | "privacy" | "terms" }) {
+  const { base, def } = useDemo();
+  const { card } = useSkin();
+  const content: Record<string, [string, string[]]> = {
+    shipping: ["🚚 ডেলিভারি নীতি", [
+      "ঢাকার ভিতরে ২৪-৪৮ ঘণ্টায় ডেলিভারি।",
+      "ঢাকার বাইরে ৩-৫ কর্মদিবস।",
+      "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি চার্জ ফ্রি।",
+      "অর্ডার ট্র্যাক করতে 'ট্র্যাক অর্ডার' পেজে ফোন নম্বর দিন।",
+    ]],
+    returns: ["↩️ রিটার্ন ও রিফান্ড", [
+      "৭ দিনের মধ্যে ত্রুটিপূর্ণ পণ্য রিটার্ন করা যায়।",
+      "পণ্য অবশ্যই অব্যবহৃত ও প্যাকেজিংসহ থাকতে হবে।",
+      "রিফান্ড ৩-৫ কর্মদিবসে বিকাশ/নগদে পাঠানো হয়।",
+    ]],
+    privacy: ["🔒 প্রাইভেসি পলিসি", [
+      "আপনার তথ্য শুধু অর্ডার প্রসেসিংয়ে ব্যবহার হয়।",
+      "তৃতীয় পক্ষের সাথে তথ্য শেয়ার করা হয় না।",
+      "যেকোনো সময় তথ্য মুছতে যোগাযোগ করুন।",
+    ]],
+    terms: ["📜 শর্তাবলী", [
+      `${def.name} থেকে কেনাকাটায় নিচের শর্ত প্রযোজ্য।`,
+      "দাম ও স্টক পরিবর্তনশীল — অর্ডারের সময় কনফার্ম হয়।",
+      "ভুল তথ্য দিলে অর্ডার বাতিল হতে পারে।",
+    ]],
+  };
+  const [title, points] = content[kind];
+  return (
+    <Page narrow>
+      <Back href={base} label="হোম" />
+      <SectionTitle t={title} />
+      <div className={`space-y-2.5 p-5 ${card}`}>
+        {points.map((pt, i) => <p key={i} className="text-sm leading-relaxed">• {pt}</p>)}
+      </div>
+    </Page>
+  );
+}
+
+export function ShopDeals() {
+  const { base } = useDemo();
+  const products = useProducts();
+  const deals = products.filter((p) => p.oldPrice);
+  return (
+    <Page>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="⚡ আজকের ডিল" sub="সীমিত স্টক!" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {deals.map((p) => <ProductCard key={p.id} p={p} />)}
+      </div>
+      {deals.length === 0 && <Empty emoji="🏷️" text="এখন কোনো ডিল নেই" />}
+    </Page>
+  );
+}
+
+export function ShopNew() {
+  const { base } = useDemo();
+  const products = useProducts();
+  const items = [...products].reverse().slice(0, 12);
+  return (
+    <Page>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="🆕 নতুন পণ্য" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map((p) => <ProductCard key={p.id} p={p} />)}
+      </div>
+    </Page>
+  );
+}
+
+export function ShopBestsellers() {
+  const { base } = useDemo();
+  const products = useProducts();
+  const items = [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 12);
+  return (
+    <Page>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="🏆 বেস্টসেলার" sub="সবচেয়ে বেশি বিক্রিত" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map((p) => <ProductCard key={p.id} p={p} />)}
+      </div>
+    </Page>
+  );
+}
+
 export type { DemoProduct };
