@@ -43,7 +43,7 @@ const HAND_GROUPS: Record<string, string> = {
   news: "📰 মিডিয়া", realestate: "🏠 প্রপার্টি", gym: "💪 ফিটনেস",
   travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
   investpro: "💰 ফিনটেক", agroinvest: "💰 ফিনটেক", swiftex: "💰 ফিনটেক",
-  payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক",
+  payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক", trustpay: "💰 ফিনটেক",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -170,6 +170,30 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">🛡️ ২-স্তর নিরাপত্তা</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "trustpay",
+    name: "ট্রাস্টপে",
+    type: "ট্রাস্ট ওয়ালেট স্টাইল",
+    desc: "সোয়াপ, স্টেকিং, DApp সাপোর্টসহ মাল্টি-কয়েন ওয়ালেট।",
+    price: "১৯,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🛡️ ট্রাস্টপে" links={["সোয়াপ", "স্টেক"]} cta="ডাউনলোড" light />
+        <div className="bg-gradient-to-br from-sky-600 to-blue-800 px-4 py-7 text-white">
+          <p className="text-[11px] opacity-70">মোট ব্যালেন্স</p>
+          <p className="text-2xl font-black">$৩৭,০০৯</p>
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
+            {[["📤", "সেন্ড"], ["📥", "রিসিভ"], ["🔄", "সোয়াপ"], ["📊", "স্টেক"]].map(([e, t]) => (
+              <div key={t} className="rounded-xl bg-white/10 p-2 text-center">
+                <div className="text-lg">{e}</div><p className="mt-0.5 text-[9px]">{t}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">🌐 ১০M+ ইউজার</p>
       </Frame>
     ),
   },
@@ -434,5 +458,5 @@ import { ENGINE_DEMOS } from "./engine-demos";
 
 const WITH_GROUPS: Demo[] = HAND_DEMOS.map((d) => ({ ...d, group: HAND_GROUPS[d.slug] ?? "🌐 অন্যান্য" }));
 
-/** All demos: 10 hand-crafted + 40 engine-driven = 50. */
+/** All demos: 15 hand-crafted + 40 engine-driven = 55. */
 export const DEMOS: Demo[] = [...WITH_GROUPS, ...ENGINE_DEMOS];
