@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo, type DemoStore } from "./store";
 import type { DemoSiteDef, DemoServiceItem, DemoGalleryItem, DemoNewsItem } from "./types";
-import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider } from "./ui";
+import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero } from "./ui";
 import { ShopLogin, ShopSignup, ShopAccount } from "./shop-pages";
 
 /* ================= auth aliases (reuse shop auth — no duplicates) ================= */
@@ -31,7 +31,22 @@ export const NewsAccount = ShopAccount;
 /* ================= shared helpers ================= */
 
 function cardCls(def: DemoSiteDef) {
-  return `rounded-2xl border p-4 ${def.dark ? "border-white/10 bg-white/5 text-white" : "border-slate-200 bg-white text-slate-800"}`;
+  const theme = def.theme ?? "aurora";
+  const base = def.dark ? "text-white" : "text-slate-800";
+  switch (theme) {
+    case "split":
+      return `rounded-none border-2 border-l-8 p-4 ${def.dark ? "border-white/15 bg-white/[0.04]" : "border-slate-300 bg-white"} ${base}`;
+    case "minimal":
+      return `rounded-xl p-5 ${def.dark ? "bg-white/[0.06]" : "bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)]"} ${base}`;
+    case "bold":
+      return `rounded-lg border-4 p-4 ${def.dark ? "border-white/25 bg-black/40" : "border-slate-900 bg-white"} ${base}`;
+    case "elegant":
+      return `rounded-xl border p-5 ${def.dark ? "border-amber-200/20 bg-white/[0.04]" : "border-stone-200 bg-[#fffdf8]"} ${base}`;
+    case "playful":
+      return `rounded-3xl border-2 p-4 ${def.dark ? "border-white/15 bg-white/[0.06]" : "border-slate-200 bg-white"} ${base}`;
+    default:
+      return `rounded-2xl border p-4 ${def.dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"} ${base}`;
+  }
 }
 function subCls(def: DemoSiteDef) {
   return def.dark ? "text-slate-400" : "text-slate-500";
@@ -265,7 +280,7 @@ export function SvcHome() {
   ];
   return (
     <>
-      <HeroSlider
+      <Hero
         accent={def.accent}
         slides={[
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛠️ সার্ভিস দেখুন", href: "/services", grad: def.grad },
@@ -573,18 +588,20 @@ export function SvcContact() {
 
 function GalCard({ g }: { g: DemoGalleryItem }) {
   const { def, base } = useDemo();
+  const theme = def.theme ?? "aurora";
+  const radius = theme === "split" ? "rounded-none" : theme === "minimal" ? "rounded-xl" : theme === "bold" ? "rounded-lg" : theme === "playful" ? "rounded-3xl" : "rounded-2xl";
   return (
     <Link
       href={`${base}/g/${g.id}`}
-      className={`group block break-inside-avoid overflow-hidden rounded-2xl border transition hover:-translate-y-1 hover:shadow-xl ${
+      className={`group block break-inside-avoid overflow-hidden ${radius} border transition hover:-translate-y-1 hover:shadow-xl ${
         def.dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"
       }`}
     >
-      <div className={`grid place-items-center p-8 text-6xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+      <div className={`grid place-items-center p-8 text-6xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"} ${theme === "playful" ? "group-hover:rotate-3 transition" : ""}`}>
         {g.e}
       </div>
       <div className="p-3">
-        <p className="text-sm font-bold">{g.t}</p>
+        <p className={`text-sm font-bold ${theme === "elegant" ? "font-serif text-[15px]" : ""}`}>{g.t}</p>
         <p className={`text-[11px] ${subCls(def)}`}>{g.c}</p>
       </div>
     </Link>
@@ -595,7 +612,7 @@ export function GalHome() {
   const { def, base } = useDemo();
   return (
     <>
-      <HeroSlider
+      <Hero
         accent={def.accent}
         slides={[
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🖼️ গ্যালারি দেখুন", href: "/gallery", grad: def.grad },
@@ -863,7 +880,7 @@ export function BookHome() {
   const feat = def.products.slice(0, 4);
   return (
     <>
-      <HeroSlider
+      <Hero
         accent={def.accent}
         slides={[
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🏨 লিস্টিং দেখুন", href: "/stays", grad: def.grad },
@@ -1161,18 +1178,21 @@ export function BookContact() {
 
 function NewsRow({ n }: { n: DemoNewsItem }) {
   const { def, base } = useDemo();
+  const theme = def.theme ?? "aurora";
+  const radius = theme === "split" ? "rounded-none border-l-4" : theme === "minimal" ? "rounded-lg" : theme === "playful" ? "rounded-3xl" : "rounded-2xl";
   return (
     <Link
       href={`${base}/a/${n.id}`}
-      className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:shadow ${
+      className={`flex w-full items-center gap-3 ${radius} p-3 text-left transition hover:shadow ${
         def.dark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-slate-100"
       }`}
+      style={theme === "split" ? { borderLeftColor: def.accent } : undefined}
     >
       <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-xl text-3xl ${def.dark ? "bg-white/10" : "bg-white"}`}>
         {n.e}
       </span>
       <span className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold">{n.t}</p>
+        <p className={`truncate text-sm font-bold ${theme === "elegant" ? "font-serif text-[15px]" : ""}`}>{n.t}</p>
         <p className={`text-[11px] ${subCls(def)}`}>{n.c} • {n.time}</p>
       </span>
       <span className="text-xs opacity-50">→</span>
