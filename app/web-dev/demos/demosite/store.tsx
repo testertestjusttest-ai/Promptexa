@@ -184,19 +184,30 @@ export interface DemoCustom {
   dark?: boolean;
 }
 
-function readCustom(slug: string): DemoCustom {
+function readCustomKey(key: string): DemoCustom {
   try {
-    const v = localStorage.getItem(K(slug, "custom"));
+    const v = localStorage.getItem(key);
     return v ? (JSON.parse(v) as DemoCustom) : {};
   } catch {
     return {};
   }
 }
 
-export function DemositeProvider({ slug, def, children }: { slug: string; def: DemoSiteDef; children: React.ReactNode }) {
+export function DemositeProvider({ slug, def, children, clientSlug, initialCustom }: {
+  slug: string;
+  def: DemoSiteDef;
+  children: React.ReactNode;
+  /** Multi-tenant client mode: namespaces all storage keys per client. */
+  clientSlug?: string;
+  /** Server-provided overrides (from client_sites DB) — merged under local custom. */
+  initialCustom?: DemoCustom;
+}) {
+  // In client mode, storage is namespaced per client so each customer's data is isolated.
+  const ns = clientSlug ? `client:${clientSlug}` : `dmsite:${slug}`;
+  const KK = (rest: string) => `${ns}:${rest}`;
   const base = `/demo${slug}`;
   const ident = () => {
-    const s = read<string | null>(K(slug, "session"), null);
+    const s = read<string | null>(KK("session"), null);
     return s || "guest";
   };
 
@@ -210,7 +221,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
   const [exchanges, setExchanges] = useState<DemoExchangeRec[]>([]);
   const [coinTxs, setCoinTxs] = useState<DemoCoinTx[]>([]);
   const [deposits, setDeposits] = useState<DemoDepositRec[]>([]);
-  const [custom, setCustom] = useState<DemoCustom>({});
+  const [custom, setCustom] = useState<DemoCustom>(() => ({ ...(initialCustom ?? {}) }));
 
   // Merge admin customizations (theme, accent, names) into the def
   const liveDef: DemoSiteDef = useMemo(() => ({
@@ -226,27 +237,27 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
 
   const loadIdentity = useCallback(() => {
     const id = ident();
-    const u = read<DemoUser | null>(K(slug, `user:${id}`), null);
+    const u = read<DemoUser | null>(KK(`user:${id}`), null);
     setUser(id === "guest" ? null : u);
-    setCart(read(K(slug, `cart:${id}`), []));
-    setWallet(read(K(slug, `wallet:${id}`), 0));
-    setTxs(read(K(slug, `txs:${id}`), []));
+    setCart(read(KK(`cart:${id}`), []));
+    setWallet(read(KK(`wallet:${id}`), 0));
+    setTxs(read(KK(`txs:${id}`), []));
   }, [slug]);
 
   useEffect(() => {
-    setOrders(read(K(slug, "orders"), []));
-    setBookings(read(K(slug, "bookings"), []));
-    setInvestments(read(K(slug, "investments"), []));
-    setExchanges(read(K(slug, "exchanges"), []));
-    setCoinTxs(read(K(slug, "cointxs"), []));
-    setDeposits(read(K(slug, "deposits"), []));
-    setCustom(readCustom(slug));
+    setOrders(read(KK("orders"), []));
+    setBookings(read(KK("bookings"), []));
+    setInvestments(read(KK("investments"), []));
+    setExchanges(read(KK("exchanges"), []));
+    setCoinTxs(read(KK("cointxs"), []));
+    setDeposits(read(KK("deposits"), []));
+    setCustom({ ...(initialCustom ?? {}), ...readCustomKey(KK("custom")) });
     loadIdentity();
   }, [slug, loadIdentity]);
 
   const persistCart = (c: CartLine[]) => {
     setCart(c);
-    write(K(slug, `cart:${ident()}`), c);
+    write(KK(`cart:${ident()}`), c);
   };
 
   const store: DemoStore = useMemo(() => {
@@ -259,56 +270,56 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         if (name.length < 3) return "আপনার নাম লিখুন";
         if (!/^01[3-9]\d{8}$/.test(phone)) return "সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন";
         if (pass.length < 4) return "পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের দিন";
-        const users = read<Record<string, DemoUser>>(K(slug, "users"), {});
+        const users = read<Record<string, DemoUser>>(KK("users"), {});
         if (users[phone]) return "এই নম্বরে ইতিমধ্যে অ্যাকাউন্ট আছে — লগইন করুন";
         users[phone] = { name, phone, pass, address: "" };
-        write(K(slug, "users"), users);
-        write(K(slug, "session"), phone);
+        write(KK("users"), users);
+        write(KK("session"), phone);
         // merge guest cart → new account
-        const guestCart = read<CartLine[]>(K(slug, "cart:guest"), []);
-        write(K(slug, `cart:${phone}`), guestCart);
-        write(K(slug, "cart:guest"), []);
+        const guestCart = read<CartLine[]>(KK("cart:guest"), []);
+        write(KK(`cart:${phone}`), guestCart);
+        write(KK("cart:guest"), []);
         // signup bonus
-        write(K(slug, `wallet:${phone}`), 5000);
-        write(K(slug, `txs:${phone}`), [{ date: Date.now(), label: "🎁 সাইনআপ বোনাস", amount: 5000 }]);
+        write(KK(`wallet:${phone}`), 5000);
+        write(KK(`txs:${phone}`), [{ date: Date.now(), label: "🎁 সাইনআপ বোনাস", amount: 5000 }]);
         loadIdentity();
         return null;
       },
       login: (phone, pass) => {
         phone = phone.trim();
-        const users = read<Record<string, DemoUser>>(K(slug, "users"), {});
+        const users = read<Record<string, DemoUser>>(KK("users"), {});
         const u = users[phone];
         if (!u) return "এই নম্বরে অ্যাকাউন্ট নেই — সাইন আপ করুন";
         if (u.pass !== pass) return "পাসওয়ার্ড ভুল হয়েছে";
-        write(K(slug, "session"), phone);
-        const guestCart = read<CartLine[]>(K(slug, "cart:guest"), []);
+        write(KK("session"), phone);
+        const guestCart = read<CartLine[]>(KK("cart:guest"), []);
         if (guestCart.length) {
-          const mine = read<CartLine[]>(K(slug, `cart:${phone}`), []);
+          const mine = read<CartLine[]>(KK(`cart:${phone}`), []);
           const merged = [...mine];
           for (const g of guestCart) {
             const f = merged.find((m) => m.id === g.id);
             if (f) f.qty += g.qty;
             else merged.push(g);
           }
-          write(K(slug, `cart:${phone}`), merged);
-          write(K(slug, "cart:guest"), []);
+          write(KK(`cart:${phone}`), merged);
+          write(KK("cart:guest"), []);
         }
         loadIdentity();
         return null;
       },
       logout: () => {
         try {
-          localStorage.removeItem(K(slug, "session"));
+          localStorage.removeItem(KK("session"));
         } catch {}
         loadIdentity();
       },
       saveAddress: (a) => {
         const id = me();
         if (id === "guest") return;
-        const u = read<DemoUser | null>(K(slug, `user:${id}`), null);
+        const u = read<DemoUser | null>(KK(`user:${id}`), null);
         if (u) {
           u.address = a;
-          write(K(slug, `user:${id}`), u);
+          write(KK(`user:${id}`), u);
           setUser(u);
         }
       },
@@ -339,8 +350,8 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const t = [{ date: Date.now(), label: "💳 ওয়ালেট টপ-আপ (ডেমো)", amount }, ...txs].slice(0, 30);
         setWallet(w);
         setTxs(t);
-        write(K(slug, `wallet:${id}`), w);
-        write(K(slug, `txs:${id}`), t);
+        write(KK(`wallet:${id}`), w);
+        write(KK(`txs:${id}`), t);
       },
       payWithWallet: (amount, label) => {
         if (wallet < amount) return false;
@@ -349,8 +360,8 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const t = [{ date: Date.now(), label, amount: -amount }, ...txs].slice(0, 30);
         setWallet(w);
         setTxs(t);
-        write(K(slug, `wallet:${id}`), w);
-        write(K(slug, `txs:${id}`), t);
+        write(KK(`wallet:${id}`), w);
+        write(KK(`txs:${id}`), t);
         return true;
       },
       orders,
@@ -358,7 +369,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoOrderRec = { ...o, id: orderId("DM"), date: Date.now(), status: "প্রসেসিং", userPhone: me() };
         const all = [rec, ...orders].slice(0, 50);
         setOrders(all);
-        write(K(slug, "orders"), all);
+        write(KK("orders"), all);
         persistCart([]);
         return rec;
       },
@@ -367,7 +378,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoBookingRec = { ...b, id: orderId("BK"), createdAt: Date.now(), status: "কনফার্মড", userPhone: me() };
         const all = [rec, ...bookings].slice(0, 50);
         setBookings(all);
-        write(K(slug, "bookings"), all);
+        write(KK("bookings"), all);
         return rec;
       },
       investments,
@@ -375,7 +386,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoInvestmentRec = { ...p, id: orderId("INV"), date: Date.now(), status: "সক্রিয়", userPhone: me() };
         const all = [rec, ...investments].slice(0, 50);
         setInvestments(all);
-        write(K(slug, "investments"), all);
+        write(KK("investments"), all);
         return rec;
       },
       exchanges,
@@ -383,7 +394,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoExchangeRec = { ...e, id: orderId("EX"), date: Date.now(), status: "প্রসেসিং", userPhone: me() };
         const all = [rec, ...exchanges].slice(0, 50);
         setExchanges(all);
-        write(K(slug, "exchanges"), all);
+        write(KK("exchanges"), all);
         return rec;
       },
       coinTxs,
@@ -391,7 +402,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoCoinTx = { ...t, id: orderId("TX"), date: Date.now(), userPhone: me() };
         const all = [rec, ...coinTxs].slice(0, 50);
         setCoinTxs(all);
-        write(K(slug, "cointxs"), all);
+        write(KK("cointxs"), all);
         return rec;
       },
       deposits,
@@ -399,18 +410,18 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         const rec: DemoDepositRec = { ...d, id: orderId("DP"), date: Date.now(), status: "পেন্ডিং", userPhone: me() };
         const all = [rec, ...deposits].slice(0, 50);
         setDeposits(all);
-        write(K(slug, "deposits"), all);
+        write(KK("deposits"), all);
         return rec;
       },
       custom,
       saveCustom: (c) => {
         const next = { ...custom, ...c };
         setCustom(next);
-        write(K(slug, "custom"), next);
+        write(KK("custom"), next);
       },
       resetCustom: () => {
         setCustom({});
-        try { localStorage.removeItem(K(slug, "custom")); } catch {}
+        try { localStorage.removeItem(KK("custom")); } catch {}
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
