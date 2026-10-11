@@ -235,7 +235,93 @@ const HAND_DEFS: DemoSiteDef[] = [
   }),
 ];
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED];
+/* ================= 5 fintech demos (invest / exchange / wallet) ================= */
+
+function fintech(d: Omit<DemoSiteDef, "products" | "services" | "gallery" | "news" | "about" | "contact" | "address" | "hours"> & { desc: string }): DemoSiteDef {
+  const { desc, ...rest } = d;
+  return {
+    ...rest,
+    products: [],
+    services: [],
+    gallery: [],
+    news: [],
+    about: aboutFor(d.name, d.type, desc),
+    contact: CONTACT,
+    address: ADDRESS,
+    hours: HOURS,
+  };
+}
+
+const FINTECH_DEFS: DemoSiteDef[] = [
+  fintech({
+    slug: "investpro", name: "ইনভেস্টপ্রো", type: "বিনিয়োগ প্ল্যাটফর্ম", layout: "invest",
+    logoEmoji: "📈", accent: "#10b981", dark: true, grad: "from-emerald-600 to-teal-800",
+    heroTitle: "টাকা বাড়ান স্মার্ট বিনিয়োগে", heroSub: "মাসে ১২% পর্যন্ত মুনাফা • ৫০,০০০+ বিনিয়োগকারী", heroEmoji: "📈",
+    cats: ["সব"], desc: "নিরাপদ ও লাভজনক বিনিয়োগ — ছোট থেকে বড় সব বাজেটের জন্য।",
+    theme: "bold",
+    investPlans: [
+      { id: "starter", n: "স্টার্টার প্ল্যান", e: "🌱", min: 1000, max: 9999, roi: 8, duration: "৩০ দিন", desc: "নতুনদের জন্য — কম ঝুঁকিতে শুরু করুন।", tag: "জনপ্রিয়" },
+      { id: "growth", n: "গ্রোথ প্ল্যান", e: "🚀", min: 10000, max: 99999, roi: 12, duration: "৬০ দিন", desc: "মাঝারি বাজেটে বেশি মুনাফা।", tag: "সেরা" },
+      { id: "premium", n: "প্রিমিয়াম প্ল্যান", e: "💎", min: 100000, max: 1000000, roi: 18, duration: "৯০ দিন", desc: "বড় বিনিয়োগকারীদের জন্য সর্বোচ্চ রিটার্ন।" },
+      { id: "flexi", n: "ফ্লেক্সি সেভিংস", e: "🪙", min: 500, max: 50000, roi: 5, duration: "যেকোনো সময়", desc: "যেকোনো সময় তুলুন — নমনীয় সঞ্চয়।" },
+    ],
+  }),
+  fintech({
+    slug: "agroinvest", name: "এগ্রোইনভেস্ট", type: "কৃষি বিনিয়োগ", layout: "invest",
+    logoEmoji: "🌾", accent: "#84cc16", dark: false, grad: "from-lime-600 to-green-700",
+    heroTitle: "কৃষিতে বিনিয়োগ, প্রকৃতির সাথে লাভ", heroSub: "ধান, মাছ, গবাদি — সরাসরি খামারে বিনিয়োগ", heroEmoji: "🌾",
+    cats: ["সব"], desc: "কৃষি খামারে বিনিয়োগ করে প্রকৃত আয় করুন।",
+    theme: "elegant",
+    investPlans: [
+      { id: "paddy", n: "ধান চাষ প্রকল্প", e: "🌾", min: 5000, max: 50000, roi: 15, duration: "৪ মাস", desc: "বোরো মৌসুমে ধান চাষে অংশীদার হোন।", tag: "সিজনাল" },
+      { id: "fish", n: "মৎস্য খামার", e: "🐟", min: 10000, max: 200000, roi: 20, duration: "৬ মাস", desc: "পাঙ্গাশ ও তেলাপিয়া চাষ প্রকল্প।", tag: "জনপ্রিয়" },
+      { id: "dairy", n: "ডেইরি ফার্ম", e: "🐄", min: 20000, max: 500000, roi: 22, duration: "১২ মাস", desc: "গাভী পালনে দীর্ঘমেয়াদি বিনিয়োগ।" },
+    ],
+  }),
+  fintech({
+    slug: "swiftex", name: "সুইফটএক্স", type: "কারেন্সি এক্সচেঞ্জ", layout: "exchange",
+    logoEmoji: "💱", accent: "#3b82f6", dark: true, grad: "from-blue-600 to-indigo-800",
+    heroTitle: "সব কারেন্সি, এক প্ল্যাটফর্মে", heroSub: "ডলার, ইউরো, ক্রিপ্টো — সেরা রেটে এক্সচেঞ্জ", heroEmoji: "💱",
+    cats: ["সব"], desc: "দ্রুত ও নিরাপদ কারেন্সি এক্সচেঞ্জ — ৫ মিনিটে ডেলিভারি।",
+    theme: "split",
+    rates: [
+      { code: "USD", name: "ইউএস ডলার", buy: 121.5, sell: 119.8, e: "💵", change: 0.3 },
+      { code: "EUR", name: "ইউরো", buy: 131.2, sell: 129.4, e: "💶", change: -0.2 },
+      { code: "GBP", name: "ব্রিটিশ পাউন্ড", buy: 153.8, sell: 151.5, e: "💷", change: 0.5 },
+      { code: "BTC", name: "বিটকয়েন", buy: 8150000, sell: 7980000, e: "₿", change: 2.4 },
+      { code: "ETH", name: "ইথেরিয়াম", buy: 385000, sell: 372000, e: "Ξ", change: 1.8 },
+      { code: "USDT", name: "টিথার", buy: 122.0, sell: 120.5, e: "₮", change: 0.1 },
+    ],
+  }),
+  fintech({
+    slug: "payex", name: "পেএক্স", type: "মোবাইল ব্যাংকিং এক্সচেঞ্জ", layout: "exchange",
+    logoEmoji: "📲", accent: "#f59e0b", dark: false, grad: "from-amber-500 to-orange-600",
+    heroTitle: "বিকাশ ↔ নগদ ↔ রকেট", heroSub: "মোবাইল ব্যাংকিং ব্যালেন্স এক্সচেঞ্জ — ২% চার্জে", heroEmoji: "📲",
+    cats: ["সব"], desc: "এক মোবাইল ব্যাংক থেকে আরেকটিতে টাকা পাঠান সহজে।",
+    theme: "playful",
+    rates: [
+      { code: "BKASH", name: "বিকাশ", buy: 100, sell: 98, e: "🩷", change: 0 },
+      { code: "NAGAD", name: "নগদ", buy: 100, sell: 98.2, e: "🧡", change: 0 },
+      { code: "ROCKET", name: "রকেট", buy: 100, sell: 97.8, e: "💜", change: 0 },
+      { code: "UPAY", name: "উপায়", buy: 100, sell: 98.1, e: "💚", change: 0 },
+    ],
+  }),
+  fintech({
+    slug: "cryptovault", name: "ক্রিপ্টোভল্ট", type: "ক্রিপ্টো ওয়ালেট", layout: "wallet",
+    logoEmoji: "🔐", accent: "#8b5cf6", dark: true, grad: "from-violet-600 to-purple-800",
+    heroTitle: "আপনার ক্রিপ্টো, সম্পূর্ণ নিরাপদ", heroSub: "বিটকয়েন, ইথেরিয়ামসহ ৫০+ কয়েন সাপোর্ট", heroEmoji: "🔐",
+    cats: ["সব"], desc: "নিরাপদ ক্রিপ্টো ওয়ালেট — পাঠান, গ্রহণ করুন, ট্র্যাক করুন।",
+    theme: "aurora",
+    coins: [
+      { code: "BTC", name: "বিটকয়েন", price: 67250, change: 2.4, e: "₿" },
+      { code: "ETH", name: "ইথেরিয়াম", price: 3150, change: 1.8, e: "Ξ" },
+      { code: "USDT", name: "টিথার", price: 1.0, change: 0.1, e: "₮" },
+      { code: "BNB", name: "বিনান্স কয়েন", price: 585, change: -0.8, e: "🟡" },
+    ],
+  }),
+];
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
@@ -254,7 +340,7 @@ for (const d of DEMO_DEFS) {
       if (u) pr.img = u;
     }
   }
-  d.theme = themeForSlug(d.slug);
+  if (!d.theme) d.theme = themeForSlug(d.slug);
 }
 
 export function getDemoDef(slug: string): DemoSiteDef | undefined {

@@ -46,12 +46,57 @@ function navLinks(layout: string): { label: string; href: string }[] {
         { label: "ℹ️ সম্পর্কে", href: "/about" },
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
+    case "invest":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "📈 প্ল্যানসমূহ", href: "/plans" },
+        { label: "💼 আমার বিনিয়োগ", href: "/dashboard" },
+        { label: "❓ কিভাবে কাজ করে", href: "/how" },
+        { label: "ℹ️ সম্পর্কে", href: "/about" },
+        { label: "📞 যোগাযোগ", href: "/contact" },
+      ];
+    case "exchange":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "💱 এক্সচেঞ্জ", href: "/exchange" },
+        { label: "📊 লাইভ রেট", href: "/rates" },
+        { label: "📍 ট্র্যাক", href: "/track" },
+        { label: "ℹ️ সম্পর্কে", href: "/about" },
+        { label: "📞 যোগাযোগ", href: "/contact" },
+      ];
+    case "wallet":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "👛 ওয়ালেট", href: "/wallet" },
+        { label: "📤 সেন্ড", href: "/send" },
+        { label: "📥 রিসিভ", href: "/receive" },
+        { label: "ℹ️ সম্পর্কে", href: "/about" },
+        { label: "📞 যোগাযোগ", href: "/contact" },
+      ];
     default:
       return [
         { label: "🏠 হোম", href: "" },
         { label: "ℹ️ সম্পর্কে", href: "/about" },
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
+  }
+}
+
+/** Drawer styling varies per theme so each demo's menu feels unique. */
+function drawerTheme(theme: string | undefined, dark: boolean) {
+  switch (theme) {
+    case "split":
+      return { aside: `rounded-none border-r-4 ${dark ? "bg-[#0d1117] border-white/20" : "bg-white border-slate-300"}`, item: "rounded-none border-b", search: "rounded-none" };
+    case "minimal":
+      return { aside: `${dark ? "bg-[#0a0a0f]" : "bg-[#fafafa]"}`, item: "rounded-full", search: "rounded-full" };
+    case "bold":
+      return { aside: `border-r-8 ${dark ? "bg-black border-white/30" : "bg-white border-slate-900"}`, item: "rounded-lg", search: "rounded-lg" };
+    case "elegant":
+      return { aside: `${dark ? "bg-[#141210]" : "bg-[#fffdf8]"}`, item: "rounded-xl", search: "rounded-xl" };
+    case "playful":
+      return { aside: `${dark ? "bg-[#14101f]" : "bg-white"}`, item: "rounded-3xl", search: "rounded-3xl" };
+    default:
+      return { aside: `${dark ? "bg-[#101828]" : "bg-white"}`, item: "rounded-xl", search: "rounded-2xl" };
   }
 }
 
@@ -64,6 +109,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
   const links = navLinks(def.layout);
   const dark = def.dark;
   const showCart = def.layout === "shop";
+  const dt = drawerTheme(def.theme, dark);
 
   const goSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +205,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       {drawer && (
         <div className="fixed inset-0 z-[80]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawer(false)} />
-          <aside className={`absolute left-0 top-0 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto p-5 shadow-2xl animate-drawer-in ${dark ? "bg-[#101828] text-white" : "bg-white text-slate-800"}`}>
+          <aside className={`absolute left-0 top-0 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto p-5 shadow-2xl animate-drawer-in ${dt.aside} ${dark ? "text-white" : "text-slate-800"}`}>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-lg font-black">
                 <span className="text-2xl">{def.logoEmoji}</span> {def.name}
@@ -171,14 +217,14 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="🔍 খুঁজুন..."
-                className={`w-full rounded-2xl border px-4 py-2.5 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-50"}`}
+                className={`w-full ${dt.search} border px-4 py-2.5 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-50"}`}
               />
             </form>
             <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">মেনু</p>
             <nav className="space-y-1">
               {links.map((l) => (
                 <Link key={l.href} href={`${base}${l.href}`} onClick={() => setDrawer(false)}
-                  className={`block rounded-xl px-4 py-3 font-bold transition ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>
+                  className={`block ${dt.item} px-4 py-3 font-bold transition ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>
                   {l.label}
                 </Link>
               ))}
@@ -204,15 +250,18 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {store.user ? (
                 <>
-                  <Link href={`${base}/account`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>👤 {store.user.name}</Link>
-                  {def.layout === "shop" && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📦 আমার অর্ডার</Link>}
-                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>💳 ওয়ালেট</Link>}
-                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📅 আমার বুকিং</Link>}
+                  <Link href={`${base}/account`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>👤 {store.user.name}</Link>
+                  {def.layout === "shop" && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📦 আমার অর্ডার</Link>}
+                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>💳 ওয়ালেট</Link>}
+                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📅 আমার বুকিং</Link>}
+                  {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>💼 আমার বিনিয়োগ</Link>}
+                  {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📍 এক্সচেঞ্জ ট্র্যাক</Link>}
+                  {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>👛 আমার ওয়ালেট</Link>}
                 </>
               ) : (
                 <>
-                  <Link href={`${base}/login`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>🔑 লগইন</Link>
-                  <Link href={`${base}/signup`} onClick={() => setDrawer(false)} className={`block rounded-xl px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📝 সাইন আপ</Link>
+                  <Link href={`${base}/login`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>🔑 লগইন</Link>
+                  <Link href={`${base}/signup`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📝 সাইন আপ</Link>
                 </>
               )}
             </nav>
