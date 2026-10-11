@@ -14,6 +14,7 @@ const NAV: { href: string; label: string; desc: string; exact?: boolean; roles: 
   { href: "/admin/marketplace", label: "🎮 ID বাজার", desc: "ID পোস্ট approve, এসক্রো ডিল, সব চ্যাট দেখুন", roles: ["admin", "support"] },
   { href: "/admin/services", label: "🌐 সার্ভিস", desc: "ওয়েবসাইট বানানোর রিকোয়েস্ট ম্যানেজ", roles: ["admin", "support"] },
   { href: "/admin/chat", label: "💬 কমিউনিটি চ্যাট", desc: "ইউজারদের প্রাইভেট চ্যাট মনিটর করুন", roles: ["admin", "support"] },
+  { href: "/admin/client-sites", label: "🚀 ক্লায়েন্ট সাইট", desc: "ডেমো থেকে এক ক্লিকে ক্লায়েন্টের সাইট বানান", roles: ["admin"] },
   { href: "/admin/ads", label: "📢 বিজ্ঞাপন", desc: "বিজ্ঞাপন স্লট চালু/বন্ধ, কোড বসান", roles: ["admin"] },
   { href: "/admin/staff", label: "👥 স্টাফ", desc: "সাপোর্ট অ্যাডমিন যোগ/বাদ দিন", roles: ["admin"] },
   { href: "/admin/settings", label: "⚙️ সেটিংস", desc: "পেমেন্ট নম্বর, ফি, রিওয়ার্ড — সব সেটিংস", roles: ["admin"] },
