@@ -2,12 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Hind_Siliguri, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/lib/cart";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
+import ConditionalChrome from "@/components/ConditionalChrome";
 import PwaInit from "@/components/PwaInit";
-import WhatsAppFloat from "@/components/WhatsAppFloat";
-import AdSlot from "@/components/AdSlot";
 import { getAdsConfig, activeSlots } from "@/lib/catalog";
 import { LangProvider } from "@/lib/i18n";
 
@@ -119,15 +115,10 @@ export default async function RootLayout({
         />
         <LangProvider>
         <CartProvider>
-          <Navbar />
-          <main className="relative">{children}</main>
-          <Footer />
-          <CartDrawer />
           <PwaInit />
-          <WhatsAppFloat />
-          {sitewide.map((slot) => (
-            <AdSlot key={slot.id} code={slot.code} label="" />
-          ))}
+          <ConditionalChrome sitewide={sitewide.map((s) => ({ id: s.id, code: s.code }))}>
+            {children}
+          </ConditionalChrome>
         </CartProvider>
         </LangProvider>
       </body>

@@ -239,8 +239,10 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
 
   const loadIdentity = useCallback(() => {
     const id = ident();
-    const u = read<DemoUser | null>(KK(`user:${id}`), null);
-    setUser(id === "guest" ? null : u);
+    // Users are stored in the "users" map (keyed by phone), not a separate user:{id} key.
+    const users = read<Record<string, DemoUser>>(KK("users"), {});
+    const u = id === "guest" ? null : (users[id] ?? null);
+    setUser(u);
     setCart(read(KK(`cart:${id}`), []));
     setWallet(read(KK(`wallet:${id}`), 0));
     setTxs(read(KK(`txs:${id}`), []));

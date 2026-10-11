@@ -210,14 +210,51 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       {drawer && (
         <div className="fixed inset-0 z-[80]">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDrawer(false)} />
-          <aside className={`absolute left-0 top-0 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto p-5 shadow-2xl animate-drawer-in ${dt.aside} ${dark ? "text-white" : "text-slate-800"}`}>
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-lg font-black">
-                <span className="text-2xl">{def.logoEmoji}</span> {def.name}
-              </span>
-              <button onClick={() => setDrawer(false)} aria-label="বন্ধ" className="grid h-9 w-9 place-items-center rounded-full bg-black/10 text-lg">✕</button>
+          <aside className={`absolute left-0 top-0 flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto shadow-2xl animate-drawer-in ${dt.aside} ${dark ? "text-white" : "text-slate-800"}`}>
+            {/* Professional header with brand */}
+            <div className="p-5 pb-4" style={{ background: `linear-gradient(135deg, ${def.accent}22, transparent)` }}>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2.5">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl text-2xl shadow-lg" style={{ background: def.accent }}>
+                    {def.logoEmoji}
+                  </span>
+                  <span>
+                    <span className="block text-base font-black leading-tight">{def.name}</span>
+                    <span className="block text-[10px] font-bold uppercase tracking-widest opacity-50">
+                      {def.layout === "shop" ? "অনলাইন শপ" : def.layout === "service" ? "সার্ভিস" : def.layout === "booking" ? "বুকিং" : def.layout === "news" ? "নিউজ পোর্টাল" : "ওয়েবসাইট"}
+                    </span>
+                  </span>
+                </span>
+                <button onClick={() => setDrawer(false)} aria-label="বন্ধ" className="grid h-9 w-9 place-items-center rounded-full bg-black/10 text-lg transition hover:scale-105">✕</button>
+              </div>
+              {/* User profile card */}
+              {store.user ? (
+                <Link href={`${base}/account`} onClick={() => setDrawer(false)}
+                  className={`mt-4 flex items-center gap-3 rounded-2xl p-3 transition ${dark ? "bg-white/10 hover:bg-white/15" : "bg-slate-100 hover:bg-slate-200"}`}>
+                  <span className="grid h-10 w-10 place-items-center rounded-full text-lg font-black text-white" style={{ background: def.accent }}>
+                    {store.user.name.charAt(0)}
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-sm font-black">{store.user.name}</span>
+                    <span className="block text-[11px] opacity-60">{store.user.phone}</span>
+                  </span>
+                  <span className="text-lg">›</span>
+                </Link>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Link href={`${base}/login`} onClick={() => setDrawer(false)}
+                    className="rounded-xl py-2.5 text-center text-sm font-black text-white shadow-lg transition hover:brightness-110" style={{ background: def.accent }}>
+                    🔑 লগইন
+                  </Link>
+                  <Link href={`${base}/signup`} onClick={() => setDrawer(false)}
+                    className={`rounded-xl py-2.5 text-center text-sm font-black transition ${dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`}>
+                    📝 সাইন আপ
+                  </Link>
+                </div>
+              )}
             </div>
-            <form onSubmit={goSearch} className="mt-4">
+            <div className="flex-1 px-4 pb-4">
+            <form onSubmit={goSearch} className="mt-1">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -229,8 +266,9 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {links.map((l) => (
                 <Link key={l.href} href={`${base}${l.href}`} onClick={() => setDrawer(false)}
-                  className={`block ${dt.item} px-4 py-3 font-bold transition ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>
-                  {l.label}
+                  className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold transition ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>
+                  <span>{l.label}</span>
+                  <span className="opacity-30">›</span>
                 </Link>
               ))}
             </nav>
@@ -251,26 +289,25 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 </div>
               </>
             )}
-            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">অ্যাকাউন্ট</p>
+            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">আমার</p>
             <nav className="space-y-1">
               {store.user ? (
                 <>
-                  <Link href={`${base}/account`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>👤 {store.user.name}</Link>
-                  {def.layout === "shop" && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📦 আমার অর্ডার</Link>}
-                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>💳 ওয়ালেট</Link>}
-                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📅 আমার বুকিং</Link>}
-                  {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>💼 আমার বিনিয়োগ</Link>}
-                  {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📍 এক্সচেঞ্জ ট্র্যাক</Link>}
-                  {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>👛 আমার ওয়ালেট</Link>}
+                  {def.layout === "shop" && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📦 আমার অর্ডার</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💳 ওয়ালেট</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📅 আমার বুকিং</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💼 আমার বিনিয়োগ</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📍 এক্সচেঞ্জ ট্র্যাক</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>👛 আমার ওয়ালেট</span><span className="opacity-30">›</span></Link>}
                 </>
               ) : (
-                <>
-                  <Link href={`${base}/login`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>🔑 লগইন</Link>
-                  <Link href={`${base}/signup`} onClick={() => setDrawer(false)} className={`block ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}>📝 সাইন আপ</Link>
-                </>
+                <p className={`px-4 py-2 text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>
+                  💡 লগইন করলে অর্ডার হিস্ট্রি ও অফার পাবেন
+                </p>
               )}
             </nav>
-            <div className={`mt-auto rounded-2xl p-4 pt-4 text-sm ${dark ? "bg-white/5" : "bg-slate-50"}`}>
+            </div>
+            <div className={`mx-4 mb-4 mt-auto rounded-2xl p-4 text-sm ${dark ? "bg-white/5" : "bg-slate-50"}`}>
               <p className="font-bold">{def.contact}</p>
               <p className="mt-1 text-xs opacity-60">{def.hours}</p>
               <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
