@@ -110,6 +110,31 @@ export interface DemoDepositRec {
   userPhone: string;
 }
 
+/** Casino: sports/casino bet record. */
+export interface DemoBetRec {
+  id: string;
+  kind: "sports" | "live";
+  sport: string;
+  match: string;
+  selection: string;
+  odds: number;
+  stake: number;
+  potential: number;
+  date: number;
+  status: "পেন্ডিং" | "জিতেছেন" | "হেরেছেন";
+  userPhone: string;
+}
+
+/** Casino: casino game round record. */
+export interface DemoGameRec {
+  id: string;
+  game: string;
+  bet: number;
+  win: number;
+  date: number;
+  userPhone: string;
+}
+
 function read<T>(k: string, fb: T): T {
   try {
     const v = localStorage.getItem(k);
@@ -161,6 +186,11 @@ export interface DemoStore {
   placeCoinTx: (t: Omit<DemoCoinTx, "id" | "date" | "userPhone">) => DemoCoinTx;
   deposits: DemoDepositRec[];
   placeDeposit: (d: Omit<DemoDepositRec, "id" | "date" | "status" | "userPhone">) => DemoDepositRec;
+  bets: DemoBetRec[];
+  placeBet: (b: Omit<DemoBetRec, "id" | "date" | "status" | "userPhone">) => DemoBetRec;
+  settleBet: (id: string, won: boolean) => void;
+  gameHistory: DemoGameRec[];
+  placeGame: (g: Omit<DemoGameRec, "id" | "date" | "userPhone">) => DemoGameRec;
   custom: DemoCustom;
   saveCustom: (c: Partial<DemoCustom>) => void;
   resetCustom: () => void;
@@ -223,6 +253,8 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
   const [exchanges, setExchanges] = useState<DemoExchangeRec[]>([]);
   const [coinTxs, setCoinTxs] = useState<DemoCoinTx[]>([]);
   const [deposits, setDeposits] = useState<DemoDepositRec[]>([]);
+  const [bets, setBets] = useState<DemoBetRec[]>([]);
+  const [gameHistory, setGameHistory] = useState<DemoGameRec[]>([]);
   const [custom, setCustom] = useState<DemoCustom>(() => ({ ...(initialCustom ?? {}) }));
 
   // Merge admin customizations (theme, accent, names) into the def
@@ -255,6 +287,8 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
     setExchanges(read(KK("exchanges"), []));
     setCoinTxs(read(KK("cointxs"), []));
     setDeposits(read(KK("deposits"), []));
+    setBets(read(KK("bets"), []));
+    setGameHistory(read(KK("gamehistory"), []));
     setCustom({ ...(initialCustom ?? {}), ...readCustomKey(KK("custom")) });
     loadIdentity();
   }, [slug, loadIdentity]);
@@ -417,6 +451,39 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
         write(KK("deposits"), all);
         return rec;
       },
+      bets,
+      placeBet: (b) => {
+        const rec: DemoBetRec = { ...b, id: orderId("BET"), date: Date.now(), status: "পেন্ডিং", userPhone: me() };
+        const all = [rec, ...bets].slice(0, 100);
+        setBets(all);
+        write(KK("bets"), all);
+        return rec;
+      },
+      settleBet: (id, won) => {
+        const all = bets.map((b) => {
+          if (b.id !== id || b.status !== "পেন্ডিং") return b;
+          return { ...b, status: (won ? "জিতেছেন" : "হেরেছেন") as DemoBetRec["status"] };
+        });
+        setBets(all);
+        write(KK("bets"), all);
+        const b = bets.find((x) => x.id === id);
+        if (won && b) {
+          const w = wallet + Math.round(b.potential);
+          setWallet(w);
+          write(KK(`wallet:${me()}`), w);
+          const t = [{ date: Date.now(), label: `🏆 বাজি জয়: ${b.match}`, amount: Math.round(b.potential) }, ...txs].slice(0, 30);
+          setTxs(t);
+          write(KK(`txs:${me()}`), t);
+        }
+      },
+      gameHistory,
+      placeGame: (g) => {
+        const rec: DemoGameRec = { ...g, id: orderId("GM"), date: Date.now(), userPhone: me() };
+        const all = [rec, ...gameHistory].slice(0, 100);
+        setGameHistory(all);
+        write(KK("gamehistory"), all);
+        return rec;
+      },
       custom,
       saveCustom: (c) => {
         const next = { ...custom, ...c };
@@ -429,7 +496,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, custom, loadIdentity]);
+  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, bets, gameHistory, custom, loadIdentity]);
 
   return <Ctx.Provider value={{ def: liveDef, base, store, clientSlug }}>{children}</Ctx.Provider>;
 }
