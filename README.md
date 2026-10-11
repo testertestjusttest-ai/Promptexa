@@ -149,3 +149,4 @@ supabase/               # migrations + seed
 ## ⚠️ নোট
 - ডেমো কী-গুলো (`DEMO-...`) আসল কী দিয়ে রিপ্লেস করুন
 - অ্যাডমিন প্যানেল: `https://yourdomain.com/admin` — লগইন + `is_admin=true` লাগবে
+
