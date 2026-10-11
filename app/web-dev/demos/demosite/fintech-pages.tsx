@@ -620,7 +620,7 @@ export function ExchangeTrack() {
 
 /* ================= WALLET layout ================= */
 
-const DEMO_BALANCES: Record<string, number> = { BTC: 0.245, ETH: 3.8, USDT: 1250, BNB: 12.5 };
+const DEMO_BALANCES: Record<string, number> = { BTC: 0.245, ETH: 3.8, USDT: 1250, BNB: 12.5, SOL: 45.2, TRX: 8500 };
 
 function CoinRow({ coin }: { coin: DemoCoin }) {
   const { def } = useDemo();
