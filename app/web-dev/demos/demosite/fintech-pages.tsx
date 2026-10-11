@@ -78,8 +78,16 @@ function PlanCard({ plan }: { plan: DemoInvestPlan }) {
         {plan.tag && <span className="rounded-full px-3 py-1 text-[10px] font-black text-white" style={{ background: def.accent }}>{plan.tag}</span>}
       </div>
       <p className="mt-3 text-lg font-black">{plan.n}</p>
-      <p className="mt-1 text-4xl font-black" style={{ color: def.accent }}>{bn(plan.roi)}<span className="text-lg">%</span></p>
-      <p className="text-xs opacity-60">মুনাফা / {plan.duration}</p>
+      <div className="mt-2 flex items-end justify-between">
+        <div>
+          <p className="text-4xl font-black" style={{ color: def.accent }}>{toBnDigits(plan.dailyRoi.toFixed(2))}<span className="text-lg">%</span></p>
+          <p className="text-xs opacity-60">দৈনিক মুনাফা</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xl font-black">{bn(plan.roi)}%</p>
+          <p className="text-xs opacity-60">মোট / {plan.duration}</p>
+        </div>
+      </div>
       <div className="mt-3 space-y-1 text-xs opacity-70">
         <p>💰 সর্বনিম্ন: {bn(plan.min)} টাকা</p>
         <p>💰 সর্বোচ্চ: {bn(plan.max)} টাকা</p>
@@ -187,8 +195,16 @@ export function InvestDetail({ id }: { id: string }) {
         <span className="grid h-20 w-20 mx-auto place-items-center rounded-3xl text-5xl" style={{ background: `${def.accent}1a` }}>{plan.e}</span>
         <h1 className="mt-3 text-2xl font-black">{plan.n}</h1>
         <p className={`mt-1 text-sm ${sub}`}>{plan.desc}</p>
-        <p className="mt-3 text-5xl font-black" style={{ color: def.accent }}>{bn(plan.roi)}<span className="text-xl">%</span></p>
-        <p className={`text-xs ${sub}`}>মুনাফা / {plan.duration}</p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
+            <p className="text-3xl font-black" style={{ color: def.accent }}>{toBnDigits(plan.dailyRoi.toFixed(2))}%</p>
+            <p className={`text-[11px] ${sub}`}>দৈনিক মুনাফা</p>
+          </div>
+          <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
+            <p className="text-3xl font-black">{bn(plan.roi)}%</p>
+            <p className={`text-[11px] ${sub}`}>মোট / {plan.duration}</p>
+          </div>
+        </div>
         <div className={`mt-4 grid grid-cols-2 gap-2 text-sm`}>
           <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p className={`text-[11px] ${sub}`}>সর্বনিম্ন</p><p className="font-black">{bn(plan.min)} টাকা</p>
@@ -204,8 +220,9 @@ export function InvestDetail({ id }: { id: string }) {
         {amt > 0 && (
           <div className={`mt-3 rounded-xl p-3 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p>বিনিয়োগ: <b>{bn(amt)} টাকা</b></p>
-            <p>প্রত্যাশিত মুনাফা: <b style={{ color: def.accent }}>+{bn(profit)} টাকা</b></p>
-            <p>মোট ফেরত: <b>{bn(amt + profit)} টাকা</b> ({plan.duration} পর)</p>
+            <p>দৈনিক আয়: <b style={{ color: def.accent }}>+{bn(Math.round(amt * plan.dailyRoi / 100))} টাকা/দিন</b></p>
+            <p>মোট মুনাফা: <b className="text-emerald-500">+{bn(profit)} টাকা</b> ({plan.duration})</p>
+            <p>মোট ফেরত: <b>{bn(amt + profit)} টাকা</b></p>
           </div>
         )}
         {err && <p className="mt-2 text-xs font-bold text-red-500">{err}</p>}
@@ -786,6 +803,109 @@ export function WalletReceive() {
         <button onClick={simulate} className="btn-demo-ghost mt-2 w-full">🎁 ডেমো: ০.০১ {coin} গ্রহণ করুন</button>
         <p className={`mt-2 text-[11px] ${sub}`}>শুধুমাত্র {coin} পাঠাবেন — অন্য কয়েন হারিয়ে যাবে (ডেমো)</p>
       </div>
+    </Page>
+  );
+}
+
+/* ================= Shared DEPOSIT flow (invest / exchange / wallet) ================= */
+
+const DEPOSIT_METHODS = [
+  { id: "bkash", n: "বিকাশ", e: "🩷", num: "01XXX-XXXXXX" },
+  { id: "nagad", n: "নগদ", e: "🧡", num: "01XXX-XXXXXX" },
+  { id: "rocket", n: "রকেট", e: "💜", num: "01XXX-XXXXXX" },
+  { id: "card", n: "কার্ড", e: "💳", num: "অনলাইন পেমেন্ট" },
+];
+
+export function FinDeposit() {
+  const { def, base, store } = useDemo();
+  const { card, sub } = useSkin();
+  const [amount, setAmount] = useState("");
+  const [method, setMethod] = useState("bkash");
+  const [trxId, setTrxId] = useState("");
+  const [err, setErr] = useState("");
+  const [done, setDone] = useState<string | null>(null);
+  const amt = parseInt(amount.replace(/[^0-9]/g, ""), 10) || 0;
+  const m = DEPOSIT_METHODS.find((x) => x.id === method)!;
+
+  const submit = () => {
+    if (amt < 100) { setErr("সর্বনিম্ন ১০০ টাকা ডিপোজিট করুন"); return; }
+    if (method !== "card" && trxId.trim().length < 6) { setErr("পেমেন্টের TrxID দিন"); return; }
+    const rec = store.placeDeposit({ amount: amt, method: m.n, trxId: trxId.trim() || "CARD" });
+    setDone(rec.id);
+  };
+
+  if (done) {
+    const rec = store.deposits.find((d) => d.id === done);
+    return (
+      <Page narrow>
+        <div className={`${card} p-8 text-center`}>
+          <p className="text-6xl">⏳</p>
+          <h1 className="mt-3 text-2xl font-black">ডিপোজিট রিকোয়েস্ট গৃহীত!</h1>
+          <p className="mt-2 text-sm opacity-70">{bn(amt)} টাকা — {m.n}</p>
+          <div className={`mt-4 rounded-xl p-4 text-left text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
+            <p>🆔 আইডি: <b>{done}</b></p>
+            <p>📌 স্ট্যাটাস: <b className="text-amber-500">{rec?.status ?? "পেন্ডিং"}</b></p>
+            <p className={`mt-1 text-xs ${sub}`}>যাচাইয়ের পর ব্যালেন্সে যোগ হবে (ডেমো)</p>
+          </div>
+          <Link href={base} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>হোমে ফিরুন</Link>
+        </div>
+      </Page>
+    );
+  }
+
+  return (
+    <Page narrow>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="💰 ডিপোজিট করুন" sub="ব্যালেন্সে টাকা যোগ করুন" />
+      <div className={`${card} p-5`}>
+        <p className="text-sm font-black">💵 পরিমাণ</p>
+        <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} inputMode="numeric" placeholder="যেমন: ৫০০০" className="mt-2" />
+        <p className="mt-4 text-sm font-black">📲 পেমেন্ট মাধ্যম</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {DEPOSIT_METHODS.map((x) => (
+            <button
+              key={x.id}
+              onClick={() => setMethod(x.id)}
+              className={`rounded-2xl border p-3 text-left transition ${method === x.id ? "ring-2" : "opacity-70 hover:opacity-100"} ${def.dark ? "border-white/15 bg-white/5" : "border-slate-200 bg-white"}`}
+              style={method === x.id ? ({ "--tw-ring-color": def.accent } as any) : undefined}
+            >
+              <p className="text-xl">{x.e}</p>
+              <p className="mt-1 text-sm font-black">{x.n}</p>
+            </button>
+          ))}
+        </div>
+        <div className={`mt-3 rounded-xl p-3 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
+          <p>📞 {m.n} নম্বর: <b>{def.contact}</b></p>
+          <p className={`mt-1 text-xs ${sub}`}>উপরের নম্বরে {amt > 0 ? bn(amt) : "___"} টাকা পাঠিয়ে TrxID দিন</p>
+        </div>
+        {method !== "card" && (
+          <div className="mt-3">
+            <p className="text-sm font-black">🔑 TrxID</p>
+            <FInput dark={def.dark} value={trxId} onChange={(e) => { setTrxId(e.target.value); setErr(""); }} placeholder="যেমন: 9HX7K2LMN1" className="mt-2" />
+          </div>
+        )}
+        {err && <p className="mt-2 text-xs font-bold text-red-500">{err}</p>}
+        <button onClick={submit} className="btn-demo mt-4 w-full" style={{ background: def.accent }}>
+          ✅ {amt > 0 ? `${bn(amt)} টাকা ` : ""}ডিপোজিট কনফার্ম
+        </button>
+        <p className={`mt-2 text-center text-[11px] ${sub}`}>ডেমো সাইট — আসল টাকা লেনদেন হয় না</p>
+      </div>
+      {store.deposits.length > 0 && (
+        <div className="mt-4">
+          <SectionTitle t="🕘 ডিপোজিট হিস্ট্রি" />
+          <div className="space-y-2">
+            {store.deposits.slice(0, 5).map((d) => (
+              <div key={d.id} className={`${card} flex items-center justify-between p-3 text-sm`}>
+                <div>
+                  <p className="font-bold">{bn(d.amount)} টাকা <span className={`font-normal ${sub}`}>• {d.method}</span></p>
+                  <p className={`text-[11px] ${sub}`}>{d.id}</p>
+                </div>
+                <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-black text-amber-500">{d.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </Page>
   );
 }
