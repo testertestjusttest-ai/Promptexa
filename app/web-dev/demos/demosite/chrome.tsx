@@ -346,8 +346,36 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
 
       {/* ===== page ===== */}
       {clientSlug && <AdSlot slot="ad_top" />}
-      <main>{children}</main>
+      <main className={def.layout === "casino" ? "pb-20" : ""}>{children}</main>
       {clientSlug && <AdSlot slot="ad_bottom" />}
+
+      {/* ===== casino app bottom nav (MegaPari-style) ===== */}
+      {def.layout === "casino" && (
+        <nav className="fixed bottom-0 left-0 right-0 z-[70] border-t border-white/10 bg-[#0d1322]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+          <div className="mx-auto flex max-w-lg items-end justify-around px-2">
+            <Link href={base} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
+              <span className="text-xl">🔥</span>
+              <span className="text-[10px] font-bold">জনপ্রিয়</span>
+            </Link>
+            <Link href={`${base}/games`} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
+              <span className="text-xl">⭐</span>
+              <span className="text-[10px] font-bold">ফেভারিট</span>
+            </Link>
+            <Link href={`${base}/betslip`} className="relative -top-3 flex flex-col items-center transition active:scale-95">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-b from-red-500 to-red-700 text-xl shadow-lg shadow-red-900/50 ring-4 ring-[#0d1322]">🧾</span>
+              <span className="mt-0.5 text-[10px] font-bold text-slate-200">বেট স্লিপ</span>
+            </Link>
+            <Link href={`${base}/bet-history`} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
+              <span className="text-xl">🕘</span>
+              <span className="text-[10px] font-bold">ইতিহাস</span>
+            </Link>
+            <button onClick={() => setDrawer(true)} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
+              <span className="text-xl">▦</span>
+              <span className="text-[10px] font-bold">মেনু</span>
+            </button>
+          </div>
+        </nav>
+      )}
 
       {/* ===== footer ===== */}
       <footer className={`mt-10 border-t ${dark ? "border-white/10 bg-black/30" : "border-slate-200 bg-white"}`}>

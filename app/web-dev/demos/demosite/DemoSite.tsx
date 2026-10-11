@@ -33,7 +33,7 @@ import {
   UpcomingMatches, Results, BetSlip, MyBets, BetHistory, BettingRules, OddsGuide,
   CasinoLobby, SlotsList, SlotGame, LiveCasino, LiveGameDetail,
   RouletteGame, BlackjackGame, BaccaratGame, PokerGame, TeenPattiGame, AndarBaharGame, DragonTigerGame,
-  CrashGame, AviatorGame, DiceGame, WheelGame,
+  CrashGame, AviatorGame, DiceGame, WheelGame, MinesGame, PlinkoGame, HiLoGame, CatalogLobby,
   GameHistory, Tournaments, TournamentDetail, Jackpots,
   CasinoLogin, CasinoSignup, CasinoWallet, DepositHome, DepositBkash, DepositNagad, DepositRocket, DepositCard,
   Withdraw, Transactions, Promotions, PromotionDetail, VipProgram, VipLevels, Referral,
@@ -220,6 +220,16 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "casino" && p1 === "tournaments" && p2) body = <TournamentDetail id={p2} />;
     else if (p0 === "casino" && p1 === "tournaments") body = <Tournaments />;
     else if (p0 === "casino" && p1 === "jackpots") body = <Jackpots />;
+    else if (p0 === "games") body = <CatalogLobby />;
+    else if (p0 === "slots" && p1) body = <SlotGame id={p1} />;
+    else if (p0 === "slots") body = <CatalogLobby />;
+    else if (p0 === "mines") body = <MinesGame />;
+    else if (p0 === "plinko") body = <PlinkoGame />;
+    else if (p0 === "hilo") body = <HiLoGame />;
+    else if (p0 === "crash") body = <CrashGame />;
+    else if (p0 === "aviator") body = <AviatorGame />;
+    else if (p0 === "dice") body = <DiceGame />;
+    else if (p0 === "wheel") body = <WheelGame />;
     else if (p0 === "casino") body = <CasinoLobby />;
     // account & wallet
     else if (p0 === "login") body = <CasinoLogin />;
