@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoProduct } from "./types";
-import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider } from "./ui";
+import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero } from "./ui";
 
 const FREE_DELIVERY_AT = 1000;
 const DELIVERY_FEE = 60;
@@ -93,7 +93,7 @@ export function ShopHome() {
   const featured = def.products.slice(0, 8);
   return (
     <div>
-      <HeroSlider
+      <Hero
         accent={def.accent}
         slides={[
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛍️ কেনাকাটা শুরু করুন", href: "/shop", grad: def.grad },
