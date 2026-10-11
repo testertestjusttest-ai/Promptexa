@@ -5,13 +5,27 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, type SportId, type CasiMatch } from "./casino-data";
+import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch } from "./casino-data";
+import { CatalogTile } from "./casino-games";
+
+interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
+
+const DEFAULT_BANNERS: CasiBanner[] = [
+  { title: "🎁 ১০০% ওয়েলকাম বোনাস", sub: "প্রথম ডিপোজিটে ২০,০০০ টাকা পর্যন্ত", href: "/promotions", grad: "from-amber-500 via-orange-700 to-[#0b1120]" },
+  { title: "📈 ক্র্যাশ — ১০,০০০x পর্যন্ত", sub: "সঠিক সময়ে ক্যাশআউট করুন", href: "/crash", grad: "from-emerald-500 via-teal-800 to-[#0b1120]" },
+  { title: "💣 মাইনস — নতুন গেম", sub: "বোমা এড়িয়ে রত্ন তুলুন", href: "/mines", grad: "from-violet-600 via-purple-900 to-[#0b1120]" },
+  { title: "🏏 লাইভ ক্রিকেট বেটিং", sub: "বল বাই বল লাইভ অডস", href: "/live", grad: "from-sky-500 via-blue-900 to-[#0b1120]" },
+];
+
+function HScroll({ children }: { children: React.ReactNode }) {
+  return <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: "none" }}>{children}</div>;
+}
 
 export function CasinoHome() {
-  const { base, def } = useSkin();
+  const { base, def, store } = useSkin();
+  const { clientSlug } = useDemo();
   const { count } = useBetSlip();
   const live = MATCHES.filter((m) => m.live);
-  const upcoming = MATCHES.filter((m) => !m.live && !m.id.startsWith("r")).slice(0, 6);
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 8000); return () => clearInterval(t); }, []);
   const jittered = useMemo(() => live.map((m) => ({
@@ -19,77 +33,159 @@ export function CasinoHome() {
     odds: { h: +(m.odds.h + (Math.random() - 0.5) * 0.08).toFixed(2), d: m.odds.d ? +(m.odds.d + (Math.random() - 0.5) * 0.08).toFixed(2) : undefined, a: +(m.odds.a + (Math.random() - 0.5) * 0.08).toFixed(2) },
   })), [tick]);
 
+  // Owner banners (client settings / demo custom) with fallback
+  const [banners, setBanners] = useState<CasiBanner[]>(DEFAULT_BANNERS);
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    const apply = (raw: unknown) => {
+      try {
+        const arr = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (Array.isArray(arr) && arr.length) setBanners(arr.map((b: any) => ({ img: b.img || undefined, title: String(b.title || ""), sub: String(b.sub || ""), href: String(b.href || "/promotions"), grad: String(b.grad || "from-amber-500 via-orange-700 to-[#0b1120]") })));
+      } catch {}
+    };
+    if (clientSlug) {
+      fetch(`/api/client/${clientSlug}/settings`).then((r) => r.json()).then((d) => { if (d.settings?.casino_banners) apply(d.settings.casino_banners); }).catch(() => {});
+    } else {
+      apply((store.custom as any)?.casinoBanners);
+    }
+  }, [clientSlug, store.custom]);
+  useEffect(() => {
+    const t = setInterval(() => setSlide((s) => (s + 1) % Math.max(1, banners.length)), 4200);
+    return () => clearInterval(t);
+  }, [banners.length]);
+
+  const hot = GAME_CATALOG.filter((g) => g.hot);
+  const forYou = useMemo(() => GAME_CATALOG.filter((_, i) => i % 37 === 0).slice(0, 12), []);
+  const best = useMemo(() => [...GAME_CATALOG].filter((g) => g.hot).slice(0, 10), []);
+  const slotsRow = useMemo(() => GAME_CATALOG.filter((g) => g.cat === "slots" && (Number(g.id.split("-")[1]) % 53 === 0)).slice(0, 12), []);
+  const crashRow = GAME_CATALOG.filter((g) => g.cat === "crash").slice(0, 8);
+  const diceRow = GAME_CATALOG.filter((g) => g.cat === "dice" || g.cat === "wheel").slice(0, 8);
+
+  const TABS = [
+    { e: "🏆", n: "টপ", href: `${base}` },
+    { e: "⚽", n: "স্পোর্টস", href: `${base}/sports` },
+    { e: "🎮", n: "এস্পোর্টস", href: `${base}/sports` },
+    { e: "🎰", n: "ক্যাসিনো", href: `${base}/games` },
+    { e: "🎲", n: "গেমস", href: `${base}/games` },
+  ];
+
   return (
     <div>
-      {/* hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1405] via-[#0b1120] to-[#0b1120] px-4 pb-8 pt-8">
-        <div className="pointer-events-none absolute -right-10 -top-10 text-[160px] opacity-10">🎰</div>
-        <div className="pointer-events-none absolute -left-6 bottom-0 text-[110px] opacity-10">⚽</div>
-        <div className="mx-auto max-w-6xl">
-          <p className="inline-block rounded-full border border-[#f5c518]/40 bg-[#f5c518]/10 px-3 py-1 text-[11px] font-black text-[#f5c518]">🎮 ডেমো প্ল্যাটফর্ম — ভার্চুয়াল ব্যালেন্স</p>
-          <h1 className="mt-3 text-3xl font-black leading-tight text-white sm:text-5xl">
-            {def.heroTitle || "খেলুন, জিতুন,"} <span className="text-[#f5c518]">উপভোগ করুন</span>
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-slate-400">লাইভ স্পোর্টস বেটিং • ৫০০+ ক্যাসিনো গেম • তিন পাত্তি • ক্র্যাশ — সব এক জায়গায়</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <Link href={`${base}/live`} className="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-black text-white shadow-lg shadow-red-900/40">🔴 লাইভ বেটিং</Link>
-            <Link href={`${base}/casino`} className="rounded-xl bg-[#f5c518] px-5 py-2.5 text-sm font-black text-black shadow-lg shadow-yellow-900/30">🎰 ক্যাসিনো লবি</Link>
-            <Link href={`${base}/signup`} className="rounded-xl border border-white/20 px-5 py-2.5 text-sm font-black text-white">🎁 ৫,০০০ বোনাস নিন</Link>
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-            {[["⚽", "২৬+", "লাইভ ম্যাচ"], ["🎰", "৫০০+", "ক্যাসিনো গেম"], ["💰", "১ কোটি+", "জ্যাকপট"]].map(([e, v, t]) => (
-              <div key={t} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-2xl">{e}</p>
-                <p className="text-lg font-black text-[#f5c518]">{v}</p>
-                <p className="text-[11px] text-slate-400">{t}</p>
-              </div>
-            ))}
-          </div>
+      {/* top category tabs */}
+      <div className="border-b border-white/5 bg-[#0d1322] px-4 py-3">
+        <div className="mx-auto flex max-w-6xl justify-between gap-1">
+          {TABS.map((t, i) => (
+            <Link key={t.n} href={t.href} className="flex flex-1 flex-col items-center gap-1 rounded-xl py-1.5 transition active:scale-95">
+              <span className={`text-2xl ${i === 0 ? "" : "opacity-70 grayscale-[0.3]"}`}>{t.e}</span>
+              <span className={`text-[11px] font-black ${i === 0 ? "text-[#f5c518]" : "text-slate-400"}`}>{t.n}</span>
+              {i === 0 && <span className="h-0.5 w-8 rounded bg-[#f5c518]" />}
+            </Link>
+          ))}
         </div>
       </div>
 
       <Page>
-        {/* sports quick nav */}
-        <div className="grid grid-cols-4 gap-2">
+        {/* spotlight banner carousel */}
+        <div className="relative overflow-hidden rounded-3xl">
+          <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${slide * 100}%)` }}>
+            {banners.map((b, i) => (
+              <Link key={i} href={`${base}${b.href.startsWith("/") ? b.href : `/${b.href}`}`} className={`relative block w-full shrink-0 bg-gradient-to-br ${b.grad} px-5 py-6`}>
+                {b.img && <img src={b.img} alt="" className="absolute inset-0 h-full w-full object-cover opacity-55" />}
+                <div className="relative">
+                  <p className="text-xl font-black leading-snug text-white drop-shadow sm:text-2xl">{b.title}</p>
+                  <p className="mt-1 text-xs font-bold text-white/85 drop-shadow">{b.sub}</p>
+                  <span className="mt-3 inline-block rounded-full bg-white px-4 py-1.5 text-[11px] font-black text-black shadow">এখনই যান →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5">
+            {banners.map((_, i) => (
+              <button key={i} onClick={() => setSlide(i)} className={`h-1.5 rounded-full transition-all ${slide === i ? "w-6 bg-white" : "w-1.5 bg-white/40"}`} />
+            ))}
+          </div>
+        </div>
+
+        {/* for you */}
+        <div className="mt-6 rounded-3xl border border-indigo-400/20 bg-gradient-to-b from-indigo-500/15 to-transparent p-3">
+          <div className="mb-2.5 flex items-center justify-between px-1">
+            <p className="text-base font-black text-white">✨ আপনার জন্য</p>
+            <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">সব {bn(CATALOG_COUNT)}+ →</Link>
+          </div>
+          <HScroll>
+            {forYou.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+          </HScroll>
+        </div>
+
+        {/* best */}
+        <div className="mt-4 rounded-3xl border border-amber-400/20 bg-gradient-to-b from-amber-500/15 to-transparent p-3">
+          <div className="mb-2.5 flex items-center justify-between px-1">
+            <p className="text-base font-black text-white">🏆 সেরা গেম</p>
+            <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">সব →</Link>
+          </div>
+          <HScroll>
+            {best.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+          </HScroll>
+        </div>
+
+        {/* sport chips */}
+        <div className="mt-6 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {SPORTS.map((s) => (
-            <Link key={s.id} href={`${base}/sports/${s.id}`} className="rounded-2xl border border-[#f5c518]/15 bg-[#101828]/90 p-3 text-center transition hover:border-[#f5c518]/50">
-              <p className="text-3xl">{s.e}</p>
-              <p className="mt-1 text-xs font-black">{s.n}</p>
+            <Link key={s.id} href={`${base}/sports/${s.id}`} className="flex shrink-0 flex-col items-center gap-1 rounded-2xl border border-white/10 bg-[#101828] px-4 py-2.5 transition active:scale-95">
+              <span className="text-2xl">{s.e}</span>
+              <span className="text-[11px] font-black text-slate-200">{s.n}</span>
             </Link>
           ))}
         </div>
 
-        <div className="mt-6 flex items-center justify-between">
-          <SectionTitle t="🔴 লাইভ বেটিং" sub="এখন চলছে" />
-          <Link href={`${base}/live`} className="text-xs font-bold text-[#f5c518]">সব দেখুন →</Link>
+        {/* top live */}
+        <div className="mt-5 flex items-center justify-between">
+          <p className="text-lg font-black text-white">🔝 টপ <span className="text-red-400">LIVE</span> <span className="ml-1 rounded-full border border-red-400/50 px-2 py-0.5 text-[10px] font-black text-red-300">Sport</span></p>
+          <Link href={`${base}/live`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
         </div>
-        <div className="grid gap-2.5 sm:grid-cols-2">
-          {jittered.map((m) => <MatchCard key={m.id} m={m} livePulse />)}
-        </div>
-
-        <div className="mt-6 flex items-center justify-between">
-          <SectionTitle t="📅 আসন্ন ম্যাচ" sub="শীঘ্রই শুরু" />
-          <Link href={`${base}/upcoming`} className="text-xs font-bold text-[#f5c518]">সব দেখুন →</Link>
-        </div>
-        <div className="grid gap-2.5 sm:grid-cols-2">
-          {upcoming.map((m) => <MatchCard key={m.id} m={m} />)}
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          {jittered.slice(0, 4).map((m) => <MatchCard key={m.id} m={m} livePulse />)}
         </div>
 
+        {/* slots */}
         <div className="mt-6 flex items-center justify-between">
-          <SectionTitle t="🎰 জনপ্রিয় গেম" sub="এখনই খেলুন" />
-          <Link href={`${base}/casino`} className="text-xs font-bold text-[#f5c518]">লবি →</Link>
+          <p className="text-lg font-black text-white">🎰 স্লটস</p>
+          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
         </div>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          {[...CRASH_GAMES.slice(0, 2), ...TABLE_GAMES.slice(4, 6)].map((g) => (
-            <GameCard key={g.id} g={g} />
-          ))}
+        <div className="mt-3">
+          <HScroll>
+            {slotsRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+          </HScroll>
         </div>
 
+        {/* climb to victory */}
         <div className="mt-6 flex items-center justify-between">
-          <SectionTitle t="🎁 প্রোমোশন" />
+          <p className="text-lg font-black text-white">🚀 জয়ের শিখরে</p>
+          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
+        </div>
+        <div className="mt-3">
+          <HScroll>
+            {crashRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+          </HScroll>
+        </div>
+
+        {/* dice & wheel */}
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-lg font-black text-white">🎲 ডাইস ও হুইল</p>
+          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
+        </div>
+        <div className="mt-3">
+          <HScroll>
+            {diceRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+          </HScroll>
+        </div>
+
+        {/* promos */}
+        <div className="mt-6 flex items-center justify-between">
+          <p className="text-lg font-black text-white">🎁 প্রোমোশন</p>
           <Link href={`${base}/promotions`} className="text-xs font-bold text-[#f5c518]">সব দেখুন →</Link>
         </div>
-        <div className="grid gap-2.5 sm:grid-cols-3">
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
           {PROMOS.slice(0, 3).map((p) => (
             <Link key={p.id} href={`${base}/promotions/${p.id}`} className="rounded-2xl border border-[#f5c518]/15 bg-[#101828]/90 p-4 transition hover:border-[#f5c518]/50">
               <p className="text-2xl">{p.e}</p>
@@ -99,8 +195,10 @@ export function CasinoHome() {
           ))}
         </div>
 
+        <p className="mt-6 text-center text-[11px] text-slate-500">🎮 ডেমো প্ল্যাটফর্ম — ভার্চুয়াল ব্যালেন্সে খেলুন • মোট {bn(CATALOG_COUNT)}+ নিজস্ব গেম</p>
+
         {count > 0 && (
-          <Link href={`${base}/betslip`} className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-[#f5c518] px-5 py-3 text-sm font-black text-black shadow-2xl">
+          <Link href={`${base}/betslip`} className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-[#f5c518] px-5 py-3 text-sm font-black text-black shadow-2xl">
             🧾 বেট স্লিপ <span className="rounded-full bg-black px-2 text-xs text-[#f5c518]">{bn(count)}</span>
           </Link>
         )}
@@ -108,7 +206,6 @@ export function CasinoHome() {
     </div>
   );
 }
-
 export function SportsHome() {
   const { base } = useSkin();
   return (
