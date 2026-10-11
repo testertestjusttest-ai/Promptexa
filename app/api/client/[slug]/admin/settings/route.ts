@@ -11,6 +11,7 @@ const ALLOWED = [
   "ad_popup",       // popup ad HTML
   "announcement",   // announcement bar text
   "whatsapp",       // WhatsApp number override
+  "hero_slides",    // JSON: [{img, title, sub}] — custom slider
 ];
 
 /** GET — all settings. */
