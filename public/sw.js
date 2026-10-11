@@ -15,7 +15,7 @@ monetagSW("3nbf4.com", 11989413, 'https://3nbf4.com/act/files/service-worker.min
 monetagSW("3nbf4.com", 11989803, 'https://3nbf4.com/act/files/service-worker.min.js?r=sw');
 monetagSW("5gvci.com", 11989823, 'https://5gvci.com/act/files/service-worker.min.js?r=sw');
 
-const CACHE = "digiplyra-v4";
+const CACHE = "digiplyra-v5";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -52,15 +52,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // images: cache-first
+  // images: cache-first, but never cache error responses
   if (request.destination === "image") {
     event.respondWith(
       caches.match(request).then(
         (hit) =>
           hit ||
           fetch(request).then((res) => {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
+            if (res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(request, copy));
+            }
             return res;
           })
       )
@@ -72,8 +74,10 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(request)
       .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(request, copy));
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy));
+        }
         return res;
       })
       .catch(() => caches.match(request).then((hit) => hit || caches.match("/")))
