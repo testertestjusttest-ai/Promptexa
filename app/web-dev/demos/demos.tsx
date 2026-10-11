@@ -49,6 +49,32 @@ const HAND_GROUPS: Record<string, string> = {
 
 const HAND_DEMOS: Demo[] = [
   {
+    slug: "binancepro",
+    name: "বাইন্যান্সপ্রো",
+    type: "ক্রিপ্টো এক্সচেঞ্জ",
+    desc: "স্পট, ফিউচার্স, P2P, লঞ্চপ্যাড, স্টেকিং — Binance-স্টাইল ৬৬+ পেজের পূর্ণাঙ্গ ক্রিপ্টো এক্সচেঞ্জ।",
+    price: "২৪,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🪙 বাইন্যান্সপ্রো" links={["মার্কেট", "ট্রেড"]} cta="লগইন" light />
+        <div className="bg-gradient-to-br from-[#f0b90b] via-[#181a20] to-[#0b0e11] px-4 py-6 text-white">
+          <p className="text-[10px] font-black tracking-widest text-[#f0b90b]">📊 ক্রিপ্টো এক্সচেঞ্জ</p>
+          <div className="mt-3 space-y-1.5">
+            {[["₿ BTC", "$67,250", "+2.4%", "#0ecb81"], ["Ξ ETH", "$3,510", "+1.8%", "#0ecb81"], ["🟡 BNB", "$598", "-0.7%", "#f6465d"]].map(([c, p, ch, col]) => (
+              <div key={c} className="flex items-center justify-between rounded-xl bg-black/40 px-3 py-1.5">
+                <span className="text-[11px] font-black">{c}</span>
+                <span className="text-[11px] font-bold">{p}</span>
+                <span className="text-[10px] font-black" style={{ color: col }}>{ch}</span>
+              </div>
+            ))}
+          </div>
+          <span className="mt-3 inline-block rounded-full bg-[#f0b90b] px-4 py-1.5 text-[11px] font-black text-black">ট্রেড শুরু করুন</span>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">৬৬+ পেজ • স্পট • ফিউচার্স • P2P</p>
+      </Frame>
+    ),
+  },
+  {
     slug: "restaurant",
     name: "স্বাদের ঠিকানা",
     type: "রেস্টুরেন্ট ওয়েবসাইট",

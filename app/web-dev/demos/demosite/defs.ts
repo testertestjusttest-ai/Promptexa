@@ -254,6 +254,19 @@ function fintech(d: Omit<DemoSiteDef, "products" | "services" | "gallery" | "new
 
 const FINTECH_DEFS: DemoSiteDef[] = [
   fintech({
+    slug: "binancepro", name: "বাইন্যান্সপ্রো", type: "ক্রিপ্টো এক্সচেঞ্জ", layout: "crypto-exchange",
+    logoEmoji: "🟡", accent: "#f0b90b", dark: true, grad: "from-yellow-600 to-amber-800",
+    heroTitle: "ক্রিপ্টো ট্রেডিং এখন হাতের মুঠোয়", heroSub: "স্পট, ফিউচার্স, P2P — ৩৫০+ কয়েনে ট্রেড করুন সর্বনিম্ন ফিতে", heroEmoji: "₿",
+    cats: ["সব"], desc: "বাইন্যান্স-স্টাইল প্রফেশনাল ক্রিপ্টো এক্সচেঞ্জ — ৬৬টি পেজের সম্পূর্ণ ডেমো।",
+    theme: "aurora",
+    coins: [
+      { code: "BTC", name: "বিটকয়েন", price: 97400, change: 2.4, e: "₿" },
+      { code: "ETH", name: "ইথেরিয়াম", price: 3420, change: 1.8, e: "Ξ" },
+      { code: "BNB", name: "বিএনবি", price: 692, change: -0.8, e: "🟡" },
+      { code: "SOL", name: "সোলানা", price: 214, change: 5.2, e: "◎" },
+    ],
+  }),
+  fintech({
     slug: "investpro", name: "ইনভেস্টপ্রো", type: "বিনিয়োগ প্ল্যাটফর্ম", layout: "invest",
     logoEmoji: "📈", accent: "#10b981", dark: true, grad: "from-emerald-600 to-teal-800",
     heroTitle: "টাকা বাড়ান স্মার্ট বিনিয়োগে", heroSub: "মাসে ১২% পর্যন্ত মুনাফা • ৫০,০০০+ বিনিয়োগকারী", heroEmoji: "📈",
@@ -340,19 +353,6 @@ const FINTECH_DEFS: DemoSiteDef[] = [
     heroTitle: "খেলুন, জিতুন, উপভোগ করুন", heroSub: "লাইভ স্পোর্টস বেটিং • ৫০০+ ক্যাসিনো গেম • তিন পাত্তি • ক্র্যাশ", heroEmoji: "🎰",
     cats: ["সব"], desc: "লাইভ ক্যাসিনো, স্পোর্টস বেটিং ও দেশি গেমের সেরা ডেমো প্ল্যাটফর্ম।",
     theme: "bold",
-  }),
-  fintech({
-    slug: "binancepro", name: "বাইন্যান্সপ্রো", type: "ক্রিপ্টো এক্সচেঞ্জ", layout: "crypto-exchange",
-    logoEmoji: "🟡", accent: "#f0b90b", dark: true, grad: "from-yellow-600 to-amber-800",
-    heroTitle: "ক্রিপ্টো ট্রেডিং এখন হাতের মুঠোয়", heroSub: "স্পট, ফিউচার্স, P2P — ৩৫০+ কয়েনে ট্রেড করুন সর্বনিম্ন ফিতে", heroEmoji: "₿",
-    cats: ["সব"], desc: "বাইন্যান্স-স্টাইল প্রফেশনাল ক্রিপ্টো এক্সচেঞ্জ — ৬৬টি পেজের সম্পূর্ণ ডেমো।",
-    theme: "aurora",
-    coins: [
-      { code: "BTC", name: "বিটকয়েন", price: 97400, change: 2.4, e: "₿" },
-      { code: "ETH", name: "ইথেরিয়াম", price: 3420, change: 1.8, e: "Ξ" },
-      { code: "BNB", name: "বিএনবি", price: 692, change: -0.8, e: "🟡" },
-      { code: "SOL", name: "সোলানা", price: 214, change: 5.2, e: "◎" },
-    ],
   }),
 ];
 
