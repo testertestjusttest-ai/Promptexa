@@ -271,6 +271,9 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <div className={`mt-auto rounded-2xl p-4 pt-4 text-sm ${dark ? "bg-white/5" : "bg-slate-50"}`}>
               <p className="font-bold">{def.contact}</p>
               <p className="mt-1 text-xs opacity-60">{def.hours}</p>
+              <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
+                ⚙️ ডেমো অ্যাডমিন
+              </Link>
             </div>
           </aside>
         </div>

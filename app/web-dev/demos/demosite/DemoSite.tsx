@@ -28,6 +28,7 @@ import {
   FinDeposit,
 } from "./fintech-pages";
 import { Empty, Page } from "./ui";
+import { DemoAdmin } from "./demo-admin";
 
 function NotFound() {
   return (
@@ -49,7 +50,9 @@ export default function DemoSite({ page }: { page: string[] }) {
 
   let body: React.ReactNode = <NotFound />;
 
-  if (def.layout === "shop") {
+  // Per-demo admin panel (all layouts)
+  if (p0 === "admin") body = <DemoAdmin />;
+  else if (def.layout === "shop") {
     if (!p0) body = <ShopHome />;
     else if (p0 === "shop") body = <ShopAll />;
     else if (p0 === "c" && p1) body = <ShopCategory cat={p1} />;

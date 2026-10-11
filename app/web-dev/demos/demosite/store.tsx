@@ -161,6 +161,9 @@ export interface DemoStore {
   placeCoinTx: (t: Omit<DemoCoinTx, "id" | "date" | "userPhone">) => DemoCoinTx;
   deposits: DemoDepositRec[];
   placeDeposit: (d: Omit<DemoDepositRec, "id" | "date" | "status" | "userPhone">) => DemoDepositRec;
+  custom: DemoCustom;
+  saveCustom: (c: Partial<DemoCustom>) => void;
+  resetCustom: () => void;
 }
 
 const Ctx = createContext<{ def: DemoSiteDef; base: string; store: DemoStore } | null>(null);
@@ -169,6 +172,25 @@ export function useDemo() {
   const v = useContext(Ctx);
   if (!v) throw new Error("useDemo outside DemositeProvider");
   return v;
+}
+
+export interface DemoCustom {
+  theme?: string;
+  accent?: string;
+  siteName?: string;
+  logoEmoji?: string;
+  heroTitle?: string;
+  heroSub?: string;
+  dark?: boolean;
+}
+
+function readCustom(slug: string): DemoCustom {
+  try {
+    const v = localStorage.getItem(K(slug, "custom"));
+    return v ? (JSON.parse(v) as DemoCustom) : {};
+  } catch {
+    return {};
+  }
 }
 
 export function DemositeProvider({ slug, def, children }: { slug: string; def: DemoSiteDef; children: React.ReactNode }) {
@@ -188,6 +210,19 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
   const [exchanges, setExchanges] = useState<DemoExchangeRec[]>([]);
   const [coinTxs, setCoinTxs] = useState<DemoCoinTx[]>([]);
   const [deposits, setDeposits] = useState<DemoDepositRec[]>([]);
+  const [custom, setCustom] = useState<DemoCustom>({});
+
+  // Merge admin customizations (theme, accent, names) into the def
+  const liveDef: DemoSiteDef = useMemo(() => ({
+    ...def,
+    theme: (custom.theme as DemoSiteDef["theme"]) ?? def.theme,
+    accent: custom.accent ?? def.accent,
+    name: custom.siteName ?? def.name,
+    logoEmoji: custom.logoEmoji ?? def.logoEmoji,
+    heroTitle: custom.heroTitle ?? def.heroTitle,
+    heroSub: custom.heroSub ?? def.heroSub,
+    dark: custom.dark ?? def.dark,
+  }), [def, custom]);
 
   const loadIdentity = useCallback(() => {
     const id = ident();
@@ -205,6 +240,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
     setExchanges(read(K(slug, "exchanges"), []));
     setCoinTxs(read(K(slug, "cointxs"), []));
     setDeposits(read(K(slug, "deposits"), []));
+    setCustom(readCustom(slug));
     loadIdentity();
   }, [slug, loadIdentity]);
 
@@ -366,9 +402,19 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         write(K(slug, "deposits"), all);
         return rec;
       },
+      custom,
+      saveCustom: (c) => {
+        const next = { ...custom, ...c };
+        setCustom(next);
+        write(K(slug, "custom"), next);
+      },
+      resetCustom: () => {
+        setCustom({});
+        try { localStorage.removeItem(K(slug, "custom")); } catch {}
+      },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, loadIdentity]);
+  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, custom, loadIdentity]);
 
-  return <Ctx.Provider value={{ def, base, store }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ def: liveDef, base, store }}>{children}</Ctx.Provider>;
 }
