@@ -44,6 +44,7 @@ const HAND_GROUPS: Record<string, string> = {
   travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
   investpro: "💰 ফিনটেক", agroinvest: "💰 ফিনটেক", swiftex: "💰 ফিনটেক",
   payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক", trustpay: "💰 ফিনটেক",
+  binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -194,6 +195,33 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">🌐 ১০M+ ইউজার</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "casinoplay",
+    name: "ক্যাসিনোপ্লে",
+    type: "ক্যাসিনো ও স্পোর্টস বেটিং",
+    desc: "লাইভ বেটিং, ৫০০+ ক্যাসিনো গেম, তিন পাত্তি, ক্র্যাশ — ৬০+ পেজের গেমিং প্ল্যাটফর্ম।",
+    price: "২৪,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🎰 ক্যাসিনোপ্লে" links={["স্পোর্টস", "লাইভ"]} cta="খেলুন" light />
+        <div className="bg-gradient-to-br from-amber-600 via-[#1a1405] to-[#0b1120] px-4 py-6 text-white">
+          <p className="text-center text-[11px] font-black text-[#f5c518]">🔴 ৬টি ম্যাচ লাইভ</p>
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
+            {[["🎰", "স্লটস"], ["🪔", "তিন পাত্তি"], ["📈", "ক্র্যাশ"]].map(([e, t]) => (
+              <div key={t} className="rounded-xl border border-[#f5c518]/30 bg-black/40 p-2 text-center">
+                <div className="text-xl">{e}</div><p className="mt-0.5 text-[9px] font-bold">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mx-auto mt-3 flex max-w-[200px] items-center justify-between rounded-xl bg-white/10 px-3 py-1.5">
+            <span className="text-[10px]">ঢাকা 🆚 কুমিল্লা</span>
+            <span className="text-[10px] font-black text-[#f5c518]">১.৮৫</span>
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">💰 ১ কোটি+ জ্যাকপট</p>
       </Frame>
     ),
   },

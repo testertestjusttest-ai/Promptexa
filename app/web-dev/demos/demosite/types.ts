@@ -4,7 +4,7 @@
  * Nothing here touches the real DigiPlyra database or admin panel.
  */
 
-export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news" | "invest" | "exchange" | "wallet";
+export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news" | "invest" | "exchange" | "wallet" | "casino" | "crypto-exchange";
 
 /** Visual theme — each demo gets one so no two demos look alike. */
 export type DemoTheme = "aurora" | "split" | "minimal" | "bold" | "elegant" | "playful";
