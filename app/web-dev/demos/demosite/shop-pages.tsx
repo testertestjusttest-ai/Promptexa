@@ -122,20 +122,49 @@ const SAMPLE_REVIEWS = [
 /* ================= HOME ================= */
 
 export function ShopHome() {
-  const { def, base } = useDemo();
+  const { def, base, clientSlug } = useDemo();
   const products = useProducts();
   const { card, sub, chip } = useSkin();
   const deals = products.filter((p) => p.oldPrice).slice(0, 4);
   const featured = products.slice(0, 8);
+
+  // Custom slider from client admin (overrides defaults in client mode)
+  const [customSlides, setCustomSlides] = useState<any[] | null>(null);
+  useEffect(() => {
+    if (!clientSlug) return;
+    fetch(`/api/client/${clientSlug}/settings`)
+      .then((r) => r.json())
+      .then((d) => {
+        try {
+          const arr = JSON.parse(d.settings?.hero_slides || "[]");
+          if (Array.isArray(arr) && arr.length > 0) setCustomSlides(arr);
+          else setCustomSlides([]);
+        } catch { setCustomSlides([]); }
+      })
+      .catch(() => setCustomSlides([]));
+  }, [clientSlug]);
+
+  const defaultSlides = [
+    { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛍️ কেনাকাটা শুরু করুন", href: "/shop", grad: def.grad },
+    { emoji: "🎁", title: "সীমিত সময়ের অফার", sub: "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!", cta: "🎁 অফার দেখুন", href: "/offers", grad: def.grad },
+    { emoji: "🚚", title: "সারাদেশে হোম ডেলিভারি", sub: "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি", cta: "🛍️ শপ করুন", href: "/shop", grad: def.grad },
+  ];
+  const slides = customSlides && customSlides.length > 0
+    ? customSlides.map((sl: any) => ({
+        img: sl.img || undefined,
+        emoji: sl.img ? "" : "🎉",
+        title: sl.title || def.heroTitle,
+        sub: sl.sub || def.heroSub,
+        cta: "🛍️ কেনাকাটা করুন",
+        href: "/shop",
+        grad: def.grad,
+      }))
+    : defaultSlides;
   return (
     <div>
       <Hero
         accent={def.accent}
-        slides={[
-          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛍️ কেনাকাটা শুরু করুন", href: "/shop", grad: def.grad },
-          { emoji: "🎁", title: "সীমিত সময়ের অফার", sub: "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!", cta: "🎁 অফার দেখুন", href: "/offers", grad: def.grad },
-          { emoji: "🚚", title: "সারাদেশে হোম ডেলিভারি", sub: "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি", cta: "🛍️ শপ করুন", href: "/shop", grad: def.grad },
-        ]}
+        slides={slides}
       />
       <Page>
         <div className="mb-5 flex flex-wrap gap-2">
