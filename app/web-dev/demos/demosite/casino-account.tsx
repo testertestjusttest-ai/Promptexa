@@ -494,39 +494,96 @@ export function CasinoAccount() {
     </Page>
   );
   const u = store.user;
+  const totalRounds = store.gameHistory.length;
+  const gameWins = store.gameHistory.filter((g) => g.win > g.bet).length;
+  const gamePL = store.gameHistory.reduce((a, g) => a + (g.win - g.bet), 0);
+  const betWins = store.bets.filter((b) => b.status === "জিতেছেন").length;
+  const xp = totalRounds * 120 + store.bets.length * 350 + gameWins * 200;
+  const levels = [
+    { n: "ব্রোঞ্জ", e: "🥉", at: 0, cash: "২%" },
+    { n: "সিলভার", e: "🥈", at: 2000, cash: "৪%" },
+    { n: "গোল্ড", e: "🥇", at: 6000, cash: "৬%" },
+    { n: "প্ল্যাটিনাম", e: "💠", at: 15000, cash: "৮%" },
+    { n: "ডায়মন্ড", e: "💎", at: 40000, cash: "১২%" },
+  ];
+  let li = 0;
+  for (let i = 0; i < levels.length; i++) if (xp >= levels[i].at) li = i;
+  const lvl = levels[li];
+  const next = levels[li + 1];
+  const pct = next ? Math.min(100, Math.round(((xp - lvl.at) / (next.at - lvl.at)) * 100)) : 100;
+  const ring = 2 * Math.PI * 30;
   const menu = [
     [`${base}/wallet`, "👛", "ওয়ালেট", money(store.wallet)],
+    [`${base}/deposit`, "💳", "ডিপোজিট", ""],
+    [`${base}/withdraw`, "💸", "উত্তোলন", ""],
     [`${base}/my-bets`, "🧾", "আমার বাজি", `${bn(store.bets.length)}টি`],
-    [`${base}/transactions`, "📜", "লেনদেন", ""],
-    [`${base}/casino/history`, "🎮", "গেম হিস্ট্রি", `${bn(store.gameHistory.length)}টি`],
+    [`${base}/transactions`, "📜", "লেনদেন ইতিহাস", ""],
+    [`${base}/casino/history`, "🎮", "গেম হিস্ট্রি", `${bn(totalRounds)}টি`],
+    [`${base}/games`, "🎰", "গেম লবি", "২,০০০+"],
     [`${base}/promotions`, "🎁", "প্রোমোশন", ""],
-    [`${base}/vip`, "👑", "ভিআইপি", "ব্রোঞ্জ"],
+    [`${base}/vip`, "👑", "ভিআইপি", lvl.n],
     [`${base}/referral`, "🤝", "রেফারেল", "৫০০ বোনাস"],
     [`${base}/account/settings`, "⚙️", "সেটিংস", ""],
     [`${base}/account/kyc`, "🪪", "KYC ভেরিফিকেশন", ""],
-    [`${base}/support`, "🎧", "সাপোর্ট", ""],
+    [`${base}/responsible-gaming`, "🛡️", "দায়িত্বশীল গেমিং", ""],
+    [`${base}/support`, "🎧", "সাপোর্ট", "২৪/৭"],
   ] as const;
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <div className="rounded-3xl border border-[#f5c518]/25 bg-gradient-to-br from-[#1a1405] to-[#0b1120] p-5">
-        <div className="flex items-center gap-3">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f5c518]/20 text-3xl">👤</span>
-          <div><p className="font-black">{u.name}</p><p className={`text-xs ${sub}`}>{u.phone}</p></div>
-          <button onClick={() => { store.logout(); window.location.href = base; }} className="ml-auto rounded-xl bg-white/10 px-3 py-1.5 text-xs font-bold">🚪 লগআউট</button>
+      {/* profile hero with level ring */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#f5c518]/25 bg-gradient-to-br from-[#1a1405] via-[#141033] to-[#0b1120] p-5">
+        <div className="pointer-events-none absolute -right-8 -top-8 text-[130px] opacity-[0.07]">👑</div>
+        <div className="relative flex items-center gap-4">
+          <div className="relative h-[76px] w-[76px] shrink-0">
+            <svg viewBox="0 0 76 76" className="h-full w-full -rotate-90">
+              <circle cx="38" cy="38" r="30" fill="none" stroke="#ffffff1a" strokeWidth="6" />
+              <circle cx="38" cy="38" r="30" fill="none" stroke="#f5c518" strokeWidth="6" strokeLinecap="round"
+                strokeDasharray={ring} strokeDashoffset={ring - (ring * pct) / 100} />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-3xl">{lvl.e}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg font-black">{u.name}</p>
+            <p className={`text-xs ${sub}`}>📱 {u.phone}</p>
+            <p className="mt-1 inline-block rounded-full bg-[#f5c518]/15 px-2.5 py-0.5 text-[11px] font-black text-[#f5c518]">{lvl.e} {lvl.n} লেভেল • ক্যাশব্যাক {lvl.cash}</p>
+          </div>
+          <button onClick={() => { store.logout(); window.location.href = base; }} className="rounded-xl bg-white/10 px-3 py-1.5 text-xs font-bold">🚪 লগআউট</button>
         </div>
-        <div className="mt-3 flex justify-between rounded-2xl bg-black/30 p-3 text-center">
-          <div><p className="font-black text-[#f5c518]">{money(store.wallet)}</p><p className={`text-[10px] ${sub}`}>ব্যালেন্স</p></div>
-          <div><p className="font-black">{bn(store.bets.length)}</p><p className={`text-[10px] ${sub}`}>বাজি</p></div>
-          <div><p className="font-black text-emerald-300">{bn(store.bets.filter((b) => b.status === "জিতেছেন").length)}</p><p className={`text-[10px] ${sub}`}>জয়</p></div>
+        <div className="relative mt-4">
+          <div className="flex justify-between text-[11px]">
+            <span className={sub}>XP: <b className="text-white">{bn(xp.toLocaleString("en-IN"))}</b></span>
+            <span className={sub}>{next ? `পরের লেভেল (${next.n}) — আর ${bn((next.at - xp).toLocaleString("en-IN"))} XP` : "সর্বোচ্চ লেভেল! 🏆"}</span>
+          </div>
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-[#f5c518] transition-all duration-700" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        {/* quick actions */}
+        <div className="relative mt-4 grid grid-cols-4 gap-2">
+          {[[`${base}/deposit`, "💳", "ডিপোজিট"], [`${base}/withdraw`, "💸", "উত্তোলন"], [`${base}/games`, "🎰", "গেমস"], [`${base}/promotions`, "🎁", "বোনাস"]].map(([h, e, t]) => (
+            <Link key={t} href={h} className="rounded-2xl bg-black/35 py-2.5 text-center transition active:scale-95">
+              <p className="text-xl">{e}</p><p className="mt-0.5 text-[11px] font-black">{t}</p>
+            </Link>
+          ))}
         </div>
       </div>
-      <div className="mt-3 space-y-1.5">
+
+      {/* stats */}
+      <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+        <div className={`${card} p-3`}><p className="font-black text-[#f5c518]">{money(store.wallet)}</p><p className={`mt-0.5 text-[10px] ${sub}`}>ব্যালেন্স</p></div>
+        <div className={`${card} p-3`}><p className="font-black">{bn(totalRounds)}</p><p className={`mt-0.5 text-[10px] ${sub}`}>গেম রাউন্ড</p></div>
+        <div className={`${card} p-3`}><p className="font-black text-emerald-300">{bn(gameWins + betWins)}</p><p className={`mt-0.5 text-[10px] ${sub}`}>মোট জয়</p></div>
+        <div className={`${card} p-3`}><p className={`font-black ${gamePL >= 0 ? "text-emerald-300" : "text-red-300"}`}>{gamePL >= 0 ? "+" : "−"}{money(Math.abs(gamePL)).replace(" টাকা", "")}</p><p className={`mt-0.5 text-[10px] ${sub}`}>গেম লাভ/ক্ষতি</p></div>
+      </div>
+
+      <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
         {menu.map(([h, e, t, v]) => (
-          <Link key={t} href={h} className={`${card} flex items-center gap-3 p-3.5 transition hover:border-[#f5c518]/50`}>
-            <span className="text-2xl">{e}</span><span className="flex-1 text-sm font-bold">{t}</span>
-            {v && <span className="text-xs text-[#f5c518]">{v}</span>}
-            <span className="text-slate-500">→</span>
+          <Link key={t} href={h} className={`${card} flex items-center gap-3 p-3.5 transition hover:border-[#f5c518]/50 active:scale-[0.99]`}>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/5 text-xl">{e}</span>
+            <span className="flex-1 text-sm font-bold">{t}</span>
+            {v && <span className="text-xs font-bold text-[#f5c518]">{v}</span>}
+            <span className="text-slate-500">›</span>
           </Link>
         ))}
       </div>
