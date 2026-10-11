@@ -212,6 +212,10 @@ export interface DemoCustom {
   heroTitle?: string;
   heroSub?: string;
   dark?: boolean;
+  casinoRtp?: number;
+  casinoMinBet?: number;
+  casinoMaxBet?: number;
+  casinoBanners?: unknown;
 }
 
 function readCustomKey(key: string): DemoCustom {

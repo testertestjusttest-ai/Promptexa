@@ -12,6 +12,10 @@ const ALLOWED = [
   "announcement",   // announcement bar text
   "whatsapp",       // WhatsApp number override
   "hero_slides",    // JSON: [{img, title, sub}] — custom slider
+  "casino_rtp",     // casino return-to-player % (owner win-chance control)
+  "casino_min_bet", // casino minimum bet
+  "casino_max_bet", // casino maximum bet
+  "casino_banners", // JSON: [{img, title, sub, href, grad}] — casino home banners
 ];
 
 /** GET — all settings. */

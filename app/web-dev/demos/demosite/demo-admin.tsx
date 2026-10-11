@@ -118,6 +118,39 @@ export function DemoAdmin() {
         </div>
       </div>
 
+      {def.layout === "casino" && (
+        <div className={`${card} mt-4 space-y-3 p-5`}>
+          <p className="text-sm font-black">🎰 ক্যাসিনো কন্ট্রোল — উইন চান্স (RTP)</p>
+          <p className={`text-[11px] ${sub}`}>সাইট ওনার হিসেবে আপনি ঠিক করুন খেলোয়াড়রা কতটা জিতবে। কম RTP = আপনার লাভ বেশি।</p>
+          <div>
+            <div className="flex items-center justify-between">
+              <label className={`text-[11px] ${sub}`}>RTP: <b>{String(store.custom.casinoRtp ?? 96)}%</b></label>
+              <span className="text-[11px]">হাউস এজ: {(100 - Number(store.custom.casinoRtp ?? 96)).toFixed(1)}%</span>
+            </div>
+            <input type="range" min={50} max={99} step={0.5}
+              value={Number(store.custom.casinoRtp ?? 96)}
+              onChange={(e) => store.saveCustom({ casinoRtp: Number(e.target.value) })}
+              className="mt-2 w-full accent-amber-500" />
+            <div className="flex justify-between text-[10px] opacity-60"><span>৫০% (কঠিন)</span><span>৯৬% (স্ট্যান্ডার্ড)</span><span>৯৯% (সহজ)</span></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={`text-[11px] ${sub}`}>সর্বনিম্ন বাজি (টাকা)</label>
+              <input type="number" value={Number(store.custom.casinoMinBet ?? 10)}
+                onChange={(e) => store.saveCustom({ casinoMinBet: Number(e.target.value) })}
+                className={`${input} mt-1`} />
+            </div>
+            <div>
+              <label className={`text-[11px] ${sub}`}>সর্বোচ্চ বাজি (টাকা)</label>
+              <input type="number" value={Number(store.custom.casinoMaxBet ?? 50000)}
+                onChange={(e) => store.saveCustom({ casinoMaxBet: Number(e.target.value) })}
+                className={`${input} mt-1`} />
+            </div>
+          </div>
+          <p className={`text-[11px] ${sub}`}>🖼️ ব্যানার: কাস্টমার সাইটে ক্লায়েন্ট অ্যাডমিন → 🎰 ক্যাসিনো ট্যাব থেকে ব্যানার ছবি/টাইটেল/লিংক বদলানো যায়।</p>
+        </div>
+      )}
+
       <div className={`${card} mt-4 space-y-3 p-5`}>
         <p className="text-sm font-black">✏️ সাইটের তথ্য</p>
         <div className="grid gap-3 sm:grid-cols-2">
