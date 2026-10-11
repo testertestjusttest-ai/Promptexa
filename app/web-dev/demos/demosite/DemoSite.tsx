@@ -25,6 +25,7 @@ import {
   ExchangeLogin, ExchangeSignup, ExchangeAccount, ExchangeAbout, ExchangeContact,
   WalletHome, WalletDash, WalletSend, WalletReceive,
   WalletLogin, WalletSignup, WalletAccount, WalletAbout, WalletContact,
+  FinDeposit,
 } from "./fintech-pages";
 import { Empty, Page } from "./ui";
 
@@ -117,6 +118,7 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "success" && p1) body = <InvestSuccess id={p1} />;
     else if (p0 === "dashboard") body = <InvestDashboard />;
     else if (p0 === "how") body = <InvestHow />;
+    else if (p0 === "deposit") body = <FinDeposit />;
     else if (p0 === "login") body = <InvestLogin />;
     else if (p0 === "signup") body = <InvestSignup />;
     else if (p0 === "account") body = <InvestAccount />;
@@ -128,6 +130,7 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "rates") body = <ExchangeRates />;
     else if (p0 === "success" && p1) body = <ExchangeSuccess id={p1} />;
     else if (p0 === "track") body = <ExchangeTrack />;
+    else if (p0 === "deposit") body = <FinDeposit />;
     else if (p0 === "login") body = <ExchangeLogin />;
     else if (p0 === "signup") body = <ExchangeSignup />;
     else if (p0 === "account") body = <ExchangeAccount />;
@@ -138,6 +141,7 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "wallet") body = <WalletDash />;
     else if (p0 === "send") body = <WalletSend />;
     else if (p0 === "receive") body = <WalletReceive />;
+    else if (p0 === "deposit") body = <FinDeposit />;
     else if (p0 === "login") body = <WalletLogin />;
     else if (p0 === "signup") body = <WalletSignup />;
     else if (p0 === "account") body = <WalletAccount />;

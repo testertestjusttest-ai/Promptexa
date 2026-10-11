@@ -58,6 +58,7 @@ export interface DemoInvestPlan {
   min: number;
   max: number;
   roi: number; // % per duration
+  dailyRoi: number; // % per day
   duration: string;
   desc: string;
   tag?: string;

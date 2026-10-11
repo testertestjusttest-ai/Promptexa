@@ -100,6 +100,16 @@ export interface DemoCoinTx {
   userPhone: string;
 }
 
+export interface DemoDepositRec {
+  id: string;
+  amount: number;
+  method: string;
+  trxId: string;
+  date: number;
+  status: string;
+  userPhone: string;
+}
+
 function read<T>(k: string, fb: T): T {
   try {
     const v = localStorage.getItem(k);
@@ -149,6 +159,8 @@ export interface DemoStore {
   placeExchange: (e: Omit<DemoExchangeRec, "id" | "date" | "status" | "userPhone">) => DemoExchangeRec;
   coinTxs: DemoCoinTx[];
   placeCoinTx: (t: Omit<DemoCoinTx, "id" | "date" | "userPhone">) => DemoCoinTx;
+  deposits: DemoDepositRec[];
+  placeDeposit: (d: Omit<DemoDepositRec, "id" | "date" | "status" | "userPhone">) => DemoDepositRec;
 }
 
 const Ctx = createContext<{ def: DemoSiteDef; base: string; store: DemoStore } | null>(null);
@@ -175,6 +187,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
   const [investments, setInvestments] = useState<DemoInvestmentRec[]>([]);
   const [exchanges, setExchanges] = useState<DemoExchangeRec[]>([]);
   const [coinTxs, setCoinTxs] = useState<DemoCoinTx[]>([]);
+  const [deposits, setDeposits] = useState<DemoDepositRec[]>([]);
 
   const loadIdentity = useCallback(() => {
     const id = ident();
@@ -191,6 +204,7 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
     setInvestments(read(K(slug, "investments"), []));
     setExchanges(read(K(slug, "exchanges"), []));
     setCoinTxs(read(K(slug, "cointxs"), []));
+    setDeposits(read(K(slug, "deposits"), []));
     loadIdentity();
   }, [slug, loadIdentity]);
 
@@ -344,9 +358,17 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         write(K(slug, "cointxs"), all);
         return rec;
       },
+      deposits,
+      placeDeposit: (d) => {
+        const rec: DemoDepositRec = { ...d, id: orderId("DP"), date: Date.now(), status: "পেন্ডিং", userPhone: me() };
+        const all = [rec, ...deposits].slice(0, 50);
+        setDeposits(all);
+        write(K(slug, "deposits"), all);
+        return rec;
+      },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, loadIdentity]);
+  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, loadIdentity]);
 
   return <Ctx.Provider value={{ def, base, store }}>{children}</Ctx.Provider>;
 }

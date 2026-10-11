@@ -50,6 +50,7 @@ function navLinks(layout: string): { label: string; href: string }[] {
       return [
         { label: "🏠 হোম", href: "" },
         { label: "📈 প্ল্যানসমূহ", href: "/plans" },
+        { label: "💰 ডিপোজিট", href: "/deposit" },
         { label: "💼 আমার বিনিয়োগ", href: "/dashboard" },
         { label: "❓ কিভাবে কাজ করে", href: "/how" },
         { label: "ℹ️ সম্পর্কে", href: "/about" },
@@ -59,6 +60,7 @@ function navLinks(layout: string): { label: string; href: string }[] {
       return [
         { label: "🏠 হোম", href: "" },
         { label: "💱 এক্সচেঞ্জ", href: "/exchange" },
+        { label: "💰 ডিপোজিট", href: "/deposit" },
         { label: "📊 লাইভ রেট", href: "/rates" },
         { label: "📍 ট্র্যাক", href: "/track" },
         { label: "ℹ️ সম্পর্কে", href: "/about" },
@@ -68,6 +70,7 @@ function navLinks(layout: string): { label: string; href: string }[] {
       return [
         { label: "🏠 হোম", href: "" },
         { label: "👛 ওয়ালেট", href: "/wallet" },
+        { label: "💰 ডিপোজিট", href: "/deposit" },
         { label: "📤 সেন্ড", href: "/send" },
         { label: "📥 রিসিভ", href: "/receive" },
         { label: "ℹ️ সম্পর্কে", href: "/about" },
