@@ -77,6 +77,32 @@ function navLinks(layout: string): { label: string; href: string }[] {
         { label: "ℹ️ সম্পর্কে", href: "/about" },
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
+    case "casino":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "⚽ স্পোর্টস", href: "/sports" },
+        { label: "🔴 লাইভ", href: "/live" },
+        { label: "🎰 ক্যাসিনো", href: "/casino" },
+        { label: "💰 জ্যাকপট", href: "/casino/jackpots" },
+        { label: "🎁 প্রোমোশন", href: "/promotions" },
+        { label: "👑 ভিআইপি", href: "/vip" },
+        { label: "🧾 আমার বাজি", href: "/my-bets" },
+        { label: "ℹ️ সম্পর্কে", href: "/about" },
+        { label: "📞 যোগাযোগ", href: "/contact" },
+      ];
+    case "crypto-exchange":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "📊 মার্কেটস", href: "/markets" },
+        { label: "📈 স্পট ট্রেড", href: "/trade/BTCUSDT" },
+        { label: "⚡ ফিউচার্স", href: "/futures" },
+        { label: "🤝 P2P", href: "/p2p" },
+        { label: "🔄 কনভার্ট", href: "/convert" },
+        { label: "🌱 আর্ন", href: "/earn" },
+        { label: "👛 ওয়ালেট", href: "/wallet" },
+        { label: "🎓 অ্যাকাডেমি", href: "/academy" },
+        { label: "🎧 সাপোর্ট", href: "/support" },
+      ];
     default:
       return [
         { label: "🏠 হোম", href: "" },
@@ -354,6 +380,20 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 </>
               )}
               {def.layout === "shop" && <Link href={`${base}/track`} className="block hover:underline">📍 অর্ডার ট্র্যাক</Link>}
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-black">তথ্য</p>
+            <div className="space-y-2 text-sm opacity-70">
+              <Link href={`${base}/faq`} className="block hover:underline">❓ সচরাচর জিজ্ঞাসা</Link>
+              {def.layout === "shop" && (
+                <>
+                  <Link href={`${base}/shipping`} className="block hover:underline">🚚 ডেলিভারি নীতি</Link>
+                  <Link href={`${base}/returns`} className="block hover:underline">↩️ রিটার্ন নীতি</Link>
+                  <Link href={`${base}/privacy`} className="block hover:underline">🔒 প্রাইভেসি</Link>
+                  <Link href={`${base}/terms`} className="block hover:underline">📜 শর্তাবলী</Link>
+                </>
+              )}
             </div>
           </div>
           <div>
