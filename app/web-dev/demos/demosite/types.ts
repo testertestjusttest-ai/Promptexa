@@ -6,6 +6,9 @@
 
 export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news";
 
+/** Visual theme — each demo gets one so no two demos look alike. */
+export type DemoTheme = "aurora" | "split" | "minimal" | "bold" | "elegant" | "playful";
+
 export interface DemoProduct {
   id: string;
   n: string;
@@ -71,4 +74,5 @@ export interface DemoSiteDef {
   address: string;
   hours: string;
   priceNote?: string;
+  theme?: DemoTheme;
 }

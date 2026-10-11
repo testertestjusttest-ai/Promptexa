@@ -4,7 +4,7 @@
  */
 
 import { ENGINE_DEFS, type EngineItem } from "../engine-data";
-import type { DemoGalleryItem, DemoNewsItem, DemoProduct, DemoServiceItem, DemoSiteDef } from "./types";
+import type { DemoGalleryItem, DemoNewsItem, DemoProduct, DemoServiceItem, DemoSiteDef, DemoTheme } from "./types";
 import { DEMO_IMGS } from "./demo-img";
 
 const CONTACT = "০১৮৩৩৪০২৫৮৬";
@@ -238,6 +238,12 @@ const HAND_DEFS: DemoSiteDef[] = [
 export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
+const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
+function themeForSlug(slug: string): DemoTheme {
+  let h = 0;
+  for (const ch of slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return THEMES[h % THEMES.length];
+}
 for (const d of DEMO_DEFS) {
   const im = DEMO_IMGS[d.slug];
   if (im) {
@@ -248,6 +254,7 @@ for (const d of DEMO_DEFS) {
       if (u) pr.img = u;
     }
   }
+  d.theme = themeForSlug(d.slug);
 }
 
 export function getDemoDef(slug: string): DemoSiteDef | undefined {
