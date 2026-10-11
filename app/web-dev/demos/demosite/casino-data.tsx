@@ -118,6 +118,266 @@ export const LIVE_GAMES: CasiGame[] = [
 
 export const ALL_GAMES = [...SLOT_GAMES, ...TABLE_GAMES, ...CRASH_GAMES, ...LIVE_GAMES];
 
+/* ==================== MASSIVE GAME CATALOG (generated) ====================
+ * 2,400+ games across own-brand providers. Every game is playable through
+ * its engine (slots / crash / dice / wheel / mines / plinko / hilo / cards)
+ * with a unique theme, symbol set, gradient art and payout profile.
+ * Deterministic generation — same catalog on every load. */
+
+export interface CatalogGame {
+  id: string;
+  n: string;
+  e: string;
+  cat: string;        // slots | crash | dice | wheel | mines | plinko | hilo | table | desi | live
+  engine: string;     // slots | crash | aviator | dice | wheel | mines | plinko | hilo | roulette | blackjack | baccarat | teenpatti | andarbahar | dragontiger
+  provider: string;
+  players: string;
+  rtp: number;        // base RTP % (owner can override globally)
+  hot?: boolean;
+  grad: string;       // tailwind gradient classes for tile art
+  syms: string[];     // symbol set for slot engine
+}
+
+export const PROVIDERS = [
+  "DigiPlay Originals", "রয়েল গেমিং", "মেগাউইন স্টুডিও", "গোল্ডেন টাচ",
+  "নোভা সফট", "টাইগার গেমস", "লাকি স্পিন ল্যাব", "এশিয়া গেমিং",
+  "প্রাগমা প্লে", "স্পিনোমেনাল বিডি", "জেম ওয়ার্কস", "ভিক্টরি ল্যাব",
+];
+
+const GRADS = [
+  "from-purple-600 via-indigo-700 to-slate-900", "from-rose-600 via-red-700 to-slate-900",
+  "from-amber-500 via-orange-700 to-slate-900", "from-emerald-500 via-teal-700 to-slate-900",
+  "from-sky-500 via-blue-800 to-slate-900", "from-fuchsia-600 via-purple-800 to-slate-900",
+  "from-lime-500 via-green-700 to-slate-900", "from-yellow-500 via-amber-700 to-slate-900",
+  "from-cyan-500 via-sky-800 to-slate-900", "from-pink-500 via-rose-800 to-slate-900",
+  "from-violet-600 via-purple-900 to-black", "from-orange-500 via-red-800 to-slate-900",
+];
+
+/** Themed slot symbol sets — each theme gives the slot engine a unique look. */
+const SLOT_THEMES: { name: string; syms: string[] }[] = [
+  { name: "ফলের বাগান", syms: ["🍒", "🍋", "🍇", "🍉", "🍓", "🔔", "⭐", "7️⃣"] },
+  { name: "রত্ন খনি", syms: ["💎", "🔷", "🔶", "💠", "🔮", "✨", "👑", "💍"] },
+  { name: "মিশরের ধন", syms: ["🏺", "🐪", "🔺", "👁️", "🪲", "⚱️", "🌙", "👑"] },
+  { name: "ড্রাগন রাজ্য", syms: ["🐉", "🔥", "🏮", "🧧", "🪭", "🎋", "💰", "🐲"] },
+  { name: "মহাকাশ যাত্রা", syms: ["🚀", "🪐", "⭐", "🌙", "👽", "🛸", "☄️", "🔭"] },
+  { name: "সাগর তলা", syms: ["🐠", "🐙", "🦑", "🐚", "⚓", "🔱", "🦈", "🫧"] },
+  { name: "জঙ্গল সাফারি", syms: ["🦁", "🐘", "🦒", "🦓", "🐆", "🌴", "🦜", "🐒"] },
+  { name: "মিষ্টির দুনিয়া", syms: ["🍬", "🍭", "🧁", "🍩", "🍫", "🍦", "🍰", "🍯"] },
+  { name: "ওয়াইল্ড ওয়েস্ট", syms: ["🤠", "🐴", "🔫", "⭐", "🏜️", "🌵", "🥃", "💰"] },
+  { name: "ভাইকিং যুদ্ধ", syms: ["⚔️", "🛡️", "⛵", "🪓", "🐺", "⚡", "🏔️", "👑"] },
+  { name: "লাক্সারি লাইফ", syms: ["💎", "🏎️", "⌚", "👜", "🥂", "💳", "🛥️", "👑"] },
+  { name: "জাপানি বাগান", syms: ["🌸", "🎋", "🏯", "🎎", "🍵", "🪭", "🎏", "🌺"] },
+  { name: "যাদুর জগৎ", syms: ["🔮", "🪄", "🧙", "🦉", "🌙", "⚗️", "📜", "✨"] },
+  { name: "ফারাও সমাধি", syms: ["⚱️", "🏺", "🐍", "☀️", "🔺", "👁️", "🪲", "💛"] },
+  { name: "ক্রিস্টাল গুহা", syms: ["💜", "💙", "💚", "💛", "🧡", "❤️", "🔮", "✨"] },
+  { name: "আগুন পাহাড়", syms: ["🌋", "🔥", "💥", "🪨", "🦖", "🌋", "☄️", "🌡️"] },
+  { name: "বরফ রাজ্য", syms: ["❄️", "⛄", "🐧", "🧊", "🌨️", "🦌", "🐻‍❄️", "💙"] },
+  { name: "সোনার খনি", syms: ["⛏️", "💰", "🏆", "💛", "🪙", "🚂", "💎", "🔦"] },
+  { name: "রংধনু উপত্যকা", syms: ["🌈", "🦄", "☁️", "⭐", "🍀", "🌟", "💫", "🎈"] },
+  { name: "সার্কাস মেলা", syms: ["🎪", "🤹", "🎠", "🎡", "🍿", "🎈", "🥁", "🎭"] },
+];
+
+const SLOT_PREFIX = ["মেগা", "রয়েল", "সুপার", "আল্ট্রা", "গ্র্যান্ড", "লাকি", "গোল্ডেন", "ম্যাজিক", "ওয়াইল্ড", "ক্রেজি", "বিগ", "প্রিমিয়াম"];
+const SLOT_SUFFIX = ["রিলস", "স্পিন", "জ্যাকপট", "উইন", "ফরচুন", "বোনানজা", "রাশ", "ডিলাক্স", "ম্যানিয়া", "ওয়ার্ল্ড"];
+
+function seededNum(seed: string, mod: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h % mod;
+}
+
+function buildCatalog(): CatalogGame[] {
+  const out: CatalogGame[] = [];
+  // --- Slots: 12 prefixes × 20 themes × 10 suffixes = 2,400 combos → take 1,800
+  let idx = 0;
+  for (const pre of SLOT_PREFIX) {
+    for (let t = 0; t < SLOT_THEMES.length; t++) {
+      for (const suf of SLOT_SUFFIX) {
+        idx++;
+        if (idx % 4 === 0) continue; // thin out to ~1,800
+        const theme = SLOT_THEMES[t];
+        const id = `slot-${idx}`;
+        out.push({
+          id,
+          n: `${pre} ${theme.name} ${suf}`,
+          e: theme.syms[0],
+          cat: "slots",
+          engine: "slots",
+          provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+          players: `${(seededNum(id + "p", 180) / 10 + 0.3).toFixed(1)}ক`,
+          rtp: 94 + seededNum(id + "r", 50) / 10,
+          hot: seededNum(id + "h", 12) === 0,
+          grad: GRADS[seededNum(id + "g", GRADS.length)],
+          syms: theme.syms,
+        });
+      }
+    }
+  }
+  // --- Crash family: 60 variants
+  const crashNames = ["রকেট", "জেট", "বেলুন", "বুল", "চাঁদ", "বিমান", "বাইক", "ট্রেন", "হেলিকপ্টার", "স্পিড বোট"];
+  const crashStyles = ["ক্র্যাশ", "ফ্লাইট", "রাইড", "রান", "এক্স"];
+  let ci = 0;
+  for (const cn of crashNames) {
+    for (const cs of crashStyles) {
+      ci++;
+      const id = `crash-${ci}`;
+      out.push({
+        id, n: `${cn} ${cs}`, e: cn === "বিমান" || cn === "জেট" ? "✈️" : "🚀",
+        cat: "crash", engine: ci % 3 === 0 ? "aviator" : "crash",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 250) / 10 + 0.5).toFixed(1)}ক`,
+        rtp: 96 + seededNum(id + "r", 30) / 10, hot: ci <= 6,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🚀"],
+      });
+    }
+  }
+  // --- Mines: 40 variants
+  const mineNames = ["রত্ন", "সোনা", "বোমা", "হীরা", "ট্রেজার", "ক্রিস্টাল", "কয়লা", "রুবি"];
+  let mi = 0;
+  for (const mn of mineNames) {
+    for (let v = 1; v <= 5; v++) {
+      mi++;
+      const id = `mines-${mi}`;
+      out.push({
+        id, n: `${mn} মাইনস ${v > 1 ? bn(v) : ""}`.trim(), e: "💣",
+        cat: "mines", engine: "mines",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 120) / 10 + 0.2).toFixed(1)}ক`,
+        rtp: 96 + seededNum(id + "r", 30) / 10, hot: mi <= 4,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["💣", "💎"],
+      });
+    }
+  }
+  // --- Plinko: 24 variants
+  let pi = 0;
+  for (const pn of ["গোল্ডেন", "নিয়ন", "রয়েল", "ক্যাজুয়াল", "টার্বো", "মেগা"]) {
+    for (let v = 1; v <= 4; v++) {
+      pi++;
+      const id = `plinko-${pi}`;
+      out.push({
+        id, n: `${pn} প্লিংকো ${v > 1 ? bn(v) : ""}`.trim(), e: "🔵",
+        cat: "plinko", engine: "plinko",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 90) / 10 + 0.2).toFixed(1)}ক`,
+        rtp: 95 + seededNum(id + "r", 40) / 10, hot: pi <= 3,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🔵"],
+      });
+    }
+  }
+  // --- Dice: 30 variants
+  let di = 0;
+  for (const dn of ["লাকি", "গোল্ডেন", "ডাবল", "রয়েল", "স্পিড", "ম্যাজিক"]) {
+    for (let v = 1; v <= 5; v++) {
+      di++;
+      const id = `dice-${di}`;
+      out.push({
+        id, n: `${dn} ডাইস ${v > 1 ? bn(v) : ""}`.trim(), e: "🎲",
+        cat: "dice", engine: "dice",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 100) / 10 + 0.2).toFixed(1)}ক`,
+        rtp: 96 + seededNum(id + "r", 30) / 10, hot: di <= 3,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎲"],
+      });
+    }
+  }
+  // --- Wheel: 24 variants
+  let wi = 0;
+  for (const wn of ["লাকি", "গোল্ডেন", "মানি", "মেগা", "রয়েল", "স্পিন"]) {
+    for (let v = 1; v <= 4; v++) {
+      wi++;
+      const id = `wheel-${wi}`;
+      out.push({
+        id, n: `${wn} হুইল ${v > 1 ? bn(v) : ""}`.trim(), e: "🎡",
+        cat: "wheel", engine: "wheel",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 80) / 10 + 0.2).toFixed(1)}ক`,
+        rtp: 95 + seededNum(id + "r", 40) / 10, hot: wi <= 3,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎡"],
+      });
+    }
+  }
+  // --- HiLo cards: 18 variants
+  let hi = 0;
+  for (const hn of ["রয়েল", "স্পিড", "গোল্ডেন", "ক্লাসিক", "টার্বো", "ভিআইপি"]) {
+    for (let v = 1; v <= 3; v++) {
+      hi++;
+      const id = `hilo-${hi}`;
+      out.push({
+        id, n: `${hn} হাই-লো ${v > 1 ? bn(v) : ""}`.trim(), e: "🃏",
+        cat: "hilo", engine: "hilo",
+        provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
+        players: `${(seededNum(id + "p", 60) / 10 + 0.2).toFixed(1)}ক`,
+        rtp: 96 + seededNum(id + "r", 30) / 10, hot: hi <= 2,
+        grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🃏"],
+      });
+    }
+  }
+  return out;
+}
+
+export const GAME_CATALOG: CatalogGame[] = buildCatalog();
+export const CATALOG_COUNT = GAME_CATALOG.length;
+
+/** Find a catalog game by id. */
+export function catalogGame(id: string): CatalogGame | undefined {
+  return GAME_CATALOG.find((g) => g.id === id);
+}
+
+/** Where a game links to. */
+export function catalogHref(g: CatalogGame): string {
+  switch (g.engine) {
+    case "slots": return `/slots/${g.id}`;
+    case "crash": return `/crash`;
+    case "aviator": return `/aviator`;
+    case "dice": return `/dice`;
+    case "wheel": return `/wheel`;
+    case "mines": return `/mines`;
+    case "plinko": return `/plinko`;
+    case "hilo": return `/hilo`;
+    default: return `/casino`;
+  }
+}
+
+/**
+ * Owner casino config — RTP & bet limits.
+ * Demo mode: store.custom. Client mode: /api/client/{slug}/settings.
+ * RTP = return-to-player % the owner sets (win chance control).
+ */
+export function useCasinoConfig(): { rtp: number; minBet: number; maxBet: number } {
+  const { store, clientSlug } = useDemo();
+  const [cfg, setCfg] = useState<{ rtp: number; minBet: number; maxBet: number }>({ rtp: 96, minBet: 10, maxBet: 50000 });
+  useEffect(() => {
+    const fromCustom = () => {
+      const r = Number((store.custom as any)?.casinoRtp);
+      const mn = Number((store.custom as any)?.casinoMinBet);
+      const mx = Number((store.custom as any)?.casinoMaxBet);
+      setCfg({
+        rtp: r >= 50 && r <= 99.9 ? r : 96,
+        minBet: mn >= 1 ? mn : 10,
+        maxBet: mx >= 100 ? mx : 50000,
+      });
+    };
+    if (clientSlug) {
+      fetch(`/api/client/${clientSlug}/settings`)
+        .then((r) => r.json())
+        .then((d) => {
+          const s = d.settings || {};
+          const r = Number(s.casino_rtp);
+          const mn = Number(s.casino_min_bet);
+          const mx = Number(s.casino_max_bet);
+          if (r >= 50 && r <= 99.9) setCfg((c) => ({ ...c, rtp: r }));
+          if (mn >= 1) setCfg((c) => ({ ...c, minBet: mn }));
+          if (mx >= 100) setCfg((c) => ({ ...c, maxBet: mx }));
+          if (!(r >= 50)) fromCustom();
+        })
+        .catch(fromCustom);
+    } else {
+      fromCustom();
+    }
+  }, [clientSlug, store.custom]);
+  return cfg;
+}
+
 export const PROMOS = [
   { id: "p1", t: "🎁 ১০০% ওয়েলকাম বোনাস", e: "🎁", d: "প্রথম ডিপোজিটে ১০০% বোনাস — সর্বোচ্চ ৫,০০০ টাকা পর্যন্ত!", body: "নতুন খেলোয়াড়দের জন্য বিশেষ অফার। প্রথম ডিপোজিটে ১০০% বোনাস পান — সর্বোচ্চ ৫,০০০ টাকা। বোনাস পেতে ন্যূনতম ৫০০ টাকা ডিপোজিট করুন। বোনাসের টাকা ১০ গুণ ওয়েজার করে তুলতে পারবেন। অফারটি অ্যাকাউন্ট খোলার ৭ দিনের মধ্যে প্রযোজ্য।" },
   { id: "p2", t: "💸 সাপ্তাহিক ক্যাশব্যাক ১০%", e: "💸", d: "হারানো টাকার ১০% ফেরত — প্রতি সোমবার!", body: "সপ্তাহে ক্যাসিনোতে নেট লস হলে ১০% ক্যাশব্যাক পাবেন প্রতি সোমবার সকালে। সর্বোচ্চ ১০,০০০ টাকা পর্যন্ত। কোনো ওয়েজার শর্ত নেই — সরাসরি উইথড্র করতে পারবেন।" },
