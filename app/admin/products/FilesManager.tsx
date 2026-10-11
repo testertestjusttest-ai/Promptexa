@@ -64,10 +64,20 @@ export default function FilesManager({
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) onPct(Math.round((e.loaded / e.total) * 100));
       };
-      xhr.onload = () =>
-        xhr.status >= 200 && xhr.status < 300
-          ? resolve()
-          : reject(new Error(`আপলোড ব্যর্থ (HTTP ${xhr.status})`));
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+          return;
+        }
+        // Surface Supabase's real error message (e.g. size limit, quota)
+        let msg = `আপলোড ব্যর্থ (HTTP ${xhr.status})`;
+        try {
+          const body = JSON.parse(xhr.responseText || "{}");
+          const detail = body.error || body.message || body.msg;
+          if (detail) msg += ` — ${detail}`;
+        } catch {}
+        reject(new Error(msg));
+      };
       xhr.onerror = () => reject(new Error("নেটওয়ার্ক সমস্যা — আবার চেষ্টা করুন"));
       xhr.send(file);
     });
