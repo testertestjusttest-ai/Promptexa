@@ -136,16 +136,24 @@ export default function EarnClient({
   const [wdMethod, setWdMethod] = useState("bkash");
   const [wdAcct, setWdAcct] = useState("");
   const [wdLoading, setWdLoading] = useState(false);
+  const [depAmount, setDepAmount] = useState("");
+  const [depMethod, setDepMethod] = useState("bkash");
+  const [depTrx, setDepTrx] = useState("");
+  const [depLoading, setDepLoading] = useState(false);
+  const [deposits, setDeposits] = useState<{ id: string; amount_bdt: number; method: string; trx_id: string; status: string }[]>([]);
 
   const load = useCallback(async () => {
-    const [wRes, cRes, rRes] = await Promise.all([
+    const [wRes, cRes, rRes, dRes] = await Promise.all([
       fetch("/api/wallet"),
       fetch("/api/rewards/config"),
       fetch("/api/rewards/round"),
+      fetch("/api/wallet/deposit"),
     ]);
     const w = await wRes.json();
     const c = await cRes.json();
     const r = await rRes.json().catch(() => ({}));
+    const dd = await dRes.json().catch(() => ({}));
+    if (dd.deposits) setDeposits(dd.deposits);
     if (wRes.ok && w.ok) {
       setLoggedIn(true);
       setWallet(w.wallet);
@@ -276,6 +284,33 @@ export default function EarnClient({
       setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
     } finally {
       setClaiming(false);
+    }
+  }
+
+  async function deposit(e: React.FormEvent) {
+    e.preventDefault();
+    setDepLoading(true);
+    setMsg("");
+    try {
+      const res = await fetch("/api/wallet/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Number(depAmount),
+          method: depMethod,
+          trx_id: depTrx,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
+      setMsg("✅ ডিপোজিট রিকোয়েস্ট পাঠানো হয়েছে — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে।");
+      setDepAmount("");
+      setDepTrx("");
+      load();
+    } catch (e) {
+      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+    } finally {
+      setDepLoading(false);
     }
   }
 
@@ -551,6 +586,62 @@ export default function EarnClient({
                 কপি
               </button>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* deposit */}
+      <div className="glass mt-6 rounded-3xl p-6">
+        <h2 className="font-display text-lg font-bold text-white">💰 ওয়ালেটে টাকা জমা (ডিপোজিট)</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          বিকাশ / নগদ / রকেটে পাঠিয়ে TrxID দিন — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে
+        </p>
+        <form onSubmit={deposit} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <input
+            type="number"
+            min={100}
+            value={depAmount}
+            onChange={(e) => setDepAmount(e.target.value)}
+            placeholder="টাকার পরিমাণ (সর্বনিম্ন ১০০)"
+            className="field sm:col-span-2"
+            required
+          />
+          <select value={depMethod} onChange={(e) => setDepMethod(e.target.value)} className="field">
+            <option value="bkash">বিকাশ</option>
+            <option value="nagad">নগদ</option>
+            <option value="rocket">রকেট</option>
+          </select>
+          <input
+            value={depTrx}
+            onChange={(e) => setDepTrx(e.target.value)}
+            placeholder="TrxID (পেমেন্টের ট্রানজেকশন আইডি)"
+            className="field"
+            required
+          />
+          <button type="submit" disabled={depLoading} className="btn-vault sm:col-span-2 !py-3 text-sm">
+            {depLoading ? "পাঠানো হচ্ছে..." : "ডিপোজিট রিকোয়েস্ট পাঠান"}
+          </button>
+        </form>
+        {deposits.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {deposits.map((d) => (
+              <div key={d.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5 text-sm">
+                <span className="text-slate-300">
+                  {formatBDT(Number(d.amount_bdt))} • {d.method} • {d.trx_id}
+                </span>
+                <span
+                  className={
+                    d.status === "approved"
+                      ? "text-xs font-bold text-green-400"
+                      : d.status === "rejected"
+                        ? "text-xs font-bold text-red-400"
+                        : "text-xs font-bold text-amber-300"
+                  }
+                >
+                  {d.status === "approved" ? "✅ যোগ হয়েছে" : d.status === "rejected" ? "❌ বাতিল" : "⏳ প্রসেসিং"}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>

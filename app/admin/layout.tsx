@@ -11,6 +11,7 @@ const NAV: { href: string; label: string; desc: string; exact?: boolean; roles: 
   { href: "/admin/products", label: "📦 প্রোডাক্ট", desc: "প্রোডাক্ট, দাম, ছবি, APK ফাইল ম্যানেজ", roles: ["admin"] },
   { href: "/admin/slides", label: "🎠 স্লাইডার", desc: "হোমপেজের হিরো স্লাইড বদলান", roles: ["admin"] },
   { href: "/admin/withdrawals", label: "💸 উত্তোলন", desc: "ইউজারদের টাকা তোলার রিকোয়েস্ট approve", roles: ["admin"] },
+  { href: "/admin/deposits", label: "💰 ডিপোজিট", desc: "ইউজারদের টাকা জমার রিকোয়েস্ট approve", roles: ["admin"] },
   { href: "/admin/marketplace", label: "🎮 ID বাজার", desc: "ID পোস্ট approve, এসক্রো ডিল, সব চ্যাট দেখুন", roles: ["admin", "support"] },
   { href: "/admin/services", label: "🌐 সার্ভিস", desc: "ওয়েবসাইট বানানোর রিকোয়েস্ট ম্যানেজ", roles: ["admin", "support"] },
   { href: "/admin/chat", label: "💬 কমিউনিটি চ্যাট", desc: "ইউজারদের প্রাইভেট চ্যাট মনিটর করুন", roles: ["admin", "support"] },
