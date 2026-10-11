@@ -13,7 +13,7 @@ import { Page, SectionTitle, Back } from "./ui";
 import { toBnDigits } from "@/lib/format";
 
 const bn = (n: number) => toBnDigits(Math.round(n).toLocaleString("en-IN"));
-type Tab = "dash" | "products" | "orders" | "ads" | "slider" | "settings";
+type Tab = "dash" | "products" | "orders" | "ads" | "slider" | "casino" | "settings";
 
 export function ClientAdmin() {
   const { def, base, store, clientSlug } = useDemo();
@@ -105,7 +105,7 @@ export function ClientAdmin() {
       </div>
 
       <div className="mt-2 flex gap-1.5 overflow-x-auto">
-        {([["dash", "📊 ড্যাশবোর্ড"], ["products", "📦 প্রোডাক্ট"], ["orders", "🧾 অর্ডার"], ["ads", "📢 বিজ্ঞাপন"], ["slider", "🎠 স্লাইডার"], ["settings", "🎨 সেটিংস"]] as [Tab, string][]).map(([t, label]) => (
+        {([["dash", "📊 ড্যাশবোর্ড"], ["products", "📦 প্রোডাক্ট"], ["orders", "🧾 অর্ডার"], ["ads", "📢 বিজ্ঞাপন"], ["slider", "🎠 স্লাইডার"], ["casino", "🎰 ক্যাসিনো"], ["settings", "🎨 সেটিংস"]] as [Tab, string][]).map(([t, label]) => (
           <button key={t} onClick={() => setTab(t)}
             className={`whitespace-nowrap rounded-xl px-4 py-2 text-xs font-black transition ${tab === t ? "text-white" : dark ? "bg-white/5 text-slate-400" : "bg-slate-100 text-slate-600"}`}
             style={tab === t ? { background: def.accent } : undefined}>
@@ -120,6 +120,7 @@ export function ClientAdmin() {
         {tab === "orders" && <OrdersTab headers={headers} card={card} sub={sub} input={input} accent={def.accent} dark={dark} />}
         {tab === "ads" && <AdsTab headers={headers} card={card} sub={sub} input={input} accent={def.accent} />}
         {tab === "slider" && <SliderTab headers={headers} card={card} sub={sub} input={input} accent={def.accent} dark={dark} />}
+        {tab === "casino" && <CasinoTab headers={headers} card={card} sub={sub} input={input} accent={def.accent} dark={dark} />}
         {tab === "settings" && <SettingsTab card={card} sub={sub} input={input} accent={def.accent} dark={dark} />}
       </div>
     </Page>
@@ -441,6 +442,125 @@ function SliderTab({ headers, card, sub, input, accent, dark }: any) {
 }
 
 /* ---------- Settings (theme etc.) ---------- */
+
+/* ---------- Casino Control (RTP + Banners) ---------- */
+function CasinoTab({ headers, card, sub, input, accent, dark }: any) {
+  const { clientSlug } = useDemo();
+  const [rtp, setRtp] = useState("96");
+  const [minBet, setMinBet] = useState("10");
+  const [maxBet, setMaxBet] = useState("50000");
+  const [banners, setBanners] = useState<any[]>([]);
+  const [msg, setMsg] = useState("");
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/client/${clientSlug}/admin/settings`, { headers })
+      .then((r) => r.json())
+      .then((d) => {
+        const s = d.settings || {};
+        if (s.casino_rtp) setRtp(s.casino_rtp);
+        if (s.casino_min_bet) setMinBet(s.casino_min_bet);
+        if (s.casino_max_bet) setMaxBet(s.casino_max_bet);
+        if (s.casino_banners) { try { setBanners(JSON.parse(s.casino_banners)); } catch {} }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientSlug]);
+
+  async function save() {
+    setMsg("সেভ হচ্ছে...");
+    const res = await fetch(`/api/client/${clientSlug}/admin/settings`, {
+      method: "POST", headers,
+      body: JSON.stringify({ casino_rtp: rtp, casino_min_bet: minBet, casino_max_bet: maxBet, casino_banners: JSON.stringify(banners) }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setMsg(res.ok ? "✅ সেভ হয়েছে! গেমগুলোতে এখনই কার্যকর" : `❌ ${d.error || "ব্যর্থ"}`);
+  }
+
+  async function uploadBanner(i: number, f: File) {
+    setUploading(true);
+    const fd = new FormData(); fd.append("file", f);
+    const res = await fetch(`/api/client/${clientSlug}/admin/upload`, { method: "POST", headers: { Authorization: headers.Authorization }, body: fd });
+    const d = await res.json().catch(() => ({}));
+    setUploading(false);
+    if (res.ok && d.url) {
+      const nb = [...banners]; nb[i] = { ...nb[i], img: d.url }; setBanners(nb);
+    } else setMsg(`❌ ${d.error || "আপলোড ব্যর্থ"}`);
+  }
+
+  const GRADS = ["from-amber-500 via-orange-700 to-[#0b1120]", "from-emerald-500 via-teal-800 to-[#0b1120]", "from-violet-600 via-purple-900 to-[#0b1120]", "from-sky-500 via-blue-900 to-[#0b1120]", "from-rose-600 via-red-800 to-[#0b1120]"];
+
+  return (
+    <div className="space-y-4">
+      <div className={`${card} p-4`}>
+        <p className="text-sm font-black">🎯 উইন চান্স কন্ট্রোল (RTP)</p>
+        <p className={`mt-1 text-xs ${sub}`}>RTP = খেলোয়াড়রা গড়ে কত % ফেরত পাবে। কম RTP = আপনার লাভ বেশি, বেশি RTP = খেলোয়াড় বেশি জিতবে।</p>
+        <div className="mt-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold">RTP: <b style={{ color: accent }}>{rtp}%</b></label>
+            <span className="text-[11px]">হাউস এজ: {(100 - Number(rtp || 0)).toFixed(1)}%</span>
+          </div>
+          <input type="range" min={50} max={99} step={0.5} value={rtp} onChange={(e) => setRtp(e.target.value)} className="mt-2 w-full accent-amber-500" />
+          <div className="flex justify-between text-[10px] opacity-60"><span>৫০% (কঠিন)</span><span>৯৬% (স্ট্যান্ডার্ড)</span><span>৯৯% (সহজ)</span></div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-bold">সর্বনিম্ন বাজি (টাকা)</label>
+            <input value={minBet} onChange={(e) => setMinBet(e.target.value.replace(/[^\d]/g, ""))} className={`${input} mt-1`} inputMode="numeric" />
+          </div>
+          <div>
+            <label className="text-xs font-bold">সর্বোচ্চ বাজি (টাকা)</label>
+            <input value={maxBet} onChange={(e) => setMaxBet(e.target.value.replace(/[^\d]/g, ""))} className={`${input} mt-1`} inputMode="numeric" />
+          </div>
+        </div>
+      </div>
+
+      <div className={`${card} p-4`}>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-black">🖼️ হোমপেজ ব্যানার</p>
+          <button onClick={() => setBanners([...banners, { title: "নতুন অফার", sub: "বিস্তারিত এখানে", href: "/promotions", grad: GRADS[0] }])}
+            className="rounded-lg px-3 py-1.5 text-xs font-black text-white" style={{ background: accent }}>＋ ব্যানার যোগ</button>
+        </div>
+        <p className={`mt-1 text-xs ${sub}`}>ক্যাসিনো হোমপেজের স্লাইডার ব্যানার — ছবি আপলোড, টাইটেল ও লিংক বদলান</p>
+        <div className="mt-3 space-y-3">
+          {banners.map((b, i) => (
+            <div key={i} className={`rounded-xl border p-3 ${dark ? "border-white/10" : "border-slate-200"}`}>
+              <div className="flex gap-3">
+                <div className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br ${b.grad || GRADS[0]}`}>
+                  {b.img && <img src={b.img} alt="" className="h-full w-full object-cover" />}
+                  <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 text-[9px] text-white">ব্যানার {i + 1}</span>
+                </div>
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <input value={b.title || ""} onChange={(e) => { const nb = [...banners]; nb[i] = { ...b, title: e.target.value }; setBanners(nb); }} placeholder="টাইটেল" className={input} />
+                  <input value={b.sub || ""} onChange={(e) => { const nb = [...banners]; nb[i] = { ...b, sub: e.target.value }; setBanners(nb); }} placeholder="সাবটাইটেল" className={input} />
+                </div>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <input value={b.href || ""} onChange={(e) => { const nb = [...banners]; nb[i] = { ...b, href: e.target.value }; setBanners(nb); }} placeholder="লিংক (যেমন /promotions)" className={`${input} max-w-[180px]`} />
+                <select value={b.grad || GRADS[0]} onChange={(e) => { const nb = [...banners]; nb[i] = { ...b, grad: e.target.value }; setBanners(nb); }} className={`${input} max-w-[140px]`}>
+                  {GRADS.map((g, gi) => <option key={g} value={g}>কালার {gi + 1}</option>)}
+                </select>
+                <label className={`cursor-pointer rounded-lg px-3 py-2 text-xs font-black ${dark ? "bg-white/10" : "bg-slate-100"}`}>
+                  {uploading ? "⏳..." : "📷 ছবি"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadBanner(i, f); }} />
+                </label>
+                <button onClick={() => setBanners(banners.filter((_, x) => x !== i))} className="rounded-lg bg-red-500/15 px-3 py-2 text-xs font-black text-red-400">🗑️ মুছুন</button>
+              </div>
+            </div>
+          ))}
+          {banners.length === 0 && <p className={`text-xs ${sub}`}>কোনো ব্যানার নেই — ডিফল্ট ব্যানার দেখাচ্ছে। নতুন যোগ করুন।</p>}
+        </div>
+      </div>
+
+      {msg && <p className="text-sm font-bold">{msg}</p>}
+      <button onClick={save} className="w-full rounded-xl py-3 text-sm font-black text-white transition active:scale-[0.99]" style={{ background: accent }}>
+        💾 ক্যাসিনো সেটিংস সেভ করুন
+      </button>
+    </div>
+  );
+}
+
+/* ---------- Settings ---------- */
 function SettingsTab({ card, sub, input, accent, dark }: any) {
   const { store } = useDemo();
   return (
