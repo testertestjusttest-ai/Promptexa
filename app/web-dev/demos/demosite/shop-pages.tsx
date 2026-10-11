@@ -3,13 +3,48 @@
 /** DemoSite SHOP layout — all shop pages (home → product → cart → checkout → account...).
  * Browser-local data only; nothing touches the real DigiPlyra DB or admin. */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoProduct } from "./types";
 import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero } from "./ui";
+
+/**
+ * Products hook — in client mode, loads real products from the database.
+ * Falls back to demo products when DB is empty or not in client mode.
+ */
+export function useProducts(): DemoProduct[] {
+  const { def, clientSlug } = useDemo();
+  const [dbProducts, setDbProducts] = useState<DemoProduct[] | null>(null);
+
+  useEffect(() => {
+    if (!clientSlug) return;
+    fetch(`/api/client/${clientSlug}/products`)
+      .then((r) => r.json())
+      .then((d) => {
+        const list = (d.products || []).map((p: any) => ({
+          id: p.id,
+          n: p.name,
+          p: Number(p.price_bdt),
+          oldPrice: p.old_price_bdt ? Number(p.old_price_bdt) : undefined,
+          e: p.image_emoji || "📦",
+          c: p.category || "সব",
+          desc: "",
+          rating: 4.5,
+          reviews: 10,
+          stock: p.stock ?? 100,
+          img: p.image_url || undefined,
+        }));
+        setDbProducts(list);
+      })
+      .catch(() => setDbProducts([]));
+  }, [clientSlug]);
+
+  if (clientSlug && dbProducts !== null && dbProducts.length > 0) return dbProducts;
+  return def.products;
+}
 
 const FREE_DELIVERY_AT = 1000;
 const DELIVERY_FEE = 60;
@@ -88,9 +123,10 @@ const SAMPLE_REVIEWS = [
 
 export function ShopHome() {
   const { def, base } = useDemo();
+  const products = useProducts();
   const { card, sub, chip } = useSkin();
-  const deals = def.products.filter((p) => p.oldPrice).slice(0, 4);
-  const featured = def.products.slice(0, 8);
+  const deals = products.filter((p) => p.oldPrice).slice(0, 4);
+  const featured = products.slice(0, 8);
   return (
     <div>
       <Hero
@@ -146,11 +182,12 @@ export function ShopHome() {
 
 export function ShopAll() {
   const { def, base } = useDemo();
+  const products = useProducts();
   const { chip } = useSkin();
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="🛍️ সব পণ্য" sub={`${bn(def.products.length)}টি পণ্য`} />
+      <SectionTitle t="🛍️ সব পণ্য" sub={`${bn(products.length)}টি পণ্য`} />
       <div className="mb-5 flex flex-wrap gap-2">
         {def.cats.slice(1).map((c) => (
           <Link key={c} href={`${base}/c/${encodeURIComponent(c)}`} className={chip}>
@@ -159,7 +196,7 @@ export function ShopAll() {
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {def.products.map((p) => (
+        {products.map((p) => (
           <ProductCard key={p.id} p={p} />
         ))}
       </div>
@@ -169,7 +206,8 @@ export function ShopAll() {
 
 export function ShopCategory({ cat }: { cat: string }) {
   const { def, base } = useDemo();
-  const list = def.products.filter((p) => p.c === cat);
+  const products = useProducts();
+  const list = products.filter((p) => p.c === cat);
   return (
     <Page>
       <Back href={`${base}/shop`} label="সব পণ্য" />
@@ -191,11 +229,12 @@ export function ShopCategory({ cat }: { cat: string }) {
 
 export function ShopProduct({ id }: { id: string }) {
   const { def, base, store } = useDemo();
+  const products = useProducts();
   const router = useRouter();
   const { accent, card, sub } = useSkin();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const p = def.products.find((x) => x.id === id);
+  const p = products.find((x) => x.id === id);
   if (!p) {
     return (
       <Page narrow>
@@ -209,7 +248,7 @@ export function ShopProduct({ id }: { id: string }) {
     );
   }
   const off = p.oldPrice ? Math.round((1 - p.p / p.oldPrice) * 100) : 0;
-  const related = def.products.filter((x) => x.c === p.c && x.id !== p.id).slice(0, 4);
+  const related = products.filter((x) => x.c === p.c && x.id !== p.id).slice(0, 4);
   const maxQ = Math.max(1, Math.min(99, p.stock));
   const line = { id: p.id, n: p.n, p: p.p, e: p.e };
   const add = () => {
@@ -383,7 +422,7 @@ export function ShopCart() {
 /* ================= CHECKOUT ================= */
 
 export function ShopCheckout() {
-  const { base, store } = useDemo();
+  const { base, store, clientSlug } = useDemo();
   const router = useRouter();
   const { accent, card, sub } = useSkin();
   const [name, setName] = useState(store.user?.name ?? "");
@@ -391,6 +430,7 @@ export function ShopCheckout() {
   const [address, setAddress] = useState(store.user?.address ?? "");
   const [pay, setPay] = useState("ক্যাশ অন ডেলিভারি");
   const [error, setError] = useState("");
+  const [placing, setPlacing] = useState(false);
   const subtotal = store.cartTotal;
   const fee = feeFor(subtotal);
   const total = subtotal + fee;
@@ -412,8 +452,9 @@ export function ShopCheckout() {
   const pays = ["ক্যাশ অন ডেলিভারি", "ওয়ালেট", "বিকাশ", "নগদ", "রকেট"];
   const payIcon = (m: string) => (m === "ক্যাশ অন ডেলিভারি" ? "💵" : m === "ওয়ালেট" ? "👛" : m === "বিকাশ" ? "🩷" : m === "নগদ" ? "🧡" : "💜");
 
-  function submit() {
+  async function submit() {
     setError("");
+    if (placing) return;
     if (name.trim().length < 3) return setError("আপনার নাম লিখুন");
     if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
     if (address.trim().length < 8) return setError("সম্পূর্ণ ঠিকানা লিখুন");
@@ -421,6 +462,33 @@ export function ShopCheckout() {
     if (pay === "ওয়ালেট") {
       const ok = store.payWithWallet(total, `🛒 অর্ডার — ${bn(items.length)}টি পণ্য`);
       if (!ok) return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — টপ-আপ করুন");
+    }
+    // Real client site: save order to database
+    if (clientSlug) {
+      setPlacing(true);
+      try {
+        const res = await fetch(`/api/client/${clientSlug}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer_name: name.trim(),
+            customer_phone: phone.trim(),
+            customer_address: address.trim(),
+            items: items.map((it) => ({ name: it.n, price: it.p, qty: it.qty, emoji: it.e })),
+            total_bdt: total,
+            payment_method: pay === "ক্যাশ অন ডেলিভারি" ? "cod" : pay === "ওয়ালেট" ? "wallet" : "mobile",
+          }),
+        });
+        const d = await res.json();
+        if (!res.ok || !d.ok) throw new Error(d.error || "ব্যর্থ");
+        const rec = store.placeOrder({ items, total, name: name.trim(), phone: phone.trim(), address: address.trim(), pay });
+        router.push(`${base}/success/${rec.id}?no=${encodeURIComponent(d.order_no)}`);
+      } catch (e: any) {
+        setError(e.message || "অর্ডার হয়নি — আবার চেষ্টা করুন");
+      } finally {
+        setPlacing(false);
+      }
+      return;
     }
     const rec = store.placeOrder({ items, total, name: name.trim(), phone: phone.trim(), address: address.trim(), pay });
     router.push(`${base}/success/${rec.id}`);
@@ -484,8 +552,8 @@ export function ShopCheckout() {
         <p className={`mt-2 text-xs ${sub}`}>💡 ডেমো পেমেন্ট — কোনো আসল টাকা কাটা হবে না। আসল সাইটে এখানে {pay} পেমেন্ট গেটওয়ে যুক্ত থাকবে।</p>
       )}
       {error && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {error}</p>}
-      <button onClick={submit} className="btn-demo mt-4 w-full !py-3.5 text-base" style={{ background: accent }}>
-        ✅ অর্ডার কনফার্ম করুন — {bn(total)} টাকা
+      <button onClick={submit} disabled={placing} className="btn-demo mt-4 w-full !py-3.5 text-base disabled:opacity-50" style={{ background: accent }}>
+        {placing ? "⏳ অর্ডার হচ্ছে..." : `✅ অর্ডার কনফার্ম করুন — ${bn(total)} টাকা`}
       </button>
     </Page>
   );
@@ -496,6 +564,8 @@ export function ShopCheckout() {
 export function ShopSuccess({ id }: { id: string }) {
   const { base, store } = useDemo();
   const { accent, card, sub } = useSkin();
+  const sp = useSearchParams();
+  const realNo = sp.get("no");
   const o = store.orders.find((x) => x.id === id);
   if (!o) {
     return (
@@ -520,7 +590,7 @@ export function ShopSuccess({ id }: { id: string }) {
         <div>
           <p className={`text-xs ${sub}`}>অর্ডার নম্বর</p>
           <p className="font-mono text-lg font-black" style={{ color: accent }}>
-            {o.id}
+            {realNo || o.id}
           </p>
         </div>
         <div className="space-y-1.5 border-t border-white/10 pt-3">
@@ -605,11 +675,12 @@ export function ShopTrack() {
 
 export function ShopSearch() {
   const { def, base } = useDemo();
+  const products = useProducts();
   const router = useRouter();
   const sp = useSearchParams();
   const q = (sp.get("q") ?? "").trim();
   const [val, setVal] = useState(q);
-  const res = def.products.filter((p) => !q || (p.n + " " + p.c).includes(q));
+  const res = products.filter((p) => !q || (p.n + " " + p.c).includes(q));
   return (
     <Page>
       <Back href={base} label="হোম" />
@@ -649,9 +720,10 @@ export function ShopSearch() {
 
 export function ShopOffers() {
   const { def, base } = useDemo();
+  const products = useProducts();
   const { accent, card, sub } = useSkin();
   const [copied, setCopied] = useState("");
-  const deals = def.products.filter((p) => p.oldPrice);
+  const deals = products.filter((p) => p.oldPrice);
   const coupons = [
     { code: "WELCOME10", d: "প্রথম অর্ডারে ১০% ছাড়" },
     { code: "SAVE20", d: `${bn(2000)}+ টাকার অর্ডারে ২০% ছাড়` },
@@ -1016,8 +1088,9 @@ export function ShopWallet() {
 
 export function ShopAbout() {
   const { def, base } = useDemo();
+  const products = useProducts();
   const { accent, card, sub } = useSkin();
-  const avg = def.products.length ? def.products.reduce((s, p) => s + p.rating, 0) / def.products.length : 0;
+  const avg = products.length ? products.reduce((s, p) => s + p.rating, 0) / products.length : 0;
   return (
     <Page>
       <Back href={base} label="হোম" />
@@ -1030,7 +1103,7 @@ export function ShopAbout() {
       </div>
       <div className={`mt-3 grid grid-cols-3 gap-2 p-4 text-center ${card}`}>
         {[
-          [bn(def.products.length), "পণ্য"],
+          [bn(products.length), "পণ্য"],
           [bn(def.cats.length - 1 > 0 ? def.cats.length - 1 : def.cats.length), "ক্যাটাগরি"],
           [`${toBnDigits(avg.toFixed(1))}★`, "গড় রেটিং"],
         ].map(([v, t]) => (
