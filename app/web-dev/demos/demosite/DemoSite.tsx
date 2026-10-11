@@ -29,6 +29,7 @@ import {
 } from "./fintech-pages";
 import { Empty, Page } from "./ui";
 import { DemoAdmin } from "./demo-admin";
+import { ClientAdmin } from "./client-admin";
 
 function NotFound() {
   return (
@@ -39,7 +40,7 @@ function NotFound() {
 }
 
 export default function DemoSite({ page }: { page: string[] }) {
-  const { def } = useDemo();
+  const { def, clientSlug } = useDemo();
   const [p0, p1] = page.map((s) => {
     try {
       return decodeURIComponent(s);
@@ -50,8 +51,8 @@ export default function DemoSite({ page }: { page: string[] }) {
 
   let body: React.ReactNode = <NotFound />;
 
-  // Per-demo admin panel (all layouts)
-  if (p0 === "admin") body = <DemoAdmin />;
+  // Per-demo admin panel (all layouts) — full business admin in client mode
+  if (p0 === "admin") body = clientSlug ? <ClientAdmin /> : <DemoAdmin />;
   else if (def.layout === "shop") {
     if (!p0) body = <ShopHome />;
     else if (p0 === "shop") body = <ShopAll />;

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
+import { AdSlot, AnnouncementBar } from "./client-ads";
 
 function navLinks(layout: string): { label: string; href: string }[] {
   switch (layout) {
@@ -126,6 +127,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`min-h-screen ${dark ? "bg-[#0a0a12] text-white" : "bg-slate-50 text-slate-800"}`}>
+      {clientSlug && <AnnouncementBar />}
       {/* ===== top navbar ===== */}
       <header className={`sticky top-0 z-[60] backdrop-blur-md ${dark ? "bg-[#0a0a12]/90 border-b border-white/10" : "bg-white/90 border-b border-slate-200"}`}>
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
@@ -280,7 +282,9 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       )}
 
       {/* ===== page ===== */}
+      {clientSlug && <AdSlot slot="ad_top" />}
       <main>{children}</main>
+      {clientSlug && <AdSlot slot="ad_bottom" />}
 
       {/* ===== footer ===== */}
       <footer className={`mt-10 border-t ${dark ? "border-white/10 bg-black/30" : "border-slate-200 bg-white"}`}>
