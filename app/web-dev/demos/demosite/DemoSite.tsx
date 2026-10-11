@@ -18,6 +18,14 @@ import {
   BookLogin, BookSignup, BookAccount, BookWallet, BookAbout, BookContact,
   NewsHome, NewsCat, NewsArticle, NewsSearch, NewsAbout, NewsContact,
 } from "./other-pages";
+import {
+  InvestHome, InvestPlans, InvestDetail, InvestSuccess, InvestDashboard, InvestHow,
+  InvestLogin, InvestSignup, InvestAccount, InvestAbout, InvestContact,
+  ExchangeHome, ExchangeRates, ExchangeFlow, ExchangeSuccess, ExchangeTrack,
+  ExchangeLogin, ExchangeSignup, ExchangeAccount, ExchangeAbout, ExchangeContact,
+  WalletHome, WalletDash, WalletSend, WalletReceive,
+  WalletLogin, WalletSignup, WalletAccount, WalletAbout, WalletContact,
+} from "./fintech-pages";
 import { Empty, Page } from "./ui";
 
 function NotFound() {
@@ -102,6 +110,39 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "search") body = <NewsSearch />;
     else if (p0 === "about") body = <NewsAbout />;
     else if (p0 === "contact") body = <NewsContact />;
+  } else if (def.layout === "invest") {
+    if (!p0) body = <InvestHome />;
+    else if (p0 === "plans") body = <InvestPlans />;
+    else if (p0 === "plan" && p1) body = <InvestDetail id={p1} />;
+    else if (p0 === "success" && p1) body = <InvestSuccess id={p1} />;
+    else if (p0 === "dashboard") body = <InvestDashboard />;
+    else if (p0 === "how") body = <InvestHow />;
+    else if (p0 === "login") body = <InvestLogin />;
+    else if (p0 === "signup") body = <InvestSignup />;
+    else if (p0 === "account") body = <InvestAccount />;
+    else if (p0 === "about") body = <InvestAbout />;
+    else if (p0 === "contact") body = <InvestContact />;
+  } else if (def.layout === "exchange") {
+    if (!p0) body = <ExchangeHome />;
+    else if (p0 === "exchange") body = <ExchangeFlow />;
+    else if (p0 === "rates") body = <ExchangeRates />;
+    else if (p0 === "success" && p1) body = <ExchangeSuccess id={p1} />;
+    else if (p0 === "track") body = <ExchangeTrack />;
+    else if (p0 === "login") body = <ExchangeLogin />;
+    else if (p0 === "signup") body = <ExchangeSignup />;
+    else if (p0 === "account") body = <ExchangeAccount />;
+    else if (p0 === "about") body = <ExchangeAbout />;
+    else if (p0 === "contact") body = <ExchangeContact />;
+  } else if (def.layout === "wallet") {
+    if (!p0) body = <WalletHome />;
+    else if (p0 === "wallet") body = <WalletDash />;
+    else if (p0 === "send") body = <WalletSend />;
+    else if (p0 === "receive") body = <WalletReceive />;
+    else if (p0 === "login") body = <WalletLogin />;
+    else if (p0 === "signup") body = <WalletSignup />;
+    else if (p0 === "account") body = <WalletAccount />;
+    else if (p0 === "about") body = <WalletAbout />;
+    else if (p0 === "contact") body = <WalletContact />;
   }
 
   return <Chrome>{body}</Chrome>;

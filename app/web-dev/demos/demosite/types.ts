@@ -4,7 +4,7 @@
  * Nothing here touches the real DigiPlyra database or admin panel.
  */
 
-export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news";
+export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news" | "invest" | "exchange" | "wallet";
 
 /** Visual theme — each demo gets one so no two demos look alike. */
 export type DemoTheme = "aurora" | "split" | "minimal" | "bold" | "elegant" | "playful";
@@ -50,6 +50,38 @@ export interface DemoNewsItem {
   body: string;
 }
 
+/** Investment plan (invest layout). */
+export interface DemoInvestPlan {
+  id: string;
+  n: string;
+  e: string;
+  min: number;
+  max: number;
+  roi: number; // % per duration
+  duration: string;
+  desc: string;
+  tag?: string;
+}
+
+/** Currency rate (exchange layout). */
+export interface DemoRate {
+  code: string;
+  name: string;
+  buy: number; // BDT per unit when we sell to user
+  sell: number; // BDT per unit when we buy from user
+  e: string;
+  change: number; // % 24h
+}
+
+/** Crypto coin (wallet layout). */
+export interface DemoCoin {
+  code: string;
+  name: string;
+  price: number; // USD
+  change: number; // % 24h
+  e: string;
+}
+
 export interface DemoSiteDef {
   slug: string;
   name: string;
@@ -75,4 +107,7 @@ export interface DemoSiteDef {
   hours: string;
   priceNote?: string;
   theme?: DemoTheme;
+  investPlans?: DemoInvestPlan[];
+  rates?: DemoRate[];
+  coins?: DemoCoin[];
 }

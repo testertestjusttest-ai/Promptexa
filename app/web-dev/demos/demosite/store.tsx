@@ -65,6 +65,41 @@ export interface Tx {
   amount: number;
 }
 
+export interface DemoInvestmentRec {
+  id: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  roi: number;
+  duration: string;
+  date: number;
+  status: string;
+  userPhone: string;
+}
+
+export interface DemoExchangeRec {
+  id: string;
+  from: string;
+  to: string;
+  amount: number;
+  result: number;
+  name: string;
+  phone: string;
+  date: number;
+  status: string;
+  userPhone: string;
+}
+
+export interface DemoCoinTx {
+  id: string;
+  kind: "send" | "receive";
+  coin: string;
+  amount: number;
+  addr: string;
+  date: number;
+  userPhone: string;
+}
+
 function read<T>(k: string, fb: T): T {
   try {
     const v = localStorage.getItem(k);
@@ -108,6 +143,12 @@ export interface DemoStore {
   placeOrder: (o: Omit<DemoOrderRec, "id" | "date" | "status" | "userPhone">) => DemoOrderRec;
   bookings: DemoBookingRec[];
   placeBooking: (b: Omit<DemoBookingRec, "id" | "createdAt" | "status" | "userPhone">) => DemoBookingRec;
+  investments: DemoInvestmentRec[];
+  placeInvestment: (p: Omit<DemoInvestmentRec, "id" | "date" | "status" | "userPhone">) => DemoInvestmentRec;
+  exchanges: DemoExchangeRec[];
+  placeExchange: (e: Omit<DemoExchangeRec, "id" | "date" | "status" | "userPhone">) => DemoExchangeRec;
+  coinTxs: DemoCoinTx[];
+  placeCoinTx: (t: Omit<DemoCoinTx, "id" | "date" | "userPhone">) => DemoCoinTx;
 }
 
 const Ctx = createContext<{ def: DemoSiteDef; base: string; store: DemoStore } | null>(null);
@@ -131,6 +172,9 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
   const [txs, setTxs] = useState<Tx[]>([]);
   const [orders, setOrders] = useState<DemoOrderRec[]>([]);
   const [bookings, setBookings] = useState<DemoBookingRec[]>([]);
+  const [investments, setInvestments] = useState<DemoInvestmentRec[]>([]);
+  const [exchanges, setExchanges] = useState<DemoExchangeRec[]>([]);
+  const [coinTxs, setCoinTxs] = useState<DemoCoinTx[]>([]);
 
   const loadIdentity = useCallback(() => {
     const id = ident();
@@ -144,6 +188,9 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
   useEffect(() => {
     setOrders(read(K(slug, "orders"), []));
     setBookings(read(K(slug, "bookings"), []));
+    setInvestments(read(K(slug, "investments"), []));
+    setExchanges(read(K(slug, "exchanges"), []));
+    setCoinTxs(read(K(slug, "cointxs"), []));
     loadIdentity();
   }, [slug, loadIdentity]);
 
@@ -273,9 +320,33 @@ export function DemositeProvider({ slug, def, children }: { slug: string; def: D
         write(K(slug, "bookings"), all);
         return rec;
       },
+      investments,
+      placeInvestment: (p) => {
+        const rec: DemoInvestmentRec = { ...p, id: orderId("INV"), date: Date.now(), status: "সক্রিয়", userPhone: me() };
+        const all = [rec, ...investments].slice(0, 50);
+        setInvestments(all);
+        write(K(slug, "investments"), all);
+        return rec;
+      },
+      exchanges,
+      placeExchange: (e) => {
+        const rec: DemoExchangeRec = { ...e, id: orderId("EX"), date: Date.now(), status: "প্রসেসিং", userPhone: me() };
+        const all = [rec, ...exchanges].slice(0, 50);
+        setExchanges(all);
+        write(K(slug, "exchanges"), all);
+        return rec;
+      },
+      coinTxs,
+      placeCoinTx: (t) => {
+        const rec: DemoCoinTx = { ...t, id: orderId("TX"), date: Date.now(), userPhone: me() };
+        const all = [rec, ...coinTxs].slice(0, 50);
+        setCoinTxs(all);
+        write(K(slug, "cointxs"), all);
+        return rec;
+      },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, user, cart, wallet, txs, orders, bookings, loadIdentity]);
+  }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, loadIdentity]);
 
   return <Ctx.Provider value={{ def, base, store }}>{children}</Ctx.Provider>;
 }
