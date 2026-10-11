@@ -104,7 +104,7 @@ function drawerTheme(theme: string | undefined, dark: boolean) {
 }
 
 export default function Chrome({ children }: { children: React.ReactNode }) {
-  const { def, base, store } = useDemo();
+  const { def, base, store, clientSlug } = useDemo();
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
   const [q, setQ] = useState("");
@@ -272,7 +272,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               <p className="font-bold">{def.contact}</p>
               <p className="mt-1 text-xs opacity-60">{def.hours}</p>
               <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
-                ⚙️ ডেমো অ্যাডমিন
+                ⚙️ {clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন"}
               </Link>
             </div>
           </aside>
@@ -325,7 +325,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className={`border-t py-4 text-center text-xs opacity-50 ${dark ? "border-white/10" : "border-slate-200"}`}>
-          © {toBnDigits(new Date().getFullYear())} {def.name} • ডেমো ওয়েবসাইট
+          © {toBnDigits(new Date().getFullYear())} {def.name}{clientSlug ? "" : " • ডেমো ওয়েবসাইট"}
         </div>
       </footer>
     </div>

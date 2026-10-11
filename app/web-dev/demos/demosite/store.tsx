@@ -166,7 +166,7 @@ export interface DemoStore {
   resetCustom: () => void;
 }
 
-const Ctx = createContext<{ def: DemoSiteDef; base: string; store: DemoStore } | null>(null);
+const Ctx = createContext<{ def: DemoSiteDef; base: string; store: DemoStore; clientSlug?: string } | null>(null);
 
 export function useDemo() {
   const v = useContext(Ctx);
@@ -193,7 +193,7 @@ function readCustomKey(key: string): DemoCustom {
   }
 }
 
-export function DemositeProvider({ slug, def, children, clientSlug, initialCustom }: {
+export function DemositeProvider({ slug, def, children, clientSlug, initialCustom, baseOverride }: {
   slug: string;
   def: DemoSiteDef;
   children: React.ReactNode;
@@ -201,11 +201,13 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
   clientSlug?: string;
   /** Server-provided overrides (from client_sites DB) — merged under local custom. */
   initialCustom?: DemoCustom;
+  /** Override the URL base (e.g. "" for custom domains). */
+  baseOverride?: string;
 }) {
   // In client mode, storage is namespaced per client so each customer's data is isolated.
   const ns = clientSlug ? `client:${clientSlug}` : `dmsite:${slug}`;
   const KK = (rest: string) => `${ns}:${rest}`;
-  const base = `/demo${slug}`;
+  const base = baseOverride ?? (clientSlug ? `/c/${clientSlug}` : `/demo${slug}`);
   const ident = () => {
     const s = read<string | null>(KK("session"), null);
     return s || "guest";
@@ -427,5 +429,5 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, user, cart, wallet, txs, orders, bookings, investments, exchanges, coinTxs, deposits, custom, loadIdentity]);
 
-  return <Ctx.Provider value={{ def: liveDef, base, store }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ def: liveDef, base, store, clientSlug }}>{children}</Ctx.Provider>;
 }

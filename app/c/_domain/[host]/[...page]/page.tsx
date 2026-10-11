@@ -34,5 +34,5 @@ export default async function Page({ params }: { params: Promise<{ host: string;
     heroSub: c.hero_sub || undefined,
   };
 
-  return <ClientSiteShell clientSlug={c.slug} def={def} custom={custom} page={page ?? []} />;
+  return <ClientSiteShell clientSlug={c.slug} def={def} custom={custom} page={page ?? []} baseOverride="" />;
 }
