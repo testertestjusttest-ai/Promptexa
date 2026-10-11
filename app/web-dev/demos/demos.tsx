@@ -38,10 +38,12 @@ export type Demo = {
   render: () => React.ReactNode;
 };
 
-export const HAND_GROUPS: Record<string, string> = {
+const HAND_GROUPS: Record<string, string> = {
   restaurant: "🍔 খাবার", fashion: "🛍️ শপিং", portfolio: "🎨 পোর্টফোলিও",
   news: "📰 মিডিয়া", realestate: "🏠 প্রপার্টি", gym: "💪 ফিটনেস",
   travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
+  investpro: "💰 ফিনটেক", agroinvest: "💰 ফিনটেক", swiftex: "💰 ফিনটেক",
+  payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -96,6 +98,123 @@ const HAND_DEMOS: Demo[] = [
         <div className="flex items-center justify-between bg-pink-50 px-4 py-2 text-[10px] text-pink-700">
           <span>🚚 সারাদেশে ডেলিভারি</span><span>💳 বিকাশ/নগদ</span>
         </div>
+      </Frame>
+    ),
+  },
+  {
+    slug: "investpro",
+    name: "ইনভেস্টপ্রো",
+    type: "বিনিয়োগ প্ল্যাটফর্ম",
+    desc: "বিনিয়োগ প্ল্যান, লাইভ ড্যাশবোর্ড, মুনাফা ট্র্যাকিংসহ সম্পূর্ণ সাইট।",
+    price: "১৪,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="📈 ইনভেস্টপ্রো" links={["প্ল্যান", "ড্যাশবোর্ড"]} cta="বিনিয়োগ করুন" light />
+        <div className="bg-gradient-to-br from-emerald-600 to-teal-800 px-4 py-7 text-white">
+          <p className="text-xl font-black">টাকা বাড়ান স্মার্ট বিনিয়োগে</p>
+          <p className="mt-1 text-[11px] opacity-80">মাসে ১২% পর্যন্ত মুনাফা</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[["🌱", "৮%"], ["🚀", "১২%"], ["💎", "১৮%"]].map(([e, r]) => (
+              <div key={r} className="rounded-xl bg-white/10 p-2 text-center">
+                <div className="text-xl">{e}</div><p className="mt-1 text-[11px] font-black text-emerald-300">{r}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">💼 ৫০,০০০+ বিনিয়োগকারী</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "swiftex",
+    name: "সুইফটএক্স",
+    type: "কারেন্সি এক্সচেঞ্জ",
+    desc: "লাইভ রেট, কনভার্টার, এক্সচেঞ্জ ট্র্যাকিংসহ মুদ্রা বিনিময় সাইট।",
+    price: "১২,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="💱 সুইফটএক্স" links={["রেট", "ট্র্যাক"]} cta="এক্সচেঞ্জ" light />
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-800 px-4 py-7 text-white">
+          <p className="text-xl font-black">সব কারেন্সি, এক প্ল্যাটফর্মে</p>
+          <div className="mt-3 rounded-xl bg-black/30 p-3">
+            <div className="flex items-center justify-between text-[11px]">
+              <span>💵 USD → 🇧🇩 BDT</span><span className="font-black text-blue-300">১২১.৫</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-[11px]">
+              <span>₿ BTC → 🇧🇩 BDT</span><span className="font-black text-blue-300">৮১,৫০,০০০</span>
+            </div>
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">⚡ ৫ মিনিটে ডেলিভারি</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "cryptovault",
+    name: "ক্রিপ্টোভল্ট",
+    type: "ক্রিপ্টো ওয়ালেট",
+    desc: "ব্যালেন্স, সেন্ড/রিসিভ, লেনদেন হিস্ট্রিসহ ক্রিপ্টো ওয়ালেট সাইট।",
+    price: "১৯,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🔐 ক্রিপ্টোভল্ট" links={["ওয়ালেট", "সেন্ড"]} cta="শুরু করুন" light />
+        <div className="bg-gradient-to-br from-violet-600 to-purple-800 px-4 py-7 text-white">
+          <p className="text-[11px] opacity-70">মোট পোর্টফোলিও</p>
+          <p className="text-2xl font-black">$২৪,৩৫০</p>
+          <div className="mt-3 space-y-1.5">
+            {[["₿", "BTC", "০.২৪৫"], ["Ξ", "ETH", "৩.৮"]].map(([e, c, b]) => (
+              <div key={c} className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-[11px]">
+                <span>{e} {c}</span><span className="font-bold">{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">🛡️ ২-স্তর নিরাপত্তা</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "agroinvest",
+    name: "এগ্রোইনভেস্ট",
+    type: "কৃষি বিনিয়োগ",
+    desc: "ধান, মাছ, ডেইরি প্রকল্পে বিনিয়োগের কৃষি প্ল্যাটফর্ম।",
+    price: "১৪,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame>
+        <Nav logo="🌾 এগ্রোইনভেস্ট" links={["প্রকল্প", "ড্যাশবোর্ড"]} cta="বিনিয়োগ" />
+        <div className="bg-gradient-to-br from-lime-600 to-green-700 px-4 py-7 text-white">
+          <p className="font-serif text-xl font-bold">কৃষিতে বিনিয়োগ, প্রকৃতির সাথে লাভ</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {[["🌾", "১৫%"], ["🐟", "২০%"], ["🐄", "২২%"]].map(([e, r]) => (
+              <div key={r} className="rounded-xl bg-white/15 p-2 text-center">
+                <div className="text-xl">{e}</div><p className="mt-1 text-[11px] font-black">{r}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="bg-green-50 px-4 py-2 text-center text-[10px] text-green-700">🌱 সরাসরি খামারে বিনিয়োগ</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "payex",
+    name: "পেএক্স",
+    type: "মোবাইল ব্যাংকিং এক্সচেঞ্জ",
+    desc: "বিকাশ ↔ নগদ ↔ রকেট ব্যালেন্স এক্সচেঞ্জ সাইট।",
+    price: "৯,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame>
+        <Nav logo="📲 পেএক্স" links={["এক্সচেঞ্জ", "রেট"]} cta="শুরু করুন" />
+        <div className="bg-gradient-to-br from-amber-500 to-orange-600 px-4 py-7 text-white">
+          <p className="text-xl font-black">বিকাশ ↔ নগদ ↔ রকেট</p>
+          <p className="mt-1 text-[11px] opacity-90">মাত্র ২% চার্জে ব্যালেন্স বদলান</p>
+          <div className="mt-3 flex justify-center gap-2">
+            {["🩷", "🧡", "💜", "💚"].map((e, i) => (
+              <span key={i} className="grid h-11 w-11 place-items-center rounded-2xl bg-white/20 text-xl">{e}</span>
+            ))}
+          </div>
+        </div>
+        <p className="bg-orange-50 px-4 py-2 text-center text-[10px] text-orange-700">⚡ তাৎক্ষণিক ট্রান্সফার</p>
       </Frame>
     ),
   },
