@@ -319,6 +319,21 @@ const FINTECH_DEFS: DemoSiteDef[] = [
       { code: "BNB", name: "বিনান্স কয়েন", price: 585, change: -0.8, e: "🟡" },
     ],
   }),
+  fintech({
+    slug: "trustpay", name: "ট্রাস্টপে", type: "ট্রাস্ট ওয়ালেট স্টাইল", layout: "wallet",
+    logoEmoji: "🛡️", accent: "#0ea5e9", dark: true, grad: "from-sky-600 to-blue-800",
+    heroTitle: "সব কয়েন, এক ওয়ালেটে", heroSub: "সোয়াপ, স্টেকিং, DApp ব্রাউজার — সব এক অ্যাপে", heroEmoji: "🛡️",
+    cats: ["সব"], desc: "ট্রাস্ট ওয়ালেট স্টাইলের মাল্টি-কয়েন ওয়ালেট — সোয়াপ ও স্টেকিংসহ।",
+    theme: "minimal",
+    coins: [
+      { code: "BTC", name: "বিটকয়েন", price: 67250, change: 2.4, e: "₿" },
+      { code: "ETH", name: "ইথেরিয়াম", price: 3150, change: 1.8, e: "Ξ" },
+      { code: "USDT", name: "টিথার", price: 1.0, change: 0.1, e: "₮" },
+      { code: "BNB", name: "বিনান্স কয়েন", price: 585, change: -0.8, e: "🟡" },
+      { code: "SOL", name: "সোলানা", price: 142, change: 3.2, e: "◎" },
+      { code: "TRX", name: "ট্রন", price: 0.12, change: 0.8, e: "🔺" },
+    ],
+  }),
 ];
 
 export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
