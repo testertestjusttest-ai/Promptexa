@@ -11,6 +11,8 @@ export default function AdminChatPage() {
   const [title, setTitle] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     fetch("/api/admin/chat/threads").then((r) => r.json()).then((d) => {
@@ -20,9 +22,31 @@ export default function AdminChatPage() {
   }, []);
 
   async function open(id: string, t: string) {
-    setActive(id); setTitle(t);
+    setActive(id); setTitle(t); setDraft("");
     const d = await fetch(`/api/admin/chat/thread/${id}`).then((r) => r.json()).catch(() => null);
     if (d?.messages) setMsgs(d.messages);
+  }
+
+  async function send() {
+    const text = draft.trim();
+    if (!text || !active || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/admin/chat/thread/${active}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      const d = await res.json();
+      if (res.ok && d.message) {
+        setMsgs((m) => [...m, d.message]);
+        setDraft("");
+      } else {
+        alert(d.error || "পাঠানো যায়নি");
+      }
+    } finally {
+      setSending(false);
+    }
   }
 
   if (loading) return <p className="text-slate-400">লোড হচ্ছে...</p>;
@@ -52,15 +76,31 @@ export default function AdminChatPage() {
             <p className="py-16 text-center text-sm text-slate-500">একটি থ্রেড সিলেক্ট করুন 👈</p>
           ) : (
             <>
-              <p className="border-b border-white/10 pb-2 text-sm font-bold text-white">👁️ {title} <span className="ml-1 font-normal text-slate-500">(শুধু দেখা যাবে)</span></p>
-              <div className="max-h-[60vh] space-y-2 overflow-y-auto py-3">
+              <p className="border-b border-white/10 pb-2 text-sm font-bold text-white">👁️ {title} <span className="ml-1 rounded bg-[#d7ff3f]/15 px-1.5 py-0.5 text-[10px] text-[#d7ff3f]">রিপ্লাই দিতে পারবেন</span></p>
+              <div className="max-h-[50vh] space-y-2 overflow-y-auto py-3">
                 {msgs.map((m) => (
-                  <div key={m.id} className="rounded-xl bg-white/5 px-3 py-2">
-                    <p className="text-[11px] font-bold text-[#d7ff3f]">{m.sender_name}</p>
+                  <div key={m.id} className={`rounded-xl px-3 py-2 ${m.sender_name?.includes("সাইট ওনার") ? "ml-8 bg-[#d7ff3f]/10 ring-1 ring-[#d7ff3f]/30" : "bg-white/5"}`}>
+                    <p className={`text-[11px] font-bold ${m.sender_name?.includes("সাইট ওনার") ? "text-[#d7ff3f]" : "text-slate-400"}`}>{m.sender_name}</p>
                     <p className="text-sm text-slate-200">{m.body}</p>
                   </div>
                 ))}
                 {msgs.length === 0 && <p className="py-8 text-center text-xs text-slate-500">কোনো মেসেজ নেই</p>}
+              </div>
+              <div className="flex gap-2 border-t border-white/10 pt-3">
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && send()}
+                  placeholder="🏪 সাইট ওনার হিসেবে রিপ্লাই লিখুন..."
+                  className="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#d7ff3f]/50"
+                />
+                <button
+                  onClick={send}
+                  disabled={sending || !draft.trim()}
+                  className="shrink-0 rounded-xl bg-[#d7ff3f] px-5 py-2.5 text-sm font-black text-black transition hover:brightness-110 disabled:opacity-40"
+                >
+                  {sending ? "..." : "পাঠান"}
+                </button>
               </div>
             </>
           )}
