@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatBDT, toBnDigits } from "@/lib/format";
 import WebDevHeroBg from "./WebDevHeroBg";
@@ -33,30 +33,10 @@ const SITE_TYPES = ["বিজনেস ওয়েবসাইট", "ই-ক�
 
 const TECH = ["⚡ Next.js", "🎨 Tailwind", "📱 PWA", "🔍 SEO", "💳 পেমেন্ট গেটওয়ে", "🌍 বহুভাষিক", "🛡️ সিকিউর", "🚀 ফাস্ট লোডিং"];
 
-/** Tiny floating website mockup for the hero. */
-function MiniSite({ title, hue }: { title: string; hue: string }) {
-  return (
-    <div className="w-40 overflow-hidden rounded-xl border border-white/20 bg-[#0b1120]/90 shadow-2xl backdrop-blur-sm">
-      <div className="flex items-center gap-1 bg-white/10 px-2 py-1.5">
-        <span className="h-2 w-2 rounded-full bg-red-400" />
-        <span className="h-2 w-2 rounded-full bg-amber-300" />
-        <span className="h-2 w-2 rounded-full bg-emerald-400" />
-      </div>
-      <div className={`bg-gradient-to-br ${hue} px-2 py-3`}>
-        <p className="text-[10px] font-black text-white">{title}</p>
-        <div className="mt-1.5 h-1.5 w-3/4 rounded bg-white/70" />
-        <div className="mt-1 h-1.5 w-1/2 rounded bg-white/40" />
-      </div>
-      <div className="grid grid-cols-3 gap-1 p-1.5">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="h-6 rounded bg-white/10" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function WebDevClient() {
+  const ROTATE = ["ওয়েবসাইট", "ই-কমার্স শপ", "ক্যাসিনো সাইট", "ক্রিপ্টো এক্সচেঞ্জ", "নিউজ পোর্টাল", "বুকিং সাইট"];
+  const [wordIdx, setWordIdx] = useState(0);
+  useEffect(() => { const t = setInterval(() => setWordIdx((i) => (i + 1) % ROTATE.length), 2400); return () => clearInterval(t); }, []);
   const [form, setForm] = useState({ name: "", phone: "", site_type: SITE_TYPES[0], features: "", budget_range: "৫–১৫ হাজার", details: "" });
   const [sending, setSending] = useState(false);
   const [msg, setMsg] = useState("");
@@ -86,58 +66,156 @@ export default function WebDevClient() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      {/* hero — video-like animated background */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10">
-        <WebDevHeroBg />
-        {/* floating mini website mockups */}
-        <div className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block" aria-hidden>
-          <div className="animate-float-slow absolute left-[4%] top-[12%]" style={{ ["--tilt" as any]: "-8deg" }}>
-            <MiniSite title="রেস্টুরেন্ট" hue="from-orange-400 to-red-500" />
+      {/* hero — 2026 split design with live demo preview */}
+      <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#070b16]">
+        {/* mesh background */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <WebDevHeroBg />
+          <div className="absolute inset-0 opacity-[0.16]" style={{ backgroundImage: "linear-gradient(#ffffff22 1px, transparent 1px), linear-gradient(90deg, #ffffff22 1px, transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%)", WebkitMaskImage: "radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%)" }} />
+          <div className="absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-[#d7ff3f]/10 blur-[100px]" />
+          <div className="absolute -right-16 top-10 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-[100px]" />
+        </div>
+
+        <div className="relative grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:p-12">
+          {/* left — copy */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#d7ff3f] px-3.5 py-1.5 text-[11px] font-black text-black shadow-[0_6px_20px_rgba(215,255,63,0.35)]">
+                <span className="relative flex h-2 w-2"><span className="absolute h-full w-full animate-ping rounded-full bg-black/50" /><span className="h-2 w-2 rounded-full bg-black" /></span>
+                লাইভ — অর্ডার চলছে
+              </span>
+              <span className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-[11px] font-bold text-slate-300 backdrop-blur">✨ ১০০+ প্রজেক্ট ডেলিভারিড</span>
+            </div>
+            <h1 className="font-display mt-5 text-[34px] font-black leading-[1.12] text-white sm:text-5xl lg:text-[54px]">
+              আপনার ব্যবসার
+              <br />
+              <span key={wordIdx} className="dp-word-in inline-block bg-gradient-to-r from-lime-300 via-[#d7ff3f] to-emerald-300 bg-clip-text text-transparent">{ROTATE[wordIdx]}</span>
+              <br />
+              বানিয়ে নিন আজই
+            </h1>
+            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-slate-300">
+              ডিজাইন, অ্যাডমিন প্যানেল, পেমেন্ট, ডোমেইন — সবসহ <b className="text-white">সম্পূর্ণ রেডি ওয়েবসাইট</b>।
+              নিচের লাইভ ডেমোগুলো ঘুরে দেখুন — যেটা পছন্দ, সেটাই হবে আপনার সাইট।
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="#demos" className="btn-vault inline-flex !px-7 !py-3.5 text-sm shadow-[0_10px_32px_rgba(215,255,63,0.35)]">
+                🖥️ {toBnDigits(DEMOS.length)}টি লাইভ ডেমো দেখুন
+              </a>
+              <a href="#quote" className="inline-flex items-center rounded-xl border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:border-[#d7ff3f]/60 hover:bg-white/10">
+                📝 ফ্রি কোট নিন
+              </a>
+            </div>
+            {/* stats */}
+            <div className="mt-8 grid max-w-md grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur">
+              {[[`${toBnDigits(DEMOS.length)}+`, "লাইভ ডেমো"], ["৩০–৬০+", "পেজ প্রতি সাইটে"], ["৭–১৪ দিন", "ডেলিভারি"]].map(([v, t]) => (
+                <div key={t} className="px-4 py-3 text-center">
+                  <p className="font-display text-lg font-black text-white">{v}</p>
+                  <p className="text-[10px] font-bold text-slate-400">{t}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="animate-float-slow absolute right-[5%] top-[18%]" style={{ ["--tilt" as any]: "7deg", animationDelay: "-3s" }}>
-            <MiniSite title="ফ্যাশন শপ" hue="from-pink-400 to-fuchsia-600" />
-          </div>
-          <div className="animate-float-slow absolute bottom-[10%] left-[10%]" style={{ ["--tilt" as any]: "5deg", animationDelay: "-5s" }}>
-            <MiniSite title="নিউজ পোর্টাল" hue="from-sky-400 to-indigo-600" />
-          </div>
-          <div className="animate-float-slow absolute bottom-[14%] right-[9%]" style={{ ["--tilt" as any]: "-6deg", animationDelay: "-2s" }}>
-            <MiniSite title="ট্রাভেল" hue="from-teal-300 to-emerald-600" />
+
+          {/* right — live preview */}
+          <div className="relative mx-auto w-full max-w-[430px]">
+            <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-[#d7ff3f]/15 via-transparent to-fuchsia-500/15 blur-2xl" aria-hidden />
+            <Link href="/demobinancepro" className="group relative block overflow-hidden rounded-3xl border border-white/15 bg-[#0b1120] shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition duration-500 hover:-translate-y-1.5 hover:rotate-[0.5deg]">
+              <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3.5 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" /><span className="h-2.5 w-2.5 rounded-full bg-amber-300" /><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                <span className="ml-2 flex-1 truncate rounded-md bg-black/40 px-2.5 py-1 text-[10px] text-slate-400">🔒 promptexa.vercel.app/demobinancepro</span>
+                <span className="rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">LIVE</span>
+              </div>
+              <div className="pointer-events-none max-h-[340px] overflow-hidden [&_*]:!cursor-default">
+                {DEMOS[0].render()}
+              </div>
+              <div className="flex items-center justify-between border-t border-white/10 px-4 py-3">
+                <div>
+                  <p className="text-sm font-black text-white">{DEMOS[0].name}</p>
+                  <p className="text-[11px] text-slate-400">{DEMOS[0].type} • ৬৬+ পেজ</p>
+                </div>
+                <span className="rounded-full bg-[#d7ff3f] px-3.5 py-1.5 text-[11px] font-black text-black">ডেমো খুলুন →</span>
+              </div>
+            </Link>
+            {/* floating glass cards */}
+            <div className="animate-float-slow absolute -left-4 top-16 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "-4deg" }}>
+              <p className="text-[10px] font-bold text-slate-400">💰 নতুন অর্ডার</p>
+              <p className="text-sm font-black text-white">#১০২৪ • ১,২৫০ টাকা</p>
+            </div>
+            <div className="animate-float-slow absolute -right-3 bottom-20 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "4deg", animationDelay: "-2.5s" }}>
+              <p className="text-[10px] font-bold text-slate-400">📈 আজকের বিক্রি</p>
+              <p className="text-sm font-black text-emerald-300">+৩৪% বৃদ্ধি</p>
+            </div>
           </div>
         </div>
-        <div className="relative p-8 text-center sm:p-12">
-          <span className="inline-block rounded-full bg-[#d7ff3f]/15 px-4 py-1.5 text-xs font-bold tracking-widest text-[#d7ff3f] ring-1 ring-[#d7ff3f]/40 backdrop-blur-sm">
-            ✨ ১০০+ প্রজেক্ট ডেলিভারিড
-          </span>
-          <h1 className="font-display mt-4 text-3xl font-black text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] sm:text-5xl">
-            আপনার <span className="bg-gradient-to-r from-lime-300 via-[#d7ff3f] to-emerald-300 bg-clip-text text-transparent">ওয়েবসাইট</span> বানিয়ে নিন
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl rounded-2xl bg-black/55 px-5 py-3 text-sm leading-relaxed text-slate-200 backdrop-blur-md">
-            DigiPlyra টিমের মাধ্যমে প্রফেশনাল ওয়েবসাইট — ডিজাইন থেকে ডেলিভারি পর্যন্ত সব দায়িত্ব আমাদের।
-            নিচে <b className="text-white">১০টি লাইভ ডেমো</b> দেখুন অথবা কাস্টম কোটের জন্য ফর্ম পূরণ করুন।
-          </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <a href="#demos" className="btn-vault inline-flex !px-8 !py-3 text-sm shadow-[0_0_24px_rgba(215,255,63,0.35)]">
-              🖥️ ডেমো দেখুন
-            </a>
-            <a href="#quote" className="inline-flex rounded-xl border border-white/25 bg-black/45 px-8 py-3 text-sm font-bold text-white backdrop-blur-md transition hover:border-[#d7ff3f]/60">
-              📝 কোট চান
-            </a>
-          </div>
-          {/* scrolling tech marquee */}
-          <div className="pointer-events-none relative mt-8 overflow-hidden rounded-xl" aria-hidden>
-            <div className="animate-marquee-x flex w-max gap-3">
+
+        {/* marquee */}
+        <div className="relative border-t border-white/10 bg-black/30 py-3">
+          <div className="pointer-events-none overflow-hidden" aria-hidden>
+            <div className="animate-marquee-x flex w-max gap-8">
               {[...TECH, ...TECH].map((t, i) => (
-                <span key={i} className="whitespace-nowrap rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-slate-200 backdrop-blur-sm ring-1 ring-white/15">
-                  {t}
-                </span>
+                <span key={i} className="whitespace-nowrap text-xs font-bold text-slate-300">{t}</span>
               ))}
             </div>
           </div>
         </div>
+        <style>{`@keyframes dp-word { 0% { opacity: 0; transform: translateY(14px) } 100% { opacity: 1; transform: translateY(0) } } .dp-word-in { animation: dp-word .45s ease both }`}</style>
       </div>
 
       {/* demo showcase slider */}
       <DemoSlider />
+
+      {/* bento features */}
+      <div className="mt-14">
+        <p className="text-center text-[11px] font-black uppercase tracking-[0.3em] text-[#d7ff3f]">কেন DigiPlyra</p>
+        <h2 className="font-display mt-2 text-center text-2xl font-bold text-white sm:text-3xl">শুধু ওয়েবসাইট নয় — সম্পূর্ণ ব্যবসার সিস্টেম</h2>
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* big admin card */}
+          <div className="glass relative overflow-hidden rounded-3xl p-5 sm:col-span-2">
+            <div className="pointer-events-none absolute -right-8 -top-8 text-[110px] opacity-10">⚙️</div>
+            <p className="text-2xl">⚙️</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">শক্তিশালী অ্যাডমিন প্যানেল</p>
+            <p className="mt-1 max-w-sm text-sm text-slate-400">প্রোডাক্ট, অর্ডার, কাস্টমার, রেভিনিউ — সবকিছু নিজে কন্ট্রোল করুন। কোড ছোঁয়ার দরকার নেই।</p>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              {[["১২,৪৫০", "আজকের বিক্রি (টাকা)"], ["৩৪", "নতুন অর্ডার"], ["৯৮%", "হ্যাপি ক্লায়েন্ট"]].map(([v, t]) => (
+                <div key={t} className="rounded-xl bg-white/5 px-2 py-2.5 ring-1 ring-white/10">
+                  <p className="font-black text-[#d7ff3f]">{v}</p>
+                  <p className="text-[9px] font-bold text-slate-400">{t}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="glass rounded-3xl p-5">
+            <p className="text-2xl">💳</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">সব পেমেন্ট</p>
+            <p className="mt-1 text-sm text-slate-400">বিকাশ, নগদ, রকেট, কার্ড — অর্ডার এলেই পেমেন্ট সরাসরি আপনার কাছে।</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {["বিকাশ", "নগদ", "রকেট", "💳 কার্ড"].map((m) => <span key={m} className="rounded-full bg-white/8 px-2.5 py-1 text-[11px] font-bold text-slate-200 ring-1 ring-white/15">{m}</span>)}
+            </div>
+          </div>
+          <div className="glass rounded-3xl p-5">
+            <p className="text-2xl">🌐</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">নিজের ডোমেইন</p>
+            <p className="mt-1 text-sm text-slate-400">আপনার নিজের .com ডোমেইনে সাইট চলবে — সম্পূর্ণ আপনার ব্র্যান্ডে, হোয়াইট-লেবেল।</p>
+          </div>
+          <div className="glass rounded-3xl p-5">
+            <p className="text-2xl">📢</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">বিজ্ঞাপনে আয়</p>
+            <p className="mt-1 text-sm text-slate-400">Adsterra / Monetag বিজ্ঞাপন বসিয়ে ভিজিটর থেকেও বাড়তি আয় করুন।</p>
+          </div>
+          <div className="glass rounded-3xl p-5">
+            <p className="text-2xl">🔍</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">SEO রেডি</p>
+            <p className="mt-1 text-sm text-slate-400">গুগলে খুঁজে পাওয়া সহজ — মেটা, সাইটম্যাপ, ফাস্ট লোডিং সব বিল্ট-ইন।</p>
+          </div>
+          <div className="glass relative overflow-hidden rounded-3xl p-5 sm:col-span-2">
+            <div className="pointer-events-none absolute -right-8 -top-8 text-[110px] opacity-10">🎰</div>
+            <p className="text-2xl">🎰</p>
+            <p className="mt-2 font-display text-lg font-bold text-white">ক্যাসিনো / এক্সচেঞ্জের মতো বড় প্রজেক্টও</p>
+            <p className="mt-1 max-w-sm text-sm text-slate-400">২,০০০+ নিজস্ব গেম, লাইভ বেটিং, ট্রেডিং — ৬০+ পেজের মেগা প্ল্যাটফর্মও বানিয়ে দিই। গেমের উইন-চান্স (RTP) পর্যন্ত ওনার নিজে কন্ট্রোল করতে পারে।</p>
+            <Link href="/democasinoplay" className="mt-3 inline-block rounded-full bg-[#d7ff3f]/15 px-4 py-1.5 text-xs font-black text-[#d7ff3f] ring-1 ring-[#d7ff3f]/40">🎰 ক্যাসিনো ডেমো দেখুন →</Link>
+          </div>
+        </div>
+      </div>
 
       {/* packages */}
       <h2 className="font-display mt-12 text-center text-2xl font-bold text-white">💎 প্যাকেজ ও আনুমানিক প্রাইস</h2>
