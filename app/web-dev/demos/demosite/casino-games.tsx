@@ -244,13 +244,13 @@ export function SlotGame({ id }: { id: string }) {
     <Page>
       <Back href={`${base}/games`} label="গেম লবি" />
       <style>{`
-        @keyframes dp-fall { 0% { transform: translateY(-190%) scale(.8); opacity: 0 } 55% { transform: translateY(7%) scale(1.04); opacity: 1 } 75% { transform: translateY(-3%) } 100% { transform: translateY(0) scale(1); opacity: 1 } }
+        @keyframes dp-fall { 0% { transform: translateY(-240%) scaleY(1.22) scaleX(.92); opacity: 0; filter: blur(3px) } 45% { opacity: 1; filter: blur(0) } 62% { transform: translateY(5%) scaleY(.86) scaleX(1.06) } 80% { transform: translateY(-2.5%) scaleY(1.04) scaleX(.98) } 100% { transform: translateY(0) scaleY(1) scaleX(1); opacity: 1 } }
         @keyframes dp-coin { 0% { transform: translateY(0) rotate(0) scale(1); opacity: 1 } 100% { transform: translateY(-190px) rotate(340deg) scale(.4); opacity: 0 } }
         @keyframes dp-tierpop { 0% { transform: scale(.3) rotate(-6deg); opacity: 0 } 60% { transform: scale(1.15) rotate(2deg); opacity: 1 } 100% { transform: scale(1) rotate(0) } }
         @keyframes dp-glowpulse { 0%,100% { box-shadow: 0 0 0 2px #f5c518, 0 0 14px #f5c51888 } 50% { box-shadow: 0 0 0 3px #ffe97a, 0 0 30px #f5c518 } }
         @keyframes dp-floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
         @keyframes dp-shine { 0% { transform: translateX(-130%) skewX(-18deg) } 100% { transform: translateX(240%) skewX(-18deg) } }
-        .dp-fall { animation: dp-fall .5s cubic-bezier(.25,.9,.35,1.15) both }
+        .dp-fall { animation: dp-fall .42s cubic-bezier(.3,.7,.4,1) both }
         .dp-wincell { animation: dp-glowpulse .7s ease-in-out infinite }
         .dp-tier { animation: dp-tierpop .55s cubic-bezier(.2,.9,.3,1.3) both }
         .dp-spinbtn { position: relative; overflow: hidden }
@@ -269,6 +269,13 @@ export function SlotGame({ id }: { id: string }) {
         </div>
 
         <div className="relative px-3 pb-4 pt-4 sm:px-5">
+          {/* balance + session strip — always visible while playing */}
+          <div className="mb-3 flex items-center justify-between gap-2 rounded-2xl bg-black/45 px-3.5 py-2 ring-1 ring-white/10">
+            <p className="text-xs font-bold text-white/75">💰 ব্যালেন্স <b className="text-sm text-[#f5c518]">{money(store.wallet)}</b></p>
+            <p className="text-xs font-bold text-white/75">🏆 এই সেশনে জয় <b className="text-sm text-emerald-300">{money(totalWin)}</b></p>
+            <Link href={`${base}/deposit`} className="rounded-lg bg-[#f5c518] px-2.5 py-1 text-[11px] font-black text-black">＋ টপ-আপ</Link>
+          </div>
+
           {/* title bar */}
           <div className="flex items-center justify-between gap-2">
             <span className="rounded-lg bg-black/45 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white/80">{cg?.provider ?? "DigiPlay Originals"}</span>
@@ -330,41 +337,35 @@ export function SlotGame({ id }: { id: string }) {
           </div>
           {msg && <p className="mt-1.5 text-center text-xs font-bold text-white/85">{msg}</p>}
 
-          {/* ===== CONTROL BAR (JILI style) ===== */}
-          <div className="mx-auto mt-3 flex max-w-[560px] items-end justify-between gap-2">
-            <div className="flex flex-col items-center gap-1.5">
+          {/* ===== CONTROL BAR (JILI style, mobile-fit) ===== */}
+          <div className="mx-auto mt-3 grid max-w-[560px] grid-cols-[44px_1fr_72px_44px] items-center gap-2">
+            <div className="flex flex-col items-center gap-1">
               <button onClick={() => setTurbo((t) => !t)} className={`grid h-11 w-11 place-items-center rounded-full border text-lg transition active:scale-90 ${turbo ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="টার্বো">⚡</button>
               <span className="text-[9px] font-bold text-white/60">টার্বো</span>
             </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="flex items-center gap-1 rounded-full border border-white/20 bg-black/45 p-1">
-                <button onClick={() => setBet(BET_STEPS[Math.max(0, betIdx - 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">−</button>
-                <div className="min-w-[76px] text-center">
+            <div className="min-w-0">
+              <div className="flex items-center justify-between gap-1 rounded-full border border-white/20 bg-black/45 p-1">
+                <button onClick={() => setBet(BET_STEPS[Math.max(0, betIdx - 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">−</button>
+                <div className="min-w-0 text-center">
                   <p className="text-[9px] font-bold uppercase tracking-wider text-white/55">বাজি</p>
-                  <p className="text-sm font-black text-white">{money(bet)}</p>
+                  <p className="truncate text-sm font-black text-white">{money(bet)}</p>
                 </div>
-                <button onClick={() => setBet(BET_STEPS[Math.min(BET_STEPS.length - 1, betIdx + 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">＋</button>
+                <button onClick={() => setBet(BET_STEPS[Math.min(BET_STEPS.length - 1, betIdx + 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">＋</button>
               </div>
-              <span className="text-[9px] font-bold text-white/60">সর্বোচ্চ জয় {money(bet * 1000)}</span>
+              <p className="mt-1 text-center text-[9px] font-bold text-white/60">সর্বোচ্চ জয় {money(bet * 1000)}</p>
             </div>
             {/* SPIN */}
             <button onClick={() => doSpin(false, bet)} disabled={spinning || freeLeft > 0}
-              className="dp-spinbtn grid h-[76px] w-[76px] shrink-0 place-items-center rounded-full bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 text-black shadow-[0_10px_28px_rgba(245,197,24,0.45)] ring-4 ring-amber-900/60 transition hover:scale-105 active:scale-95 disabled:opacity-60">
-              <span className={`text-[26px] ${spinning ? "animate-spin" : ""}`}>⟳</span>
-              <span className="absolute bottom-2.5 text-[9px] font-black tracking-widest">{spinning ? "..." : "SPIN"}</span>
+              className="dp-spinbtn relative grid h-[72px] w-[72px] place-items-center justify-self-center rounded-full bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 text-black shadow-[0_10px_28px_rgba(245,197,24,0.45)] ring-4 ring-amber-900/60 transition hover:scale-105 active:scale-95 disabled:opacity-60">
+              <span className={`text-[24px] ${spinning ? "animate-spin" : ""}`}>⟳</span>
+              <span className="absolute bottom-2 text-[9px] font-black tracking-widest">{spinning ? "..." : "SPIN"}</span>
             </button>
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-1">
               <button onClick={() => setAutoLeft(autoLeft > 0 ? 0 : 30)} disabled={spinning && autoLeft === 0}
                 className={`grid h-11 w-11 place-items-center rounded-full border text-sm font-black transition active:scale-90 ${autoLeft > 0 ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="অটো">
                 {autoLeft > 0 ? bn(autoLeft) : "▶"}
               </button>
               <span className="text-[9px] font-bold text-white/60">অটো ৩০</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="grid h-11 min-w-[64px] place-items-center rounded-full border border-white/20 bg-black/45 px-2">
-                <p className="text-[13px] font-black text-[#f5c518]">{money(store.wallet)}</p>
-              </div>
-              <span className="text-[9px] font-bold text-white/60">ব্যালেন্স • LV {bn(1)}</span>
             </div>
           </div>
         </div>
