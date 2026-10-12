@@ -12,24 +12,47 @@ import { bn, money, GOLD, useSkin, SLOT_GAMES, GAME_CATALOG, catalogHref, PROVID
 /** Rich visual game tile — gradient art, glow symbol, provider, players. */
 export function CatalogTile({ g, small }: { g: CatalogGame; small?: boolean }) {
   const { base } = useSkin();
-  // short display name for cover art (first two words)
   const cover = g.n.split(" ").slice(0, 2).join(" ");
   const maxWin = g.cat === "slots" ? "১০০০x" : g.cat === "crash" ? "১০,০০০x" : g.cat === "mines" ? "৫০০০x" : "১০০x";
+  // seeded layout variant so neighbouring tiles never share the same composition
+  let h = 0; for (let i = 0; i < g.id.length; i++) h = (h * 31 + g.id.charCodeAt(i)) >>> 0;
+  const v = h % 3;
+  const s0 = g.syms[0] ?? g.e;
+  const s1 = g.syms[1] ?? g.e;
+  const s2 = g.syms[3] ?? g.syms[2] ?? g.e;
   return (
     <Link href={`${base}${catalogHref(g)}`} className="group block overflow-hidden rounded-2xl border border-white/10 bg-[#101828] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition hover:border-[#f5c518]/60 hover:shadow-[0_10px_32px_rgba(245,197,24,0.22)] active:scale-[0.98]">
       <div className={`relative bg-gradient-to-br ${g.grad} ${small ? "h-[104px]" : "h-32"} overflow-hidden`}>
-        {/* layered art: glow blobs + pattern + shine sweep */}
         <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 82% 12%, #ffffff66 0, transparent 44%), radial-gradient(circle at 12% 92%, #00000099 0, transparent 55%)" }} />
-        <div className="absolute inset-0 opacity-[0.14]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)" }} />
-        <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ transform: "skewX(-18deg)", left: "-20%" }} />
-        {/* giant symbol */}
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[64px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:rotate-[-8deg] group-hover:scale-125">{g.e}</div>
+        <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)" }} />
+        {/* symbol composition — 3 variants */}
+        {v === 0 && (
+          <>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[62px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:rotate-[-8deg] group-hover:scale-125">{s0}</div>
+            <div className="absolute right-16 top-2 text-[22px] opacity-80 drop-shadow">{s1}</div>
+            <div className="absolute bottom-9 right-3 text-[20px] opacity-70 drop-shadow">{s2}</div>
+          </>
+        )}
+        {v === 1 && (
+          <div className="absolute inset-x-0 top-2 flex items-start justify-center gap-1.5">
+            <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:-rotate-12">{s1}</span>
+            <span className="text-[54px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</span>
+            <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:rotate-12">{s2}</span>
+          </div>
+        )}
+        {v === 2 && (
+          <>
+            <div className="absolute left-1/2 top-[42%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/25 bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.25)]" />
+            <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 text-[52px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</div>
+            <div className="absolute left-3 top-2 text-[20px] opacity-75 drop-shadow">{s1}</div>
+            <div className="absolute right-3 top-2 text-[20px] opacity-75 drop-shadow">{s2}</div>
+          </>
+        )}
         {/* cover title */}
-        <div className="absolute bottom-2 left-2 right-14">
-          <p className="text-[15px] font-black uppercase leading-[1.05] tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]" style={{ textShadow: "0 2px 0 rgba(0,0,0,0.45)" }}>{cover}</p>
+        <div className={`absolute bottom-2 left-2 ${v === 0 ? "right-16" : "right-2"}`}>
+          <p className="text-[15px] font-black uppercase leading-[1.05] tracking-tight text-white" style={{ textShadow: "0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.8)" }}>{cover}</p>
           <p className="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-white/75">{g.provider}</p>
         </div>
-        {/* badges */}
         {g.hot && <span className="absolute left-2 top-2 rounded-md bg-gradient-to-b from-red-500 to-red-700 px-1.5 py-0.5 text-[9px] font-black text-white shadow">🔥 HOT</span>}
         <span className="absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-black text-yellow-300 ring-1 ring-yellow-400/40">MAX {maxWin}</span>
         <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-1.5 py-0.5 text-[8px] font-bold text-white/85">👥 {g.players}</span>
@@ -56,6 +79,29 @@ const CAT_TABS: { id: string; n: string; e: string }[] = [
   { id: "hilo", n: "হাই-লো", e: "🃏" },
 ];
 
+/** Top-of-lobby strip: balance + total won + rounds played. */
+function LobbyStats() {
+  const { store } = useSkin();
+  const totalWon = store.gameHistory.reduce((a, g) => a + g.win, 0);
+  const totalBet = store.gameHistory.reduce((a, g) => a + g.bet, 0);
+  return (
+    <div className="mb-4 grid grid-cols-3 gap-2">
+      <div className="rounded-2xl border border-[#f5c518]/25 bg-gradient-to-b from-[#1a1405] to-[#101828] p-3 text-center">
+        <p className="text-[10px] font-bold text-slate-400">💰 আমার ব্যালেন্স</p>
+        <p className="mt-0.5 text-base font-black text-[#f5c518]">{money(store.wallet)}</p>
+      </div>
+      <div className="rounded-2xl border border-emerald-400/25 bg-gradient-to-b from-emerald-950/60 to-[#101828] p-3 text-center">
+        <p className="text-[10px] font-bold text-slate-400">🏆 মোট জিতেছেন</p>
+        <p className="mt-0.5 text-base font-black text-emerald-300">{money(totalWon)}</p>
+      </div>
+      <div className="rounded-2xl border border-white/10 bg-[#101828] p-3 text-center">
+        <p className="text-[10px] font-bold text-slate-400">🎮 রাউন্ড খেলেছেন</p>
+        <p className="mt-0.5 text-base font-black text-white">{bn(store.gameHistory.length)}টি <span className="text-[10px] font-bold text-slate-500">• বাজি {money(totalBet)}</span></p>
+      </div>
+    </div>
+  );
+}
+
 export function CatalogLobby() {
   const { sub } = useSkin();
   const [cat, setCat] = useState("all");
@@ -70,6 +116,7 @@ export function CatalogLobby() {
   return (
     <Page>
       <SectionTitle t="🎮 গেম লবি" sub={`মোট ${bn(GAME_CATALOG.length)}+ গেম • সব নিজস্ব ইঞ্জিনে চলে`} />
+      <LobbyStats />
       <input value={q} onChange={(e) => { setQ(e.target.value); setShown(48); }} placeholder="🔍 গেম খুঁজুন..."
         className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500" />
       <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
