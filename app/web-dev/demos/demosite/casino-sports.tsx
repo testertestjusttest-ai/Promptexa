@@ -6,7 +6,7 @@ import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
 import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch } from "./casino-data";
-import { CatalogTile } from "./casino-games";
+import { CatalogTile } from "./casino-catalog";
 
 interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
 
