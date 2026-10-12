@@ -76,7 +76,7 @@ export default function WebDevClient() {
           <div className="absolute -right-16 top-10 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-[100px]" />
         </div>
 
-        <div className="relative grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:p-12">
+        <div className="relative grid items-center gap-10 p-7 sm:p-10 lg:grid-cols-[1.05fr_0.95fr] lg:p-12 [&>*]:min-w-0">
           {/* left — copy */}
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -107,7 +107,7 @@ export default function WebDevClient() {
             </div>
             {/* stats */}
             <div className="mt-8 grid max-w-md grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur">
-              {[[`${toBnDigits(DEMOS.length)}+`, "লাইভ ডেমো"], ["৩০–৬০+", "পেজ প্রতি সাইটে"], ["৭–১৪ দিন", "ডেলিভারি"]].map(([v, t]) => (
+              {[[`${toBnDigits(DEMOS.length)}+`, "লাইভ ডেমো"], ["৩০–৬০+", "পেজ প্রতি সাইটে"], ["৭–১৪", "দিনে ডেলিভারি"]].map(([v, t]) => (
                 <div key={t} className="px-4 py-3 text-center">
                   <p className="font-display text-lg font-black text-white">{v}</p>
                   <p className="text-[10px] font-bold text-slate-400">{t}</p>
@@ -120,11 +120,7 @@ export default function WebDevClient() {
           <div className="relative mx-auto w-full max-w-[430px]">
             <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-[#d7ff3f]/15 via-transparent to-fuchsia-500/15 blur-2xl" aria-hidden />
             <Link href="/demobinancepro" className="group relative block overflow-hidden rounded-3xl border border-white/15 bg-[#0b1120] shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition duration-500 hover:-translate-y-1.5 hover:rotate-[0.5deg]">
-              <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3.5 py-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-400" /><span className="h-2.5 w-2.5 rounded-full bg-amber-300" /><span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                <span className="ml-2 flex-1 truncate rounded-md bg-black/40 px-2.5 py-1 text-[10px] text-slate-400">🔒 promptexa.vercel.app/demobinancepro</span>
-                <span className="rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-black text-white">LIVE</span>
-              </div>
+              <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-black text-white shadow-lg"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> LIVE ডেমো</span>
               <div className="pointer-events-none max-h-[340px] overflow-hidden [&_*]:!cursor-default">
                 {DEMOS[0].render()}
               </div>
