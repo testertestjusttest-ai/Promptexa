@@ -56,93 +56,331 @@ const SLOT_SYMBOLS: Record<string, string[]> = {
   pharaoh: ["🏺", "👑", "💎", "🐍", "⭐", "🔔"],
 };
 
+const SLOT_PAY: Record<number, [number, number, number]> = {
+  // symbol index -> [3 of a kind, 4, 5] multipliers of total bet
+  0: [3, 8, 25], 1: [2, 6, 18], 2: [1.5, 5, 12], 3: [1, 4, 10],
+  4: [0.8, 3, 8], 5: [0.6, 2.5, 6], 6: [0.5, 2, 5], 7: [0.5, 2, 5],
+};
+const SLOT_LINES = [
+  [0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], // rows
+  [0, 6, 12, 8, 4], [10, 6, 2, 8, 14], // V shapes
+];
+const BET_STEPS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
+
 export function SlotGame({ id }: { id: string }) {
   const cg = catalogGame(id);
   const g = SLOT_GAMES.find((x) => x.id === id) ?? (cg ? { id: cg.id, n: cg.n, e: cg.e, cat: "slots", players: cg.players, rtp: `${cg.rtp.toFixed(1)}%` } : SLOT_GAMES[0]);
-  const { store } = useSkin();
+  const { store, base } = useSkin();
   const cfg = useCasinoConfig();
   const finish = useGameRound(g.n);
-  const syms = cg?.syms ?? SLOT_SYMBOLS[g.id] ?? SLOT_SYMBOLS.royal;
-  const [bet, setBet] = useState(50);
-  const [grid, setGrid] = useState<string[]>(() => Array.from({ length: 9 }, () => syms[Math.floor(Math.random() * syms.length)]));
-  const [spinning, setSpinning] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [win, setWin] = useState(0);
-  const [winCells, setWinCells] = useState<number[]>([]);
+  const syms = (cg?.syms ?? SLOT_SYMBOLS[g.id] ?? SLOT_SYMBOLS.royal).slice(0, 8);
+  const SCATTER = "⭐";
+  const allSyms = [...syms, SCATTER];
+  const rnd = () => allSyms[Math.floor(Math.random() * allSyms.length)];
 
-  /** RTP-weighted outcome: owner-set RTP controls how often winning grids land. */
+  const [bet, setBet] = useState(50);
+  const [grid, setGrid] = useState<string[]>(() => Array.from({ length: 15 }, rnd));
+  const [spinning, setSpinning] = useState(false);
+  const [stoppedCols, setStoppedCols] = useState(5);
+  const [winCells, setWinCells] = useState<number[]>([]);
+  const [winLines, setWinLines] = useState<number[][]>([]);
+  const [dispWin, setDispWin] = useState(0);
+  const [totalWin, setTotalWin] = useState(0);
+  const [tier, setTier] = useState<"" | "win" | "big" | "mega">("");
+  const [coins, setCoins] = useState<number[]>([]);
+  const [msg, setMsg] = useState("");
+  const [nearMiss, setNearMiss] = useState(false);
+  const [freeLeft, setFreeLeft] = useState(0);
+  const [freeWon, setFreeWon] = useState(0);
+  const [autoLeft, setAutoLeft] = useState(0);
+  const [turbo, setTurbo] = useState(false);
+  const [roundKey, setRoundKey] = useState(0);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const colsRef = useRef(5);
+  const stateRef = useRef({ spinning: false, freeLeft: 0, autoLeft: 0 });
+  stateRef.current = { spinning, freeLeft, autoLeft };
+
+  useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
+  const later = (fn: () => void, ms: number) => { timers.current.push(setTimeout(fn, ms)); };
+
+  /** RTP-weighted final grid: owner RTP controls winning-grid frequency. */
   function rollFinal(): string[] {
-    const winBias = Math.max(0.02, Math.min(0.3, (cfg.rtp - 88) / 40));
+    const winBias = Math.max(0.03, Math.min(0.32, (cfg.rtp - 86) / 36));
+    const f = Array.from({ length: 15 }, rnd);
     if (Math.random() < winBias) {
-      const line = [[0, 1, 2], [3, 4, 5], [6, 7, 8]][Math.floor(Math.random() * 3)];
-      const sym = syms[Math.floor(Math.random() * Math.min(4, syms.length))];
-      const f = Array.from({ length: 9 }, () => syms[Math.floor(Math.random() * syms.length)]);
-      for (const i of line) f[i] = sym;
-      return f;
-    }
-    const f = Array.from({ length: 9 }, () => syms[Math.floor(Math.random() * syms.length)]);
-    for (const [a, b2, c] of [[0, 1, 2], [3, 4, 5], [6, 7, 8]]) {
-      if (f[a] === f[b2] && f[b2] === f[c]) f[c] = syms[(syms.indexOf(f[c]) + 1) % syms.length];
+      const line = SLOT_LINES[Math.floor(Math.random() * SLOT_LINES.length)];
+      const sym = syms[Math.floor(Math.random() * 5)];
+      const len = Math.random() < 0.22 ? 5 : Math.random() < 0.45 ? 4 : 3;
+      for (let i = 0; i < len; i++) f[line[i]] = sym;
+      if (Math.random() < 0.3) { // extra second line sometimes
+        const l2 = SLOT_LINES[Math.floor(Math.random() * SLOT_LINES.length)];
+        const s2 = syms[Math.floor(Math.random() * 5)];
+        for (let i = 0; i < 3; i++) f[l2[i]] = s2;
+      }
+    } else {
+      // prevent accidental line wins, but ALLOW near-misses (2 from left)
+      for (const line of SLOT_LINES) {
+        let run = 1;
+        for (let i = 1; i < 5; i++) { if (f[line[i]] === f[line[0]] && f[line[i]] !== SCATTER) run++; else break; }
+        if (run >= 3) f[line[run]] = syms[(syms.indexOf(f[line[run]]) + 3) % syms.length];
+      }
     }
     return f;
   }
 
-  function spin() {
-    setMsg(""); setWin(0); setWinCells([]);
-    if (spinning) return;
-    if (!store.payWithWallet(bet, `🎰 ${g.n}`)) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
-    setSpinning(true);
-    let n = 0;
-    const t = setInterval(() => {
-      setGrid(Array.from({ length: 9 }, () => syms[Math.floor(Math.random() * syms.length)]));
-      if (++n > 10) {
-        clearInterval(t);
-        const final = rollFinal();
-        setGrid(final);
-        let mult = 0;
-        const cells: number[] = [];
-        const lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8]];
-        for (const [a, b2, c] of lines) {
-          if (final[a] === final[b2] && final[b2] === final[c]) {
-            mult += final[a] === syms[0] ? 10 : final[a] === syms[1] ? 6 : 3;
-            cells.push(a, b2, c);
-          }
-        }
-        if (final[4] === syms[0]) { mult += 2; if (!cells.includes(4)) cells.push(4); }
-        const w = Math.round(bet * mult);
-        setWin(w);
-        setWinCells(cells);
-        finish(bet, w);
-        setMsg(w > 0 ? `🎉 জিতেছেন ${money(w)}!` : "😅 আবার চেষ্টা করুন");
-        setSpinning(false);
+  function evaluate(f: string[], betAmt: number, mult: number) {
+    let win = 0;
+    const cells = new Set<number>();
+    const linesHit: number[][] = [];
+    for (const line of SLOT_LINES) {
+      const s0 = f[line[0]];
+      if (s0 === SCATTER) continue;
+      let run = 1;
+      for (let i = 1; i < 5; i++) { if (f[line[i]] === s0) run++; else break; }
+      if (run >= 3) {
+        const pay = SLOT_PAY[syms.indexOf(s0)] ?? [0.5, 2, 5];
+        win += betAmt * pay[run - 3];
+        linesHit.push(line.slice(0, run));
+        for (let i = 0; i < run; i++) cells.add(line[i]);
       }
-    }, 90);
+    }
+    const scatters = f.filter((x) => x === SCATTER).length;
+    return { win: Math.round(win * mult), cells: [...cells], linesHit, scatters };
   }
 
+  function animateWin(amount: number) {
+    const steps = 18;
+    let i = 0;
+    const t = setInterval(() => {
+      i++;
+      setDispWin(Math.round((amount * i) / steps));
+      if (i >= steps) { clearInterval(t); setDispWin(amount); }
+    }, 40);
+    timers.current.push(t as unknown as ReturnType<typeof setTimeout>);
+  }
+
+  function doSpin(isFree: boolean, betAmt: number) {
+    if (stateRef.current.spinning) return;
+    if (!isFree) {
+      if (!store.payWithWallet(betAmt, `🎰 ${g.n}`)) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); setAutoLeft(0); return; }
+    }
+    setSpinning(true);
+    setWinCells([]); setWinLines([]); setDispWin(0); setTier(""); setCoins([]); setNearMiss(false); setMsg("");
+    setStoppedCols(0);
+    setRoundKey((k) => k + 1);
+    const final = rollFinal();
+    const colDelay = turbo ? 130 : 260;
+    // fast shuffle while spinning
+    const shuffle = setInterval(() => {
+      setGrid((prev) => prev.map((c, i) => ((i % 5) < colsRef.current ? c : rnd())));
+    }, 80);
+    colsRef.current = 0;
+    for (let col = 0; col < 5; col++) {
+      later(() => {
+        colsRef.current = col + 1;
+        setStoppedCols(col + 1);
+        setGrid((prev) => prev.map((c, i) => ((i % 5) <= col ? final[i] : c)));
+      }, 350 + col * colDelay);
+    }
+    later(() => {
+      clearInterval(shuffle);
+      setGrid(final);
+      const mult = isFree ? 2 : 1;
+      const { win, cells, linesHit, scatters } = evaluate(final, betAmt, mult);
+      setWinCells(cells); setWinLines(linesHit);
+      setSpinning(false);
+      let newFree = 0;
+      if (scatters >= 3 && !isFree) newFree = 8;
+      const effWin = win;
+      if (effWin > 0) {
+        animateWin(effWin);
+        setTotalWin((t) => t + effWin);
+        if (isFree) setFreeWon((w) => w + effWin);
+        const ratio = effWin / betAmt;
+        setTier(ratio >= 25 ? "mega" : ratio >= 10 ? "big" : "win");
+        setCoins(Array.from({ length: ratio >= 10 ? 26 : 12 }, (_, i) => i));
+        setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : `🎉 জিতেছেন!`);
+      } else {
+        // near-miss detection — exactly 2 matching from left on any line
+        const nm = SLOT_LINES.some((line) => final[line[0]] !== SCATTER && final[line[1]] === final[line[0]] && final[line[2]] !== final[line[0]]);
+        setNearMiss(nm);
+        setMsg(nm ? "😱 আরেকটু হলেই জিততেন! আবার স্পিন করুন" : isFree ? "" : "আবার চেষ্টা করুন — ভাগ্য ঘুরবেই!");
+      }
+      // finish credits the win (topUp) + records history. Free rounds record bet 0.
+      finish(isFree ? 0 : betAmt, effWin);
+      if (newFree > 0) {
+        setMsg(`⭐⭐⭐ ${bn(newFree)}টি ফ্রি স্পিন! সব জয় ২x`);
+        setFreeLeft(newFree);
+        setFreeWon(0);
+      }
+    }, 350 + 5 * colDelay + 120);
+  }
+
+  // free-spin / autoplay chaining
+  useEffect(() => {
+    if (spinning) return;
+    if (freeLeft > 0) {
+      const t = setTimeout(() => { setFreeLeft((v) => v - 1); doSpin(true, bet); }, 1100);
+      return () => clearTimeout(t);
+    }
+    if (autoLeft > 0) {
+      const t = setTimeout(() => { setAutoLeft((v) => v - 1); doSpin(false, bet); }, 900);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinning, freeLeft, autoLeft]);
+
+  useEffect(() => {
+    if (freeLeft === 0 && freeWon > 0 && !spinning) {
+      setMsg(`🎁 ফ্রি স্পিন শেষ! মোট জিতেছেন ${money(freeWon)}`);
+      setFreeWon(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [freeLeft, spinning]);
+
+  const betIdx = Math.max(0, BET_STEPS.indexOf(bet));
+
   return (
-    <GameShell title={g.n} emoji={g.e} rtp={g.rtp}>
+    <Page>
+      <Back href={`${base}/games`} label="গেম লবি" />
       <style>{`
-        @keyframes dp-reel { 0% { transform: translateY(-110%) rotateX(50deg); opacity: 0 } 60% { transform: translateY(6%) rotateX(-8deg); opacity: 1 } 100% { transform: translateY(0) rotateX(0) } }
-        @keyframes dp-winpop { 0% { transform: scale(1) } 50% { transform: scale(1.16) } 100% { transform: scale(1) } }
-        .dp-reel { animation: dp-reel .45s cubic-bezier(.2,.9,.3,1.2) both; transform-style: preserve-3d }
-        .dp-win { animation: dp-winpop .5s ease infinite; box-shadow: 0 0 0 2px #f5c518, 0 0 22px #f5c51866 }
+        @keyframes dp-fall { 0% { transform: translateY(-190%) scale(.8); opacity: 0 } 55% { transform: translateY(7%) scale(1.04); opacity: 1 } 75% { transform: translateY(-3%) } 100% { transform: translateY(0) scale(1); opacity: 1 } }
+        @keyframes dp-coin { 0% { transform: translateY(0) rotate(0) scale(1); opacity: 1 } 100% { transform: translateY(-190px) rotate(340deg) scale(.4); opacity: 0 } }
+        @keyframes dp-tierpop { 0% { transform: scale(.3) rotate(-6deg); opacity: 0 } 60% { transform: scale(1.15) rotate(2deg); opacity: 1 } 100% { transform: scale(1) rotate(0) } }
+        @keyframes dp-glowpulse { 0%,100% { box-shadow: 0 0 0 2px #f5c518, 0 0 14px #f5c51888 } 50% { box-shadow: 0 0 0 3px #ffe97a, 0 0 30px #f5c518 } }
+        @keyframes dp-floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
+        @keyframes dp-shine { 0% { transform: translateX(-130%) skewX(-18deg) } 100% { transform: translateX(240%) skewX(-18deg) } }
+        .dp-fall { animation: dp-fall .5s cubic-bezier(.25,.9,.35,1.15) both }
+        .dp-wincell { animation: dp-glowpulse .7s ease-in-out infinite }
+        .dp-tier { animation: dp-tierpop .55s cubic-bezier(.2,.9,.3,1.3) both }
+        .dp-spinbtn { position: relative; overflow: hidden }
+        .dp-spinbtn::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, #ffffff55, transparent); animation: dp-shine 2.4s ease infinite }
       `}</style>
-      <div className={`grid grid-cols-3 gap-2 rounded-2xl bg-gradient-to-b ${cg?.grad ?? "from-[#1c2440] to-[#0b0e11]"} p-4`} style={{ perspective: "600px" }}>
-        {grid.map((s, i) => (
-          <div key={`${i}-${spinning ? "s" : "f"}`} className={`flex h-20 items-center justify-center rounded-xl bg-black/45 text-4xl ${spinning ? "" : "dp-reel"} ${winCells.includes(i) ? "dp-win" : ""}`} style={{ animationDelay: `${i * 45}ms` }}>{s}</div>
-        ))}
+
+      {/* ===== STAGE ===== */}
+      <div className={`relative overflow-hidden rounded-[28px] border border-[#f5c518]/30 bg-gradient-to-b ${cg?.grad ?? "from-[#2a1650] via-[#160b2e] to-[#0b0e11]"} shadow-[0_20px_60px_rgba(0,0,0,0.55)]`}>
+        {/* ambient decor */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[190px] opacity-[0.13] blur-[1px]" style={{ animation: "dp-floaty 5s ease-in-out infinite" }}>{g.e}</div>
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/12 to-transparent" />
+          {["✨", "🪙", "⭐", "💫", "🪙"].map((p, i) => (
+            <span key={i} className="absolute text-lg opacity-50" style={{ left: `${8 + i * 21}%`, top: `${12 + (i % 3) * 9}%`, animation: `dp-floaty ${3.4 + i * 0.5}s ease-in-out infinite` }}>{p}</span>
+          ))}
+        </div>
+
+        <div className="relative px-3 pb-4 pt-4 sm:px-5">
+          {/* title bar */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="rounded-lg bg-black/45 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white/80">{cg?.provider ?? "DigiPlay Originals"}</span>
+            <p className="bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 bg-clip-text text-center text-xl font-black uppercase tracking-wide text-transparent drop-shadow sm:text-2xl">{g.n}</p>
+            <span className="rounded-lg bg-gradient-to-b from-fuchsia-500 to-purple-700 px-2 py-1 text-[10px] font-black text-white shadow">MAX {bn(1000)}x</span>
+          </div>
+
+          {/* free spin banner */}
+          {freeLeft > 0 && (
+            <div className="mx-auto mt-3 w-fit rounded-full bg-gradient-to-r from-fuchsia-600 to-purple-600 px-4 py-1.5 text-xs font-black text-white shadow-lg">
+              🎁 ফ্রি স্পিন বাকি: {bn(freeLeft)} • সব জয় ২x • জমেছে {money(freeWon)}
+            </div>
+          )}
+
+          {/* ===== REELS 5x3 ===== */}
+          <div className="relative mx-auto mt-3 max-w-[560px] rounded-3xl border-2 border-[#f5c518]/50 bg-black/50 p-2 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)] sm:p-2.5">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+              {grid.map((s, i) => {
+                const col = i % 5;
+                const row = Math.floor(i / 5);
+                const isWin = winCells.includes(i);
+                const stopped = col < stoppedCols;
+                return (
+                  <div key={`${roundKey}-${i}`}
+                    className={`relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl text-[26px] sm:text-4xl ${
+                      isWin ? "dp-wincell z-10 bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-500" : "bg-gradient-to-b from-[#2b3350] via-[#171d33] to-[#0d1220]"
+                    } ${stopped && !spinning ? "dp-fall" : ""}`}
+                    style={{ animationDelay: `${col * 90 + row * 55}ms` }}>
+                    <span className={spinning && !stopped ? "opacity-70 blur-[1.5px]" : "drop-shadow-[0_3px_6px_rgba(0,0,0,0.65)]"}>{s}</span>
+                    {s === SCATTER && <span className="absolute bottom-0.5 rounded bg-black/50 px-1 text-[7px] font-black text-yellow-200">SCATTER</span>}
+                  </div>
+                );
+              })}
+            </div>
+            {/* coin burst */}
+            {coins.length > 0 && (
+              <div className="pointer-events-none absolute inset-0 overflow-visible" aria-hidden>
+                {coins.map((c) => (
+                  <span key={`${roundKey}-coin-${c}`} className="absolute text-xl"
+                    style={{ left: `${8 + ((c * 37) % 84)}%`, bottom: "16%", animation: `dp-coin ${0.9 + (c % 5) * 0.14}s ease-out ${((c * 53) % 40) / 100}s both` }}>🪙</span>
+                ))}
+              </div>
+            )}
+            {/* win tier overlay */}
+            {tier && !spinning && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden>
+                <p className={`dp-tier bg-gradient-to-b ${tier === "mega" ? "from-fuchsia-300 via-pink-500 to-purple-700" : tier === "big" ? "from-yellow-200 via-[#f5c518] to-amber-600" : "from-emerald-200 via-emerald-400 to-green-600"} bg-clip-text text-5xl font-black uppercase tracking-wide text-transparent drop-shadow-[0_4px_22px_rgba(0,0,0,0.8)] sm:text-6xl`}>
+                  {tier === "mega" ? "MEGA WIN" : tier === "big" ? "BIG WIN" : "WIN!"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* WIN display */}
+          <div className="mx-auto mt-3 flex max-w-[560px] items-center justify-center gap-3">
+            <p className="text-sm font-black tracking-[0.3em] text-[#f5c518]">WIN</p>
+            <p className={`text-2xl font-black tabular-nums ${dispWin > 0 ? "text-white" : "text-white/50"}`}>{money(dispWin)}</p>
+            {nearMiss && !spinning && <span className="animate-pulse rounded-full bg-red-500/20 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/50">😱 আরেকটু হলেই!</span>}
+          </div>
+          {msg && <p className="mt-1.5 text-center text-xs font-bold text-white/85">{msg}</p>}
+
+          {/* ===== CONTROL BAR (JILI style) ===== */}
+          <div className="mx-auto mt-3 flex max-w-[560px] items-end justify-between gap-2">
+            <div className="flex flex-col items-center gap-1.5">
+              <button onClick={() => setTurbo((t) => !t)} className={`grid h-11 w-11 place-items-center rounded-full border text-lg transition active:scale-90 ${turbo ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="টার্বো">⚡</button>
+              <span className="text-[9px] font-bold text-white/60">টার্বো</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="flex items-center gap-1 rounded-full border border-white/20 bg-black/45 p-1">
+                <button onClick={() => setBet(BET_STEPS[Math.max(0, betIdx - 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">−</button>
+                <div className="min-w-[76px] text-center">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/55">বাজি</p>
+                  <p className="text-sm font-black text-white">{money(bet)}</p>
+                </div>
+                <button onClick={() => setBet(BET_STEPS[Math.min(BET_STEPS.length - 1, betIdx + 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">＋</button>
+              </div>
+              <span className="text-[9px] font-bold text-white/60">সর্বোচ্চ জয় {money(bet * 1000)}</span>
+            </div>
+            {/* SPIN */}
+            <button onClick={() => doSpin(false, bet)} disabled={spinning || freeLeft > 0}
+              className="dp-spinbtn grid h-[76px] w-[76px] shrink-0 place-items-center rounded-full bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 text-black shadow-[0_10px_28px_rgba(245,197,24,0.45)] ring-4 ring-amber-900/60 transition hover:scale-105 active:scale-95 disabled:opacity-60">
+              <span className={`text-[26px] ${spinning ? "animate-spin" : ""}`}>⟳</span>
+              <span className="absolute bottom-2.5 text-[9px] font-black tracking-widest">{spinning ? "..." : "SPIN"}</span>
+            </button>
+            <div className="flex flex-col items-center gap-1.5">
+              <button onClick={() => setAutoLeft(autoLeft > 0 ? 0 : 30)} disabled={spinning && autoLeft === 0}
+                className={`grid h-11 w-11 place-items-center rounded-full border text-sm font-black transition active:scale-90 ${autoLeft > 0 ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="অটো">
+                {autoLeft > 0 ? bn(autoLeft) : "▶"}
+              </button>
+              <span className="text-[9px] font-bold text-white/60">অটো ৩০</span>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="grid h-11 min-w-[64px] place-items-center rounded-full border border-white/20 bg-black/45 px-2">
+                <p className="text-[13px] font-black text-[#f5c518]">{money(store.wallet)}</p>
+              </div>
+              <span className="text-[9px] font-bold text-white/60">ব্যালেন্স • LV {bn(1)}</span>
+            </div>
+          </div>
+        </div>
       </div>
-      {msg && <p className={`mt-3 text-center text-sm font-black ${win > 0 ? "text-emerald-300" : "text-slate-400"}`}>{msg}</p>}
-      <div className="mt-4">
-        <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
-        <BetChips bet={bet} setBet={setBet} />
+
+      {/* paytable */}
+      <div className="mx-auto mt-4 max-w-[560px] rounded-2xl border border-white/10 bg-[#101828]/90 p-4">
+        <p className="text-sm font-black text-[#f5c518]">💰 পে-টেবিল (লাইনে ৩/৪/৫টি)</p>
+        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-300 sm:grid-cols-4">
+          {syms.slice(0, 8).map((s, i) => (
+            <p key={i}>{s} <b className="text-white">{bn(SLOT_PAY[i][0])}x / {bn(SLOT_PAY[i][1])}x / {bn(SLOT_PAY[i][2])}x</b></p>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-500">৫টি পে-লাইন • ⭐ Scatter ৩+ = ৮ ফ্রি স্পিন (২x) • RTP {g.rtp} • মোট জয় এই সেশনে: {money(totalWin)}</p>
       </div>
-      <button onClick={spin} disabled={spinning}
-        className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-xl font-black text-black shadow-lg transition active:scale-[0.98] disabled:opacity-50">
-        {spinning ? "🌀 ঘুরছে..." : "🎰 স্পিন করুন"}
-      </button>
-      <p className="mt-2 text-center text-[11px] text-slate-500">৩টি একই সিম্বল = ৩x–১০x • মাঝের {syms[0]} = বোনাস{cg ? ` • ${cg.provider}` : ""}</p>
-    </GameShell>
+    </Page>
   );
 }
 export function LiveCasino() {
@@ -965,354 +1203,5 @@ export function Jackpots() {
   );
 }
 
-
-/* ============================== CATALOG TILE & LOBBY ============================== */
-
-/** Rich visual game tile — gradient art, glow symbol, provider, players. */
-export function CatalogTile({ g, small }: { g: CatalogGame; small?: boolean }) {
-  const { base } = useSkin();
-  return (
-    <Link href={`${base}${catalogHref(g)}`} className="group block overflow-hidden rounded-2xl border border-white/10 bg-[#101828] transition hover:border-[#f5c518]/50 active:scale-[0.98]">
-      <div className={`relative bg-gradient-to-br ${g.grad} ${small ? "h-24" : "h-28"} overflow-hidden`}>
-        <div className="absolute inset-0 opacity-25" style={{ backgroundImage: "radial-gradient(circle at 80% 15%, #ffffff55 0, transparent 42%), radial-gradient(circle at 15% 90%, #00000088 0, transparent 55%)" }} />
-        <div className="absolute inset-0 flex items-center justify-center text-5xl drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)] transition duration-300 group-hover:scale-125 group-hover:-rotate-6">{g.e}</div>
-        {g.hot && <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white shadow">🔥 হট</span>}
-        <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[9px] font-bold text-white/85">👥 {g.players}</span>
-        <span className="absolute bottom-2 left-2 rounded-md bg-black/45 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-white/75">{g.provider}</span>
-      </div>
-      <div className="p-2.5">
-        <p className="truncate text-[12px] font-black text-white">{g.n}</p>
-        <p className="mt-0.5 text-[10px] text-slate-400">RTP {bn(g.rtp.toFixed(1))}% • ▶ খেলুন</p>
-      </div>
-    </Link>
-  );
-}
-
-const CAT_TABS: { id: string; n: string; e: string }[] = [
-  { id: "all", n: "সব গেম", e: "🎮" },
-  { id: "slots", n: "স্লটস", e: "🎰" },
-  { id: "crash", n: "ক্র্যাশ", e: "📈" },
-  { id: "mines", n: "মাইনস", e: "💣" },
-  { id: "plinko", n: "প্লিংকো", e: "🔵" },
-  { id: "dice", n: "ডাইস", e: "🎲" },
-  { id: "wheel", n: "হুইল", e: "🎡" },
-  { id: "hilo", n: "হাই-লো", e: "🃏" },
-];
-
-export function CatalogLobby() {
-  const { sub } = useSkin();
-  const [cat, setCat] = useState("all");
-  const [provider, setProvider] = useState("সব প্রোভাইডার");
-  const [q, setQ] = useState("");
-  const [shown, setShown] = useState(48);
-  const filtered = useMemo(() => GAME_CATALOG.filter((g) =>
-    (cat === "all" || g.cat === cat) &&
-    (provider === "সব প্রোভাইডার" || g.provider === provider) &&
-    (!q || g.n.includes(q) || g.provider.includes(q))
-  ), [cat, provider, q]);
-  return (
-    <Page>
-      <SectionTitle t="🎮 গেম লবি" sub={`মোট ${bn(GAME_CATALOG.length)}+ গেম • সব নিজস্ব ইঞ্জিনে চলে`} />
-      <input value={q} onChange={(e) => { setQ(e.target.value); setShown(48); }} placeholder="🔍 গেম খুঁজুন..."
-        className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500" />
-      <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
-        {CAT_TABS.map((t) => (
-          <button key={t.id} onClick={() => { setCat(t.id); setShown(48); }}
-            className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition ${cat === t.id ? "bg-[#f5c518] text-black" : "border border-white/15 bg-white/5 text-slate-300"}`}>
-            {t.e} {t.n}
-          </button>
-        ))}
-      </div>
-      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
-        {["সব প্রোভাইডার", ...PROVIDERS].map((pv) => (
-          <button key={pv} onClick={() => { setProvider(pv); setShown(48); }}
-            className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold transition ${provider === pv ? "bg-white text-black" : "border border-white/10 bg-white/[0.03] text-slate-400"}`}>
-            {pv}
-          </button>
-        ))}
-      </div>
-      <p className={`mb-3 text-xs ${sub}`}>{bn(filtered.length)}টি গেম পাওয়া গেছে</p>
-      {filtered.length === 0 ? <Empty emoji="🎮" text="কোনো গেম পাওয়া যায়নি" /> : (
-        <>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-            {filtered.slice(0, shown).map((g) => <CatalogTile key={g.id} g={g} />)}
-          </div>
-          {shown < filtered.length && (
-            <button onClick={() => setShown((v) => v + 48)} className="mt-5 w-full rounded-2xl border border-[#f5c518]/40 bg-[#f5c518]/10 py-3 text-sm font-black text-[#f5c518] transition active:scale-[0.99]">
-              আরো গেম দেখুন (বাকি {bn(filtered.length - shown)}টি)
-            </button>
-          )}
-        </>
-      )}
-    </Page>
-  );
-}
-
-/* ============================== MINES ============================== */
-
-export function MinesGame() {
-  const { store, card } = useSkin();
-  const cfg = useCasinoConfig();
-  const finish = useGameRound("💣 মাইনস");
-  const SIZE = 25;
-  const [bet, setBet] = useState(50);
-  const [mineCount, setMineCount] = useState(3);
-  const [mines, setMines] = useState<Set<number>>(new Set());
-  const [open, setOpen] = useState<Set<number>>(new Set());
-  const [playing, setPlaying] = useState(false);
-  const [busted, setBusted] = useState<number | null>(null);
-  const [msg, setMsg] = useState("");
-
-  const mult = useMemo(() => {
-    if (open.size === 0) return 1;
-    // fair multiplier with owner RTP applied
-    let m = 1;
-    for (let i = 0; i < open.size; i++) m *= (SIZE - i) / (SIZE - mineCount - i);
-    return m * (cfg.rtp / 100);
-  }, [open, mineCount, cfg.rtp]);
-
-  function start() {
-    if (playing) return;
-    if (!store.payWithWallet(bet, "💣 মাইনস")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
-    const ms = new Set<number>();
-    while (ms.size < mineCount) ms.add(Math.floor(Math.random() * SIZE));
-    setMines(ms); setOpen(new Set()); setBusted(null); setPlaying(true); setMsg("টাইল খুলুন — বোমা এড়িয়ে চলুন!");
-  }
-  function pick(i: number) {
-    if (!playing || open.has(i)) return;
-    if (mines.has(i)) {
-      setBusted(i); setPlaying(false);
-      finish(bet, 0);
-      setMsg("💥 বোমা! বাজি হারালেন");
-      return;
-    }
-    const no = new Set(open); no.add(i); setOpen(no);
-    if (no.size === SIZE - mineCount) cashout(no);
-  }
-  function cashout(o?: Set<number>) {
-    if (!playing) return;
-    const cnt = (o ?? open).size;
-    let m = 1;
-    for (let i = 0; i < cnt; i++) m *= (SIZE - i) / (SIZE - mineCount - i);
-    const w = Math.round(bet * m * (cfg.rtp / 100));
-    setPlaying(false);
-    finish(bet, w);
-    setMsg(`🎉 ক্যাশআউট! জিতেছেন ${money(w)}`);
-  }
-
-  return (
-    <GameShell title="মাইনস" emoji="💣" rtp={`${bn(cfg.rtp)}%`}>
-      <style>{`@keyframes dp-flip { 0% { transform: rotateY(90deg) scale(.7); opacity: 0 } 100% { transform: rotateY(0) scale(1); opacity: 1 } } .dp-flip { animation: dp-flip .3s ease both }`}</style>
-      <div className="grid grid-cols-5 gap-1.5">
-        {Array.from({ length: SIZE }, (_, i) => {
-          const isOpen = open.has(i);
-          const isMine = busted !== null && mines.has(i);
-          const revealed = busted !== null;
-          return (
-            <button key={i} onClick={() => pick(i)} disabled={!playing || isOpen}
-              className={`flex aspect-square items-center justify-center rounded-xl text-xl transition active:scale-90 ${
-                isMine ? "bg-red-500/40 ring-2 ring-red-500" :
-                isOpen ? "dp-flip bg-emerald-500/25 ring-1 ring-emerald-400" :
-                revealed && mines.has(i) ? "bg-red-500/15" :
-                "bg-gradient-to-b from-[#232c47] to-[#141b30] ring-1 ring-white/10 hover:ring-[#f5c518]/50"
-              }`}>
-              {isOpen ? "💎" : isMine || (revealed && mines.has(i)) ? "💣" : "◆"}
-            </button>
-          );
-        })}
-      </div>
-      {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
-      {playing && (
-        <div className={`${card} mt-3 flex items-center justify-between p-3`}>
-          <p className="text-xs text-slate-300">💎 খোলা: <b>{bn(open.size)}</b> • মাল্টিপ্লায়ার: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
-          <p className="text-sm font-black text-emerald-300">{money(Math.round(bet * mult))}</p>
-        </div>
-      )}
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div>
-          <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
-          <BetChips bet={bet} setBet={setBet} />
-        </div>
-        <div>
-          <p className="mb-1.5 text-xs font-bold text-slate-400">বোমার সংখ্যা: {bn(mineCount)}</p>
-          <div className="flex gap-1">
-            {[1, 3, 5, 10, 24].map((n) => (
-              <button key={n} disabled={playing} onClick={() => setMineCount(n)}
-                className={`flex-1 rounded-lg px-1 py-2 text-xs font-black transition ${mineCount === n ? "bg-[#f5c518] text-black" : "border border-white/15 bg-white/5 text-slate-300"}`}>{bn(n)}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-      {playing ? (
-        <button onClick={() => cashout()} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.98]">💵 ক্যাশআউট {money(Math.round(bet * mult))}</button>
-      ) : (
-        <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">💣 খেলা শুরু</button>
-      )}
-    </GameShell>
-  );
-}
-
-/* ============================== PLINKO ============================== */
-
-const PLINKO_MULTS: Record<number, number[]> = {
-  8: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6],
-  12: [10, 3, 1.6, 1.4, 1.1, 0.7, 0.5, 0.7, 1.1, 1.4, 1.6, 3, 10],
-  16: [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.5, 1, 1.1, 1.2, 1.4, 1.4, 2, 9, 16],
-};
-
-export function PlinkoGame() {
-  const { store } = useSkin();
-  const cfg = useCasinoConfig();
-  const finish = useGameRound("🔵 প্লিংকো");
-  const [bet, setBet] = useState(50);
-  const [rows, setRows] = useState(12);
-  const [ball, setBall] = useState<{ x: number; y: number; slot: number } | null>(null);
-  const [dropping, setDropping] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [hist, setHist] = useState<number[]>([]);
-  const mults = PLINKO_MULTS[rows];
-
-  function drop() {
-    if (dropping) return;
-    if (!store.payWithWallet(bet, "🔵 প্লিংকো")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
-    setDropping(true); setMsg("");
-    // binomial walk
-    let slot = 0;
-    const path: number[] = [0];
-    for (let r = 0; r < rows; r++) { if (Math.random() < 0.5) slot++; path.push(slot); }
-    let step = 0;
-    setBall({ x: 0, y: 0, slot: 0 });
-    const t = setInterval(() => {
-      step++;
-      if (step > rows) {
-        clearInterval(t);
-        const m = mults[slot] * (cfg.rtp / 97);
-        const w = Math.round(bet * m);
-        setHist((h) => [m, ...h].slice(0, 10));
-        finish(bet, w);
-        setMsg(w >= bet ? `🎉 ${bn(m.toFixed(1))}x — জিতেছেন ${money(w)}!` : `${bn(m.toFixed(1))}x — পেয়েছেন ${money(w)}`);
-        setDropping(false);
-        setBall(null);
-        return;
-      }
-      setBall({ x: path[step], y: step, slot });
-    }, 110);
-  }
-
-  return (
-    <GameShell title="প্লিংকো" emoji="🔵" rtp={`${bn(cfg.rtp)}%`}>
-      <div className="relative mx-auto max-w-[340px] rounded-2xl bg-black/40 px-2 pb-2 pt-4">
-        {Array.from({ length: rows }, (_, r) => (
-          <div key={r} className="flex justify-center gap-0" style={{ marginBottom: 6 }}>
-            {Array.from({ length: r + 3 }, (_, i) => (
-              <span key={i} className={`mx-[7px] inline-block h-1.5 w-1.5 rounded-full ${ball && ball.y === r && Math.abs(ball.x - (i - 1)) < 0.6 ? "bg-[#f5c518] shadow-[0_0_10px_#f5c518]" : "bg-white/50"}`} />
-            ))}
-          </div>
-        ))}
-        {ball && (
-          <div className="pointer-events-none absolute left-1/2 h-4 w-4 rounded-full bg-gradient-to-br from-yellow-300 to-amber-600 shadow-[0_0_14px_#f5c518] transition-all duration-100"
-            style={{ top: 10 + ball.y * 15, transform: `translateX(${(ball.x - ball.y / 2) * 29 - 8}px)` }} />
-        )}
-        <div className="mt-2 flex gap-[3px]">
-          {mults.map((m, i) => (
-            <div key={i} className={`flex-1 rounded-md py-1 text-center text-[9px] font-black ${m >= 3 ? "bg-red-500 text-white" : m >= 1 ? "bg-[#f5c518] text-black" : "bg-slate-600 text-white"}`}>{bn(m)}x</div>
-          ))}
-        </div>
-      </div>
-      {hist.length > 0 && <div className="mt-2 flex flex-wrap justify-center gap-1">{hist.map((m, i) => <span key={i} className={`rounded-full px-2 py-0.5 text-[10px] font-black ${m >= 1 ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-slate-300"}`}>{bn(m.toFixed(1))}x</span>)}</div>}
-      {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
-      <div className="mt-4">
-        <p className="mb-1.5 text-xs font-bold text-slate-400">সারি</p>
-        <div className="flex gap-1.5">
-          {[8, 12, 16].map((r) => (
-            <button key={r} disabled={dropping} onClick={() => setRows(r)} className={`flex-1 rounded-lg py-2 text-xs font-black transition ${rows === r ? "bg-[#f5c518] text-black" : "border border-white/15 bg-white/5 text-slate-300"}`}>{bn(r)} সারি</button>
-          ))}
-        </div>
-      </div>
-      <div className="mt-3">
-        <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
-        <BetChips bet={bet} setBet={setBet} />
-      </div>
-      <button onClick={drop} disabled={dropping} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98] disabled:opacity-50">
-        {dropping ? "🔵 বল পড়ছে..." : "🔵 বল ছাড়ুন"}
-      </button>
-    </GameShell>
-  );
-}
-
-/* ============================== HI-LO CARDS ============================== */
-
-export function HiLoGame() {
-  const { store, card } = useSkin();
-  const cfg = useCasinoConfig();
-  const finish = useGameRound("🃏 হাই-লো");
-  const fresh = () => drawCard(new Set<string>());
-  const [bet, setBet] = useState(50);
-  const [cur, setCur] = useState<string>(() => fresh());
-  const [streak, setStreak] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [flipKey, setFlipKey] = useState(0);
-  const [msg, setMsg] = useState("");
-  const mult = useMemo(() => Math.pow(1.42, streak) * (cfg.rtp / 97), [streak, cfg.rtp]);
-
-  function start() {
-    if (!store.payWithWallet(bet, "🃏 হাই-লো")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
-    setCur(fresh()); setStreak(0); setPlaying(true); setFlipKey((k) => k + 1); setMsg("পরের কার্ড বড় না ছোট — অনুমান করুন!");
-  }
-  function guess(dir: "hi" | "lo") {
-    if (!playing) return;
-    const nxt = fresh();
-    const cv = rankVal(cur.slice(0, -1)), nv = rankVal(nxt.slice(0, -1));
-    setFlipKey((k) => k + 1);
-    const win = nv !== cv && (dir === "hi" ? nv > cv : nv < cv);
-    setCur(nxt);
-    if (win) {
-      setStreak((v) => v + 1);
-      setMsg(`✅ ঠিক! ধারাবাহিক জয়: ${bn(streak + 1)}`);
-    } else {
-      setPlaying(false);
-      finish(bet, 0);
-      setMsg(`❌ ভুল! কার্ড ছিল ${nxt} — বাজি হারালেন`);
-    }
-  }
-  function cashout() {
-    if (!playing || streak === 0) return;
-    const w = Math.round(bet * mult);
-    setPlaying(false);
-    finish(bet, w);
-    setMsg(`🎉 ক্যাশআউট! জিতেছেন ${money(w)}`);
-  }
-
-  return (
-    <GameShell title="হাই-লো কার্ড" emoji="🃏" rtp={`${bn(cfg.rtp)}%`}>
-      <style>{`@keyframes dp-cardfall { 0% { transform: translateY(-46px) rotate(-7deg) scale(.85); opacity: 0 } 60% { transform: translateY(4px) rotate(2deg); opacity: 1 } 100% { transform: translateY(0) rotate(0) } } .dp-cardfall { animation: dp-cardfall .38s cubic-bezier(.2,.9,.3,1.25) both }`}</style>
-      <div className="flex items-center justify-center py-4">
-        <div key={flipKey} className="dp-cardfall" style={{ transform: "scale(1.6)" }}><CardView c={cur} /></div>
-      </div>
-      <div className={`${card} mt-4 flex items-center justify-between p-3`}>
-        <p className="text-xs text-slate-300">🔥 ধারাবাহিক জয়: <b className="text-white">{bn(streak)}</b></p>
-        <p className="text-xs text-slate-300">মাল্টিপ্লায়ার: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
-        <p className="text-sm font-black text-emerald-300">{playing ? money(Math.round(bet * mult)) : money(0)}</p>
-      </div>
-      {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
-      {!playing ? (
-        <>
-          <div className="mt-4">
-            <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
-            <BetChips bet={bet} setBet={setBet} />
-          </div>
-          <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">🃏 খেলা শুরু</button>
-        </>
-      ) : (
-        <div className="mt-4 grid grid-cols-2 gap-2.5">
-          <button onClick={() => guess("hi")} className="rounded-2xl bg-gradient-to-b from-sky-500 to-blue-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬆️ বড় হবে</button>
-          <button onClick={() => guess("lo")} className="rounded-2xl bg-gradient-to-b from-violet-500 to-purple-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬇️ ছোট হবে</button>
-          <button onClick={cashout} disabled={streak === 0} className="col-span-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-3.5 text-base font-black text-white shadow-lg transition active:scale-[0.98] disabled:opacity-40">💵 ক্যাশআউট {streak > 0 ? money(Math.round(bet * mult)) : ""}</button>
-        </div>
-      )}
-      <p className="mt-2 text-center text-[11px] text-slate-500">একই মানের কার্ড আসলে হার • প্রতিটি সঠিক অনুমানে মাল্টিপ্লায়ার বাড়ে</p>
-    </GameShell>
-  );
-}
 
 /* ============================== ACCOUNT & WALLET ============================== */

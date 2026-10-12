@@ -3,4 +3,5 @@
 export * from "./casino-data";
 export * from "./casino-sports";
 export * from "./casino-games";
+export * from "./casino-catalog";
 export * from "./casino-account";
