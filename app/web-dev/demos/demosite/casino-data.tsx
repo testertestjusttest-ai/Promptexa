@@ -119,7 +119,7 @@ export const LIVE_GAMES: CasiGame[] = [
 export const ALL_GAMES = [...SLOT_GAMES, ...TABLE_GAMES, ...CRASH_GAMES, ...LIVE_GAMES];
 
 /* ==================== MASSIVE GAME CATALOG (generated) ====================
- * 2,400+ games across own-brand providers. Every game is playable through
+ * 2,200+ games across own-brand providers. Every game is playable through
  * its engine (slots / crash / dice / wheel / mines / plinko / hilo / cards)
  * with a unique theme, symbol set, gradient art and payout profile.
  * Deterministic generation — same catalog on every load. */
@@ -140,8 +140,8 @@ export interface CatalogGame {
 
 export const PROVIDERS = [
   "DigiPlay Originals", "রয়েল গেমিং", "মেগাউইন স্টুডিও", "গোল্ডেন টাচ",
-  "নোভা সফট", "টাইগার গেমস", "লাকি স্পিন ল্যাব", "এশিয়া গেমিং",
-  "প্রাগমা প্লে", "স্পিনোমেনাল বিডি", "জেম ওয়ার্কস", "ভিক্টরি ল্যাব",
+  "নোভা সফট", "টাইগার গেমস", "লাকি স্পিন ল্যাব", "পদ্মা গেমিং",
+  "ঢাকা প্লে", "স্পিন হাউস বিডি", "জেম ওয়ার্কস", "ভিক্টরি ল্যাব",
 ];
 
 const GRADS = [
@@ -175,6 +175,33 @@ const SLOT_THEMES: { name: string; syms: string[] }[] = [
   { name: "সোনার খনি", syms: ["⛏️", "💰", "🏆", "💛", "🪙", "🚂", "💎", "🔦"] },
   { name: "রংধনু উপত্যকা", syms: ["🌈", "🦄", "☁️", "⭐", "🍀", "🌟", "💫", "🎈"] },
   { name: "সার্কাস মেলা", syms: ["🎪", "🤹", "🎠", "🎡", "🍿", "🎈", "🥁", "🎭"] },
+  { name: "মরুভূমি অভিযান", syms: ["🏜️", "🐪", "🦂", "🌵", "☀️", "🧭", "💧", "🏺"] },
+  { name: "সাইবার সিটি", syms: ["🤖", "🌆", "💾", "🔋", "🛸", "🎮", "📡", "💡"] },
+  { name: "রাজকীয় দরবার", syms: ["👑", "🏰", "⚜️", "🛡️", "🍷", "🎺", "💂", "🗝️"] },
+];
+
+/** Gradient per slot theme — stage & tiles always match the game's world. */
+const THEME_GRADS = [
+  "from-lime-600 via-green-800 to-slate-900",      // ফলের বাগান
+  "from-violet-600 via-purple-900 to-slate-900",   // রত্ন খনি
+  "from-amber-500 via-yellow-800 to-stone-900",     // মিশরের ধন
+  "from-red-600 via-rose-900 to-slate-900",         // ড্রাগন রাজ্য
+  "from-indigo-600 via-blue-950 to-black",          // মহাকাশ যাত্রা
+  "from-cyan-500 via-sky-800 to-slate-900",         // সাগর তলা
+  "from-emerald-600 via-green-900 to-slate-900",    // জঙ্গল সাফারি
+  "from-pink-500 via-rose-700 to-slate-900",        // মিষ্টির দুনিয়া
+  "from-orange-600 via-amber-900 to-stone-900",     // ওয়াইল্ড ওয়েস্ট
+  "from-slate-500 via-slate-800 to-slate-950",      // ভাইকিং যুদ্ধ
+  "from-yellow-500 via-amber-800 to-neutral-900",   // লাক্সারি লাইফ
+  "from-rose-400 via-pink-800 to-slate-900",        // জাপানি বাগান
+  "from-purple-600 via-indigo-950 to-black",        // যাদুর জগৎ
+  "from-yellow-600 via-amber-900 to-stone-950",     // ফারাও সমাধি
+  "from-fuchsia-500 via-purple-900 to-slate-950",   // ক্রিস্টাল গুহা
+  "from-orange-500 via-red-900 to-slate-950",       // আগুন পাহাড়
+  "from-sky-400 via-cyan-800 to-slate-900",         // বরফ রাজ্য
+  "from-amber-400 via-yellow-800 to-stone-900",     // সোনার খনি
+  "from-violet-500 via-fuchsia-800 to-slate-900",   // রংধনু উপত্যকা
+  "from-red-500 via-rose-900 to-slate-950",         // সার্কাস মেলা
 ];
 
 const SLOT_PREFIX = ["মেগা", "রয়েল", "সুপার", "আল্ট্রা", "গ্র্যান্ড", "লাকি", "গোল্ডেন", "ম্যাজিক", "ওয়াইল্ড", "ক্রেজি", "বিগ", "প্রিমিয়াম"];
@@ -188,7 +215,7 @@ function seededNum(seed: string, mod: number): number {
 
 function buildCatalog(): CatalogGame[] {
   const out: CatalogGame[] = [];
-  // --- Slots: 12 prefixes × 20 themes × 10 suffixes = 2,400 combos → take 1,800
+  // --- Slots: 12 prefixes × 23 themes × 10 suffixes = 2,760 combos → take 2,070
   let idx = 0;
   for (const pre of SLOT_PREFIX) {
     for (let t = 0; t < SLOT_THEMES.length; t++) {
@@ -207,7 +234,7 @@ function buildCatalog(): CatalogGame[] {
           players: `${(seededNum(id + "p", 180) / 10 + 0.3).toFixed(1)}ক`,
           rtp: 94 + seededNum(id + "r", 50) / 10,
           hot: seededNum(id + "h", 12) === 0,
-          grad: GRADS[seededNum(id + "g", GRADS.length)],
+          grad: THEME_GRADS[t],
           syms: theme.syms,
         });
       }
@@ -312,7 +339,12 @@ function buildCatalog(): CatalogGame[] {
       });
     }
   }
-  return out;
+  // Deterministic interleave — neighbouring lobby tiles never look the same:
+  // stride-shuffle spreads themes/providers/gradients evenly through the list.
+  const shuffled: CatalogGame[] = [];
+  const stride = 613; // coprime-ish with catalog size
+  for (let i = 0; i < out.length; i++) shuffled.push(out[(i * stride) % out.length]);
+  return shuffled;
 }
 
 export const GAME_CATALOG: CatalogGame[] = buildCatalog();
