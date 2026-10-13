@@ -139,7 +139,13 @@ export function CatalogLobby() {
   const { base, sub } = useSkin();
   const [tab, setTab] = useState<"games" | "new" | "bonus" | "cashback" | "fav">("games");
   const [cat, setCat] = useState("all");
-  const [provider, setProvider] = useState("সব প্রোভাইডার");
+  const [provider, setProvider] = useState(() => {
+    try {
+      const p = localStorage.getItem("dp_provider");
+      if (p) { localStorage.removeItem("dp_provider"); return p; }
+    } catch {}
+    return "সব প্রোভাইডার";
+  });
   const [q, setQ] = useState("");
   const [shown, setShown] = useState(48);
   const { favs, toggle } = useFavGames();
