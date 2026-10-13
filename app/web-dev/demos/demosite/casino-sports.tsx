@@ -64,6 +64,55 @@ export function groupUpcoming(list: CasiMatch[]): { label: string; sub: string; 
 }
 
 
+/** Daily check-in: 7-day coin streak, browser-local bonus. */
+function DailyCheckIn() {
+  const { store } = useSkin();
+  const today = new Date().toISOString().slice(0, 10);
+  const [st, setSt] = useState({ last: "", streak: 0 });
+  useEffect(() => {
+    try { setSt(JSON.parse(localStorage.getItem("dp_checkin_v1") || '{"last":"","streak":0}')); } catch {}
+  }, []);
+  const claimed = st.last === today;
+  const claim = () => {
+    if (claimed) return;
+    const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    const streak = st.last === y ? st.streak + 1 : 1;
+    const bonus = streak * 20;
+    store.topUp(bonus);
+    const n = { last: today, streak };
+    setSt(n);
+    try { localStorage.setItem("dp_checkin_v1", JSON.stringify(n)); } catch {}
+  };
+  const dayIdx = ((new Date().getDay() + 6) % 7); // Mon=0
+  return (
+    <div className="overflow-hidden rounded-3xl border border-purple-400/25 bg-gradient-to-b from-purple-600/25 via-[#141126] to-[#0b1120]">
+      <div className="bg-gradient-to-r from-purple-600 to-fuchsia-700 px-4 py-2.5 text-center">
+        <p className="text-sm font-black tracking-wide text-white">📅 ডেইলি চেক-ইন: <span className="text-yellow-300">৭ দিনে ৭০ কয়েন</span></p>
+      </div>
+      <p className="px-4 pt-3 text-center text-xs text-slate-300">প্রতিদিন চেক-ইন করুন, স্ট্রিক ধরে রাখুন — <b className="text-yellow-300">১০ কয়েন = ২০ টাকা বোনাস!</b></p>
+      <div className="flex justify-center gap-1.5 px-4 py-3">
+        {["সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি", "রবি"].map((d, i) => {
+          const got = i < (st.streak % 8) || (st.streak >= 7 && i < 7 && claimed);
+          const isToday = i === dayIdx && !claimed;
+          return (
+            <div key={d} className={`flex w-11 flex-col items-center rounded-xl py-2 ${got ? "bg-yellow-400/20 ring-1 ring-yellow-400/60" : isToday ? "bg-white/10 ring-1 ring-white/30" : "bg-white/[0.04]"}`}>
+              <span className={`text-xl ${got ? "" : "opacity-40 grayscale"}`}>🪙</span>
+              <span className="mt-0.5 text-[9px] font-bold text-slate-400">{d}</span>
+              {got && <span className="text-[8px] font-black text-yellow-300">✓</span>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="px-4 pb-4 text-center">
+        <button onClick={claim} disabled={claimed}
+          className={`rounded-full px-8 py-2.5 text-sm font-black shadow transition active:scale-95 ${claimed ? "bg-white/10 text-slate-400" : "bg-gradient-to-b from-amber-300 to-orange-500 text-black shadow-[0_4px_20px_rgba(245,197,24,0.4)]"}`}>
+          {claimed ? `✅ আজকের বোনাস নেওয়া হয়েছে (স্ট্রিক ${bn(st.streak)} দিন)` : `🎁 আজকের চেক-ইন করুন`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function CasinoHome() {
   const { base, def, store } = useSkin();
   const { clientSlug } = useDemo();
@@ -97,33 +146,31 @@ export function CasinoHome() {
     return () => clearInterval(t);
   }, [banners.length]);
 
-  const hot = GAME_CATALOG.filter((g) => g.hot);
-  const forYou = useMemo(() => GAME_CATALOG.filter((_, i) => i % 37 === 0).slice(0, 12), []);
-  const best = useMemo(() => [...GAME_CATALOG].filter((g) => g.hot).slice(0, 10), []);
-  const slotsRow = useMemo(() => GAME_CATALOG.filter((g) => g.cat === "slots" && (Number(g.id.split("-")[1]) % 53 === 0)).slice(0, 12), []);
-  const crashRow = GAME_CATALOG.filter((g) => g.cat === "crash").slice(0, 8);
-  const diceRow = GAME_CATALOG.filter((g) => g.cat === "dice" || g.cat === "wheel").slice(0, 8);
-
-  const TABS = [
-    { e: "🏆", n: "টপ", href: `${base}` },
-    { e: "⚽", n: "স্পোর্টস", href: `${base}/sports` },
-    { e: "🎮", n: "এস্পোর্টস", href: `${base}/sports` },
-    { e: "🎰", n: "ক্যাসিনো", href: `${base}/games` },
-    { e: "🎲", n: "গেমস", href: `${base}/games` },
-  ];
+  // NG88-style category tabs filter the hot row
+  const [catTab, setCatTab] = useState<"hot" | "slots" | "casino" | "crash" | "sports">("hot");
+  const catGames = useMemo(() => {
+    if (catTab === "hot") return GAME_CATALOG.filter((g) => g.hot).slice(0, 12);
+    if (catTab === "slots") return GAME_CATALOG.filter((g) => g.cat === "slots").slice(0, 12);
+    if (catTab === "crash") return GAME_CATALOG.filter((g) => g.cat === "crash").slice(0, 12);
+    if (catTab === "casino") return GAME_CATALOG.filter((g) => ["table", "desi", "live"].includes(g.cat)).slice(0, 12);
+    return [];
+  }, [catTab]);
+  const CATTABS = [
+    { id: "hot", e: "🔥", n: "হট গেমস" },
+    { id: "slots", e: "🎰", n: "স্লট" },
+    { id: "casino", e: "🃏", n: "ক্যাসিনো" },
+    { id: "crash", e: "🚀", n: "ক্র্যাশ" },
+    { id: "sports", e: "🏏", n: "ক্রিকেট" },
+  ] as const;
+  const dayIdx = (new Date().getDay() + 6) % 7;
 
   return (
     <div>
-      {/* top category tabs */}
-      <div className="border-b border-white/5 bg-[#0d1322] px-4 py-3">
-        <div className="mx-auto flex max-w-6xl justify-between gap-1">
-          {TABS.map((t, i) => (
-            <Link key={t.n} href={t.href} className="flex flex-1 flex-col items-center gap-1 rounded-xl py-1.5 transition active:scale-95">
-              <span className={`text-2xl ${i === 0 ? "" : "opacity-70 grayscale-[0.3]"}`}>{t.e}</span>
-              <span className={`text-[11px] font-black ${i === 0 ? "text-[#f5c518]" : "text-slate-400"}`}>{t.n}</span>
-              {i === 0 && <span className="h-0.5 w-8 rounded bg-[#f5c518]" />}
-            </Link>
-          ))}
+      {/* app download banner */}
+      <div className="bg-gradient-to-r from-violet-700 via-purple-600 to-violet-700 px-4 py-2.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <p className="text-xs font-black text-white sm:text-sm">📱 আমাদের <b className="text-yellow-300">অ্যাপ</b> ডাউনলোড করুন — আরো দ্রুত, আরো বোনাস!</p>
+          <a href="#app" className="shrink-0 rounded-lg bg-gradient-to-b from-amber-400 to-orange-600 px-4 py-1.5 text-xs font-black text-white shadow">ডাউনলোড</a>
         </div>
       </div>
 
@@ -149,78 +196,78 @@ export function CasinoHome() {
           </div>
         </div>
 
-        {/* for you */}
-        <div className="mt-6 rounded-3xl border border-indigo-400/20 bg-gradient-to-b from-indigo-500/15 to-transparent p-3">
-          <div className="mb-2.5 flex items-center justify-between px-1">
-            <p className="text-base font-black text-white">✨ আপনার জন্য</p>
-            <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">সব {bn(CATALOG_COUNT)}+ →</Link>
+        {/* weekly strip */}
+        <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-indigo-950 via-[#141126] to-indigo-950">
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="flex gap-1">
+              {["সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি", "রবি"].map((d, i) => (
+                <span key={d} className={`rounded-lg px-2 py-1 text-[10px] font-black ${i === dayIdx ? "bg-[#f5c518] text-black" : "text-slate-400"}`}>{d}</span>
+              ))}
+            </div>
+            <Link href={`${base}/promotions`} className="shrink-0 rounded-lg bg-gradient-to-b from-amber-400 to-orange-600 px-3 py-1.5 text-[11px] font-black text-white">লগইন করুন</Link>
           </div>
-          <HScroll>
-            {forYou.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
-          </HScroll>
+          <p className="bg-gradient-to-r from-orange-500 to-amber-600 px-3 py-1.5 text-center text-sm font-black italic text-white">নিরাপদে খেলুন, জিতুন প্রতিদিন 🏆</p>
         </div>
 
-        {/* best */}
-        <div className="mt-4 rounded-3xl border border-amber-400/20 bg-gradient-to-b from-amber-500/15 to-transparent p-3">
-          <div className="mb-2.5 flex items-center justify-between px-1">
-            <p className="text-base font-black text-white">🏆 সেরা গেম</p>
-            <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">সব →</Link>
-          </div>
-          <HScroll>
-            {best.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
-          </HScroll>
-        </div>
-
-        {/* sport chips */}
-        <div className="mt-6 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {SPORTS.map((s) => (
-            <Link key={s.id} href={`${base}/sports/${s.id}`} className="flex shrink-0 flex-col items-center gap-1 rounded-2xl border border-white/10 bg-[#101828] px-4 py-2.5 transition active:scale-95">
-              <span className="text-2xl">{s.e}</span>
-              <span className="text-[11px] font-black text-slate-200">{s.n}</span>
-            </Link>
+        {/* category tabs — NG88 style */}
+        <div className="mt-4 grid grid-cols-5 gap-1.5">
+          {CATTABS.map((t) => (
+            <button key={t.id} onClick={() => setCatTab(t.id)}
+              className={`flex flex-col items-center gap-1 rounded-2xl py-3 transition active:scale-95 ${catTab === t.id ? "bg-gradient-to-b from-[#f5c518] to-amber-600 text-black shadow-[0_6px_20px_rgba(245,197,24,0.35)]" : "border border-white/10 bg-[#101828] text-slate-300"}`}>
+              <span className="text-2xl">{t.e}</span>
+              <span className="text-[11px] font-black">{t.n}</span>
+            </button>
           ))}
         </div>
 
+        {/* hot games row */}
+        <div className="mt-4">
+          <div className="mb-2.5 flex items-center justify-between">
+            <p className="text-base font-black text-white">{CATTABS.find((t) => t.id === catTab)?.e} {CATTABS.find((t) => t.id === catTab)?.n}</p>
+            <Link href={catTab === "sports" ? `${base}/sports` : `${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">আরো দেখুন ⌄</Link>
+          </div>
+          {catTab === "sports" ? (
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              {jittered.slice(0, 4).map((m) => <MatchCard key={m.id} m={m} livePulse />)}
+            </div>
+          ) : (
+            <HScroll>
+              {catGames.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
+            </HScroll>
+          )}
+        </div>
+
+        {/* referral program */}
+        <div className="mt-6 overflow-hidden rounded-3xl border border-fuchsia-400/25 bg-gradient-to-b from-fuchsia-600/20 via-[#141126] to-[#0b1120]">
+          <p className="px-4 pt-4 text-lg font-black text-white">👥 রেফারেল প্রোগ্রাম</p>
+          <div className="mx-4 mt-2 rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-700 p-4 text-center">
+            <p className="text-[11px] font-bold tracking-widest text-white/85">EXTRA up to</p>
+            <p className="text-2xl font-black text-yellow-300">{money(19250000)} <span className="text-sm text-white">সাপ্তাহিক কমিশন</span></p>
+            <p className="mt-1 text-xs font-bold text-white">সর্বোচ্চ <b className="text-yellow-300">৪৫৫.৫%</b> লাইফটাইম ডিপোজিট কমিশন</p>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5 px-4 py-3">
+            {[["টায়ার ১", "৪.০%"], ["টায়ার ২", "১.০%"], ["টায়ার ৩", "০.৫%"]].map(([t, v]) => (
+              <div key={t} className="rounded-xl bg-white/[0.05] py-2 text-center ring-1 ring-white/10">
+                <p className="text-[10px] font-bold text-slate-400">{t}</p>
+                <p className="text-base font-black text-[#f5c518]">{v}</p>
+              </div>
+            ))}
+          </div>
+          <div className="px-4 pb-4 text-center">
+            <Link href={`${base}/referral`} className="inline-block rounded-full bg-gradient-to-b from-amber-300 to-orange-500 px-8 py-2.5 text-sm font-black text-black shadow">এখনই রেফার করুন →</Link>
+          </div>
+        </div>
+
+        {/* daily check-in */}
+        <div className="mt-4"><DailyCheckIn /></div>
+
         {/* top live */}
-        <div className="mt-5 flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between">
           <p className="text-lg font-black text-white">🔝 টপ <span className="text-red-400">LIVE</span> <span className="ml-1 rounded-full border border-red-400/50 px-2 py-0.5 text-[10px] font-black text-red-300">Sport</span></p>
-          <Link href={`${base}/live`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
+          <Link href={`${base}/live`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">সব →</Link>
         </div>
         <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {jittered.slice(0, 4).map((m) => <MatchCard key={m.id} m={m} livePulse />)}
-        </div>
-
-        {/* slots */}
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-lg font-black text-white">🎰 স্লটস</p>
-          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
-        </div>
-        <div className="mt-3">
-          <HScroll>
-            {slotsRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
-          </HScroll>
-        </div>
-
-        {/* climb to victory */}
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-lg font-black text-white">🚀 জয়ের শিখরে</p>
-          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
-        </div>
-        <div className="mt-3">
-          <HScroll>
-            {crashRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
-          </HScroll>
-        </div>
-
-        {/* dice & wheel */}
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-lg font-black text-white">🎲 ডাইস ও হুইল</p>
-          <Link href={`${base}/games`} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-black text-white">All →</Link>
-        </div>
-        <div className="mt-3">
-          <HScroll>
-            {diceRow.map((g) => <div key={g.id} className="w-[150px] shrink-0"><CatalogTile g={g} small /></div>)}
-          </HScroll>
         </div>
 
         {/* promos */}
@@ -238,13 +285,51 @@ export function CasinoHome() {
           ))}
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-slate-500">🎮 ডেমো প্ল্যাটফর্ম — ভার্চুয়াল ব্যালেন্সে খেলুন • মোট {bn(CATALOG_COUNT)}+ নিজস্ব গেম</p>
+        {/* trust footer — payments / certs / license */}
+        <div className="mt-6 rounded-3xl border border-white/10 bg-[#0d1322] p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="mb-2 text-xs font-black text-slate-300">💳 পেমেন্ট মেথড</p>
+              <div className="flex flex-wrap gap-1.5">
+                {["বিকাশ", "নগদ", "রকেট", "ব্যাংক", "কার্ড"].map((p) => (
+                  <span key={p} className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-black text-white">{p}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-black text-slate-300">📣 ফলো করুন</p>
+              <div className="flex gap-1.5">
+                {["✈️", "📘", "▶️", "📸"].map((s, i) => (
+                  <span key={i} className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-sm">{s}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-black text-slate-300">🛡️ সার্টিফিকেশন</p>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-black text-white">🔞 ১৮+</span>
+                <span className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-black text-white">✅ RNG সার্টিফাইড</span>
+                <span className="rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-black text-white">🔒 SSL সুরক্ষিত</span>
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-black text-slate-300">📜 গেমিং লাইসেন্স</p>
+              <span className="rounded-lg bg-gradient-to-r from-amber-500/25 to-orange-500/25 px-2.5 py-1 text-[11px] font-black text-amber-300 ring-1 ring-amber-400/40">🏛️ লাইসেন্সপ্রাপ্ত প্ল্যাটফর্ম</span>
+            </div>
+          </div>
+          <p className="mt-4 text-center text-[11px] text-slate-500">🎮 ডেমো প্ল্যাটফর্ম — ভার্চুয়াল ব্যালেন্সে খেলুন • মোট {bn(CATALOG_COUNT)}+ নিজস্ব গেম • দায়িত্বশীল গেমিং</p>
+        </div>
 
         {count > 0 && (
           <Link href={`${base}/betslip`} className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-[#f5c518] px-5 py-3 text-sm font-black text-black shadow-2xl">
             🧾 বেট স্লিপ <span className="rounded-full bg-black px-2 text-xs text-[#f5c518]">{bn(count)}</span>
           </Link>
         )}
+
+        {/* floating REWARDS tab */}
+        <Link href={`${base}/promotions`} className="fixed left-0 top-1/2 z-40 -translate-y-1/2 rounded-r-xl bg-gradient-to-b from-purple-500 to-fuchsia-700 px-1.5 py-4 text-[10px] font-black tracking-[0.2em] text-white shadow-lg" style={{ writingMode: "vertical-rl" }}>
+          🎁 REWARDS
+        </Link>
       </Page>
     </div>
   );
