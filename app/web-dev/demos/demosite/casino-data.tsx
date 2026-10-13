@@ -58,7 +58,7 @@ export const SPORTS: { id: SportId; n: string; e: string }[] = [
 export const sportName = (id: SportId) => SPORTS.find((s) => s.id === id)?.n ?? id;
 
 /** Deterministic fixture engine — 3-4 months of upcoming, 30 days of results, live now. */
-function fxRng(seed: number) {
+export function fxRng(seed: number) {
   let a = seed >>> 0;
   return () => {
     a |= 0; a = (a + 0x6D2B79F5) | 0;
@@ -78,7 +78,7 @@ export function dayLabel(day: number): string {
 }
 
 type Team = { n: string; e: string; s: number };
-const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
+export const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
   cricket: {
     leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইন্ডিয়ান প্রিমিয়ার লিগ","টি-টোয়েন্টি আন্তর্জাতিক","ওয়ানডে সিরিজ","টেস্ট সিরিজ","এশিয়া কাপ"],
     teams: [
@@ -299,6 +299,7 @@ export const PROVIDERS = [
   "DigiPlay Originals", "রয়েল গেমিং", "মেগাউইন স্টুডিও", "গোল্ডেন টাচ",
   "নোভা সফট", "টাইগার গেমস", "লাকি স্পিন ল্যাব", "পদ্মা গেমিং",
   "ঢাকা প্লে", "স্পিন হাউস বিডি", "জেম ওয়ার্কস", "ভিক্টরি ল্যাব",
+  "ক্রাউন গেমিং", "থান্ডার প্লে", "ফরচুন কিং", "নিয়ন স্টার",
 ];
 
 const GRADS = [
@@ -511,7 +512,15 @@ function buildCatalog(): CatalogGame[] {
   return shuffled;
 }
 
-export const GAME_CATALOG: CatalogGame[] = buildCatalog();
+const _CATALOG = buildCatalog();
+// ★ Pinned #1 — সুপার এস (own IP flagship card slot)
+_CATALOG.unshift({
+  id: "superace-1", n: "সুপার এস", e: "🂡", cat: "slots", engine: "superace",
+  provider: "DigiPlay Originals", players: "32.8ক", rtp: 96.8, hot: true, isNew: true,
+  grad: "from-amber-500 via-yellow-600 to-orange-800",
+  syms: ["🂡", "🃏", "👑", "💎", "♠️", "♥️", "♣️", "♦️"],
+});
+export const GAME_CATALOG: CatalogGame[] = _CATALOG;
 export const CATALOG_COUNT = GAME_CATALOG.length;
 
 /** Find a catalog game by id. */
@@ -530,6 +539,7 @@ export function catalogHref(g: CatalogGame): string {
     case "mines": return `/mines`;
     case "plinko": return `/plinko`;
     case "hilo": return `/hilo`;
+    case "superace": return `/superace`;
     default: return `/casino`;
   }
 }
@@ -777,28 +787,6 @@ export function TeamEmblem({ e, size = "md" }: { e: string; size?: "sm" | "md" |
   }
   return <span className={`shrink-0 drop-shadow ${cls}`}>{e}</span>;
 }
-
-/** Last-5 form for any team: opponents, scores, W/L. Deterministic per team name. */
-export interface TeamFormRec { vs: string; vsE: string; score: string; res: "W" | "L" | "D"; date: string }
-export function teamHistory(name: string, sport: SportId): TeamFormRec[] {
-  const pool = FX_TEAMS[sport].teams.filter((t) => t.n !== name);
-  let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  const r = fxRng(h + 777);
-  const out: TeamFormRec[] = [];
-  for (let i = 0; i < 5; i++) {
-    const opp = pool[Math.floor(r() * pool.length)];
-    const w = r() < 0.55;
-    const d = !w && r() < 0.15;
-    let score = "";
-    if (sport === "cricket") { const a = 130 + Math.floor(r() * 80), b = 125 + Math.floor(r() * 80); score = w ? `${bn(a)}/${bn(3 + Math.floor(r() * 5))} বনাম ${bn(b)}` : `${bn(b)} বনাম ${bn(a)}/${bn(3 + Math.floor(r() * 5))}`; }
-    else if (sport === "football") { const a = Math.floor(r() * 3), b = Math.floor(r() * 3); score = w ? `${bn(Math.max(a, b + 1))}-${bn(b)}` : d ? `${bn(a)}-${bn(a)}` : `${bn(b)}-${bn(Math.max(a, b + 1))}`; }
-    else if (sport === "tennis") { score = w ? "২-০ সেট" : "০-২ সেট"; }
-    else { const a = 95 + Math.floor(r() * 30), b = 90 + Math.floor(r() * 30); score = w ? `${bn(Math.max(a, b + 4))}-${bn(b)}` : `${bn(b)}-${bn(Math.max(a, b + 4))}`; }
-    out.push({ vs: opp.n, vsE: opp.e, score, res: d ? "D" : w ? "W" : "L", date: dayLabel(-(2 + i * 4 + Math.floor(r() * 3))) });
-  }
-  return out;
-}
-
 
 export function gameHref(g: CasiGame): string {
   if (g.cat === "slots") return `/casino/slots/${g.id}`;
