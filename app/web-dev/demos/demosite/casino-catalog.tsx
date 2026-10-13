@@ -10,61 +10,94 @@ import { bn, money, GOLD, useSkin, SLOT_GAMES, GAME_CATALOG, catalogHref, PROVID
 /* ============================== CATALOG TILE & LOBBY ============================== */
 
 /** Rich visual game tile — gradient art, glow symbol, provider, players. */
-export function CatalogTile({ g, small }: { g: CatalogGame; small?: boolean }) {
+/** Favorite games (browser-local). */
+export function useFavGames() {
+  const [favs, setFavs] = useState<string[]>([]);
+  useEffect(() => {
+    try { setFavs(JSON.parse(localStorage.getItem("dp_fav_games") || "[]")); } catch {}
+  }, []);
+  const toggle = (id: string) => {
+    setFavs((f) => {
+      const n = f.includes(id) ? f.filter((x) => x !== id) : [...f, id];
+      try { localStorage.setItem("dp_fav_games", JSON.stringify(n)); } catch {}
+      return n;
+    });
+  };
+  return { favs, toggle };
+}
+
+export function CatalogTile({ g, small, fav, onFav }: { g: CatalogGame; small?: boolean; fav?: boolean; onFav?: (id: string) => void }) {
   const { base } = useSkin();
   const cover = g.n.split(" ").slice(0, 2).join(" ");
-  const maxWin = g.cat === "slots" ? "১০০০x" : g.cat === "crash" ? "১০,০০০x" : g.cat === "mines" ? "৫০০০x" : "১০০x";
-  // seeded layout variant so neighbouring tiles never share the same composition
+  const maxX = g.cat === "slots" ? 1000 : g.cat === "crash" ? 10000 : g.cat === "mines" ? 5000 : 100;
   let h = 0; for (let i = 0; i < g.id.length; i++) h = (h * 31 + g.id.charCodeAt(i)) >>> 0;
   const v = h % 3;
   const s0 = g.syms[0] ?? g.e;
   const s1 = g.syms[1] ?? g.e;
   const s2 = g.syms[3] ?? g.syms[2] ?? g.e;
   return (
-    <Link href={`${base}${catalogHref(g)}`} className="group block overflow-hidden rounded-2xl border border-white/10 bg-[#101828] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition hover:border-[#f5c518]/60 hover:shadow-[0_10px_32px_rgba(245,197,24,0.22)] active:scale-[0.98]">
-      <div className={`relative bg-gradient-to-br ${g.grad} ${small ? "h-[104px]" : "h-32"} overflow-hidden`}>
-        <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 82% 12%, #ffffff66 0, transparent 44%), radial-gradient(circle at 12% 92%, #00000099 0, transparent 55%)" }} />
-        <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)" }} />
-        {/* symbol composition — 3 variants */}
-        {v === 0 && (
-          <>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[62px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:rotate-[-8deg] group-hover:scale-125">{s0}</div>
-            <div className="absolute right-16 top-2 text-[22px] opacity-80 drop-shadow">{s1}</div>
-            <div className="absolute bottom-9 right-3 text-[20px] opacity-70 drop-shadow">{s2}</div>
-          </>
-        )}
-        {v === 1 && (
-          <div className="absolute inset-x-0 top-2 flex items-start justify-center gap-1.5">
-            <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:-rotate-12">{s1}</span>
-            <span className="text-[54px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</span>
-            <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:rotate-12">{s2}</span>
+    <div className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-[#101828] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition hover:border-[#f5c518]/60 hover:shadow-[0_10px_32px_rgba(245,197,24,0.22)] active:scale-[0.98]">
+      <Link href={`${base}${catalogHref(g)}`} className="block">
+        <div className={`relative bg-gradient-to-br ${g.grad} ${small ? "h-[104px]" : "h-36"} overflow-hidden`}>
+          {/* rich layered art */}
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 82% 12%, #ffffff66 0, transparent 44%), radial-gradient(circle at 12% 92%, #00000099 0, transparent 55%)" }} />
+          <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)" }} />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent" />
+          {/* floating particles */}
+          <span className="absolute left-[18%] top-[18%] h-1.5 w-1.5 animate-pulse rounded-full bg-white/50" />
+          <span className="absolute left-[68%] top-[30%] h-1 w-1 animate-pulse rounded-full bg-yellow-200/70" style={{ animationDelay: ".7s" }} />
+          <span className="absolute left-[42%] top-[10%] h-1 w-1 animate-pulse rounded-full bg-white/40" style={{ animationDelay: "1.3s" }} />
+          {/* symbol composition — 3 variants */}
+          {v === 0 && (
+            <>
+              <div className="absolute right-2 top-[38%] -translate-y-1/2 text-[62px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:rotate-[-8deg] group-hover:scale-125">{s0}</div>
+              <div className="absolute right-16 top-2 text-[22px] opacity-80 drop-shadow">{s1}</div>
+              <div className="absolute bottom-10 right-3 text-[20px] opacity-70 drop-shadow">{s2}</div>
+            </>
+          )}
+          {v === 1 && (
+            <div className="absolute inset-x-0 top-1.5 flex items-start justify-center gap-1.5">
+              <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:-rotate-12">{s1}</span>
+              <span className="text-[54px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</span>
+              <span className="mt-2 text-[30px] opacity-85 drop-shadow transition duration-300 group-hover:rotate-12">{s2}</span>
+            </div>
+          )}
+          {v === 2 && (
+            <>
+              <div className="absolute left-1/2 top-[36%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/25 bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.25)]" />
+              <div className="absolute left-1/2 top-[36%] -translate-x-1/2 -translate-y-1/2 text-[52px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</div>
+              <div className="absolute left-3 top-2 text-[20px] opacity-75 drop-shadow">{s1}</div>
+              <div className="absolute right-3 top-2 text-[20px] opacity-75 drop-shadow">{s2}</div>
+            </>
+          )}
+          {/* ribbons */}
+          {g.hot && <span className="absolute left-0 top-2.5 rounded-r-lg bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-[9px] font-black text-black shadow">BEST</span>}
+          {g.isNew && <span className="absolute left-0 top-[34px] rounded-r-lg bg-gradient-to-r from-emerald-400 to-green-600 px-2 py-0.5 text-[9px] font-black text-white shadow">NEW</span>}
+          <span className="absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-black text-yellow-300 ring-1 ring-yellow-400/40">MAX {bn(maxX)}x</span>
+          {/* cover title + win-up-to band */}
+          <div className="absolute inset-x-0 bottom-0 p-2">
+            <p className="text-[15px] font-black uppercase leading-[1.05] tracking-tight text-white" style={{ textShadow: "0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.8)" }}>{cover}</p>
+            <div className="mt-1 flex items-center justify-between">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-white/75">{g.provider}</p>
+              <p className="rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-black text-amber-300">Win up to <b>x{bn(maxX)}</b></p>
+            </div>
           </div>
-        )}
-        {v === 2 && (
-          <>
-            <div className="absolute left-1/2 top-[42%] h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/25 bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.25)]" />
-            <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 text-[52px] leading-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.7)] transition duration-300 group-hover:scale-125">{s0}</div>
-            <div className="absolute left-3 top-2 text-[20px] opacity-75 drop-shadow">{s1}</div>
-            <div className="absolute right-3 top-2 text-[20px] opacity-75 drop-shadow">{s2}</div>
-          </>
-        )}
-        {/* cover title */}
-        <div className={`absolute bottom-2 left-2 ${v === 0 ? "right-16" : "right-2"}`}>
-          <p className="text-[15px] font-black uppercase leading-[1.05] tracking-tight text-white" style={{ textShadow: "0 2px 0 rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.8)" }}>{cover}</p>
-          <p className="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-white/75">{g.provider}</p>
+          <span className="absolute bottom-2 right-2 hidden">👥</span>
         </div>
-        {g.hot && <span className="absolute left-2 top-2 rounded-md bg-gradient-to-b from-red-500 to-red-700 px-1.5 py-0.5 text-[9px] font-black text-white shadow">🔥 HOT</span>}
-        <span className="absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-black text-yellow-300 ring-1 ring-yellow-400/40">MAX {maxWin}</span>
-        <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-1.5 py-0.5 text-[8px] font-bold text-white/85">👥 {g.players}</span>
-      </div>
+      </Link>
       <div className="flex items-center gap-2 p-2.5">
         <div className="min-w-0 flex-1">
           <p className="truncate text-[12px] font-black text-white">{g.n}</p>
-          <p className="text-[10px] text-slate-400">RTP {bn(g.rtp.toFixed(1))}%</p>
+          <p className="text-[10px] text-slate-400">👥 {g.players} • RTP {bn(g.rtp.toFixed(1))}%</p>
         </div>
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-b from-yellow-300 to-amber-600 text-[11px] font-black text-black shadow transition group-hover:scale-110">▶</span>
+        {onFav && (
+          <button onClick={() => onFav(g.id)} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm transition active:scale-90 ${fav ? "bg-red-500/20 text-red-400" : "bg-white/5 text-slate-500 hover:text-white"}`} aria-label="ফেভারিট">
+            {fav ? "❤️" : "🤍"}
+          </button>
+        )}
+        <Link href={`${base}${catalogHref(g)}`} className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-b from-yellow-300 to-amber-600 text-[11px] font-black text-black shadow transition group-hover:scale-110">▶</Link>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -103,20 +136,53 @@ function LobbyStats() {
 }
 
 export function CatalogLobby() {
-  const { sub } = useSkin();
+  const { base, sub } = useSkin();
+  const [tab, setTab] = useState<"games" | "new" | "bonus" | "cashback" | "fav">("games");
   const [cat, setCat] = useState("all");
   const [provider, setProvider] = useState("সব প্রোভাইডার");
   const [q, setQ] = useState("");
   const [shown, setShown] = useState(48);
+  const { favs, toggle } = useFavGames();
   const filtered = useMemo(() => GAME_CATALOG.filter((g) =>
     (cat === "all" || g.cat === cat) &&
     (provider === "সব প্রোভাইডার" || g.provider === provider) &&
-    (!q || g.n.includes(q) || g.provider.includes(q))
-  ), [cat, provider, q]);
+    (!q || g.n.includes(q) || g.provider.includes(q)) &&
+    (tab === "games" || (tab === "new" && g.isNew) || (tab === "fav" && favs.includes(g.id)))
+  ), [cat, provider, q, tab, favs]);
   return (
     <Page>
       <SectionTitle t="🎮 গেম লবি" sub={`মোট ${bn(GAME_CATALOG.length)}+ গেম • সব নিজস্ব ইঞ্জিনে চলে`} />
       <LobbyStats />
+      {/* lobby tabs */}
+      <div className="mb-3 grid grid-cols-5 gap-1.5">
+        {([["games", "🎮", "সব গেম"], ["new", "🆕", "নতুন"], ["bonus", "🎁", "বোনাস"], ["cashback", "💸", "ক্যাশব্যাক"], ["fav", "⭐", "ফেভারিট"]] as const).map(([id, e, t]) => (
+          <button key={id} onClick={() => { setTab(id); setShown(48); }}
+            className={`rounded-2xl py-2.5 text-center transition ${tab === id ? "bg-[#f5c518] text-black" : "border border-white/10 bg-white/[0.04] text-slate-300"}`}>
+            <p className="text-lg leading-none">{e}</p>
+            <p className="mt-1 text-[10px] font-black">{t}</p>
+            {id === "fav" && favs.length > 0 && <p className="text-[9px] font-bold opacity-70">{bn(favs.length)}</p>}
+          </button>
+        ))}
+      </div>
+      {tab === "bonus" && (
+        <div className="mb-4 space-y-2">
+          {[["🎁 ১০০% ওয়েলকাম বোনাস", "প্রথম ডিপোজিটে ২০,০০০ টাকা পর্যন্ত বোনাস", "/promotions"], ["🔄 ফ্রি স্পিন প্যাক", "প্রতিদিন লগইনে ২০টি ফ্রি স্পিন", "/promotions"], ["👥 রেফার বোনাস", "বন্ধুকে আনুন, ৫০০ টাকা করে পান", "/referral"]].map(([t, d, h]) => (
+            <Link key={t} href={`${base}${h}`} className="flex items-center justify-between rounded-2xl border border-[#f5c518]/25 bg-gradient-to-r from-[#1a1405] to-[#101828] p-4">
+              <div><p className="text-sm font-black text-white">{t}</p><p className="mt-0.5 text-xs text-slate-400">{d}</p></div>
+              <span className="rounded-full bg-[#f5c518] px-3 py-1.5 text-xs font-black text-black">নিন →</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      {tab === "cashback" && (
+        <div className="mb-4 overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-950/50 to-[#101828] p-5 text-center">
+          <p className="text-3xl">💸</p>
+          <p className="mt-2 text-lg font-black text-white">সাপ্তাহিক ক্যাশব্যাক</p>
+          <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-slate-300">প্রতি সোমবার আপনার সাপ্তাহিক নিট লসের <b className="text-emerald-300">১০% পর্যন্ত</b> ফেরত পান। ভিআইপি লেভেল যত উঁচু, ক্যাশব্যাক তত বেশি।</p>
+          <Link href={`${base}/vip`} className="mt-3 inline-block rounded-full bg-emerald-500 px-5 py-2 text-xs font-black text-black">ভিআইপি দেখুন →</Link>
+        </div>
+      )}
+      {(tab === "games" || tab === "new" || tab === "fav") && (<>
       <input value={q} onChange={(e) => { setQ(e.target.value); setShown(48); }} placeholder="🔍 গেম খুঁজুন..."
         className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500" />
       <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
@@ -139,7 +205,7 @@ export function CatalogLobby() {
       {filtered.length === 0 ? <Empty emoji="🎮" text="কোনো গেম পাওয়া যায়নি" /> : (
         <>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-            {filtered.slice(0, shown).map((g) => <CatalogTile key={g.id} g={g} />)}
+            {filtered.slice(0, shown).map((g) => <CatalogTile key={g.id} g={g} fav={favs.includes(g.id)} onFav={toggle} />)}
           </div>
           {shown < filtered.length && (
             <button onClick={() => setShown((v) => v + 48)} className="mt-5 w-full rounded-2xl border border-[#f5c518]/40 bg-[#f5c518]/10 py-3 text-sm font-black text-[#f5c518] transition active:scale-[0.99]">
@@ -148,6 +214,7 @@ export function CatalogLobby() {
           )}
         </>
       )}
+      </>)}
     </Page>
   );
 }
