@@ -164,9 +164,9 @@ function buildFixtures(): CasiMatch[] {
   const sports: SportId[] = ["cricket", "football", "tennis", "basketball"];
   for (const sp of sports) {
     const { leagues, teams } = FX_TEAMS[sp];
-    const count = sp === "cricket" ? 52 : sp === "football" ? 48 : sp === "tennis" ? 26 : 18;
+    const count = sp === "cricket" ? 70 : sp === "football" ? 65 : sp === "tennis" ? 35 : sp === "basketball" ? 25 : 18;
     for (let i = 0; i < count; i++) {
-      const day = Math.floor(r() * 121); // 0..120
+      const day = Math.floor(r() * 271); // 0..270 (~9 months)
       const lg = leagues[Math.floor(r() * leagues.length)];
       const hi = Math.floor(r() * teams.length);
       let ai = Math.floor(r() * teams.length);
@@ -292,6 +292,7 @@ export interface CatalogGame {
   hot?: boolean;
   grad: string;       // tailwind gradient classes for tile art
   syms: string[];     // symbol set for slot engine
+  isNew?: boolean;
 }
 
 export const PROVIDERS = [
@@ -391,6 +392,7 @@ function buildCatalog(): CatalogGame[] {
           rtp: 94 + seededNum(id + "r", 50) / 10,
           hot: seededNum(id + "h", 12) === 0,
           grad: THEME_GRADS[t],
+          isNew: seededNum(id + "nw", 100) < 9,
           syms: theme.syms,
         });
       }
@@ -411,6 +413,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 250) / 10 + 0.5).toFixed(1)}ক`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: ci <= 6,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🚀"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
@@ -428,6 +431,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 120) / 10 + 0.2).toFixed(1)}ক`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: mi <= 4,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["💣", "💎"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
@@ -444,6 +448,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 90) / 10 + 0.2).toFixed(1)}ক`,
         rtp: 95 + seededNum(id + "r", 40) / 10, hot: pi <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🔵"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
@@ -460,6 +465,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 100) / 10 + 0.2).toFixed(1)}ক`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: di <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎲"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
@@ -476,6 +482,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 80) / 10 + 0.2).toFixed(1)}ক`,
         rtp: 95 + seededNum(id + "r", 40) / 10, hot: wi <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎡"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
@@ -492,6 +499,7 @@ function buildCatalog(): CatalogGame[] {
         players: `${(seededNum(id + "p", 60) / 10 + 0.2).toFixed(1)}ক`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: hi <= 2,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🃏"],
+      isNew: seededNum(id + "nw", 100) < 9,
       });
     }
   }
