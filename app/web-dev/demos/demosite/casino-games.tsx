@@ -67,6 +67,112 @@ const SLOT_LINES = [
 ];
 const BET_STEPS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
 
+type HWCell = null | { v: number } | { jp: "MINI" | "MINOR" | "MAJOR" | "GRAND" };
+const HW_JP = { MINI: 10, MINOR: 25, MAJOR: 100, GRAND: 500 };
+
+/** HOLD & WIN bonus round — 3x3 sticky coins, 3 respins, jackpot tiers. */
+function HoldWinBonus({ bet, onEnd }: { bet: number; onEnd: (win: number) => void }) {
+  const mkCoin = (): Exclude<HWCell, null> => {
+    const r = Math.random();
+    if (r < 0.05) return { jp: "MINI" };
+    if (r < 0.08) return { jp: "MINOR" };
+    if (r < 0.095) return { jp: "MAJOR" };
+    return { v: [1, 2, 3, 5, 8][Math.floor(Math.random() * 5)] };
+  };
+  const [grid, setGrid] = useState<HWCell[]>(() => {
+    const g: HWCell[] = Array(9).fill(null);
+    const pos = [0, 1, 2, 3, 4, 5, 6, 7, 8].sort(() => Math.random() - 0.5).slice(0, 6);
+    for (const i of pos) g[i] = mkCoin();
+    return g;
+  });
+  const gridRef = useRef(grid);
+  const [respins, setRespins] = useState(3);
+  const [done, setDone] = useState(false);
+  const [finalTotal, setFinalTotal] = useState(0);
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (doneRef.current) return;
+      const prev = gridRef.current;
+      const empties = prev.map((c, i) => (c ? -1 : i)).filter((i) => i >= 0);
+      if (empties.length === 0) return;
+      const next = [...prev];
+      let added = 0;
+      for (const i of empties) {
+        if (Math.random() < 0.34) { next[i] = mkCoin(); added++; }
+      }
+      if (added > 0) { gridRef.current = next; setGrid(next); setRespins(3); }
+      else setRespins((rp) => rp - 1);
+    }, 1400);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const filled = grid.every((c) => c);
+    if ((respins <= 0 || filled) && !doneRef.current) {
+      doneRef.current = true;
+      setDone(true);
+      let total = 0;
+      for (const c of grid) {
+        if (!c) continue;
+        total += "jp" in c ? HW_JP[c.jp] * bet : c.v * bet;
+      }
+      if (filled) total += HW_JP.GRAND * bet;
+      total = Math.round(total);
+      setFinalTotal(total);
+      const t = setTimeout(() => onEnd(total), 2600);
+      return () => clearTimeout(t);
+    }
+  }, [respins, grid]);
+
+  const cellLabel = (c: HWCell) => {
+    if (!c) return "";
+    if ("jp" in c) return c.jp;
+    return `${c.v}x`;
+  };
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
+      <style>{`@keyframes dp-coinpop { 0% { transform: scale(0) rotate(-40deg) } 60% { transform: scale(1.25) rotate(10deg) } 100% { transform: scale(1) rotate(0) } } .dp-coinpop { animation: dp-coinpop .5s ease both }`}</style>
+      <div className="w-full max-w-[420px] overflow-hidden rounded-3xl border-2 border-amber-400/70 bg-gradient-to-b from-[#2a1503] via-[#160b02] to-black shadow-[0_0_60px_rgba(245,197,24,0.35)]">
+        <div className="bg-gradient-to-b from-amber-500/30 to-transparent px-4 pb-2 pt-4 text-center">
+          <p className="bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 bg-clip-text text-3xl font-black tracking-wide text-transparent">🪙 HOLD & WIN</p>
+          <p className="mt-1 text-xs font-bold text-amber-200/80">কয়েন আটকে থাকবে • নতুন কয়েন = আবার ৩ রিস্পিন</p>
+        </div>
+        <div className="mx-4 grid grid-cols-4 gap-1.5">
+          {[["GRAND", 500, "from-red-500 to-red-800"], ["MAJOR", 100, "from-fuchsia-500 to-purple-800"], ["MINOR", 25, "from-sky-500 to-blue-800"], ["MINI", 10, "from-emerald-500 to-green-800"]].map(([t, x, gr]) => (
+            <div key={t as string} className={`rounded-lg bg-gradient-to-b ${gr} p-[1.5px]`}>
+              <div className="rounded-md bg-black/60 px-1 py-1 text-center">
+                <p className="text-[7px] font-black text-white/80">{t}</p>
+                <p className="text-[10px] font-black text-yellow-200">{x}x</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-3 gap-2 p-4">
+          {grid.map((c, i) => (
+            <div key={i} className="flex aspect-square items-center justify-center rounded-2xl bg-black/50 ring-1 ring-amber-500/25">
+              {c && (
+                <div className="dp-coinpop grid h-[86%] w-[86%] place-items-center rounded-full bg-gradient-to-b from-yellow-200 via-amber-400 to-amber-700 shadow-[0_0_18px_rgba(245,197,24,0.6)] ring-2 ring-yellow-200/70">
+                  <p className={`font-black text-black ${"jp" in c ? "text-[11px]" : "text-lg"}`}>{cellLabel(c)}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between px-4 pb-4">
+          <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white">🔄 রিস্পিন: {bn(respins)}</span>
+          {done ? (
+            <span className="dp-coinpop rounded-full bg-gradient-to-b from-yellow-300 to-amber-600 px-4 py-1.5 text-sm font-black text-black">🏆 {money(finalTotal)}</span>
+          ) : (
+            <span className="text-xs font-bold text-white/60">কয়েন জমছে…</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SlotGame({ id }: { id: string }) {
   const cg = catalogGame(id);
   const g = SLOT_GAMES.find((x) => x.id === id) ?? (cg ? { id: cg.id, n: cg.n, e: cg.e, cat: "slots", players: cg.players, rtp: `${cg.rtp.toFixed(1)}%` } : SLOT_GAMES[0]);
@@ -75,27 +181,37 @@ export function SlotGame({ id }: { id: string }) {
   const finish = useGameRound(g.n);
   const syms = (cg?.syms ?? SLOT_SYMBOLS[g.id] ?? SLOT_SYMBOLS.royal).slice(0, 8);
   const SCATTER = "⭐";
-  const allSyms = [...syms, SCATTER];
+  const COIN = "🪙";
+  const allSyms = [...syms, SCATTER, COIN];
   const rnd = () => allSyms[Math.floor(Math.random() * allSyms.length)];
+  const baseRnd = () => syms[Math.floor(Math.random() * syms.length)];
 
   const [bet, setBet] = useState(50);
-  const [grid, setGrid] = useState<string[]>(() => Array.from({ length: 15 }, rnd));
+  const [grid, setGrid] = useState<string[]>(() => Array.from({ length: 15 }, baseRnd));
   const [spinning, setSpinning] = useState(false);
   const [stoppedCols, setStoppedCols] = useState(5);
   const [winCells, setWinCells] = useState<number[]>([]);
   const [winLines, setWinLines] = useState<number[][]>([]);
-  const [dispWin, setDispWin] = useState(0);
+  const [dispTotal, setDispTotal] = useState(0);
   const [totalWin, setTotalWin] = useState(0);
+  const totalRef = useRef(0);
   const [tier, setTier] = useState<"" | "win" | "big" | "mega">("");
   const [coins, setCoins] = useState<number[]>([]);
   const [msg, setMsg] = useState("");
   const [nearMiss, setNearMiss] = useState(false);
+  const [holdWin, setHoldWin] = useState<null | { paid: boolean }>(null);
   const [freeLeft, setFreeLeft] = useState(0);
   const [freeWon, setFreeWon] = useState(0);
   const [autoLeft, setAutoLeft] = useState(0);
   const [turbo, setTurbo] = useState(false);
   const [roundKey, setRoundKey] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [pots, setPots] = useState({ grand: 0, major: 0, minor: 0, mini: 0 });
+  useEffect(() => {
+    setPots({ grand: bet * 500, major: bet * 50, minor: bet * 20, mini: bet * 10 });
+    const t = setInterval(() => setPots((p) => ({ grand: p.grand + bet * 0.4, major: p.major + bet * 0.05, minor: p.minor + bet * 0.02, mini: p.mini + bet * 0.01 })), 2500);
+    return () => clearInterval(t);
+  }, [bet]);
   const colsRef = useRef(5);
   const stateRef = useRef({ spinning: false, freeLeft: 0, autoLeft: 0 });
   stateRef.current = { spinning, freeLeft, autoLeft };
@@ -106,7 +222,8 @@ export function SlotGame({ id }: { id: string }) {
   /** RTP-weighted final grid: owner RTP controls winning-grid frequency. */
   function rollFinal(): string[] {
     const winBias = Math.max(0.03, Math.min(0.32, (cfg.rtp - 86) / 36));
-    const f = Array.from({ length: 15 }, rnd);
+    const f = Array.from({ length: 15 }, baseRnd);
+    for (let i = 0; i < 15; i++) { const rr = Math.random(); if (rr < 0.035) f[i] = SCATTER; else if (rr < 0.065) f[i] = COIN; }
     if (Math.random() < winBias) {
       const line = SLOT_LINES[Math.floor(Math.random() * SLOT_LINES.length)];
       const sym = syms[Math.floor(Math.random() * 5)];
@@ -121,7 +238,7 @@ export function SlotGame({ id }: { id: string }) {
       // prevent accidental line wins, but ALLOW near-misses (2 from left)
       for (const line of SLOT_LINES) {
         let run = 1;
-        for (let i = 1; i < 5; i++) { if (f[line[i]] === f[line[0]] && f[line[i]] !== SCATTER) run++; else break; }
+        for (let i = 1; i < 5; i++) { if (f[line[i]] === f[line[0]] && f[line[i]] !== SCATTER && f[line[i]] !== COIN) run++; else break; }
         if (run >= 3) f[line[run]] = syms[(syms.indexOf(f[line[run]]) + 3) % syms.length];
       }
     }
@@ -134,7 +251,7 @@ export function SlotGame({ id }: { id: string }) {
     const linesHit: number[][] = [];
     for (const line of SLOT_LINES) {
       const s0 = f[line[0]];
-      if (s0 === SCATTER) continue;
+      if (s0 === SCATTER || s0 === COIN) continue;
       let run = 1;
       for (let i = 1; i < 5; i++) { if (f[line[i]] === s0) run++; else break; }
       if (run >= 3) {
@@ -145,16 +262,35 @@ export function SlotGame({ id }: { id: string }) {
       }
     }
     const scatters = f.filter((x) => x === SCATTER).length;
-    return { win: Math.round(win * mult), cells: [...cells], linesHit, scatters };
+    const coinCount = f.filter((x) => x === COIN).length;
+    return { win: Math.round(win * mult), cells: [...cells], linesHit, scatters, coinCount };
   }
 
-  function animateWin(amount: number) {
+  function endHoldWin(total: number) {
+    const cost = holdWin?.paid ? bet * 50 : 0;
+    finish(cost, total);
+    if (total > 0) {
+      creditWin(total);
+      const ratio = total / bet;
+      setTier(ratio >= 25 ? "mega" : "win");
+      setCoins(Array.from({ length: ratio >= 25 ? 26 : 12 }, (_, i) => i));
+      setMsg(`🪙 HOLD & WIN — ${money(total)} জিতেছেন!`);
+    } else setMsg("বোনাস শেষ — আবার চেষ্টা করুন");
+    setHoldWin(null);
+  }
+
+  /** WIN panel always shows the SESSION TOTAL, counting up. */
+  function creditWin(amount: number) {
+    const from = totalRef.current;
+    const to = from + amount;
+    totalRef.current = to;
+    setTotalWin(to);
     const steps = 18;
     let i = 0;
     const t = setInterval(() => {
       i++;
-      setDispWin(Math.round((amount * i) / steps));
-      if (i >= steps) { clearInterval(t); setDispWin(amount); }
+      setDispTotal(Math.round(from + ((to - from) * i) / steps));
+      if (i >= steps) { clearInterval(t); setDispTotal(to); }
     }, 40);
     timers.current.push(t as unknown as ReturnType<typeof setTimeout>);
   }
@@ -165,7 +301,7 @@ export function SlotGame({ id }: { id: string }) {
       if (!store.payWithWallet(betAmt, `🎰 ${g.n}`)) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); setAutoLeft(0); return; }
     }
     setSpinning(true);
-    setWinCells([]); setWinLines([]); setDispWin(0); setTier(""); setCoins([]); setNearMiss(false); setMsg("");
+    setWinCells([]); setWinLines([]); setTier(""); setCoins([]); setNearMiss(false); setMsg("");
     setStoppedCols(0);
     setRoundKey((k) => k + 1);
     const final = rollFinal();
@@ -186,15 +322,14 @@ export function SlotGame({ id }: { id: string }) {
       clearInterval(shuffle);
       setGrid(final);
       const mult = isFree ? 2 : 1;
-      const { win, cells, linesHit, scatters } = evaluate(final, betAmt, mult);
+      const { win, cells, linesHit, scatters, coinCount } = evaluate(final, betAmt, mult);
       setWinCells(cells); setWinLines(linesHit);
       setSpinning(false);
       let newFree = 0;
       if (scatters >= 3 && !isFree) newFree = 8;
       const effWin = win;
       if (effWin > 0) {
-        animateWin(effWin);
-        setTotalWin((t) => t + effWin);
+        creditWin(effWin);
         if (isFree) setFreeWon((w) => w + effWin);
         const ratio = effWin / betAmt;
         setTier(ratio >= 25 ? "mega" : ratio >= 10 ? "big" : "win");
@@ -202,13 +337,16 @@ export function SlotGame({ id }: { id: string }) {
         setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : `🎉 জিতেছেন!`);
       } else {
         // near-miss detection — exactly 2 matching from left on any line
-        const nm = SLOT_LINES.some((line) => final[line[0]] !== SCATTER && final[line[1]] === final[line[0]] && final[line[2]] !== final[line[0]]);
+        const nm = SLOT_LINES.some((line) => final[line[0]] !== SCATTER && final[line[0]] !== COIN && final[line[1]] === final[line[0]] && final[line[2]] !== final[line[0]]);
         setNearMiss(nm);
         setMsg(nm ? "😱 আরেকটু হলেই জিততেন! আবার স্পিন করুন" : isFree ? "" : "আবার চেষ্টা করুন — ভাগ্য ঘুরবেই!");
       }
       // finish credits the win (topUp) + records history. Free rounds record bet 0.
       finish(isFree ? 0 : betAmt, effWin);
-      if (newFree > 0) {
+      if (coinCount >= 5 && !isFree && !holdWin) {
+        setMsg("🪙 HOLD & WIN বোনাস!");
+        later(() => setHoldWin({ paid: false }), 900);
+      } else if (newFree > 0) {
         setMsg(`⭐⭐⭐ ${bn(newFree)}টি ফ্রি স্পিন! সব জয় ২x`);
         setFreeLeft(newFree);
         setFreeWon(0);
@@ -276,6 +414,18 @@ export function SlotGame({ id }: { id: string }) {
             <Link href={`${base}/deposit`} className="rounded-lg bg-[#f5c518] px-2.5 py-1 text-[11px] font-black text-black">＋ টপ-আপ</Link>
           </div>
 
+          {/* jackpot tiers — progressive */}
+          <div className="mx-auto mt-2 grid max-w-[560px] grid-cols-4 gap-1.5">
+            {[["GRAND", pots.grand, "from-red-500 to-red-800"], ["MAJOR", pots.major, "from-fuchsia-500 to-purple-800"], ["MINOR", pots.minor, "from-sky-500 to-blue-800"], ["MINI", pots.mini, "from-emerald-500 to-green-800"]].map(([t, v, gr]) => (
+              <div key={t as string} className={`rounded-xl bg-gradient-to-b ${gr} p-[2px] shadow`}>
+                <div className="rounded-[10px] bg-black/55 px-1 py-1 text-center">
+                  <p className="text-[8px] font-black tracking-widest text-white/85">{t}</p>
+                  <p className="text-[11px] font-black tabular-nums text-yellow-200">{money(v as number)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* title bar */}
           <div className="flex items-center justify-between gap-2">
             <span className="rounded-lg bg-black/45 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white/80">{cg?.provider ?? "DigiPlay Originals"}</span>
@@ -331,14 +481,14 @@ export function SlotGame({ id }: { id: string }) {
 
           {/* WIN display */}
           <div className="mx-auto mt-3 flex max-w-[560px] items-center justify-center gap-3">
-            <p className="text-sm font-black tracking-[0.3em] text-[#f5c518]">WIN</p>
-            <p className={`text-2xl font-black tabular-nums ${dispWin > 0 ? "text-white" : "text-white/50"}`}>{money(dispWin)}</p>
+            <p className="text-sm font-black tracking-[0.3em] text-[#f5c518]">TOTAL WIN</p>
+            <p className={`text-2xl font-black tabular-nums ${dispTotal > 0 ? "text-white" : "text-white/50"}`}>{money(dispTotal)}</p>
             {nearMiss && !spinning && <span className="animate-pulse rounded-full bg-red-500/20 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/50">😱 আরেকটু হলেই!</span>}
           </div>
           {msg && <p className="mt-1.5 text-center text-xs font-bold text-white/85">{msg}</p>}
 
           {/* ===== CONTROL BAR (JILI style, mobile-fit) ===== */}
-          <div className="mx-auto mt-3 grid max-w-[560px] grid-cols-[44px_1fr_72px_44px] items-center gap-2">
+          <div className="mx-auto mt-3 grid max-w-[560px] grid-cols-[44px_1fr_72px_44px_44px] items-center gap-2">
             <div className="flex flex-col items-center gap-1">
               <button onClick={() => setTurbo((t) => !t)} className={`grid h-11 w-11 place-items-center rounded-full border text-lg transition active:scale-90 ${turbo ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="টার্বো">⚡</button>
               <span className="text-[9px] font-bold text-white/60">টার্বো</span>
@@ -367,13 +517,21 @@ export function SlotGame({ id }: { id: string }) {
               </button>
               <span className="text-[9px] font-bold text-white/60">অটো ৩০</span>
             </div>
+            <div className="flex flex-col items-center gap-1">
+              <button onClick={() => { if (stateRef.current.spinning || holdWin) return; if (store.payWithWallet(bet * 50, `🎁 ${g.n} বোনাস`)) { setMsg(""); setHoldWin({ paid: true }); } else setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); }}
+                className="grid h-11 w-11 place-items-center rounded-full border border-amber-300/60 bg-gradient-to-b from-amber-400/30 to-amber-600/30 text-lg transition active:scale-90" aria-label="বোনাস কিনুন">🎁</button>
+              <span className="text-[9px] font-bold text-white/60">বোনাস</span>
+            </div>
           </div>
         </div>
       </div>
 
+      {holdWin && <HoldWinBonus bet={bet} onEnd={endHoldWin} />}
+
       {/* paytable */}
       <div className="mx-auto mt-4 max-w-[560px] rounded-2xl border border-white/10 bg-[#101828]/90 p-4">
         <p className="text-sm font-black text-[#f5c518]">💰 পে-টেবিল (লাইনে ৩/৪/৫টি)</p>
+        <p className="mt-1 text-xs text-slate-300">🪙 <b className="text-white">৫+ কয়েন</b> = HOLD & WIN বোনাস (জ্যাকপট পর্যন্ত!) • ⭐ ৩+ = ৮ ফ্রি স্পিন</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-300 sm:grid-cols-4">
           {syms.slice(0, 8).map((s, i) => (
             <p key={i}>{s} <b className="text-white">{bn(SLOT_PAY[i][0])}x / {bn(SLOT_PAY[i][1])}x / {bn(SLOT_PAY[i][2])}x</b></p>
