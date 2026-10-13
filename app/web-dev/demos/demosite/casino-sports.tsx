@@ -59,7 +59,7 @@ export function groupUpcoming(list: CasiMatch[]): { label: string; sub: string; 
   push("📅 আগামীকাল", `${bn(list.filter((m) => m.day === 1).length)}টি ম্যাচ`, list.filter((m) => m.day === 1));
   push("🗓️ এই সপ্তাহে", `${bn(list.filter((m) => m.day > 1 && m.day <= 7).length)}টি ম্যাচ`, list.filter((m) => m.day > 1 && m.day <= 7));
   push("📆 এই মাসে", `${bn(list.filter((m) => m.day > 7 && m.day <= 30).length)}টি ম্যাচ`, list.filter((m) => m.day > 7 && m.day <= 30));
-  push("🔭 আরো সামনে (২-৪ মাস)", `${bn(list.filter((m) => m.day > 30).length)}টি ম্যাচ`, list.filter((m) => m.day > 30));
+  push("🔭 আরো সামনে (২-৯ মাস)", `${bn(list.filter((m) => m.day > 30).length)}টি ম্যাচ`, list.filter((m) => m.day > 30));
   return groups;
 }
 
@@ -619,7 +619,7 @@ export function UpcomingMatches() {
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="📅 আসন্ন ম্যাচ" sub={`আগামী ৪ মাসে ${bn(UPCOMING_MATCHES.length)}টি ম্যাচ`} />
+      <SectionTitle t="📅 আসন্ন ম্যাচ" sub={`আগামী ৯ মাসে ${bn(UPCOMING_MATCHES.length)}টি ম্যাচ`} />
       <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         {(["all", ...SPORTS.map((x) => x.id)] as const).map((sp) => (
           <button key={sp} onClick={() => setSport(sp)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-black transition ${sport === sp ? "bg-[#f5c518] text-black" : "bg-white/8 text-slate-300 ring-1 ring-white/15"}`}>
