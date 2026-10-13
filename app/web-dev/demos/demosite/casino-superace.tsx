@@ -157,15 +157,21 @@ export function SuperAceGame() {
       }
     }
     setWinCells([]); setMsg(""); setSpinWin(0); setTier("");
+    // ★ Owner RTP controls win-vs-loss: lower RTP = more dead spins (lose more than win)
+    const winChance = Math.max(0.08, Math.min(0.5, (cfg.rtp - 75) / 50));
+    const wantWin = Math.random() < winChance;
     let g = saDealGrid(keyRef.current);
-    // owner-RTP win bias: plant a guaranteed 3-of-a-kind sometimes
-    const winBias = Math.max(0.05, Math.min(0.4, (cfg.rtp - 84) / 30));
-    if (Math.random() < winBias) {
-      const rk = (["K", "Q", "J"] as SARank[])[Math.floor(Math.random() * 3)];
-      const st = rk === "K" ? "♥" : rk === "Q" ? "♦" : "♣";
-      g[0] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
-      g[5] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
-      g[10] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
+    let tries = 0;
+    if (wantWin) {
+      if (saEval(g, betAmt, 1).win === 0 && Math.random() < 0.45) {
+        const rk = (["K", "Q", "J"] as SARank[])[Math.floor(Math.random() * 3)];
+        const st = rk === "K" ? "♥" : rk === "Q" ? "♦" : "♣";
+        g[0] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
+        g[5] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
+        g[10] = { r: rk, s: st, gold: false, key: keyRef.current.n++ };
+      }
+    } else {
+      while (saEval(g, betAmt, 1).win > 0 && tries < 10) { g = saDealGrid(keyRef.current); tries++; }
     }
     setGrid(g); setDealKey((k) => k + 1);
     await wait(turboRef.current ? 350 : 650);
@@ -254,14 +260,20 @@ export function SuperAceGame() {
         <Link href={`${base}/wallet`} className="flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 text-xs font-black text-[#f5c518] ring-1 ring-[#f5c518]/40">
           💰 {money(store.wallet)} <span className="grid h-5 w-5 place-items-center rounded-full bg-emerald-500 text-sm text-white">+</span>
         </Link>
-        <button onClick={buyBonus} className="rounded-full bg-gradient-to-b from-red-500 to-red-800 px-3 py-1.5 text-[10px] font-black text-yellow-200 shadow-[0_0_14px_rgba(239,68,68,0.6)] ring-2 ring-red-300/60 transition active:scale-90">
-          BUY<br />BONUS
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button onClick={buyBonus} className="rounded-full bg-gradient-to-b from-red-500 to-red-800 px-3 py-1.5 text-[10px] font-black text-yellow-200 shadow-[0_0_14px_rgba(239,68,68,0.6)] ring-2 ring-red-300/60 transition active:scale-90">
+            BUY<br />BONUS
+          </button>
+          <span className="animate-pulse rounded-full bg-gradient-to-b from-fuchsia-500 to-purple-800 px-2 py-0.5 text-[8px] font-black text-yellow-200 shadow-[0_0_10px_rgba(217,70,239,0.7)] ring-1 ring-fuchsia-300/60">🏆 JACKPOT</span>
+        </div>
       </div>
 
+      {/* wooden top frame */}
+      <div className="mt-2 h-3.5 rounded-full bg-gradient-to-b from-[#8a5a22] via-[#5c3a12] to-[#3a240a] shadow-[0_2px_6px_rgba(0,0,0,0.6)] ring-1 ring-yellow-900/60" />
       {/* logo + multiplier ladder */}
-      <div className="mt-2 text-center">
+      <div className="mt-1 text-center">
         <p className="bg-gradient-to-b from-yellow-100 via-[#f5c518] to-amber-700 bg-clip-text text-4xl font-black tracking-wide text-transparent drop-shadow-[0_3px_0_rgba(0,0,0,0.6)]">SuperAce</p>
+        <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.3em] text-amber-200/70">DigiPlay Originals</p>
         <div className="mx-auto mt-1.5 flex w-fit items-center gap-1 rounded-full bg-gradient-to-b from-amber-500/40 to-amber-800/40 px-2 py-1 ring-1 ring-amber-300/50">
           {SA_MULT.map((m, i) => (
             <span key={m} className={`rounded-full px-2.5 py-0.5 text-sm font-black transition-all ${i === multIdx ? "bg-gradient-to-b from-yellow-200 to-amber-500 text-black scale-110 shadow" : i < multIdx ? "text-amber-200" : "text-white/40"}`}>×{m}</span>
@@ -279,7 +291,12 @@ export function SuperAceGame() {
       )}
 
       {/* card table */}
-      <div className="relative mx-auto mt-2 max-w-[480px] rounded-3xl border-4 border-[#6b3f12] bg-gradient-to-b from-emerald-800 via-emerald-900 to-[#0a2e1f] p-2 shadow-[inset_0_0_50px_rgba(0,0,0,0.55)] sm:p-3">
+      <div className="mx-auto mt-1.5 flex max-w-[480px] justify-center gap-1.5 opacity-90">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex h-9 w-7 items-center justify-center rounded-md bg-gradient-to-b from-[#2b3a67] to-[#141b33] text-sm ring-1 ring-white/25">🂠</div>
+        ))}
+      </div>
+      <div className="relative mx-auto mt-1.5 max-w-[480px] rounded-3xl border-4 border-[#6b3f12] bg-gradient-to-b from-emerald-800 via-emerald-900 to-[#0a2e1f] p-2 shadow-[inset_0_0_50px_rgba(0,0,0,0.55)] sm:p-3">
         <div className="grid grid-cols-5 gap-1 sm:gap-1.5" key={dealKey}>
           {grid.map((c, i) => <SACardView key={c.key} c={c} win={winCells.includes(i)} delay={(i % 5) * 60 + Math.floor(i / 5) * 40} />)}
         </div>
