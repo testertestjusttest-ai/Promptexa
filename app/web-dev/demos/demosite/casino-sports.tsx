@@ -5,8 +5,9 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, LIVE_MATCHES, UPCOMING_MATCHES, FINISHED_MATCHES, FUTURES, dayLabel, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch, type TickedMatch, type FutureMarket, type TeamFormRec } from "./casino-data";
-import { TeamEmblem, teamHistory } from "./casino-data";
+import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, LIVE_MATCHES, UPCOMING_MATCHES, FINISHED_MATCHES, FUTURES, dayLabel, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch, type TickedMatch, type FutureMarket } from "./casino-data";
+import { FX_TEAMS, fxRng } from "./casino-data";
+import { TeamEmblem } from "./casino-data";
 import { CatalogTile } from "./casino-catalog";
 
 interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
@@ -63,6 +64,87 @@ export function groupUpcoming(list: CasiMatch[]): { label: string; sub: string; 
   return groups;
 }
 
+
+/** Last-5 form for any team: opponents, scores, W/L. Deterministic per team name. */
+export interface TeamFormRec { vs: string; vsE: string; score: string; res: "W" | "L" | "D"; date: string }
+export function teamHistory(name: string, sport: SportId): TeamFormRec[] {
+  const pool = FX_TEAMS[sport].teams.filter((t) => t.n !== name);
+  let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const r = fxRng(h + 777);
+  const out: TeamFormRec[] = [];
+  for (let i = 0; i < 5; i++) {
+    const opp = pool[Math.floor(r() * pool.length)];
+    const w = r() < 0.55;
+    const d = !w && r() < 0.15;
+    let score = "";
+    if (sport === "cricket") { const a = 130 + Math.floor(r() * 80), b = 125 + Math.floor(r() * 80); score = w ? `${bn(a)}/${bn(3 + Math.floor(r() * 5))} বনাম ${bn(b)}` : `${bn(b)} বনাম ${bn(a)}/${bn(3 + Math.floor(r() * 5))}`; }
+    else if (sport === "football") { const a = Math.floor(r() * 3), b = Math.floor(r() * 3); score = w ? `${bn(Math.max(a, b + 1))}-${bn(b)}` : d ? `${bn(a)}-${bn(a)}` : `${bn(b)}-${bn(Math.max(a, b + 1))}`; }
+    else if (sport === "tennis") { score = w ? "২-০ সেট" : "০-২ সেট"; }
+    else { const a = 95 + Math.floor(r() * 30), b = 90 + Math.floor(r() * 30); score = w ? `${bn(Math.max(a, b + 4))}-${bn(b)}` : `${bn(b)}-${bn(Math.max(a, b + 4))}`; }
+    out.push({ vs: opp.n, vsE: opp.e, score, res: d ? "D" : w ? "W" : "L", date: dayLabel(-(2 + i * 4 + Math.floor(r() * 3))) });
+  }
+  return out;
+}
+
+
+/** Own IP provider brands — logo badges for the provider grid (NG88-style). */
+export interface ProviderBrand { name: string; mono: string; grad: string; hot?: boolean; isNew?: boolean }
+export const PROVIDER_BRANDS: ProviderBrand[] = [
+  { name: "DigiPlay Originals", mono: "DP", grad: "from-amber-400 to-orange-600", hot: true },
+  { name: "রয়েল গেমিং", mono: "RG", grad: "from-purple-500 to-indigo-700", hot: true },
+  { name: "মেগাউইন স্টুডিও", mono: "MW", grad: "from-rose-500 to-red-700" },
+  { name: "গোল্ডেন টাচ", mono: "GT", grad: "from-yellow-400 to-amber-600", hot: true },
+  { name: "নোভা সফট", mono: "NV", grad: "from-sky-400 to-blue-700" },
+  { name: "টাইগার গেমস", mono: "TG", grad: "from-orange-500 to-red-700", hot: true },
+  { name: "লাকি স্পিন ল্যাব", mono: "LS", grad: "from-emerald-400 to-green-700" },
+  { name: "পদ্মা গেমিং", mono: "PG", grad: "from-teal-400 to-cyan-700" },
+  { name: "ঢাকা প্লে", mono: "DK", grad: "from-lime-400 to-green-600", isNew: true },
+  { name: "স্পিন হাউস বিডি", mono: "SH", grad: "from-fuchsia-500 to-purple-700" },
+  { name: "জেম ওয়ার্কস", mono: "GW", grad: "from-cyan-400 to-sky-700", isNew: true },
+  { name: "ভিক্টরি ল্যাব", mono: "VL", grad: "from-indigo-400 to-violet-700" },
+  { name: "ক্রাউন গেমিং", mono: "CG", grad: "from-amber-300 to-yellow-600", hot: true, isNew: true },
+  { name: "থান্ডার প্লে", mono: "TP", grad: "from-slate-500 to-slate-800", isNew: true },
+  { name: "ফরচুন কিং", mono: "FK", grad: "from-red-400 to-rose-700", hot: true },
+  { name: "নিয়ন স্টার", mono: "NS", grad: "from-pink-400 to-fuchsia-700", isNew: true },
+];
+
+/** Provider logo tile — links to the games lobby pre-filtered by provider. */
+export function ProviderTile({ b }: { b: ProviderBrand }) {
+  const { base } = useSkin();
+  return (
+    <Link
+      href={`${base}/games`}
+      onClick={() => { try { localStorage.setItem("dp_provider", b.name); } catch {} }}
+      className="group relative flex flex-col items-center rounded-2xl bg-white/[0.04] p-2 ring-1 ring-white/10 transition hover:ring-[#f5c518]/50 active:scale-95"
+    >
+      <div className={`relative grid h-16 w-16 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br ${b.grad} shadow-lg`}>
+        <span className="text-xl font-black tracking-tight text-white drop-shadow">{b.mono}</span>
+        <span className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        {b.hot && <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[8px] font-black text-white shadow">🔥HOT</span>}
+        {b.isNew && !b.hot && <span className="absolute -right-1 -top-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-black text-white shadow">NEW</span>}
+      </div>
+      <p className="mt-1.5 text-center text-[10px] font-bold leading-tight text-slate-300">{b.name}</p>
+    </Link>
+  );
+}
+
+function ProvidersRow() {
+  const [more, setMore] = useState(false);
+  const list = more ? PROVIDER_BRANDS : PROVIDER_BRANDS.slice(0, 8);
+  return (
+    <div className="mt-6">
+      <div className="mb-2.5 flex items-center justify-between">
+        <p className="text-base font-black text-white">🎮 গেম প্রোভাইডার <span className="ml-1 rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-black text-emerald-300">নিজস্ব IP</span></p>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {list.map((b) => <ProviderTile key={b.name} b={b} />)}
+      </div>
+      <button onClick={() => setMore((m) => !m)} className="mt-2.5 w-full rounded-2xl bg-white/5 py-2.5 text-sm font-black text-slate-300 ring-1 ring-white/10 transition active:scale-[0.99]">
+        {more ? "View Less ⌃" : "View More ⌄"}
+      </button>
+    </div>
+  );
+}
 
 /** Daily check-in: 7-day coin streak, browser-local bonus. */
 function DailyCheckIn() {
@@ -237,6 +319,8 @@ export function CasinoHome() {
           )}
         </div>
 
+        {/* game providers — own IP brands */}
+        <ProvidersRow />
         {/* referral program */}
         <div className="mt-6 overflow-hidden rounded-3xl border border-fuchsia-400/25 bg-gradient-to-b from-fuchsia-600/20 via-[#141126] to-[#0b1120]">
           <p className="px-4 pt-4 text-lg font-black text-white">👥 রেফারেল প্রোগ্রাম</p>
