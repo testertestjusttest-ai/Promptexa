@@ -293,6 +293,7 @@ export interface CatalogGame {
   grad: string;       // tailwind gradient classes for tile art
   syms: string[];     // symbol set for slot engine
   isNew?: boolean;
+  cover?: string;
 }
 
 export const PROVIDERS = [
@@ -520,6 +521,23 @@ _CATALOG.unshift({
   grad: "from-amber-500 via-yellow-600 to-orange-800",
   syms: ["🂡", "🃏", "👑", "💎", "♠️", "♥️", "♣️", "♦️"],
 });
+// AI covers — matched to themes
+const COVER_MAP: [string, string][] = [
+  ["superace-1", "covers/superace.webp"],
+  ["ফলের বাগান", "covers/fruit.webp"],
+  ["আগুন পাহাড়", "covers/volcano.webp"],
+  ["রত্ন খনি", "covers/gems.webp"],
+  ["মিশরের ধন", "covers/egypt.webp"],
+  ["ড্রাগন রাজ্য", "covers/dragon.webp"],
+  ["সোনার খনি", "covers/gold.webp"],
+  ["যাদুর জগৎ", "covers/magic.webp"],
+];
+for (const [key, file] of COVER_MAP) {
+  const g = key === "superace-1"
+    ? _CATALOG.find((x) => x.id === "superace-1")
+    : _CATALOG.find((x) => x.engine === "slots" && x.n.includes(key) && !x.cover);
+  if (g) g.cover = `/demo-img/${file}`;
+}
 export const GAME_CATALOG: CatalogGame[] = _CATALOG;
 export const CATALOG_COUNT = GAME_CATALOG.length;
 
