@@ -31,11 +31,21 @@ export interface CasiMatch {
   he: string;
   ae: string;
   time: string;
+  /** days from today: negative = finished (ফলাফল), 0 = today, positive = upcoming */
+  day: number;
   live?: boolean;
   minute?: string;
   hs?: number;
   as?: number;
   odds: { h: number; d?: number; a: number };
+}
+
+export interface FutureMarket {
+  id: string;
+  title: string;
+  e: string;
+  ends: string;
+  selections: { name: string; flag: string; odds: number }[];
 }
 
 export const SPORTS: { id: SportId; n: string; e: string }[] = [
@@ -47,36 +57,182 @@ export const SPORTS: { id: SportId; n: string; e: string }[] = [
 
 export const sportName = (id: SportId) => SPORTS.find((s) => s.id === id)?.n ?? id;
 
-export const MATCHES: CasiMatch[] = [
-  // ---- cricket: live ----
-  { id: "m1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা ডমিনেটর্স", away: "কুমিল্লা ভিক্টোরিয়ান্স", he: "🟥", ae: "🟦", time: "লাইভ", live: true, minute: "১৪.২ ওভার", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
-  { id: "m2", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "ভারত", he: "🟩", ae: "🟧", time: "লাইভ", live: true, minute: "২য় ইনিংস • ৮.৪ ওভার", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
-  // ---- cricket: upcoming ----
-  { id: "m3", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "রংপুর রাইডার্স", away: "সিলেট স্ট্রাইকার্স", he: "🟨", ae: "🟪", time: "আজ • সন্ধ্যা ৬:৩০", odds: { h: 1.72, a: 2.05 } },
-  { id: "m4", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "চট্টগ্রাম চ্যালেঞ্জার্স", away: "খুলনা টাইগার্স", he: "⬜", ae: "🟧", time: "আগামীকাল • দুপুর ১:৩০", odds: { h: 2.1, a: 1.68 } },
-  { id: "m5", sport: "cricket", league: "ওয়ানডে সিরিজ", home: "বাংলাদেশ", away: "শ্রীলঙ্কা", he: "🟩", ae: "🟦", time: "শুক্রবার • সকাল ১০:০০", odds: { h: 1.9, a: 1.85 } },
-  { id: "m6", sport: "cricket", league: "আইপিএল", home: "মুম্বাই ইন্ডিয়ান্স", away: "চেন্নাই সুপার কিংস", he: "🔵", ae: "🟡", time: "শনিবার • সন্ধ্যা ৭:৩০", odds: { h: 1.95, a: 1.8 } },
-  // ---- football: live ----
-  { id: "m7", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা আবাহনী", away: "মোহামেডান SC", he: "🔵", ae: "⚫", time: "লাইভ", live: true, minute: "৬৭'", hs: 1, as: 1, odds: { h: 2.6, d: 2.9, a: 2.7 } },
-  { id: "m8", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "আর্সেনাল", away: "চেলসি", he: "🔴", ae: "🔵", time: "লাইভ", live: true, minute: "৩৪'", hs: 1, as: 0, odds: { h: 1.7, d: 3.6, a: 4.5 } },
-  // ---- football: upcoming ----
-  { id: "m9", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "বসুন্ধরা কিংস", away: "চট্টগ্রাম আবাহনী", he: "🟣", ae: "🟢", time: "আজ • বিকাল ৪:০০", odds: { h: 1.45, d: 4.0, a: 6.5 } },
-  { id: "m10", sport: "football", league: "লা লিগা", home: "রিয়াল মাদ্রিদ", away: "বার্সেলোনা", he: "⚪", ae: "🔵", time: "রবিবার • রাত ১:০০", odds: { h: 2.2, d: 3.4, a: 3.0 } },
-  { id: "m11", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "লিভারপুল", away: "ম্যান সিটি", he: "🔴", ae: "🩵", time: "সোমবার • রাত ৯:৩০", odds: { h: 2.8, d: 3.5, a: 2.4 } },
-  // ---- tennis ----
-  { id: "m12", sport: "tennis", league: "এটিপি ফাইনালস", home: "কার্লোস আলকারাজ", away: "ইয়ানিক সিনার", he: "🇪🇸", ae: "🇮🇹", time: "লাইভ", live: true, minute: "সেট ২", hs: 1, as: 1, odds: { h: 1.8, a: 2.0 } },
-  { id: "m13", sport: "tennis", league: "ডব্লিউটিএ ফাইনালস", home: "ইগা শিয়নতেক", away: "আরিনা সাবালেঙ্কা", he: "🇵🇱", ae: "🇧🇾", time: "আজ • রাত ৮:০০", odds: { h: 1.65, a: 2.2 } },
-  { id: "m14", sport: "tennis", league: "এটিপি ৫০০", home: "নোভাক জোকোভিচ", away: "দানিল মেদভেদেভ", he: "🇷🇸", ae: "🇷🇺", time: "আগামীকাল • সন্ধ্যা ৭:০০", odds: { h: 1.55, a: 2.45 } },
-  // ---- basketball ----
-  { id: "m15", sport: "basketball", league: "এনবিএ", home: "লেকার্স", away: "সেল্টিক্স", he: "🟡", ae: "🟢", time: "লাইভ", live: true, minute: "Q3 • ৪:১২", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
-  { id: "m16", sport: "basketball", league: "এনবিএ", home: "ওয়ারিয়র্স", away: "নাগেটস", he: "🔵", ae: "🟤", time: "আগামীকাল • সকাল ৯:০০", odds: { h: 1.9, a: 1.9 } },
-  { id: "m17", sport: "basketball", league: "বাংলাদেশ বাস্কেটবল লিগ", home: "ঢাকা গ্ল্যাডিয়েটর্স", away: "চট্টগ্রাম টাইটান্স", he: "🔴", ae: "🔵", time: "শনিবার • বিকাল ৫:০০", odds: { h: 1.75, a: 2.0 } },
-  // ---- results ----
-  { id: "r1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "বরিশাল ফরচুন", away: "ঢাকা ডমিনেটর্স", he: "🟠", ae: "🟥", time: "গতকাল", hs: 186, as: 184, odds: { h: 2.0, a: 1.75 } },
-  { id: "r2", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "সাইফ স্পোর্টিং", away: "রহমতগঞ্জ", he: "🟡", ae: "🔴", time: "গতকাল", hs: 2, as: 0, odds: { h: 1.8, d: 3.4, a: 4.2 } },
-  { id: "r3", sport: "tennis", league: "এটিপি ২৫০", home: "হোলগার রুন", away: "ফেলিক্স ওজার", he: "🇩🇰", ae: "🇨🇦", time: "২ দিন আগে", hs: 2, as: 0, odds: { h: 1.7, a: 2.1 } },
-  { id: "r4", sport: "basketball", league: "এনবিএ", home: "বাক্স", away: "হিট", he: "🟢", ae: "🔴", time: "২ দিন আগে", hs: 112, as: 108, odds: { h: 1.6, a: 2.3 } },
-  { id: "r5", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "আফগানিস্তান", he: "🟩", ae: "🔵", time: "৩ দিন আগে", hs: 158, as: 159, odds: { h: 1.65, a: 2.2 } },
+/** Deterministic fixture engine — 3-4 months of upcoming, 30 days of results, live now. */
+function fxRng(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const BN_MONTHS = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+export function dayLabel(day: number): string {
+  if (day === 0) return "আজ";
+  if (day === 1) return "আগামীকাল";
+  if (day === -1) return "গতকাল";
+  if (day < 0 && day >= -6) return `${bn(Math.abs(day))} দিন আগে`;
+  const d = new Date(); d.setDate(d.getDate() + day);
+  return `${bn(d.getDate())} ${BN_MONTHS[d.getMonth()]}`;
+}
+
+type Team = { n: string; e: string; s: number };
+const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
+  cricket: {
+    leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইন্ডিয়ান প্রিমিয়ার লিগ","টি-টোয়েন্টি আন্তর্জাতিক","ওয়ানডে সিরিজ","টেস্ট সিরিজ","এশিয়া কাপ"],
+    teams: [
+      { n: "ঢাকা ডমিনেটর্স", e: "🟥", s: 4 }, { n: "কুমিল্লা ভিক্টোরিয়ান্স", e: "🟦", s: 5 },
+      { n: "রংপুর রাইডার্স", e: "🟨", s: 4 }, { n: "সিলেট স্ট্রাইকার্স", e: "🟪", s: 3 },
+      { n: "চট্টগ্রাম চ্যালেঞ্জার্স", e: "⬜", s: 3 }, { n: "খুলনা টাইগার্স", e: "🟧", s: 3 },
+      { n: "বরিশাল ফরচুন", e: "🟠", s: 4 }, { n: "বাংলাদেশ", e: "🟩", s: 4 },
+      { n: "ভারত", e: "🟧", s: 5 }, { n: "পাকিস্তান", e: "🟢", s: 4 },
+      { n: "শ্রীলঙ্কা", e: "🟦", s: 3 }, { n: "অস্ট্রেলিয়া", e: "🟨", s: 5 },
+      { n: "ইংল্যান্ড", e: "⬜", s: 4 }, { n: "আফগানিস্তান", e: "🔵", s: 3 },
+      { n: "মুম্বাই ইন্ডিয়ান্স", e: "🔵", s: 5 }, { n: "চেন্নাই সুপার কিংস", e: "🟡", s: 5 },
+    ],
+  },
+  football: {
+    leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইংলিশ প্রিমিয়ার লিগ","লা লিগা","উয়েফা চ্যাম্পিয়ন্স লিগ","বুন্দেসলিগা"],
+    teams: [
+      { n: "ঢাকা আবাহনী", e: "🔵", s: 4 }, { n: "মোহামেডান SC", e: "⚫", s: 4 },
+      { n: "বসুন্ধরা কিংস", e: "🟣", s: 5 }, { n: "সাইফ স্পোর্টিং", e: "🟡", s: 3 },
+      { n: "চট্টগ্রাম আবাহনী", e: "🟢", s: 3 }, { n: "রহমতগঞ্জ", e: "🔴", s: 2 },
+      { n: "আর্সেনাল", e: "🔴", s: 5 }, { n: "চেলসি", e: "🔵", s: 4 },
+      { n: "লিভারপুল", e: "🔴", s: 5 }, { n: "ম্যান সিটি", e: "🩵", s: 5 },
+      { n: "রিয়াল মাদ্রিদ", e: "⚪", s: 5 }, { n: "বার্সেলোনা", e: "🔵", s: 4 },
+      { n: "বায়ার্ন মিউনিখ", e: "🔴", s: 5 }, { n: "পিএসজি", e: "🔵", s: 4 },
+      { n: "বাংলাদেশ", e: "🟢", s: 3 }, { n: "ভারত", e: "🟧", s: 3 },
+    ],
+  },
+  tennis: {
+    leagues: ["এটিপি ফাইনালস","ডব্লিউটিএ ফাইনালস","এটিপি ৫০০","অস্ট্রেলিয়ান ওপেন","দুবাই চ্যাম্পিয়নশিপ"],
+    teams: [
+      { n: "কার্লোস আলকারাজ", e: "🇪🇸", s: 5 }, { n: "ইয়ানিক সিনার", e: "🇮🇹", s: 5 },
+      { n: "নোভাক জোকোভিচ", e: "🇷🇸", s: 5 }, { n: "দানিল মেদভেদেভ", e: "🇷🇺", s: 4 },
+      { n: "ইগা শিয়নতেক", e: "🇵🇱", s: 5 }, { n: "আরিনা সাবালেঙ্কা", e: "🇧🇾", s: 5 },
+      { n: "হোলগার রুন", e: "🇩🇰", s: 3 }, { n: "ফেলিক্স ওজার", e: "🇨🇦", s: 3 },
+      { n: "জেসিকা পেগুলা", e: "🇺🇸", s: 4 }, { n: "কোকো গফ", e: "🇺🇸", s: 4 },
+    ],
+  },
+  basketball: {
+    leagues: ["এনবিএ","বাংলাদেশ বাস্কেটবল লিগ"],
+    teams: [
+      { n: "লেকার্স", e: "🟡", s: 4 }, { n: "সেল্টিক্স", e: "🟢", s: 5 },
+      { n: "ওয়ারিয়র্স", e: "🔵", s: 4 }, { n: "নাগেটস", e: "🟤", s: 4 },
+      { n: "বাক্স", e: "🟢", s: 4 }, { n: "হিট", e: "🔴", s: 3 },
+      { n: "ঢাকা গ্ল্যাডিয়েটর্স", e: "🔴", s: 3 }, { n: "চট্টগ্রাম টাইটান্স", e: "🔵", s: 3 },
+    ],
+  },
+};
+
+function fxOdds(sh: number, sa: number, draw: boolean, r: () => number) {
+  const diff = sh - sa;
+  const base = 1.9 - diff * 0.22 + (r() - 0.5) * 0.3;
+  const h = Math.max(1.25, +base.toFixed(2));
+  const a = Math.max(1.25, +(3.8 - h + (r() - 0.5) * 0.2).toFixed(2));
+  const o: { h: number; d?: number; a: number } = { h, a };
+  if (draw) o.d = +(2.6 + Math.abs(diff) * 0.35 + (r() - 0.5) * 0.4).toFixed(2);
+  return o;
+}
+const FX_TIMES = ["বিকাল ৪:০০","সন্ধ্যা ৬:৩০","রাত ৮:০০","রাত ৯:৩০","দুপুর ১:৩০","সকাল ১০:০০"];
+
+function buildFixtures(): CasiMatch[] {
+  const out: CasiMatch[] = [];
+  const r = fxRng(20261013);
+  let n = 0;
+  const nid = (p: string) => `${p}${++n}`;
+
+  // ---------- LIVE (curated, always on) ----------
+  const liveDefs: CasiMatch[] = [
+    { id: "L1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা ডমিনেটর্স", away: "কুমিল্লা ভিক্টোরিয়ান্স", he: "🟥", ae: "🟦", time: "লাইভ", day: 0, live: true, minute: "১৪.২ ওভার", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
+    { id: "L2", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "ভারত", he: "🟩", ae: "🟧", time: "লাইভ", day: 0, live: true, minute: "২য় ইনিংস • ৮.৪ ওভার", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
+    { id: "L3", sport: "cricket", league: "ইন্ডিয়ান প্রিমিয়ার লিগ", home: "মুম্বাই ইন্ডিয়ান্স", away: "চেন্নাই সুপার কিংস", he: "🔵", ae: "🟡", time: "লাইভ", day: 0, live: true, minute: "১১.৫ ওভার", hs: 108, as: 1, odds: { h: 1.72, a: 2.1 } },
+    { id: "L4", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "আর্সেনাল", away: "চেলসি", he: "🔴", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৬৭'", hs: 2, as: 1, odds: { h: 1.62, d: 3.8, a: 5.0 } },
+    { id: "L5", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা আবাহনী", away: "মোহামেডান SC", he: "🔵", ae: "⚫", time: "লাইভ", day: 0, live: true, minute: "৩৪'", hs: 1, as: 0, odds: { h: 1.7, d: 3.4, a: 4.6 } },
+    { id: "L6", sport: "football", league: "লা লিগা", home: "রিয়াল মাদ্রিদ", away: "বার্সেলোনা", he: "⚪", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৫৫'", hs: 1, as: 1, odds: { h: 2.5, d: 2.9, a: 2.8 } },
+    { id: "L7", sport: "tennis", league: "এটিপি ফাইনালস", home: "কার্লোস আলকারাজ", away: "ইয়ানিক সিনার", he: "🇪🇸", ae: "🇮🇹", time: "লাইভ", day: 0, live: true, minute: "সেট ৩", hs: 1, as: 1, odds: { h: 1.8, a: 2.0 } },
+    { id: "L8", sport: "tennis", league: "ডব্লিউটিএ ফাইনালস", home: "ইগা শিয়নতেক", away: "আরিনা সাবালেঙ্কা", he: "🇵🇱", ae: "🇧🇾", time: "লাইভ", day: 0, live: true, minute: "সেট ২", hs: 0, as: 1, odds: { h: 2.3, a: 1.62 } },
+    { id: "L9", sport: "basketball", league: "এনবিএ", home: "লেকার্স", away: "সেল্টিক্স", he: "🟡", ae: "🟢", time: "লাইভ", day: 0, live: true, minute: "Q3 • ৪:১২", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
+    { id: "L10", sport: "cricket", league: "এশিয়া কাপ", home: "পাকিস্তান", away: "শ্রীলঙ্কা", he: "🟢", ae: "🟦", time: "লাইভ", day: 0, live: true, minute: "১৭.৩ ওভার", hs: 156, as: 4, odds: { h: 1.66, a: 2.2 } },
+    { id: "L11", sport: "football", league: "উয়েফা চ্যাম্পিয়ন্স লিগ", home: "বায়ার্ন মিউনিখ", away: "পিএসজি", he: "🔴", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৭৮'", hs: 2, as: 2, odds: { h: 2.9, d: 2.7, a: 2.6 } },
+    { id: "L12", sport: "basketball", league: "এনবিএ", home: "ওয়ারিয়র্স", away: "নাগেটস", he: "🔵", ae: "🟤", time: "লাইভ", day: 0, live: true, minute: "Q2 • ৭:৪৫", hs: 54, as: 49, odds: { h: 1.8, a: 2.0 } },
+  ];
+  out.push(...liveDefs);
+
+  // ---------- UPCOMING: next 120 days (~3-4 months) ----------
+  const sports: SportId[] = ["cricket", "football", "tennis", "basketball"];
+  for (const sp of sports) {
+    const { leagues, teams } = FX_TEAMS[sp];
+    const count = sp === "cricket" ? 52 : sp === "football" ? 48 : sp === "tennis" ? 26 : 18;
+    for (let i = 0; i < count; i++) {
+      const day = Math.floor(r() * 121); // 0..120
+      const lg = leagues[Math.floor(r() * leagues.length)];
+      const hi = Math.floor(r() * teams.length);
+      let ai = Math.floor(r() * teams.length);
+      if (ai === hi) ai = (ai + 3) % teams.length;
+      const H = teams[hi], A = teams[ai];
+      const tm = FX_TIMES[Math.floor(r() * FX_TIMES.length)];
+      out.push({
+        id: nid("u"), sport: sp, league: lg, home: H.n, away: A.n, he: H.e, ae: A.e,
+        time: `${dayLabel(day)} • ${tm}`, day,
+        odds: fxOdds(H.s, A.s, sp === "football", r),
+      });
+    }
+  }
+
+  // ---------- FINISHED: past 30 days ----------
+  for (const sp of sports) {
+    const { leagues, teams } = FX_TEAMS[sp];
+    const count = sp === "cricket" ? 12 : sp === "football" ? 12 : sp === "tennis" ? 8 : 6;
+    for (let i = 0; i < count; i++) {
+      const day = -(1 + Math.floor(r() * 30));
+      const lg = leagues[Math.floor(r() * leagues.length)];
+      const hi = Math.floor(r() * teams.length);
+      let ai = Math.floor(r() * teams.length);
+      if (ai === hi) ai = (ai + 3) % teams.length;
+      const H = teams[hi], A = teams[ai];
+      const hw = r() < 0.5 + (H.s - A.s) * 0.08;
+      let hs = 0, as = 0;
+      if (sp === "cricket") { hs = 140 + Math.floor(r() * 70); as = hw ? hs - 5 - Math.floor(r() * 30) : hs + 5 + Math.floor(r() * 25); }
+      else if (sp === "football") { hs = Math.floor(r() * 3.4); as = Math.floor(r() * 3.0); if (hw && hs <= as) hs = as + 1; if (!hw && as <= hs) as = hs + 1; }
+      else if (sp === "tennis") { hs = 2; as = Math.floor(r() * 2); }
+      else { hs = 95 + Math.floor(r() * 30); as = 92 + Math.floor(r() * 30); if (hw && hs <= as) hs = as + 3; if (!hw && as <= hs) as = hs + 3; }
+      out.push({
+        id: nid("f"), sport: sp, league: lg, home: H.n, away: A.n, he: H.e, ae: A.e,
+        time: dayLabel(day), day, hs, as,
+        odds: fxOdds(H.s, A.s, sp === "football", r),
+      });
+    }
+  }
+  return out;
+}
+
+export const MATCHES: CasiMatch[] = buildFixtures();
+export const LIVE_MATCHES = MATCHES.filter((m) => m.live);
+export const UPCOMING_MATCHES = MATCHES.filter((m) => !m.live && m.day >= 0).sort((a, b) => a.day - b.day);
+export const FINISHED_MATCHES = MATCHES.filter((m) => m.day < 0).sort((a, b) => b.day - a.day);
+
+/** Futures / outright betting markets. */
+export const FUTURES: FutureMarket[] = [
+  { id: "fu1", title: "আইসিসি ওয়ানডে বিশ্বকাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏆", ends: "নভেম্বর ২০২৭", selections: [
+    { name: "ভারত", flag: "🟧", odds: 3.4 }, { name: "অস্ট্রেলিয়া", flag: "🟨", odds: 4.0 }, { name: "ইংল্যান্ড", flag: "⬜", odds: 5.5 },
+    { name: "পাকিস্তান", flag: "🟢", odds: 7.0 }, { name: "নিউজিল্যান্ড", flag: "⬛", odds: 8.0 }, { name: "বাংলাদেশ", flag: "🟩", odds: 12.0 }] },
+  { id: "fu2", title: "বাংলাদেশ প্রিমিয়ার লিগ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "ফেব্রুয়ারি ২০২৭", selections: [
+    { name: "কুমিল্লা ভিক্টোরিয়ান্স", flag: "🟦", odds: 4.5 }, { name: "ঢাকা ডমিনেটর্স", flag: "🟥", odds: 5.0 },
+    { name: "রংপুর রাইডার্স", flag: "🟨", odds: 5.5 }, { name: "বরিশাল ফরচুন", flag: "🟠", odds: 6.0 }, { name: "সিলেট স্ট্রাইকার্স", flag: "🟪", odds: 7.5 }] },
+  { id: "fu3", title: "ইংলিশ প্রিমিয়ার লিগ ২০২৬/২৭ — চ্যাম্পিয়ন", e: "⚽", ends: "মে ২০২৭", selections: [
+    { name: "ম্যান সিটি", flag: "🩵", odds: 2.8 }, { name: "আর্সেনাল", flag: "🔴", odds: 3.2 },
+    { name: "লিভারপুল", flag: "🔴", odds: 4.5 }, { name: "চেলসি", flag: "🔵", odds: 9.0 }, { name: "টটেনহ্যাম", flag: "⚪", odds: 15.0 }] },
+  { id: "fu4", title: "উয়েফা চ্যাম্পিয়ন্স লিগ ২০২৭ — বিজয়ী", e: "⭐", ends: "জুন ২০২৭", selections: [
+    { name: "রিয়াল মাদ্রিদ", flag: "⚪", odds: 5.0 }, { name: "ম্যান সিটি", flag: "🩵", odds: 5.5 },
+    { name: "বায়ার্ন মিউনিখ", flag: "🔴", odds: 7.0 }, { name: "বার্সেলোনা", flag: "🔵", odds: 8.0 }, { name: "পিএসজি", flag: "🔵", odds: 9.0 }] },
+  { id: "fu5", title: "এশিয়া কাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "সেপ্টেম্বর ২০২৭", selections: [
+    { name: "ভারত", flag: "🟧", odds: 2.6 }, { name: "পাকিস্তান", flag: "🟢", odds: 4.0 },
+    { name: "শ্রীলঙ্কা", flag: "🟦", odds: 5.5 }, { name: "বাংলাদেশ", flag: "🟩", odds: 6.5 }, { name: "আফগানিস্তান", flag: "🔵", odds: 9.0 }] },
+  { id: "fu6", title: "অস্ট্রেলিয়ান ওপেন ২০২৭ (পুরুষ একক) — চ্যাম্পিয়ন", e: "🎾", ends: "জানুয়ারি ২০২৭", selections: [
+    { name: "কার্লোস আলকারাজ", flag: "🇪🇸", odds: 3.0 }, { name: "ইয়ানিক সিনার", flag: "🇮🇹", odds: 3.4 },
+    { name: "নোভাক জোকোভিচ", flag: "🇷🇸", odds: 5.0 }, { name: "দানিল মেদভেদেভ", flag: "🇷🇺", odds: 9.0 }] },
 ];
 
 export interface CasiGame { id: string; n: string; e: string; cat: string; players: string; rtp: string; hot?: boolean }
@@ -505,52 +661,98 @@ function BalanceBar() {
   );
 }
 
-/** Odds button — adds selection to bet slip. */
-export function OddsBtn({ match, label, odds, small }: { match: CasiMatch; label: string; odds: number; small?: boolean }) {
+/** Odds button — adds selection to bet slip. flash: 1 = odds rose (green), -1 = dropped (red). */
+export function OddsBtn({ match, label, odds, small, flash }: { match: CasiMatch; label: string; odds: number; small?: boolean; flash?: number }) {
   const { add } = useBetSlip();
   const [added, setAdded] = useState(false);
   return (
     <button
       onClick={() => { add({ matchId: match.id, match: `${match.home} বনাম ${match.away}`, selection: label, odds, live: match.live }); setAdded(true); setTimeout(() => setAdded(false), 900); }}
-      className={`rounded-lg border font-bold transition ${small ? "px-2 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} ${added ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : "border-[#f5c518]/30 bg-[#f5c518]/10 text-[#f5c518] hover:bg-[#f5c518]/20"}`}
+      className={`flex items-center justify-center gap-1 rounded-xl border font-black transition active:scale-95 ${small ? "px-2.5 py-1.5 text-[11px]" : "px-3 py-2 text-xs"} ${added ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : flash === 1 ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-200" : flash === -1 ? "border-red-400/60 bg-red-500/15 text-red-200" : "border-[#f5c518]/30 bg-[#f5c518]/10 text-[#f5c518] hover:bg-[#f5c518]/20"}`}
     >
-      {added ? "✓ যোগ হয়েছে" : `${label} ${bn(odds.toFixed(2))}`}
+      {added ? "✓ যোগ হয়েছে" : (<>{flash === 1 && <span className="text-[9px]">▲</span>}{flash === -1 && <span className="text-[9px]">▼</span>}{label} {bn(odds.toFixed(2))}</>)}
     </button>
   );
 }
 
-export function MatchCard({ m, livePulse }: { m: CasiMatch; livePulse?: boolean }) {
+/** Ticked live match — odds + score animate in real time. */
+export interface TickedMatch extends CasiMatch { dirH: number; dirD: number; dirA: number }
+
+const LEAGUE_GRAD: Record<string, string> = {};
+function leagueGrad(league: string): string {
+  if (!LEAGUE_GRAD[league]) {
+    const grads = ["from-violet-900/60 via-[#141b2e] to-[#0b1120]", "from-emerald-900/60 via-[#141b2e] to-[#0b1120]", "from-amber-900/60 via-[#141b2e] to-[#0b1120]", "from-sky-900/60 via-[#141b2e] to-[#0b1120]", "from-rose-900/60 via-[#141b2e] to-[#0b1120]", "from-indigo-900/60 via-[#141b2e] to-[#0b1120]"];
+    let h = 0; for (let i = 0; i < league.length; i++) h = (h * 31 + league.charCodeAt(i)) >>> 0;
+    LEAGUE_GRAD[league] = grads[h % grads.length];
+  }
+  return LEAGUE_GRAD[league];
+}
+
+export function scoreLine(m: CasiMatch): string {
+  if (m.hs === undefined || m.as === undefined) return "";
+  if (m.sport === "cricket") return `${bn(m.hs)}/${bn(m.as)}`;
+  if (m.sport === "tennis") return `${bn(m.hs)} - ${bn(m.as)} সেট`;
+  return `${bn(m.hs)} - ${bn(m.as)}`;
+}
+
+/** Unique match card: league gradient header, live pulse, animated odds. */
+export function MatchCard({ m, ticked, livePulse }: { m: CasiMatch; ticked?: TickedMatch; livePulse?: boolean }) {
   const { base } = useSkin();
+  const t = ticked ?? { ...m, dirH: 0, dirD: 0, dirA: 0 };
+  const finished = m.day < 0;
+  const hw = finished && m.hs !== undefined && m.as !== undefined && (m.sport === "cricket" ? m.hs > m.as : m.hs > m.as);
   return (
-    <div className="rounded-2xl border border-[#f5c518]/15 bg-[#101828]/90 p-3">
-      <div className="flex items-center justify-between text-[11px]">
-        <span className="text-slate-400">{m.league}</span>
-        {m.live ? (
-          <span className={`flex items-center gap-1 font-black text-red-400 ${livePulse ? "animate-pulse" : ""}`}>🔴 লাইভ • {m.minute}</span>
+    <div className={`overflow-hidden rounded-2xl border bg-gradient-to-br ${leagueGrad(m.league)} ${t.live ? "border-red-500/40 shadow-[0_0_24px_rgba(239,68,68,0.12)]" : "border-[#f5c518]/15"}`}>
+      {/* header */}
+      <div className="flex items-center justify-between gap-2 bg-black/30 px-3 py-1.5">
+        <span className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-300">{sportIcon(m.sport)} {m.league}</span>
+        {t.live ? (
+          <span className={`flex shrink-0 items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-black text-red-400 ring-1 ring-red-500/40 ${livePulse ? "animate-pulse" : ""}`}>
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> লাইভ • {m.minute}
+          </span>
+        ) : finished ? (
+          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-300">সমাপ্ত</span>
         ) : (
-          <span className="text-slate-500">{m.time}</span>
+          <span className="shrink-0 text-[10px] font-bold text-slate-400">🕐 {m.time}</span>
         )}
       </div>
-      <Link href={`${base}/match/${m.id}`} className="mt-2 block">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-bold">{m.he} {m.home}</span>
-          {m.live && m.hs !== undefined && <b className="text-[#f5c518]">{bn(m.hs)}{m.sport === "cricket" ? `/${bn(m.as ?? 0)}` : ""}</b>}
+      {/* teams */}
+      <Link href={`${base}/match/${m.id}`} className="block px-3.5 pt-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className={`flex min-w-0 items-center gap-2 text-sm font-black ${finished && hw ? "text-[#f5c518]" : "text-white"}`}>
+            <span className="text-2xl drop-shadow">{m.he}</span><span className="truncate">{m.home}</span>{finished && hw && <span>🏅</span>}
+          </span>
+          {(t.live || finished) && <b className="shrink-0 text-lg font-black text-[#f5c518] tabular-nums">{scoreLine(t)}</b>}
         </div>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="text-sm font-bold">{m.ae} {m.away}</span>
-          {m.live && m.as !== undefined && m.sport !== "cricket" && <b className="text-[#f5c518]">{bn(m.as)}</b>}
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <span className={`flex min-w-0 items-center gap-2 text-sm font-black ${finished && !hw ? "text-[#f5c518]" : "text-white"}`}>
+            <span className="text-2xl drop-shadow">{m.ae}</span><span className="truncate">{m.away}</span>{finished && !hw && m.hs !== m.as && <span>🏅</span>}
+          </span>
+          {(t.live || finished) && m.sport === "tennis" && <span className="shrink-0 text-[10px] text-slate-400">{m.minute}</span>}
         </div>
       </Link>
-      <div className="mt-2.5 flex gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <OddsBtn match={m} label="১" odds={m.odds.h} small />
-        {m.odds.d !== undefined && <OddsBtn match={m} label="X" odds={m.odds.d} small />}
-        <OddsBtn match={m} label="২" odds={m.odds.a} small />
-        <Link href={`${base}/match/${m.id}`} className="ml-auto rounded-lg px-2 py-1 text-[11px] font-bold text-slate-400 hover:text-white">
-          বিস্তারিত →
-        </Link>
-      </div>
+      {/* odds */}
+      {!finished && (
+        <div className="flex items-center gap-1.5 px-3 pb-3 pt-2.5" onClick={(e) => e.stopPropagation()}>
+          <OddsBtn match={t} label="১" odds={t.odds.h} small flash={t.dirH} />
+          {t.odds.d !== undefined && <OddsBtn match={t} label="X" odds={t.odds.d} small flash={t.dirD} />}
+          <OddsBtn match={t} label="২" odds={t.odds.a} small flash={t.dirA} />
+          <Link href={`${base}/match/${m.id}`} className="ml-auto rounded-lg px-2 py-1 text-[11px] font-bold text-slate-400 hover:text-white">
+            +{bn(m.sport === "football" ? 24 : 18)} মার্কেট →
+          </Link>
+        </div>
+      )}
+      {finished && (
+        <div className="px-3 pb-3 pt-1">
+          <p className="text-[11px] font-bold text-slate-400">✅ ফলাফল: <b className="text-white">{scoreLine(m)}</b> — {m.hs === m.as ? "ড্র" : hw ? `${m.home} জয়ী` : `${m.away} জয়ী`}</p>
+        </div>
+      )}
     </div>
   );
+}
+
+function sportIcon(sport: SportId): string {
+  return sport === "cricket" ? "🏏" : sport === "football" ? "⚽" : sport === "tennis" ? "🎾" : "🏀";
 }
 
 export function gameHref(g: CasiGame): string {
