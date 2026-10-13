@@ -30,7 +30,7 @@ import {
 } from "./fintech-pages";
 import {
   CasinoHome, SportsHome, SportPage, MatchDetail, LiveBetting, LiveMatchDetail,
-  UpcomingMatches, Results, BetSlip, MyBets, BetHistory, BettingRules, OddsGuide,
+  UpcomingMatches, Results, FuturesPage, BetSlip, MyBets, BetHistory, BettingRules, OddsGuide,
   CasinoLobby, SlotsList, SlotGame, LiveCasino, LiveGameDetail,
   RouletteGame, BlackjackGame, BaccaratGame, PokerGame, TeenPattiGame, AndarBaharGame, DragonTigerGame,
   CrashGame, AviatorGame, DiceGame, WheelGame, MinesGame, PlinkoGame, HiLoGame, CatalogLobby,
@@ -195,6 +195,7 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "live") body = <LiveBetting />;
     else if (p0 === "upcoming") body = <UpcomingMatches />;
     else if (p0 === "results") body = <Results />;
+    else if (p0 === "sports-futures") body = <FuturesPage />;
     else if (p0 === "betslip") body = <BetSlip />;
     else if (p0 === "my-bets") body = <MyBets />;
     else if (p0 === "bet-history") body = <BetHistory />;
