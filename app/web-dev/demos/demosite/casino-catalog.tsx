@@ -39,6 +39,13 @@ export function CatalogTile({ g, small, fav, onFav }: { g: CatalogGame; small?: 
     <div className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-[#101828] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition hover:border-[#f5c518]/60 hover:shadow-[0_10px_32px_rgba(245,197,24,0.22)] active:scale-[0.98]">
       <Link href={`${base}${catalogHref(g)}`} className="block">
         <div className={`relative bg-gradient-to-br ${g.grad} ${small ? "h-[104px]" : "h-36"} overflow-hidden`}>
+          {g.cover ? (
+            <>
+              <img src={g.cover} alt={g.n} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            </>
+          ) : (
+          <>
           {/* rich layered art */}
           <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 82% 12%, #ffffff66 0, transparent 44%), radial-gradient(circle at 12% 92%, #00000099 0, transparent 55%)" }} />
           <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "repeating-linear-gradient(45deg, #fff 0 1px, transparent 1px 9px)" }} />
@@ -69,6 +76,8 @@ export function CatalogTile({ g, small, fav, onFav }: { g: CatalogGame; small?: 
               <div className="absolute left-3 top-2 text-[20px] opacity-75 drop-shadow">{s1}</div>
               <div className="absolute right-3 top-2 text-[20px] opacity-75 drop-shadow">{s2}</div>
             </>
+          )}
+          </>
           )}
           {/* ribbons */}
           {g.hot && <span className="absolute left-0 top-2.5 rounded-r-lg bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-[9px] font-black text-black shadow">BEST</span>}
