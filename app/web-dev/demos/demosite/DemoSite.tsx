@@ -33,7 +33,7 @@ import {
   UpcomingMatches, Results, FuturesPage, BetSlip, MyBets, BetHistory, BettingRules, OddsGuide,
   CasinoLobby, SlotsList, SlotGame, LiveCasino, LiveGameDetail,
   RouletteGame, BlackjackGame, BaccaratGame, PokerGame, TeenPattiGame, AndarBaharGame, DragonTigerGame,
-  CrashGame, AviatorGame, DiceGame, WheelGame, MinesGame, PlinkoGame, HiLoGame, CatalogLobby,
+  CrashGame, AviatorGame, DiceGame, WheelGame, MinesGame, PlinkoGame, HiLoGame, CatalogLobby, SuperAceGame,
   GameHistory, Tournaments, TournamentDetail, Jackpots,
   CasinoLogin, CasinoSignup, CasinoWallet, DepositHome, DepositBkash, DepositNagad, DepositRocket, DepositCard,
   Withdraw, Transactions, Promotions, PromotionDetail, VipProgram, VipLevels, Referral,
@@ -227,6 +227,7 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "mines") body = <MinesGame />;
     else if (p0 === "plinko") body = <PlinkoGame />;
     else if (p0 === "hilo") body = <HiLoGame />;
+    else if (p0 === "superace") body = <SuperAceGame />;
     else if (p0 === "crash") body = <CrashGame />;
     else if (p0 === "aviator") body = <AviatorGame />;
     else if (p0 === "dice") body = <DiceGame />;
