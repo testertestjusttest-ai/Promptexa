@@ -82,27 +82,27 @@ const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
   cricket: {
     leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইন্ডিয়ান প্রিমিয়ার লিগ","টি-টোয়েন্টি আন্তর্জাতিক","ওয়ানডে সিরিজ","টেস্ট সিরিজ","এশিয়া কাপ"],
     teams: [
-      { n: "ঢাকা ডমিনেটর্স", e: "🟥", s: 4 }, { n: "কুমিল্লা ভিক্টোরিয়ান্স", e: "🟦", s: 5 },
-      { n: "রংপুর রাইডার্স", e: "🟨", s: 4 }, { n: "সিলেট স্ট্রাইকার্স", e: "🟪", s: 3 },
-      { n: "চট্টগ্রাম চ্যালেঞ্জার্স", e: "⬜", s: 3 }, { n: "খুলনা টাইগার্স", e: "🟧", s: 3 },
-      { n: "বরিশাল ফরচুন", e: "🟠", s: 4 }, { n: "বাংলাদেশ", e: "🟩", s: 4 },
-      { n: "ভারত", e: "🟧", s: 5 }, { n: "পাকিস্তান", e: "🟢", s: 4 },
-      { n: "শ্রীলঙ্কা", e: "🟦", s: 3 }, { n: "অস্ট্রেলিয়া", e: "🟨", s: 5 },
-      { n: "ইংল্যান্ড", e: "⬜", s: 4 }, { n: "আফগানিস্তান", e: "🔵", s: 3 },
-      { n: "মুম্বাই ইন্ডিয়ান্স", e: "🔵", s: 5 }, { n: "চেন্নাই সুপার কিংস", e: "🟡", s: 5 },
+      { n: "ঢাকা ডমিনেটর্স", e: "badge:ঢ:#dc2626", s: 4 }, { n: "কুমিল্লা ভিক্টোরিয়ান্স", e: "badge:কু:#2563eb", s: 5 },
+      { n: "রংপুর রাইডার্স", e: "badge:রং:#ca8a04", s: 4 }, { n: "সিলেট স্ট্রাইকার্স", e: "badge:সি:#7c3aed", s: 3 },
+      { n: "চট্টগ্রাম চ্যালেঞ্জার্স", e: "badge:চ:#0d9488", s: 3 }, { n: "খুলনা টাইগার্স", e: "badge:খু:#ea580c", s: 3 },
+      { n: "বরিশাল ফরচুন", e: "badge:ব:#f97316", s: 4 }, { n: "বাংলাদেশ", e: "🇧🇩", s: 4 },
+      { n: "ভারত", e: "🇮🇳", s: 5 }, { n: "পাকিস্তান", e: "🇵🇰", s: 4 },
+      { n: "শ্রীলঙ্কা", e: "🇱🇰", s: 3 }, { n: "অস্ট্রেলিয়া", e: "🇦🇺", s: 5 },
+      { n: "ইংল্যান্ড", e: "🇬🇧", s: 4 }, { n: "আফগানিস্তান", e: "🇦🇫", s: 3 },
+      { n: "মুম্বাই ইন্ডিয়ান্স", e: "badge:মু:#2563eb", s: 5 }, { n: "চেন্নাই সুপার কিংস", e: "badge:চে:#ca8a04", s: 5 },
     ],
   },
   football: {
     leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইংলিশ প্রিমিয়ার লিগ","লা লিগা","উয়েফা চ্যাম্পিয়ন্স লিগ","বুন্দেসলিগা"],
     teams: [
-      { n: "ঢাকা আবাহনী", e: "🔵", s: 4 }, { n: "মোহামেডান SC", e: "⚫", s: 4 },
-      { n: "বসুন্ধরা কিংস", e: "🟣", s: 5 }, { n: "সাইফ স্পোর্টিং", e: "🟡", s: 3 },
-      { n: "চট্টগ্রাম আবাহনী", e: "🟢", s: 3 }, { n: "রহমতগঞ্জ", e: "🔴", s: 2 },
-      { n: "আর্সেনাল", e: "🔴", s: 5 }, { n: "চেলসি", e: "🔵", s: 4 },
-      { n: "লিভারপুল", e: "🔴", s: 5 }, { n: "ম্যান সিটি", e: "🩵", s: 5 },
-      { n: "রিয়াল মাদ্রিদ", e: "⚪", s: 5 }, { n: "বার্সেলোনা", e: "🔵", s: 4 },
-      { n: "বায়ার্ন মিউনিখ", e: "🔴", s: 5 }, { n: "পিএসজি", e: "🔵", s: 4 },
-      { n: "বাংলাদেশ", e: "🟢", s: 3 }, { n: "ভারত", e: "🟧", s: 3 },
+      { n: "ঢাকা আবাহনী", e: "badge:আ:#2563eb", s: 4 }, { n: "মোহামেডান SC", e: "badge:মো:#1f2937", s: 4 },
+      { n: "বসুন্ধরা কিংস", e: "badge:ব:#7c3aed", s: 5 }, { n: "সাইফ স্পোর্টিং", e: "badge:সা:#ca8a04", s: 3 },
+      { n: "চট্টগ্রাম আবাহনী", e: "badge:চ:#059669", s: 3 }, { n: "রহমতগঞ্জ", e: "badge:র:#dc2626", s: 2 },
+      { n: "আর্সেনাল", e: "badge:আ:#dc2626", s: 5 }, { n: "চেলসি", e: "badge:চে:#2563eb", s: 4 },
+      { n: "লিভারপুল", e: "badge:লি:#dc2626", s: 5 }, { n: "ম্যান সিটি", e: "badge:সি:#0ea5e9", s: 5 },
+      { n: "রিয়াল মাদ্রিদ", e: "badge:রি:#e2e8f0", s: 5 }, { n: "বার্সেলোনা", e: "badge:বা:#7c3aed", s: 4 },
+      { n: "বায়ার্ন মিউনিখ", e: "badge:বা:#dc2626", s: 5 }, { n: "পিএসজি", e: "badge:পি:#1d4ed8", s: 4 },
+      { n: "বাংলাদেশ", e: "🇧🇩", s: 3 }, { n: "ভারত", e: "🇮🇳", s: 3 },
     ],
   },
   tennis: {
@@ -118,10 +118,10 @@ const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
   basketball: {
     leagues: ["এনবিএ","বাংলাদেশ বাস্কেটবল লিগ"],
     teams: [
-      { n: "লেকার্স", e: "🟡", s: 4 }, { n: "সেল্টিক্স", e: "🟢", s: 5 },
-      { n: "ওয়ারিয়র্স", e: "🔵", s: 4 }, { n: "নাগেটস", e: "🟤", s: 4 },
-      { n: "বাক্স", e: "🟢", s: 4 }, { n: "হিট", e: "🔴", s: 3 },
-      { n: "ঢাকা গ্ল্যাডিয়েটর্স", e: "🔴", s: 3 }, { n: "চট্টগ্রাম টাইটান্স", e: "🔵", s: 3 },
+      { n: "লেকার্স", e: "badge:লে:#ca8a04", s: 4 }, { n: "সেল্টিক্স", e: "badge:সে:#059669", s: 5 },
+      { n: "ওয়ারিয়র্স", e: "badge:ও:#2563eb", s: 4 }, { n: "নাগেটস", e: "badge:না:#92400e", s: 4 },
+      { n: "বাক্স", e: "badge:বা:#059669", s: 4 }, { n: "হিট", e: "badge:হি:#dc2626", s: 3 },
+      { n: "ঢাকা গ্ল্যাডিয়েটর্স", e: "badge:গ্ল:#dc2626", s: 3 }, { n: "চট্টগ্রাম টাইটান্স", e: "badge:টা:#2563eb", s: 3 },
     ],
   },
 };
@@ -145,18 +145,18 @@ function buildFixtures(): CasiMatch[] {
 
   // ---------- LIVE (curated, always on) ----------
   const liveDefs: CasiMatch[] = [
-    { id: "L1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা ডমিনেটর্স", away: "কুমিল্লা ভিক্টোরিয়ান্স", he: "🟥", ae: "🟦", time: "লাইভ", day: 0, live: true, minute: "১৪.২ ওভার", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
-    { id: "L2", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "ভারত", he: "🟩", ae: "🟧", time: "লাইভ", day: 0, live: true, minute: "২য় ইনিংস • ৮.৪ ওভার", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
-    { id: "L3", sport: "cricket", league: "ইন্ডিয়ান প্রিমিয়ার লিগ", home: "মুম্বাই ইন্ডিয়ান্স", away: "চেন্নাই সুপার কিংস", he: "🔵", ae: "🟡", time: "লাইভ", day: 0, live: true, minute: "১১.৫ ওভার", hs: 108, as: 1, odds: { h: 1.72, a: 2.1 } },
-    { id: "L4", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "আর্সেনাল", away: "চেলসি", he: "🔴", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৬৭'", hs: 2, as: 1, odds: { h: 1.62, d: 3.8, a: 5.0 } },
-    { id: "L5", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা আবাহনী", away: "মোহামেডান SC", he: "🔵", ae: "⚫", time: "লাইভ", day: 0, live: true, minute: "৩৪'", hs: 1, as: 0, odds: { h: 1.7, d: 3.4, a: 4.6 } },
-    { id: "L6", sport: "football", league: "লা লিগা", home: "রিয়াল মাদ্রিদ", away: "বার্সেলোনা", he: "⚪", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৫৫'", hs: 1, as: 1, odds: { h: 2.5, d: 2.9, a: 2.8 } },
+    { id: "L1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা ডমিনেটর্স", away: "কুমিল্লা ভিক্টোরিয়ান্স", he: "badge:ঢ:#dc2626", ae: "badge:কু:#2563eb", time: "লাইভ", day: 0, live: true, minute: "১৪.২ ওভার", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
+    { id: "L2", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "ভারত", he: "🇧🇩", ae: "🇮🇳", time: "লাইভ", day: 0, live: true, minute: "২য় ইনিংস • ৮.৪ ওভার", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
+    { id: "L3", sport: "cricket", league: "ইন্ডিয়ান প্রিমিয়ার লিগ", home: "মুম্বাই ইন্ডিয়ান্স", away: "চেন্নাই সুপার কিংস", he: "badge:মু:#2563eb", ae: "badge:চে:#ca8a04", time: "লাইভ", day: 0, live: true, minute: "১১.৫ ওভার", hs: 108, as: 1, odds: { h: 1.72, a: 2.1 } },
+    { id: "L4", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "আর্সেনাল", away: "চেলসি", he: "badge:আ:#dc2626", ae: "badge:চে:#2563eb", time: "লাইভ", day: 0, live: true, minute: "৬৭'", hs: 2, as: 1, odds: { h: 1.62, d: 3.8, a: 5.0 } },
+    { id: "L5", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা আবাহনী", away: "মোহামেডান SC", he: "badge:আ:#2563eb", ae: "badge:মো:#1f2937", time: "লাইভ", day: 0, live: true, minute: "৩৪'", hs: 1, as: 0, odds: { h: 1.7, d: 3.4, a: 4.6 } },
+    { id: "L6", sport: "football", league: "লা লিগা", home: "রিয়াল মাদ্রিদ", away: "বার্সেলোনা", he: "badge:রি:#e2e8f0", ae: "badge:বা:#7c3aed", time: "লাইভ", day: 0, live: true, minute: "৫৫'", hs: 1, as: 1, odds: { h: 2.5, d: 2.9, a: 2.8 } },
     { id: "L7", sport: "tennis", league: "এটিপি ফাইনালস", home: "কার্লোস আলকারাজ", away: "ইয়ানিক সিনার", he: "🇪🇸", ae: "🇮🇹", time: "লাইভ", day: 0, live: true, minute: "সেট ৩", hs: 1, as: 1, odds: { h: 1.8, a: 2.0 } },
     { id: "L8", sport: "tennis", league: "ডব্লিউটিএ ফাইনালস", home: "ইগা শিয়নতেক", away: "আরিনা সাবালেঙ্কা", he: "🇵🇱", ae: "🇧🇾", time: "লাইভ", day: 0, live: true, minute: "সেট ২", hs: 0, as: 1, odds: { h: 2.3, a: 1.62 } },
-    { id: "L9", sport: "basketball", league: "এনবিএ", home: "লেকার্স", away: "সেল্টিক্স", he: "🟡", ae: "🟢", time: "লাইভ", day: 0, live: true, minute: "Q3 • ৪:১২", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
-    { id: "L10", sport: "cricket", league: "এশিয়া কাপ", home: "পাকিস্তান", away: "শ্রীলঙ্কা", he: "🟢", ae: "🟦", time: "লাইভ", day: 0, live: true, minute: "১৭.৩ ওভার", hs: 156, as: 4, odds: { h: 1.66, a: 2.2 } },
-    { id: "L11", sport: "football", league: "উয়েফা চ্যাম্পিয়ন্স লিগ", home: "বায়ার্ন মিউনিখ", away: "পিএসজি", he: "🔴", ae: "🔵", time: "লাইভ", day: 0, live: true, minute: "৭৮'", hs: 2, as: 2, odds: { h: 2.9, d: 2.7, a: 2.6 } },
-    { id: "L12", sport: "basketball", league: "এনবিএ", home: "ওয়ারিয়র্স", away: "নাগেটস", he: "🔵", ae: "🟤", time: "লাইভ", day: 0, live: true, minute: "Q2 • ৭:৪৫", hs: 54, as: 49, odds: { h: 1.8, a: 2.0 } },
+    { id: "L9", sport: "basketball", league: "এনবিএ", home: "লেকার্স", away: "সেল্টিক্স", he: "badge:লে:#ca8a04", ae: "badge:সে:#059669", time: "লাইভ", day: 0, live: true, minute: "Q3 • ৪:১২", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
+    { id: "L10", sport: "cricket", league: "এশিয়া কাপ", home: "পাকিস্তান", away: "শ্রীলঙ্কা", he: "🇵🇰", ae: "🇱🇰", time: "লাইভ", day: 0, live: true, minute: "১৭.৩ ওভার", hs: 156, as: 4, odds: { h: 1.66, a: 2.2 } },
+    { id: "L11", sport: "football", league: "উয়েফা চ্যাম্পিয়ন্স লিগ", home: "বায়ার্ন মিউনিখ", away: "পিএসজি", he: "badge:বা:#dc2626", ae: "badge:পি:#1d4ed8", time: "লাইভ", day: 0, live: true, minute: "৭৮'", hs: 2, as: 2, odds: { h: 2.9, d: 2.7, a: 2.6 } },
+    { id: "L12", sport: "basketball", league: "এনবিএ", home: "ওয়ারিয়র্স", away: "নাগেটস", he: "badge:ও:#2563eb", ae: "badge:না:#92400e", time: "লাইভ", day: 0, live: true, minute: "Q2 • ৭:৪৫", hs: 54, as: 49, odds: { h: 1.8, a: 2.0 } },
   ];
   out.push(...liveDefs);
 
@@ -216,8 +216,8 @@ export const FINISHED_MATCHES = MATCHES.filter((m) => m.day < 0).sort((a, b) => 
 /** Futures / outright betting markets. */
 export const FUTURES: FutureMarket[] = [
   { id: "fu1", title: "আইসিসি ওয়ানডে বিশ্বকাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏆", ends: "নভেম্বর ২০২৭", selections: [
-    { name: "ভারত", flag: "🟧", odds: 3.4 }, { name: "অস্ট্রেলিয়া", flag: "🟨", odds: 4.0 }, { name: "ইংল্যান্ড", flag: "⬜", odds: 5.5 },
-    { name: "পাকিস্তান", flag: "🟢", odds: 7.0 }, { name: "নিউজিল্যান্ড", flag: "⬛", odds: 8.0 }, { name: "বাংলাদেশ", flag: "🟩", odds: 12.0 }] },
+    { name: "ভারত", flag: "🇮🇳", odds: 3.4 }, { name: "অস্ট্রেলিয়া", flag: "🇦🇺", odds: 4.0 }, { name: "ইংল্যান্ড", flag: "🇬🇧", odds: 5.5 },
+    { name: "পাকিস্তান", flag: "🇵🇰", odds: 7.0 }, { name: "নিউজিল্যান্ড", flag: "🇳🇿", odds: 8.0 }, { name: "বাংলাদেশ", flag: "🇧🇩", odds: 12.0 }] },
   { id: "fu2", title: "বাংলাদেশ প্রিমিয়ার লিগ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "ফেব্রুয়ারি ২০২৭", selections: [
     { name: "কুমিল্লা ভিক্টোরিয়ান্স", flag: "🟦", odds: 4.5 }, { name: "ঢাকা ডমিনেটর্স", flag: "🟥", odds: 5.0 },
     { name: "রংপুর রাইডার্স", flag: "🟨", odds: 5.5 }, { name: "বরিশাল ফরচুন", flag: "🟠", odds: 6.0 }, { name: "সিলেট স্ট্রাইকার্স", flag: "🟪", odds: 7.5 }] },
@@ -228,8 +228,8 @@ export const FUTURES: FutureMarket[] = [
     { name: "রিয়াল মাদ্রিদ", flag: "⚪", odds: 5.0 }, { name: "ম্যান সিটি", flag: "🩵", odds: 5.5 },
     { name: "বায়ার্ন মিউনিখ", flag: "🔴", odds: 7.0 }, { name: "বার্সেলোনা", flag: "🔵", odds: 8.0 }, { name: "পিএসজি", flag: "🔵", odds: 9.0 }] },
   { id: "fu5", title: "এশিয়া কাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "সেপ্টেম্বর ২০২৭", selections: [
-    { name: "ভারত", flag: "🟧", odds: 2.6 }, { name: "পাকিস্তান", flag: "🟢", odds: 4.0 },
-    { name: "শ্রীলঙ্কা", flag: "🟦", odds: 5.5 }, { name: "বাংলাদেশ", flag: "🟩", odds: 6.5 }, { name: "আফগানিস্তান", flag: "🔵", odds: 9.0 }] },
+    { name: "ভারত", flag: "🟧", odds: 2.6 }, { name: "পাকিস্তান", flag: "🇵🇰", odds: 4.0 },
+    { name: "শ্রীলঙ্কা", flag: "🇱🇰", odds: 5.5 }, { name: "বাংলাদেশ", flag: "🇧🇩", odds: 6.5 }, { name: "আফগানিস্তান", flag: "🇦🇫", odds: 9.0 }] },
   { id: "fu6", title: "অস্ট্রেলিয়ান ওপেন ২০২৭ (পুরুষ একক) — চ্যাম্পিয়ন", e: "🎾", ends: "জানুয়ারি ২০২৭", selections: [
     { name: "কার্লোস আলকারাজ", flag: "🇪🇸", odds: 3.0 }, { name: "ইয়ানিক সিনার", flag: "🇮🇹", odds: 3.4 },
     { name: "নোভাক জোকোভিচ", flag: "🇷🇸", odds: 5.0 }, { name: "দানিল মেদভেদেভ", flag: "🇷🇺", odds: 9.0 }] },
@@ -720,13 +720,13 @@ export function MatchCard({ m, ticked, livePulse }: { m: CasiMatch; ticked?: Tic
       <Link href={`${base}/match/${m.id}`} className="block px-3.5 pt-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className={`flex min-w-0 items-center gap-2 text-sm font-black ${finished && hw ? "text-[#f5c518]" : "text-white"}`}>
-            <span className="text-2xl drop-shadow">{m.he}</span><span className="truncate">{m.home}</span>{finished && hw && <span>🏅</span>}
+            <TeamEmblem e={m.he} /><span className="truncate">{m.home}</span>{finished && hw && <span>🏅</span>}
           </span>
           {(t.live || finished) && <b className="shrink-0 text-lg font-black text-[#f5c518] tabular-nums">{scoreLine(t)}</b>}
         </div>
         <div className="mt-1.5 flex items-center justify-between gap-2">
           <span className={`flex min-w-0 items-center gap-2 text-sm font-black ${finished && !hw ? "text-[#f5c518]" : "text-white"}`}>
-            <span className="text-2xl drop-shadow">{m.ae}</span><span className="truncate">{m.away}</span>{finished && !hw && m.hs !== m.as && <span>🏅</span>}
+            <TeamEmblem e={m.ae} /><span className="truncate">{m.away}</span>{finished && !hw && m.hs !== m.as && <span>🏅</span>}
           </span>
           {(t.live || finished) && m.sport === "tennis" && <span className="shrink-0 text-[10px] text-slate-400">{m.minute}</span>}
         </div>
@@ -754,6 +754,43 @@ export function MatchCard({ m, ticked, livePulse }: { m: CasiMatch; ticked?: Tic
 function sportIcon(sport: SportId): string {
   return sport === "cricket" ? "🏏" : sport === "football" ? "⚽" : sport === "tennis" ? "🎾" : "🏀";
 }
+
+/** Team emblem: national teams show real flags (🇧🇩), clubs show a colored letter badge. e = "badge:ঢ:#dc2626" for clubs. */
+export function TeamEmblem({ e, size = "md" }: { e: string; size?: "sm" | "md" | "lg" | "xl" }) {
+  const cls = size === "xl" ? "text-4xl" : size === "lg" ? "text-3xl" : size === "md" ? "text-2xl" : "text-lg";
+  if (e.startsWith("badge:")) {
+    const [, letter, color] = e.split(":");
+    const box = size === "xl" ? "h-14 w-14 text-xl" : size === "lg" ? "h-11 w-11 text-base" : size === "md" ? "h-9 w-9 text-sm" : "h-7 w-7 text-[11px]";
+    return (
+      <span className={`grid shrink-0 place-items-center rounded-full font-black text-white ring-2 ring-white/25 shadow-lg ${box}`} style={{ background: `linear-gradient(135deg, ${color}, #0b1120 130%)` }}>
+        {letter}
+      </span>
+    );
+  }
+  return <span className={`shrink-0 drop-shadow ${cls}`}>{e}</span>;
+}
+
+/** Last-5 form for any team: opponents, scores, W/L. Deterministic per team name. */
+export interface TeamFormRec { vs: string; vsE: string; score: string; res: "W" | "L" | "D"; date: string }
+export function teamHistory(name: string, sport: SportId): TeamFormRec[] {
+  const pool = FX_TEAMS[sport].teams.filter((t) => t.n !== name);
+  let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const r = fxRng(h + 777);
+  const out: TeamFormRec[] = [];
+  for (let i = 0; i < 5; i++) {
+    const opp = pool[Math.floor(r() * pool.length)];
+    const w = r() < 0.55;
+    const d = !w && r() < 0.15;
+    let score = "";
+    if (sport === "cricket") { const a = 130 + Math.floor(r() * 80), b = 125 + Math.floor(r() * 80); score = w ? `${bn(a)}/${bn(3 + Math.floor(r() * 5))} বনাম ${bn(b)}` : `${bn(b)} বনাম ${bn(a)}/${bn(3 + Math.floor(r() * 5))}`; }
+    else if (sport === "football") { const a = Math.floor(r() * 3), b = Math.floor(r() * 3); score = w ? `${bn(Math.max(a, b + 1))}-${bn(b)}` : d ? `${bn(a)}-${bn(a)}` : `${bn(b)}-${bn(Math.max(a, b + 1))}`; }
+    else if (sport === "tennis") { score = w ? "২-০ সেট" : "০-২ সেট"; }
+    else { const a = 95 + Math.floor(r() * 30), b = 90 + Math.floor(r() * 30); score = w ? `${bn(Math.max(a, b + 4))}-${bn(b)}` : `${bn(b)}-${bn(Math.max(a, b + 4))}`; }
+    out.push({ vs: opp.n, vsE: opp.e, score, res: d ? "D" : w ? "W" : "L", date: dayLabel(-(2 + i * 4 + Math.floor(r() * 3))) });
+  }
+  return out;
+}
+
 
 export function gameHref(g: CasiGame): string {
   if (g.cat === "slots") return `/casino/slots/${g.id}`;
