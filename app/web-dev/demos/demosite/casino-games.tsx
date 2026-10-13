@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
@@ -172,6 +172,8 @@ function HoldWinBonus({ bet, onEnd }: { bet: number; onEnd: (win: number) => voi
     </div>
   );
 }
+
+export { SuperAceGame } from "./casino-superace";
 
 export function SlotGame({ id }: { id: string }) {
   const cg = catalogGame(id);
