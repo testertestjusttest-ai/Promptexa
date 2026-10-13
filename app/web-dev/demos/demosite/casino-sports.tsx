@@ -5,7 +5,8 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, LIVE_MATCHES, UPCOMING_MATCHES, FINISHED_MATCHES, FUTURES, dayLabel, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch, type TickedMatch, type FutureMarket } from "./casino-data";
+import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, LIVE_MATCHES, UPCOMING_MATCHES, FINISHED_MATCHES, FUTURES, dayLabel, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch, type TickedMatch, type FutureMarket, type TeamFormRec } from "./casino-data";
+import { TeamEmblem, teamHistory } from "./casino-data";
 import { CatalogTile } from "./casino-catalog";
 
 interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
@@ -266,7 +267,7 @@ export function SportsHome() {
         </div>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {LIVE_MATCHES.slice(0, 6).map((m) => (
-            <span key={m.id} className="shrink-0 rounded-xl bg-black/40 px-3 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/10">{m.he} {m.home.split(" ").slice(0, 2).join(" ")} <b className="text-[#f5c518]">{bn(m.hs ?? 0)}</b></span>
+            <span key={m.id} className="shrink-0 rounded-xl bg-black/40 px-3 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/10"><TeamEmblem e={m.he} size="sm" /> {m.home.split(" ").slice(0, 2).join(" ")} <b className="text-[#f5c518]">{bn(m.hs ?? 0)}</b></span>
           ))}
         </div>
       </Link>
@@ -324,9 +325,76 @@ function MatchScoreLine({ m }: { m: CasiMatch }) {
   if (!m.live || m.hs === undefined) return null;
   return (
     <div className="mt-3 flex items-center justify-center gap-6 rounded-2xl bg-black/30 p-4">
-      <div className="text-center"><p className="text-3xl">{m.he}</p><p className="mt-1 text-xs font-bold">{m.home}</p><p className="text-2xl font-black text-[#f5c518]">{bn(m.hs)}{m.sport === "cricket" && m.as !== undefined ? `/${bn(m.as)}` : ""}</p></div>
+      <div className="text-center"><div className="flex justify-center"><TeamEmblem e={m.he} size="lg" /></div><p className="mt-1 text-xs font-bold">{m.home}</p><p className="text-2xl font-black text-[#f5c518]">{bn(m.hs)}{m.sport === "cricket" && m.as !== undefined ? `/${bn(m.as)}` : ""}</p></div>
       <div className="text-center"><p className="text-xs font-black text-red-400 animate-pulse">🔴 লাইভ</p><p className="text-[11px] text-slate-400">{m.minute}</p></div>
-      <div className="text-center"><p className="text-3xl">{m.ae}</p><p className="mt-1 text-xs font-bold">{m.away}</p>{m.sport !== "cricket" && m.as !== undefined && <p className="text-2xl font-black text-[#f5c518]">{bn(m.as)}</p>}</div>
+      <div className="text-center"><div className="flex justify-center"><TeamEmblem e={m.ae} size="lg" /></div><p className="mt-1 text-xs font-bold">{m.away}</p>{m.sport !== "cricket" && m.as !== undefined && <p className="text-2xl font-black text-[#f5c518]">{bn(m.as)}</p>}</div>
+    </div>
+  );
+}
+
+/** Ball-by-ball cartoon: bowler runs, ball flies, result pops. */
+function BallByBall({ balls, flying }: { balls: string[]; flying: boolean }) {
+  const chip = (b: string) =>
+    b === "W" ? "bg-red-500/25 text-red-300 ring-red-500/50" :
+    b === "6" ? "bg-amber-400/25 text-amber-300 ring-amber-400/50" :
+    b === "4" ? "bg-emerald-500/25 text-emerald-300 ring-emerald-500/50" :
+    "bg-white/8 text-slate-300 ring-white/15";
+  return (
+    <div className="mt-3 overflow-hidden rounded-2xl bg-[#0d1526] p-3 ring-1 ring-white/10">
+      <style>{`@keyframes dp-ballfly { 0% { left: 6%; top: 45%; transform: scale(.7) } 45% { left: 48%; top: -25%; transform: scale(1) } 100% { left: 90%; top: 45%; transform: scale(.7) } } @keyframes dp-ballpop { 0% { transform: scale(0) rotate(-30deg) } 60% { transform: scale(1.4) rotate(8deg) } 100% { transform: scale(1) rotate(0) } } .dp-ballfly { animation: dp-ballfly 1.05s ease-in forwards } .dp-ballpop { animation: dp-ballpop .45s ease both }`}</style>
+      <p className="mb-2 text-xs font-black text-white">🎙️ বল-বাই-বল <span className="font-bold text-red-400">• সরাসরি</span></p>
+      {/* cartoon pitch */}
+      <div className="relative h-16 overflow-hidden rounded-xl bg-gradient-to-b from-emerald-900/60 to-emerald-950/80 ring-1 ring-emerald-800/40">
+        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-2xl">🏃</span>
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-2xl">🏏</span>
+        <span className="absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 rounded bg-amber-200/60" />
+        {flying && <span className="dp-ballfly absolute text-lg" style={{ top: "45%" }}>⚪</span>}
+        {!flying && <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold text-white/50">পরের বল আসছে…</span>}
+      </div>
+      {/* recent balls */}
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {balls.map((b, i) => (
+          <span key={`${i}-${b}`} className={`grid h-8 w-8 place-items-center rounded-full text-xs font-black ring-1 ${chip(b)} ${i === balls.length - 1 ? "dp-ballpop" : ""}`}>{b}</span>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-slate-400">শেষ {bn(balls.length)} বল • <b className="text-emerald-300">পরের বল:</b> কত রান হবে? নিচে বাজি ধরুন ⬇</p>
+    </div>
+  );
+}
+
+/** Tiny odds-movement sparkline (SpreadEx-style price chart). */
+function OddsSpark({ hist }: { hist: number[] }) {
+  if (hist.length < 2) return null;
+  const min = Math.min(...hist), max = Math.max(...hist), rg = Math.max(0.01, max - min);
+  const pts = hist.map((v, i) => `${(i / (hist.length - 1)) * 100},${28 - ((v - min) / rg) * 24}`).join(" ");
+  const up = hist[hist.length - 1] >= hist[0];
+  return (
+    <div className="mt-2 rounded-xl bg-black/30 p-2 ring-1 ring-white/10">
+      <p className="mb-1 text-[10px] font-bold text-slate-400">📈 অডস মুভমেন্ট (হোম জয়)</p>
+      <svg viewBox="0 0 100 30" className="h-8 w-full" preserveAspectRatio="none">
+        <polyline points={pts} fill="none" stroke={up ? "#34d399" : "#f87171"} strokeWidth="2" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
+/** Team form strip: last-5 with scores. */
+function TeamForm({ name, sport, align = "left" }: { name: string; sport: SportId; align?: "left" | "right" }) {
+  const form = teamHistory(name, sport);
+  return (
+    <div className={align === "right" ? "text-right" : ""}>
+      <p className="mb-1.5 text-xs font-black text-[#f5c518]">📋 {name} — শেষ ৫ ম্যাচ</p>
+      <div className="space-y-1">
+        {form.map((f, i) => (
+          <div key={i} className="flex items-center justify-between gap-2 rounded-lg bg-white/[0.04] px-2.5 py-1.5 text-[11px]">
+            <span className="flex min-w-0 items-center gap-1.5 text-slate-300"><TeamEmblem e={f.vsE} size="sm" /><span className="truncate">বনাম {f.vs}</span></span>
+            <span className="flex shrink-0 items-center gap-1.5">
+              <span className="text-slate-400">{f.score}</span>
+              <span className={`grid h-5 w-5 place-items-center rounded-full text-[9px] font-black ${f.res === "W" ? "bg-emerald-500/25 text-emerald-300" : f.res === "L" ? "bg-red-500/25 text-red-300" : "bg-white/15 text-slate-300"}`}>{f.res}</span>
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -336,15 +404,58 @@ export function MatchDetail({ id }: { id: string }) {
   const m = MATCHES.find((x) => x.id === id);
   const [tab, setTab] = useState<"odds" | "info">("odds");
   const [odds, setOdds] = useState(m?.odds);
+  const [dir, setDir] = useState({ h: 0, d: 0, a: 0 });
+  const [hist, setHist] = useState<number[]>(m ? [m.odds.h] : []);
+  const [score, setScore] = useState({ hs: m?.hs, as: m?.as });
+  const [balls, setBalls] = useState<string[]>(["১", "০", "৪", "১", "W", "২"]);
+  const [flying, setFlying] = useState(false);
+  const [mom, setMom] = useState(50);
+
   useEffect(() => {
     if (!m?.live) return;
-    const t = setInterval(() => setOdds((o) => o ? { h: +(o.h + (Math.random() - 0.5) * 0.1).toFixed(2), d: o.d ? +(o.d + (Math.random() - 0.5) * 0.1).toFixed(2) : undefined, a: +(o.a + (Math.random() - 0.5) * 0.1).toFixed(2) } : o), 6000);
-    return () => clearInterval(t);
-  }, [m?.live]);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const t = setInterval(() => {
+      // odds drift with direction
+      setOdds((o) => {
+        if (!o) return o;
+        const j = (v: number) => Math.max(1.15, +(v + (Math.random() - 0.5) * 0.14).toFixed(2));
+        const nh = j(o.h), na = j(o.a), nd = o.d !== undefined ? j(o.d) : undefined;
+        const sdir = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
+        setDir({ h: sdir(nh, o.h), d: o.d !== undefined && nd !== undefined ? sdir(nd, o.d) : 0, a: sdir(na, o.a) });
+        setHist((hst) => [...hst.slice(-24), nh]);
+        return { h: nh, d: nd, a: na };
+      });
+      if (m.sport === "cricket") {
+        // ball-by-ball cartoon sequence
+        setFlying(true);
+        timers.push(setTimeout(() => {
+          const nb = ["০", "০", "১", "১", "১", "২", "২", "৪", "৪", "৬", "W"][Math.floor(Math.random() * 11)];
+          setBalls((b) => [...b.slice(-11), nb]);
+          setScore((sc) => {
+            let { hs = 0, as = 0 } = sc;
+            if (nb === "W") as += 1;
+            else if (nb === "৪") hs += 4;
+            else if (nb === "৬") hs += 6;
+            else hs += parseInt(nb) || 0;
+            return { hs, as };
+          });
+          setFlying(false);
+        }, 1150));
+      } else if (m.sport === "football") {
+        setMom((v) => Math.min(78, Math.max(22, v + (Math.random() - 0.5) * 14)));
+        if (Math.random() < 0.12) setScore((sc) => (Math.random() < 0.5 ? { hs: (sc.hs ?? 0) + 1, as: sc.as } : { hs: sc.hs, as: (sc.as ?? 0) + 1 }));
+      } else {
+        setScore((sc) => ({ hs: (sc.hs ?? 0) + (Math.random() < 0.25 ? Math.floor(Math.random() * 4) : 0), as: sc.as }));
+      }
+    }, 5200);
+    return () => { clearInterval(t); timers.forEach(clearTimeout); };
+  }, [m?.id]);
+
   if (!m) return <Page narrow><Empty emoji="🔍" text="ম্যাচ পাওয়া যায়নি" /></Page>;
-  const mm = { ...m, odds: odds ?? m.odds };
-  const markets: { t: string; opts: { label: string; o: number }[] }[] = [
-    { t: "ম্যাচ উইনার", opts: [{ label: m.home, o: mm.odds.h }, ...(mm.odds.d ? [{ label: "ড্র", o: mm.odds.d }] : []), { label: m.away, o: mm.odds.a }] },
+  const mm = { ...m, odds: odds ?? m.odds, hs: score.hs, as: score.as };
+  const markets: { t: string; opts: { label: string; o: number; f?: number }[] }[] = [
+    { t: "ম্যাচ উইনার", opts: [{ label: m.home, o: mm.odds.h, f: m.live ? dir.h : 0 }, ...(mm.odds.d ? [{ label: "ড্র", o: mm.odds.d, f: m.live ? dir.d : 0 }] : []), { label: m.away, o: mm.odds.a, f: m.live ? dir.a : 0 }] },
+    ...(m.live && m.sport === "cricket" ? [{ t: "⚪ পরের বল", opts: [{ label: "০ রান", o: 2.8 }, { label: "৪ হবে", o: 9.5 }, { label: "৬ হবে", o: 14.0 }, { label: "উইকেট", o: 7.5 }] }] : []),
     { t: "ডাবল চান্স", opts: [{ label: `${m.home}/ড্র`, o: +(mm.odds.h * 0.72).toFixed(2) }, { label: `${m.away}/ড্র`, o: +(mm.odds.a * 0.72).toFixed(2) }, { label: "যেকোনো জয়", o: 1.28 }] },
     { t: "মোট গোল/রান ওভার-আন্ডার", opts: [{ label: "ওভার ২.৫", o: 1.95 }, { label: "আন্ডার ২.৫", o: 1.85 }, { label: "ওভার ৩.৫", o: 2.6 }, { label: "আন্ডার ৩.৫", o: 1.45 }] },
     { t: "উভয় দল স্কোর করবে", opts: [{ label: "হ্যাঁ", o: 1.75 }, { label: "না", o: 2.0 }] },
@@ -354,12 +465,29 @@ export function MatchDetail({ id }: { id: string }) {
       <Back href={m.live ? `${base}/live` : `${base}/sports/${m.sport}`} label="ফিরে যান" />
       <div className={`${card} p-4`}>
         <div className="flex items-center justify-between text-[11px]"><span className={sub}>{m.league} • {sportName(m.sport)}</span>{m.live && <span className="font-black text-red-400 animate-pulse">🔴 লাইভ</span>}</div>
-        <MatchScoreLine m={m} />
+        <MatchScoreLine m={mm} />
+        {m.live && m.sport === "cricket" && <BallByBall balls={balls} flying={flying} />}
+        {m.live && m.sport === "football" && (
+          <div className="mt-3 rounded-2xl bg-black/30 p-3 ring-1 ring-white/10">
+            <p className="mb-1.5 text-[11px] font-black text-white">⚡ মোমেন্টাম</p>
+            <div className="flex h-2.5 overflow-hidden rounded-full bg-white/10">
+              <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-1000" style={{ width: `${mom}%` }} />
+              <div className="flex-1 bg-gradient-to-r from-sky-500 to-sky-400 transition-all duration-1000" />
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] font-bold text-slate-400"><span>{m.home} {bn(Math.round(mom))}%</span><span>{bn(100 - Math.round(mom))}% {m.away}</span></div>
+            <div className="mt-2 grid grid-cols-3 gap-1.5 text-center text-[11px]">
+              {[["🎯 শট", `${bn(4 + Math.round(mom / 12))} - ${bn(4 + Math.round((100 - mom) / 12))}`], ["🚩 কর্নার", `${bn(2 + Math.round(mom / 25))} - ${bn(2 + Math.round((100 - mom) / 25))}`], ["🟨 কার্ড", `${bn(Math.round(mom / 40))} - ${bn(Math.round((100 - mom) / 40))}`]].map(([t, v]) => (
+                <div key={t} className="rounded-lg bg-white/[0.04] py-1.5"><p className="font-bold text-slate-400">{t}</p><p className="font-black text-white">{v}</p></div>
+              ))}
+            </div>
+          </div>
+        )}
+        {m.live && <OddsSpark hist={hist} />}
         {!m.live && <p className="mt-3 text-center text-sm text-slate-400">🕐 {m.time}</p>}
         <div className="mt-4 flex gap-2">
           {(["odds", "info"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`flex-1 rounded-xl py-2 text-sm font-black ${tab === t ? "bg-[#f5c518] text-black" : "bg-white/5 text-slate-400"}`}>
-              {t === "odds" ? "📊 অডস" : "ℹ️ তথ্য"}
+              {t === "odds" ? "📊 অডস" : "ℹ️ তথ্য ও ফর্ম"}
             </button>
           ))}
         </div>
@@ -373,20 +501,24 @@ export function MatchDetail({ id }: { id: string }) {
                 {mk.opts.map((o) => (
                   <div key={o.label} className="flex items-center justify-between rounded-xl bg-white/[0.04] px-3 py-2">
                     <span className="text-xs">{o.label}</span>
-                    <OddsBtn match={mm} label={o.label} odds={o.o} small />
+                    <OddsBtn match={mm} label={o.label} odds={o.o} small flash={o.f} />
                   </div>
                 ))}
               </div>
             </div>
           ))}
-          <p className="text-center text-[11px] text-slate-500">💡 অডসে ক্লিক করলেই বেট স্লিপে যোগ হবে</p>
+          <p className="text-center text-[11px] text-slate-500">💡 অডসে ক্লিক করলেই বেট স্লিপে যোগ হবে • <b className="text-emerald-300">▲</b>/<b className="text-red-300">▼</b> = অডস বদলেছে</p>
         </div>
       ) : (
-        <div className={`${card} mt-3 space-y-2 p-4 text-sm`}>
-          <p><b className="text-[#f5c518]">লিগ:</b> {m.league}</p>
-          <p><b className="text-[#f5c518]">ভেন্যু:</b> {m.sport === "cricket" ? "শের-ই-বাংলা স্টেডিয়াম, ঢাকা" : m.sport === "football" ? "বঙ্গবন্ধু স্টেডিয়াম, ঢাকা" : "ইনডোর স্টেডিয়াম"}</p>
-          <p><b className="text-[#f5c518]">আবহাওয়া:</b> পরিষ্কার, ২৮°সে</p>
-          <p className={sub}>হেড-টু-হেড: শেষ ৫ দেখায় {m.home} ৩টি, {m.away} ২টি জিতেছে। ফর্ম বিবেচনায় অডস নির্ধারিত।</p>
+        <div className={`${card} mt-3 space-y-4 p-4 text-sm`}>
+          <div>
+            <p><b className="text-[#f5c518]">লিগ:</b> {m.league}</p>
+            <p><b className="text-[#f5c518]">ভেন্যু:</b> {m.sport === "cricket" ? "শের-ই-বাংলা স্টেডিয়াম, ঢাকা" : m.sport === "football" ? "বঙ্গবন্ধু স্টেডিয়াম, ঢাকা" : "ইনডোর স্টেডিয়াম"}</p>
+            <p><b className="text-[#f5c518]">আবহাওয়া:</b> পরিষ্কার, ২৮°সে</p>
+            <p className={sub}>হেড-টু-হেড: শেষ ৫ দেখায় {m.home} ৩টি, {m.away} ২টি জিতেছে।</p>
+          </div>
+          <TeamForm name={m.home} sport={m.sport} />
+          <TeamForm name={m.away} sport={m.sport} />
         </div>
       )}
     </Page>
