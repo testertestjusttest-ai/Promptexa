@@ -5,7 +5,7 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch } from "./casino-data";
+import { bn, money, GOLD, useSkin, useBetSlip, SPORTS, sportName, MATCHES, LIVE_MATCHES, UPCOMING_MATCHES, FINISHED_MATCHES, FUTURES, dayLabel, TABLE_GAMES, CRASH_GAMES, PROMOS, fmtTime, OddsBtn, MatchCard, GameCard, BetChips, GAME_CATALOG, catalogHref, CATALOG_COUNT, type CatalogGame, type SportId, type CasiMatch, type TickedMatch, type FutureMarket } from "./casino-data";
 import { CatalogTile } from "./casino-catalog";
 
 interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
@@ -20,6 +20,48 @@ const DEFAULT_BANNERS: CasiBanner[] = [
 function HScroll({ children }: { children: React.ReactNode }) {
   return <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: "none" }}>{children}</div>;
 }
+
+/** Real-time live ticker: every 5s odds drift + scores bump, with direction flags. */
+export function useLiveTicker(): TickedMatch[] {
+  const prevRef = useRef<Record<string, { h: number; d?: number; a: number }>>({});
+  const [snap, setSnap] = useState<TickedMatch[]>(() => LIVE_MATCHES.map((m) => ({ ...m, dirH: 0, dirD: 0, dirA: 0 })));
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSnap(LIVE_MATCHES.map((m) => {
+        const prev = prevRef.current[m.id] ?? m.odds;
+        const r = Math.random;
+        const j = (o: number) => Math.max(1.15, +(o + (r() - 0.5) * 0.16).toFixed(2));
+        const nh = j(prev.h), na = j(prev.a);
+        const nd = prev.d !== undefined ? j(prev.d) : undefined;
+        prevRef.current[m.id] = { h: nh, d: nd, a: na };
+        // score drift
+        let { hs, as } = m;
+        if (r() < 0.3 && hs !== undefined && as !== undefined) {
+          if (m.sport === "cricket") hs += Math.floor(r() * 7);
+          else if (m.sport === "football") { if (r() < 0.5) hs += 1; else as += 1; }
+          else hs += Math.floor(r() * 5);
+        }
+        const dir = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
+        return { ...m, odds: { h: nh, d: nd, a: na }, hs, as, dirH: dir(nh, prev.h), dirD: prev.d !== undefined && nd !== undefined ? dir(nd, prev.d) : 0, dirA: dir(na, prev.a) };
+      }));
+    }, 5000);
+    return () => clearInterval(t);
+  }, []);
+  return snap;
+}
+
+/** Date-grouped upcoming list. */
+export function groupUpcoming(list: CasiMatch[]): { label: string; sub: string; items: CasiMatch[] }[] {
+  const groups: { label: string; sub: string; items: CasiMatch[] }[] = [];
+  const push = (label: string, sub: string, items: CasiMatch[]) => { if (items.length) groups.push({ label, sub, items }); };
+  push("⚡ আজ", `${bn(list.filter((m) => m.day === 0).length)}টি ম্যাচ`, list.filter((m) => m.day === 0));
+  push("📅 আগামীকাল", `${bn(list.filter((m) => m.day === 1).length)}টি ম্যাচ`, list.filter((m) => m.day === 1));
+  push("🗓️ এই সপ্তাহে", `${bn(list.filter((m) => m.day > 1 && m.day <= 7).length)}টি ম্যাচ`, list.filter((m) => m.day > 1 && m.day <= 7));
+  push("📆 এই মাসে", `${bn(list.filter((m) => m.day > 7 && m.day <= 30).length)}টি ম্যাচ`, list.filter((m) => m.day > 7 && m.day <= 30));
+  push("🔭 আরো সামনে (২-৪ মাস)", `${bn(list.filter((m) => m.day > 30).length)}টি ম্যাচ`, list.filter((m) => m.day > 30));
+  return groups;
+}
+
 
 export function CasinoHome() {
   const { base, def, store } = useSkin();
@@ -208,29 +250,48 @@ export function CasinoHome() {
 }
 export function SportsHome() {
   const { base } = useSkin();
+  const live = LIVE_MATCHES.length, up = UPCOMING_MATCHES.length, fin = FINISHED_MATCHES.length;
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="⚽ স্পোর্টস বেটিং" sub="খেলা বেছে নিন" />
+      <SectionTitle t="⚽ স্পোর্টস বেটিং" sub={`${bn(live)} লাইভ • ${bn(up)} আসন্ন • ${bn(FUTURES.length)} ফিউচার মার্কেট`} />
+      {/* live hero strip */}
+      <Link href={`${base}/live`} className="mb-4 block overflow-hidden rounded-3xl border border-red-500/40 bg-gradient-to-r from-red-950/70 via-[#141b2e] to-[#0b1120] p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="flex items-center gap-2 text-lg font-black text-white"><span className="relative flex h-3 w-3"><span className="absolute h-full w-full animate-ping rounded-full bg-red-500" /><span className="h-3 w-3 rounded-full bg-red-500" /></span> এখন লাইভ</p>
+            <p className="mt-1 text-xs text-slate-300">{bn(live)}টি ম্যাচে বল-বাই-বল অডস বদলাচ্ছে — এখনই বাজি ধরুন</p>
+          </div>
+          <span className="rounded-full bg-red-500 px-4 py-2 text-sm font-black text-white">দেখুন →</span>
+        </div>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {LIVE_MATCHES.slice(0, 6).map((m) => (
+            <span key={m.id} className="shrink-0 rounded-xl bg-black/40 px-3 py-1.5 text-[11px] font-bold text-white ring-1 ring-white/10">{m.he} {m.home.split(" ").slice(0, 2).join(" ")} <b className="text-[#f5c518]">{bn(m.hs ?? 0)}</b></span>
+          ))}
+        </div>
+      </Link>
+      {/* tabs */}
+      <div className="grid grid-cols-4 gap-2">
+        {([[`${base}/live`, "🔴", "লাইভ", bn(live)], [`${base}/upcoming`, "📅", "আসন্ন", bn(up)], [`${base}/sports-futures`, "🏆", "ফিউচার", bn(FUTURES.length)], [`${base}/results`, "📊", "ফলাফল", bn(fin)]] as const).map(([h, e, t, n]) => (
+          <Link key={h} href={h} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-center transition hover:border-[#f5c518]/50">
+            <p className="text-2xl">{e}</p><p className="mt-1 text-xs font-black text-white">{t}</p><p className="text-[10px] font-bold text-[#f5c518]">{n}</p>
+          </Link>
+        ))}
+      </div>
+      {/* sports grid */}
+      <p className="mb-2 mt-5 text-sm font-black text-slate-300">খেলা বেছে নিন</p>
       <div className="grid grid-cols-2 gap-3">
-        {SPORTS.map((s) => {
-          const n = MATCHES.filter((m) => m.sport === s.id && !m.id.startsWith("r")).length;
-          const lv = MATCHES.filter((m) => m.sport === s.id && m.live).length;
+        {SPORTS.map((sp) => {
+          const n = MATCHES.filter((m) => m.sport === sp.id && m.day >= 0).length;
+          const lv = LIVE_MATCHES.filter((m) => m.sport === sp.id).length;
           return (
-            <Link key={s.id} href={`${base}/sports/${s.id}`} className="rounded-3xl border border-[#f5c518]/15 bg-gradient-to-br from-[#141b2e] to-[#0b1120] p-6 text-center transition hover:border-[#f5c518]/50">
-              <p className="text-5xl">{s.e}</p>
-              <p className="mt-2 text-lg font-black">{s.n}</p>
+            <Link key={sp.id} href={`${base}/sports/${sp.id}`} className="rounded-3xl border border-[#f5c518]/15 bg-gradient-to-br from-[#141b2e] to-[#0b1120] p-5 text-center transition hover:border-[#f5c518]/50">
+              <p className="text-5xl">{sp.e}</p>
+              <p className="mt-2 text-lg font-black text-white">{sp.n}</p>
               <p className="mt-1 text-xs text-slate-400">{lv > 0 && <span className="mr-1 font-bold text-red-400">🔴 {bn(lv)} লাইভ</span>}{bn(n)}টি ম্যাচ</p>
             </Link>
           );
         })}
-      </div>
-      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-        {([["/live", "🔴", "লাইভ"], ["/upcoming", "📅", "আসন্ন"], ["/results", "📊", "ফলাফল"]] as const).map(([h, e, t]) => (
-          <Link key={h} href={`${base}${h}`} className="rounded-2xl bg-white/5 p-4 transition hover:bg-white/10">
-            <p className="text-2xl">{e}</p><p className="mt-1 text-xs font-black">{t}</p>
-          </Link>
-        ))}
       </div>
     </Page>
   );
@@ -239,21 +300,17 @@ export function SportsHome() {
 export function SportPage({ sport }: { sport: string }) {
   const { base } = useSkin();
   const s = SPORTS.find((x) => x.id === sport);
-  const [tick, setTick] = useState(0);
-  useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 9000); return () => clearInterval(t); }, []);
-  const list = useMemo(() => MATCHES.filter((m) => m.sport === sport && !m.id.startsWith("r")).map((m) =>
-    m.live ? { ...m, odds: { h: +(m.odds.h + (Math.random() - 0.5) * 0.08).toFixed(2), d: m.odds.d ? +(m.odds.d + (Math.random() - 0.5) * 0.08).toFixed(2) : undefined, a: +(m.odds.a + (Math.random() - 0.5) * 0.08).toFixed(2) } } : m
-  ), [sport, tick]);
+  const liveTick = useLiveTicker();
   if (!s) return <Page narrow><Empty emoji="🔍" text="খেলা পাওয়া যায়নি" /></Page>;
-  const live = list.filter((m) => m.live);
-  const up = list.filter((m) => !m.live);
+  const live = liveTick.filter((m) => m.sport === sport);
+  const up = UPCOMING_MATCHES.filter((m) => m.sport === sport);
   return (
     <Page>
       <Back href={`${base}/sports`} label="স্পোর্টস" />
-      <SectionTitle t={`${s.e} ${s.n}`} sub={`${bn(list.length)}টি ম্যাচ`} />
+      <SectionTitle t={`${s.e} ${s.n}`} sub={`${bn(live.length + up.length)}টি ম্যাচ`} />
       {live.length > 0 && (<>
         <p className="mb-2 text-sm font-black text-red-400">🔴 লাইভ ({bn(live.length)})</p>
-        <div className="grid gap-2.5 sm:grid-cols-2">{live.map((m) => <MatchCard key={m.id} m={m} livePulse />)}</div>
+        <div className="grid gap-2.5 sm:grid-cols-2">{live.map((m) => <MatchCard key={m.id} m={m} ticked={m} livePulse />)}</div>
       </>)}
       {up.length > 0 && (<>
         <p className="mb-2 mt-5 text-sm font-black text-slate-300">📅 আসন্ন ({bn(up.length)})</p>
@@ -338,20 +395,19 @@ export function MatchDetail({ id }: { id: string }) {
 
 export function LiveBetting() {
   const { base } = useSkin();
-  const [tick, setTick] = useState(0);
-  useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 7000); return () => clearInterval(t); }, []);
-  const live = useMemo(() => MATCHES.filter((m) => m.live).map((m) => ({
-    ...m,
-    odds: { h: +(m.odds.h + (Math.random() - 0.5) * 0.08).toFixed(2), d: m.odds.d ? +(m.odds.d + (Math.random() - 0.5) * 0.08).toFixed(2) : undefined, a: +(m.odds.a + (Math.random() - 0.5) * 0.08).toFixed(2) },
-  })), [tick]);
+  const live = useLiveTicker();
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="🔴 লাইভ বেটিং" sub={`${bn(live.length)}টি ম্যাচ চলছে • অডস লাইভ আপডেট হচ্ছে`} />
+      <SectionTitle t="🔴 লাইভ বেটিং" sub={`${bn(live.length)}টি ম্যাচ চলছে • অডস প্রতি ৫ সেকেন্ডে আপডেট`} />
+      <div className="mb-3 flex items-center gap-2 rounded-2xl bg-red-500/10 px-3 py-2 ring-1 ring-red-500/30">
+        <span className="relative flex h-2.5 w-2.5"><span className="absolute h-full w-full animate-ping rounded-full bg-red-500" /><span className="h-2.5 w-2.5 rounded-full bg-red-500" /></span>
+        <p className="text-xs font-bold text-red-200">সরাসরি সম্প্রচার চলছে — <b className="text-emerald-300">▲ সবুজ</b> মানে অডস বেড়েছে, <b className="text-red-300">▼ লাল</b> মানে কমেছে</p>
+      </div>
       <div className="grid gap-2.5 sm:grid-cols-2">
         {live.map((m) => (
           <div key={m.id}>
-            <MatchCard m={m} livePulse />
+            <MatchCard m={m} ticked={m} livePulse />
             <Link href={`${base}/live/${m.id}`} className="mt-1 block rounded-xl bg-red-600/15 py-1.5 text-center text-xs font-black text-red-300 hover:bg-red-600/25">
               📡 লাইভ ম্যাচ সেন্টার →
             </Link>
@@ -425,37 +481,102 @@ export function LiveMatchDetail({ id }: { id: string }) {
 
 export function UpcomingMatches() {
   const { base } = useSkin();
-  const list = MATCHES.filter((m) => !m.live && !m.id.startsWith("r"));
+  const [sport, setSport] = useState<"all" | SportId>("all");
+  const list = useMemo(() => (sport === "all" ? UPCOMING_MATCHES : UPCOMING_MATCHES.filter((m) => m.sport === sport)), [sport]);
+  const groups = useMemo(() => groupUpcoming(list), [list]);
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="📅 আসন্ন ম্যাচ" sub={`${bn(list.length)}টি ম্যাচ`} />
-      <div className="grid gap-2.5 sm:grid-cols-2">{list.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+      <SectionTitle t="📅 আসন্ন ম্যাচ" sub={`আগামী ৪ মাসে ${bn(UPCOMING_MATCHES.length)}টি ম্যাচ`} />
+      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {(["all", ...SPORTS.map((x) => x.id)] as const).map((sp) => (
+          <button key={sp} onClick={() => setSport(sp)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-black transition ${sport === sp ? "bg-[#f5c518] text-black" : "bg-white/8 text-slate-300 ring-1 ring-white/15"}`}>
+            {sp === "all" ? "🌐 সব" : `${SPORTS.find((x) => x.id === sp)?.e} ${SPORTS.find((x) => x.id === sp)?.n}`}
+          </button>
+        ))}
+      </div>
+      {groups.map((g) => (
+        <div key={g.label} className="mb-5">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-black text-white">{g.label}</p>
+            <p className="text-[11px] font-bold text-[#f5c518]">{g.sub}</p>
+          </div>
+          <div className="grid gap-2.5 sm:grid-cols-2">{g.items.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+        </div>
+      ))}
+      {groups.length === 0 && <Empty emoji="📅" text="এই ফিল্টারে কোনো ম্যাচ নেই" />}
     </Page>
   );
 }
 
 export function Results() {
-  const { base, card, sub } = useSkin();
-  const list = MATCHES.filter((m) => m.id.startsWith("r"));
+  const { base } = useSkin();
+  const [sport, setSport] = useState<"all" | SportId>("all");
+  const list = sport === "all" ? FINISHED_MATCHES : FINISHED_MATCHES.filter((m) => m.sport === sport);
+  const recent = list.filter((m) => m.day >= -7);
+  const older = list.filter((m) => m.day < -7);
   return (
     <Page>
       <Back href={base} label="হোম" />
-      <SectionTitle t="📊 ফলাফল" sub="সমাপ্ত ম্যাচ" />
-      <div className="space-y-2.5">
-        {list.map((m) => (
-          <div key={m.id} className={`${card} p-3`}>
-            <p className={`text-[11px] ${sub}`}>{m.league} • {m.time}</p>
-            <div className="mt-1.5 flex items-center justify-between text-sm font-bold">
-              <span>{m.he} {m.home}</span><b className="text-[#f5c518]">{bn(m.hs ?? 0)}</b>
+      <SectionTitle t="📊 ফলাফল" sub={`গত ৩০ দিনে ${bn(FINISHED_MATCHES.length)}টি ম্যাচের ফল`} />
+      <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {(["all", ...SPORTS.map((x) => x.id)] as const).map((sp) => (
+          <button key={sp} onClick={() => setSport(sp)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-black transition ${sport === sp ? "bg-[#f5c518] text-black" : "bg-white/8 text-slate-300 ring-1 ring-white/15"}`}>
+            {sp === "all" ? "🌐 সব" : `${SPORTS.find((x) => x.id === sp)?.e} ${SPORTS.find((x) => x.id === sp)?.n}`}
+          </button>
+        ))}
+      </div>
+      <p className="mb-2 text-sm font-black text-white">🕘 গত ৭ দিন</p>
+      <div className="mb-5 grid gap-2.5 sm:grid-cols-2">{recent.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+      {older.length > 0 && (<>
+        <p className="mb-2 text-sm font-black text-white">📁 আগের ফলাফল</p>
+        <div className="grid gap-2.5 sm:grid-cols-2">{older.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+      </>)}
+    </Page>
+  );
+}
+
+/** Futures / outright betting — tournament & league winners. */
+function FutureOddsBtn({ market, name, flag, odds }: { market: FutureMarket; name: string; flag: string; odds: number }) {
+  const { add } = useBetSlip();
+  const [added, setAdded] = useState(false);
+  return (
+    <button
+      onClick={() => { add({ matchId: `futures:${market.id}:${name}`, match: market.title, selection: name, odds }); setAdded(true); setTimeout(() => setAdded(false), 900); }}
+      className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 transition active:scale-[0.98] ${added ? "border-emerald-400 bg-emerald-500/15" : "border-white/10 bg-white/[0.04] hover:border-[#f5c518]/50"}`}
+    >
+      <span className="flex min-w-0 items-center gap-2 text-sm font-bold text-white"><span className="text-xl">{flag}</span><span className="truncate">{name}</span></span>
+      <span className={`shrink-0 rounded-lg px-2.5 py-1 text-xs font-black ${added ? "bg-emerald-500/20 text-emerald-300" : "bg-[#f5c518]/12 text-[#f5c518]"}`}>{added ? "✓ যোগ হয়েছে" : bn(odds.toFixed(2))}</span>
+    </button>
+  );
+}
+
+export function FuturesPage() {
+  const { base } = useSkin();
+  return (
+    <Page>
+      <Back href={base} label="হোম" />
+      <SectionTitle t="🏆 ফিউচার বেটিং" sub="টুর্নামেন্ট ও লিগের ভবিষ্যৎ চ্যাম্পিয়ন — এখনই সেরা অডসে ধরুন" />
+      <div className="mb-4 overflow-hidden rounded-3xl border border-[#f5c518]/30 bg-gradient-to-r from-amber-950/60 via-[#141b2e] to-[#0b1120] p-4">
+        <p className="text-lg font-black text-white">🏆 আউটরাইট মার্কেট</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-300">কে জিতবে বিশ্বকাপ? কে হবে লিগ চ্যাম্পিয়ন? টুর্নামেন্ট শুরুর আগেই বাজি ধরুন — যত আগে ধরবেন, অডস তত ভালো। জয়ী ঘোষণা হলেই ব্যালেন্সে টাকা যোগ হবে।</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {FUTURES.map((f, i) => (
+          <div key={f.id} className="overflow-hidden rounded-3xl border border-white/10 bg-[#101828]">
+            <div className={`bg-gradient-to-r ${["from-amber-600/40", "from-emerald-600/40", "from-sky-600/40", "from-violet-600/40", "from-rose-600/40", "from-indigo-600/40"][i % 6]} to-transparent px-4 py-3`}>
+              <p className="text-base font-black text-white">{f.e} {f.title}</p>
+              <p className="mt-0.5 text-[11px] font-bold text-slate-400">📅 নিষ্পত্তি: {f.ends} • {bn(f.selections.length)}টি অপশন</p>
             </div>
-            <div className="mt-1 flex items-center justify-between text-sm font-bold">
-              <span>{m.ae} {m.away}</span><b className="text-[#f5c518]">{bn(m.as ?? 0)}</b>
+            <div className="space-y-1.5 p-3">
+              {f.selections.map((sel) => (
+                <FutureOddsBtn key={sel.name} market={f} name={sel.name} flag={sel.flag} odds={sel.odds} />
+              ))}
             </div>
-            <p className="mt-1.5 text-[11px] text-emerald-300">✅ {(m.hs ?? 0) > (m.as ?? 0) ? m.home : m.away} জিতেছে</p>
           </div>
         ))}
       </div>
+      <p className="mt-3 text-center text-[11px] text-slate-500">💡 সিলেকশনে ক্লিক করলেই বেট স্লিপে যোগ হবে</p>
     </Page>
   );
 }
