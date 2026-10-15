@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { r2GetUrl } from "@/lib/r2";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export async function GET(
   const { data: dl } = await svc
     .from("file_downloads")
     .select(
-      "id, downloads_used, max_downloads, expires_at, order_id, product_files!inner(storage_path, file_name, is_active)"
+      "id, downloads_used, max_downloads, expires_at, order_id, product_files!inner(storage_path, file_name, is_active, storage)"
     )
     .eq("token", token)
     .single();
@@ -57,6 +58,7 @@ export async function GET(
     storage_path: string;
     file_name: string;
     is_active: boolean;
+    storage?: string | null;
   };
   if (!file?.is_active) {
     return errorPage("ফাইল উপলব্ধ নেই", "এই ফাইলটি এখন আর উপলব্ধ নেই।");
@@ -86,6 +88,15 @@ export async function GET(
   }
 
   // Short-lived signed URL (2 min) — useless if shared afterwards
+  if (file.storage === "r2") {
+    try {
+      const url = await r2GetUrl(file.storage_path, file.file_name, 120);
+      return NextResponse.redirect(url);
+    } catch (e) {
+      console.error("r2 download error", e);
+      return errorPage("ডাউনলোড শুরু হয়নি", "আবার চেষ্টা করুন অথবা সাপোর্টে জানান।");
+    }
+  }
   const { data: signed, error } = await svc.storage
     .from("product-files")
     .createSignedUrl(file.storage_path, 120, {

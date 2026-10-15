@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin";
+import { r2Exists } from "@/lib/r2";
 
 /**
  * POST /api/admin/files/confirm
  * Called AFTER the browser finishes the direct upload.
- * JSON: { product_id, plan_id?, version_label?, file_name, storage_path, file_size, mime_type? }
+ * JSON: { product_id, plan_id?, version_label?, file_name, storage_path, file_size, mime_type?, storage? }
  * Verifies the object really exists in storage, then registers the DB row.
  */
 export async function POST(req: Request) {
@@ -21,8 +22,10 @@ export async function POST(req: Request) {
       storage_path: string;
       file_size: number;
       mime_type?: string;
+      storage?: string;
     };
     const { product_id, file_name, storage_path, file_size } = body;
+    const storage = body.storage === "r2" ? "r2" : "supabase";
     if (!product_id || !file_name || !storage_path || !file_size) {
       return NextResponse.json({ error: "তথ্য অসম্পূর্ণ" }, { status: 400 });
     }
@@ -32,16 +35,25 @@ export async function POST(req: Request) {
     }
 
     // verify the object actually landed in storage
-    const dir = storage_path.split("/").slice(0, -1).join("/");
-    const base = storage_path.split("/").pop()!;
-    const { data: listed, error: listErr } = await svc.storage
-      .from("product-files")
-      .list(dir, { search: base });
-    if (listErr || !listed?.some((o) => o.name === base)) {
-      return NextResponse.json(
-        { error: "ফাইল স্টোরেজে পাওয়া যায়নি — আবার আপলোড করুন" },
-        { status: 400 }
-      );
+    if (storage === "r2") {
+      if (!(await r2Exists(storage_path))) {
+        return NextResponse.json(
+          { error: "ফাইল R2-তে পাওয়া যায়নি — আবার আপলোড করুন" },
+          { status: 400 }
+        );
+      }
+    } else {
+      const dir = storage_path.split("/").slice(0, -1).join("/");
+      const base = storage_path.split("/").pop()!;
+      const { data: listed, error: listErr } = await svc.storage
+        .from("product-files")
+        .list(dir, { search: base });
+      if (listErr || !listed?.some((o) => o.name === base)) {
+        return NextResponse.json(
+          { error: "ফাইল স্টোরেজে পাওয়া যায়নি — আবার আপলোড করুন" },
+          { status: 400 }
+        );
+      }
     }
 
     const { data, error } = await svc
@@ -52,6 +64,7 @@ export async function POST(req: Request) {
         file_name,
         version_label: body.version_label?.trim() || "",
         storage_path,
+        storage,
         file_size,
         mime_type: body.mime_type || "application/vnd.android.package-archive",
       })
