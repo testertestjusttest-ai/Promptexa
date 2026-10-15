@@ -32,6 +32,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ফাইল ২GB-এর কম হতে হবে" }, { status: 400 });
     }
 
+    // 1b. Check the bucket's own file_size_limit first — Supabase answers
+    // a bare "Payload too large" otherwise, which confuses everyone.
+    const { data: bucket } = await auth.svc.storage.getBucket("product-files");
+    const bucketLimit =
+      typeof bucket?.file_size_limit === "number" ? bucket.file_size_limit : 0;
+    if (bucketLimit > 0 && file_size > bucketLimit) {
+      const mb = (bucketLimit / 1024 / 1024).toFixed(0);
+      return NextResponse.json(
+        {
+          error:
+            `Supabase বাকেটে সর্বোচ্চ ${mb}MB ফাইল রাখা যাবে (আপনার ফাইল ${(
+              file_size /
+              1024 /
+              1024
+            ).toFixed(0)}MB)। Supabase → SQL Editor-এ এই SQL চালান: ` +
+            `update storage.buckets set file_size_limit = 2147483648 where id = 'product-files';`,
+        },
+        { status: 400 }
+      );
+    }
+
     const safeName = file_name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
     const path = `${product_id}/${Date.now()}-${safeName}`;
 
