@@ -83,12 +83,17 @@ export default function FilesManager({
     });
   }
 
+  // Files over 40MB go straight to Cloudflare R2 (free 10GB, no 50MB wall).
+  // Smaller files keep using Supabase storage.
+  const R2_CUTOFF = 40 * 1024 * 1024;
+
   async function doUpload(file: File) {
     setUploading(true);
     setProgress("সাইন URL নেওয়া হচ্ছে...");
+    const useR2 = file.size > R2_CUTOFF;
     try {
       // 1. signed upload URL
-      const signRes = await fetch("/api/admin/files/sign", {
+      const signRes = await fetch(useR2 ? "/api/admin/files/r2-sign" : "/api/admin/files/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -119,6 +124,7 @@ export default function FilesManager({
           storage_path: sign.path,
           file_size: file.size,
           mime_type: file.type,
+          storage: useR2 ? "r2" : "supabase",
         }),
       });
       const conf = await confRes.json();
@@ -177,7 +183,7 @@ export default function FilesManager({
             <p className="mt-2 text-sm font-semibold text-white">
               {uploading ? "আপলোড হচ্ছে..." : "APK / ফাইল সিলেক্ট করুন"}
             </p>
-            <p className="text-xs text-slate-500">সর্বোচ্চ ২GB • সরাসরি আপলোড (দ্রুত)</p>
+            <p className="text-xs text-slate-500">সর্বোচ্চ ২GB • বড় ফাইল R2-তে সরাসরি আপলোড (দ্রুত)</p>
             <input
               type="file"
               className="hidden"
