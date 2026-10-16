@@ -11,6 +11,10 @@ const PLACEMENTS: { id: AdPlacement; label: string }[] = [
   { id: "sitewide", label: "সব পেজে" },
   { id: "earn_top", label: "আয় পেজ — উপরে" },
   { id: "earn_bottom", label: "আয় পেজ — নিচে" },
+  { id: "movie_list", label: "🎬 মুভি লিস্ট" },
+  { id: "movie_detail", label: "🎬 মুভি ডিটেইল" },
+  { id: "movie_step", label: "🎬 মুভি ধাপ পেজ" },
+  { id: "movie_player", label: "🎬 মুভি প্লেয়ার" },
 ];
 
 function newSlot(): AdSlotDef {

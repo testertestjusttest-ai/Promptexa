@@ -12,6 +12,7 @@ const NAV: { href: string; label: string; desc: string; exact?: boolean; roles: 
   { href: "/admin/slides", label: "🎠 স্লাইডার", desc: "হোমপেজের হিরো স্লাইড বদলান", roles: ["admin"] },
   { href: "/admin/withdrawals", label: "💸 উত্তোলন", desc: "ইউজারদের টাকা তোলার রিকোয়েস্ট approve", roles: ["admin"] },
   { href: "/admin/promos", label: "🎟️ প্রোমো কোড", desc: "ডিসকাউন্ট কোড বানান — প্রোমোটারদের দিন", roles: ["admin"] },
+  { href: "/admin/movies", label: "🎬 মুভি", desc: "মুভি যোগ করুন — দেখা ও ডাউনলোড লিংক ম্যানেজ", roles: ["admin"] },
   { href: "/admin/deposits", label: "💰 ডিপোজিট", desc: "ইউজারদের টাকা জমার রিকোয়েস্ট approve", roles: ["admin"] },
   { href: "/admin/marketplace", label: "🎮 ID বাজার", desc: "ID পোস্ট approve, এসক্রো ডিল, সব চ্যাট দেখুন", roles: ["admin", "support"] },
   { href: "/admin/services", label: "🌐 সার্ভিস", desc: "ওয়েবসাইট বানানোর রিকোয়েস্ট ম্যানেজ", roles: ["admin", "support"] },
