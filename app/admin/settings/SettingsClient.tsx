@@ -22,6 +22,29 @@ export default function SettingsClient() {
   const [chat, setChat] = useState({ enabled: true });
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
+
+  async function uploadLogo(methodKey: string, file: File) {
+    setUploadingLogo(methodKey);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "payments");
+      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "আপলোড হয়নি");
+      setNumbers((prev: Record<string, any>) => {
+        const cur = prev[methodKey] && typeof prev[methodKey] === "object" ? prev[methodKey] : { number: prev[methodKey] ?? "", kind: "merchant", image: "" };
+        return { ...prev, [methodKey]: { ...cur, image: data.url } };
+      });
+      setMsg("✓ লোগো আপলোড হয়েছে — সেভ করতে ভুলবেন না");
+    } catch (e) {
+      setMsg(`⚠️ ${e instanceof Error ? e.message : "আপলোড হয়নি"}`);
+    } finally {
+      setUploadingLogo(null);
+    }
+    setTimeout(() => setMsg(""), 2500);
+  }
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -87,9 +110,26 @@ export default function SettingsClient() {
                     </button>
                   ))}
                 </div>
-                <label className="mb-1 mt-2 block text-xs text-slate-400">{label} লোগো/ছবি URL (ঐচ্ছিক)</label>
+                <label className="mb-1 mt-2 block text-xs text-slate-400">{label} লোগো/ছবি (ঐচ্ছিক)</label>
+                <div className="flex items-center gap-2">
+                  {info.image ? (
+                    <img src={info.image} alt={`${label} লোগো`} className="h-10 w-10 rounded-lg bg-white/10 object-contain" />
+                  ) : (
+                    <div className="grid h-10 w-10 place-items-center rounded-lg bg-white/10 text-lg">
+                      {k === "bkash" ? "🩷" : k === "nagad" ? "🟠" : "🟣"}
+                    </div>
+                  )}
+                  <label className={`cursor-pointer rounded-lg bg-white/10 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-white/20 ${uploadingLogo === k ? "pointer-events-none opacity-50" : ""}`}>
+                    {uploadingLogo === k ? "আপলোড হচ্ছে..." : "📤 ছবি আপলোড"}
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingLogo === k}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(k, f); e.target.value = ""; }} />
+                  </label>
+                  {info.image && (
+                    <button onClick={() => set({ image: "" })} className="rounded-lg px-2 py-2 text-xs text-slate-500 hover:text-red-400">✕</button>
+                  )}
+                </div>
                 <input value={info.image} onChange={(e) => set({ image: e.target.value })}
-                  placeholder="https://...png" className="field font-mono text-xs" dir="ltr" />
+                  placeholder="অথবা ছবির URL পেস্ট করুন: https://...png" className="field mt-2 font-mono text-xs" dir="ltr" />
               </div>
             );
           })}

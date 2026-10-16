@@ -32,6 +32,9 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
   }
 
   const delivered = order.status === "delivered";
+  // Demo placeholder keys (seed data) must never show to customers —
+  // they contain an admin instruction ("অ্যাডমিন প্যানেল থেকে আসল কী যোগ করুন").
+  const realKeys = order.keys.filter((k) => !k.key_text.startsWith("DEMO-"));
 
   return (
     <div className="glass rounded-2xl p-5 sm:p-6">
@@ -54,11 +57,11 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
         ))}
       </ul>
 
-      {delivered && order.keys.length > 0 && (
+      {delivered && realKeys.length > 0 && (
         <div className="mt-4 rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/[0.04] p-4">
           <p className="text-sm font-bold text-[#d7ff3f]">🔑 আপনার ডেলিভারি</p>
           <div className="mt-3 space-y-3">
-            {order.keys.map((k, i) => (
+            {realKeys.map((k, i) => (
               <div key={i} className="rounded-xl bg-black/40 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <code className="break-all font-mono text-sm text-white">{k.key_text}</code>

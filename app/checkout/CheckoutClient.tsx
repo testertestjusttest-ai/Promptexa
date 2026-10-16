@@ -309,6 +309,8 @@ export default function CheckoutClient() {
 function MethodCard({ active, onClick, icon, img, title, desc, disabled }: {
   active: boolean; onClick: () => void; icon: string; img?: string; title: string; desc: string; disabled?: boolean;
 }) {
+  const [imgOk, setImgOk] = useState(true);
+  useEffect(() => { setImgOk(true); }, [img]);
   return (
     <button
       onClick={onClick}
@@ -317,8 +319,8 @@ function MethodCard({ active, onClick, icon, img, title, desc, disabled }: {
         active ? "border-[#d7ff3f]/60 bg-[#d7ff3f]/5" : "border-white/10 bg-white/[0.02] hover:border-white/25"
       } ${disabled ? "opacity-40" : ""}`}
     >
-      {img ? (
-        <img src={img} alt={title} className="h-8 w-8 rounded-lg object-contain" />
+      {img && imgOk ? (
+        <img src={img} alt={title} onError={() => setImgOk(false)} className="h-8 w-8 rounded-lg object-contain" />
       ) : (
         <div className="text-2xl">{icon}</div>
       )}
