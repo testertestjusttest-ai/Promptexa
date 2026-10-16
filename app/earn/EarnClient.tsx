@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatBDT, toBnDigits, timeAgo } from "@/lib/format";
+import { formatBDT, toBnDigits, timeAgo, paymentKindBn } from "@/lib/format";
 import type { Wallet, WalletTxn } from "@/lib/types";
 import AdSlot from "@/components/AdSlot";
 import MotionBg from "@/components/MotionBg";
@@ -141,12 +141,15 @@ export default function EarnClient({
   const [depTrx, setDepTrx] = useState("");
   const [depLoading, setDepLoading] = useState(false);
 
-  function depPayNumber(): string {
+  function depPayInfo(): { number: string; kind: string } {
     const raw: unknown = payNumbers[depMethod];
-    if (!raw) return "";
-    if (typeof raw === "string") return raw;
-    const o = raw as { number?: string };
-    return o.number ?? "";
+    if (!raw) return { number: "", kind: "sendmoney" };
+    if (typeof raw === "string") return { number: raw, kind: "sendmoney" };
+    const o = raw as { number?: string; kind?: string };
+    return { number: o.number ?? "", kind: o.kind ?? "sendmoney" };
+  }
+  function depPayNumber(): string {
+    return depPayInfo().number;
   }
   function copyDepNumber() {
     const n = depPayNumber();
@@ -624,7 +627,8 @@ export default function EarnClient({
           <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/[0.06] px-4 py-3">
             <div>
               <p className="text-xs text-slate-400">
-                📲 এই নম্বরে ({depMethod === "bkash" ? "বিকাশ" : depMethod === "nagad" ? "নগদ" : "রকেট"}) টাকা পাঠান
+                📲 এই নম্বরে ({depMethod === "bkash" ? "বিকাশ" : depMethod === "nagad" ? "নগদ" : "রকেট"}){" "}
+                <b className="text-white">{paymentKindBn(depPayInfo().kind)}</b> করুন
               </p>
               <p className="font-display text-xl font-bold tracking-wide text-[#d7ff3f]">{depPayNumber()}</p>
             </div>

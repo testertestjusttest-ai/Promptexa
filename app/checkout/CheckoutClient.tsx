@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT, PAYMENT_METHOD_BN } from "@/lib/format";
+import { formatBDT, PAYMENT_METHOD_BN, paymentKindBn } from "@/lib/format";
 import type { PaymentMethod } from "@/lib/types";
 
 type Step = "info" | "manual-pay";
@@ -21,9 +21,9 @@ export default function CheckoutClient() {
 
   function payInfo(m: string) {
     const raw: any = (numbers as any)[m];
-    if (!raw) return { number: "", kind: "merchant", image: "" };
-    if (typeof raw === "string") return { number: raw, kind: "merchant", image: "" };
-    return { number: raw.number ?? "", kind: raw.kind ?? "merchant", image: raw.image ?? "" };
+    if (!raw) return { number: "", kind: "sendmoney", image: "" };
+    if (typeof raw === "string") return { number: raw, kind: "sendmoney", image: "" };
+    return { number: raw.number ?? "", kind: raw.kind ?? "sendmoney", image: raw.image ?? "" };
   }
   const [sslOn, setSslOn] = useState(false);
   const [step, setStep] = useState<Step>("info");
@@ -231,7 +231,7 @@ export default function CheckoutClient() {
                 disabled={walletBal === null} />
               {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => {
                 const info = payInfo(m);
-                const kindBn = info.kind === "sendmoney" ? "সেন্ড মানি" : "মার্চেন্ট";
+                const kindBn = paymentKindBn(info.kind);
                 return (
                   <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
                     icon={info.image ? "" : m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
@@ -299,7 +299,7 @@ export default function CheckoutClient() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-slate-400">
-                    পাঠাবেন এই নম্বরে ({methodLabel} — {payInfo(method).kind === "sendmoney" ? "সেন্ড মানি" : "মার্চেন্ট"})
+                    পাঠাবেন এই নম্বরে ({methodLabel} — {paymentKindBn(payInfo(method).kind)})
                   </p>
                   <p className="font-display text-2xl font-bold text-white">{payInfo(method).number}</p>
                 </div>
@@ -309,7 +309,7 @@ export default function CheckoutClient() {
                 </div>
               </div>
               <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-slate-400">
-                <li><b className="text-white">{payInfo(method).kind === "sendmoney" ? "Send Money" : "Payment"}</b> করে উপরের নম্বরে টাকা পাঠান</li>
+                <li><b className="text-white">{{ sendmoney: "Send Money", cashout: "Cash Out", payment: "Payment", merchant: "Payment" }[payInfo(method).kind as "sendmoney" | "cashout" | "payment" | "merchant"] || "Payment"}</b> করে উপরের নম্বরে টাকা পাঠান</li>
                 <li>ট্রানজেকশন আইডি (TrxID) কপি করুন</li>
                 <li>নিচের ফর্মে সেন্ডার নম্বর ও TrxID দিয়ে জমা দিন</li>
               </ol>

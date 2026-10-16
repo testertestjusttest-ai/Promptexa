@@ -40,6 +40,18 @@ export const PAYMENT_METHOD_BN: Record<string, string> = {
   wallet: "ওয়ালেট ব্যালেন্স",
 };
 
+/** How the customer should send money to a manual payment number. */
+export const PAYMENT_KIND_BN: Record<string, string> = {
+  sendmoney: "সেন্ড মানি",
+  payment: "পেমেন্ট",
+  cashout: "ক্যাশ আউট",
+  merchant: "পেমেন্ট", // legacy value → পেমেন্ট
+};
+
+export function paymentKindBn(kind?: string | null): string {
+  return PAYMENT_KIND_BN[kind || ""] || "পেমেন্ট";
+}
+
 export function timeAgo(iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "এইমাত্র";

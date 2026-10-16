@@ -34,7 +34,7 @@ export default function SettingsClient() {
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "আপলোড হয়নি");
       setNumbers((prev: Record<string, any>) => {
-        const cur = prev[methodKey] && typeof prev[methodKey] === "object" ? prev[methodKey] : { number: prev[methodKey] ?? "", kind: "merchant", image: "" };
+        const cur = prev[methodKey] && typeof prev[methodKey] === "object" ? prev[methodKey] : { number: prev[methodKey] ?? "", kind: "sendmoney", image: "" };
         return { ...prev, [methodKey]: { ...cur, image: data.url } };
       });
       setMsg("✓ লোগো আপলোড হয়েছে — সেভ করতে ভুলবেন না");
@@ -93,7 +93,9 @@ export default function SettingsClient() {
         <p className="mt-1 text-xs text-slate-500">চেকআউটে কাস্টমার এই নম্বরগুলো দেখবে। খালি রাখলে সেই মাধ্যম বন্ধ থাকবে।</p>
         <div className="mt-4 space-y-5">
           {([["bkash", "বিকাশ"], ["nagad", "নগদ"], ["rocket", "রকেট"]] as const).map(([k, label]) => {
-            const info = numbers[k] && typeof numbers[k] === "object" ? numbers[k] : { number: numbers[k] ?? "", kind: "merchant", image: "" };
+            const rawInfo = numbers[k] && typeof numbers[k] === "object" ? numbers[k] : { number: numbers[k] ?? "", kind: "sendmoney", image: "" };
+            // legacy "merchant" is now "payment"
+            const info = { ...rawInfo, kind: rawInfo.kind === "merchant" ? "payment" : rawInfo.kind || "sendmoney" };
             const set = (patch: Partial<{ number: string; kind: string; image: string }>) =>
               setNumbers({ ...numbers, [k]: { ...info, ...patch } });
             return (
@@ -103,10 +105,10 @@ export default function SettingsClient() {
                 <input value={info.number} onChange={(e) => set({ number: e.target.value })}
                   placeholder="01XXXXXXXXX" className="field" inputMode="numeric" />
                 <div className="mt-2 flex gap-2">
-                  {(["merchant", "sendmoney"] as const).map((kind) => (
+                  {([["sendmoney", "📤 সেন্ড মানি"], ["payment", "💳 পেমেন্ট"], ["cashout", "💸 ক্যাশ আউট"]] as const).map(([kind, label]) => (
                     <button key={kind} onClick={() => set({ kind })}
                       className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${info.kind === kind ? "bg-[#d7ff3f] text-black" : "bg-white/10 text-slate-300"}`}>
-                      {kind === "merchant" ? "🏪 মার্চেন্ট" : "📤 সেন্ড মানি"}
+                      {label}
                     </button>
                   ))}
                 </div>
