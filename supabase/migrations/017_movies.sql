@@ -19,3 +19,10 @@ create table if not exists public.movies (
 );
 create index if not exists movies_slug_idx on public.movies(slug);
 create index if not exists movies_active_idx on public.movies(is_active, sort);
+
+-- RLS: public can read active movies (admin uses service key, bypasses RLS)
+alter table public.movies enable row level security;
+drop policy if exists "public read movies" on public.movies;
+create policy "public read movies"
+  on public.movies for select
+  using (is_active = true);
