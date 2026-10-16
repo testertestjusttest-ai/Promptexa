@@ -27,6 +27,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, origin });
   } catch (e) {
     console.error("s3-cors error", e);
-    return NextResponse.json({ error: "CORS সেট হয়নি — কী ঠিক আছে কিনা দেখুন" }, { status: 500 });
+    const name = (e as { name?: string })?.name || "";
+    const msg = e instanceof Error ? e.message : "অজানা সমস্যা";
+    // Surface the real storage error (no secrets in AWS error messages)
+    return NextResponse.json(
+      { error: `CORS সেট হয়নি [${name}]: ${msg}`.slice(0, 220) },
+      { status: 500 }
+    );
   }
 }
