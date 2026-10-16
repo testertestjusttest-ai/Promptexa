@@ -140,19 +140,43 @@ export default function EarnClient({
   const [depMethod, setDepMethod] = useState("bkash");
   const [depTrx, setDepTrx] = useState("");
   const [depLoading, setDepLoading] = useState(false);
+
+  function depPayNumber(): string {
+    const raw: unknown = payNumbers[depMethod];
+    if (!raw) return "";
+    if (typeof raw === "string") return raw;
+    const o = raw as { number?: string };
+    return o.number ?? "";
+  }
+  function copyDepNumber() {
+    const n = depPayNumber();
+    if (!n) return;
+    navigator.clipboard.writeText(n).then(
+      () => {
+        setNumCopied(true);
+        setTimeout(() => setNumCopied(false), 2000);
+      },
+      () => {}
+    );
+  }
   const [deposits, setDeposits] = useState<{ id: string; amount_bdt: number; method: string; trx_id: string; status: string }[]>([]);
+  const [payNumbers, setPayNumbers] = useState<Record<string, unknown>>({});
+  const [numCopied, setNumCopied] = useState(false);
 
   const load = useCallback(async () => {
-    const [wRes, cRes, rRes, dRes] = await Promise.all([
+    const [wRes, cRes, rRes, dRes, sRes] = await Promise.all([
       fetch("/api/wallet"),
       fetch("/api/rewards/config"),
       fetch("/api/rewards/round"),
       fetch("/api/wallet/deposit"),
+      fetch("/api/public/settings"),
     ]);
     const w = await wRes.json();
     const c = await cRes.json();
     const r = await rRes.json().catch(() => ({}));
     const dd = await dRes.json().catch(() => ({}));
+    const ss = await sRes.json().catch(() => ({}));
+    if (ss?.ok && ss.payment_numbers) setPayNumbers(ss.payment_numbers);
     if (dd.deposits) setDeposits(dd.deposits);
     if (wRes.ok && w.ok) {
       setLoggedIn(true);
@@ -594,8 +618,25 @@ export default function EarnClient({
       <div id="deposit" className="glass mt-6 scroll-mt-24 rounded-3xl p-6">
         <h2 className="font-display text-lg font-bold text-white">💰 ওয়ালেটে টাকা জমা (ডিপোজিট)</h2>
         <p className="mt-1 text-xs text-slate-500">
-          বিকাশ / নগদ / রকেটে পাঠিয়ে TrxID দিন — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে
+          নিচের নম্বরে টাকা পাঠিয়ে TrxID দিন — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে
         </p>
+        {depPayNumber() ? (
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/[0.06] px-4 py-3">
+            <div>
+              <p className="text-xs text-slate-400">
+                📲 এই নম্বরে ({depMethod === "bkash" ? "বিকাশ" : depMethod === "nagad" ? "নগদ" : "রকেট"}) টাকা পাঠান
+              </p>
+              <p className="font-display text-xl font-bold tracking-wide text-[#d7ff3f]">{depPayNumber()}</p>
+            </div>
+            <button
+              type="button"
+              onClick={copyDepNumber}
+              className="shrink-0 rounded-xl bg-[#d7ff3f]/15 px-4 py-2 text-sm font-bold text-[#d7ff3f] transition hover:bg-[#d7ff3f]/25"
+            >
+              {numCopied ? "✓ কপি হয়েছে" : "📋 কপি"}
+            </button>
+          </div>
+        ) : null}
         <form onSubmit={deposit} className="mt-4 grid gap-3 sm:grid-cols-2">
           <input
             type="number"
