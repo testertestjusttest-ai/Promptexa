@@ -38,6 +38,7 @@ export default function FilesManager({
   const [version, setVersion] = useState("");
   const [planId, setPlanId] = useState("");
   const [progress, setProgress] = useState("");
+  const [corsMsg, setCorsMsg] = useState("");
 
   async function load() {
     setLoading(true);
@@ -195,6 +196,26 @@ export default function FilesManager({
               }}
             />
           </label>
+          <button
+            onClick={async () => {
+              setCorsMsg("CORS সেট হচ্ছে...");
+              try {
+                const r = await fetch("/api/admin/files/s3-cors", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ origin: window.location.origin }),
+                });
+                const d = await r.json();
+                setCorsMsg(d.ok ? `✓ CORS ঠিক আছে (${d.origin})` : `⚠️ ${d.error || "ব্যর্থ"}`);
+              } catch {
+                setCorsMsg("⚠️ ব্যর্থ — আবার চেষ্টা করুন");
+              }
+            }}
+            className="mt-3 text-xs text-slate-400 underline underline-offset-2 hover:text-slate-200"
+          >
+            ☁️ বড় ফাইল আপলোডের আগে CORS ঠিক করুন (একবারই)
+          </button>
+          {corsMsg && <p className="mt-1 text-xs text-slate-300">{corsMsg}</p>}
           {progress && (
             <div className="mt-3">
               <div className="h-2 overflow-hidden rounded-full bg-white/10">

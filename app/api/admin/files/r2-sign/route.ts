@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin";
 import { r2Ready, r2PutUrl } from "@/lib/r2";
 
-// Direct browser → Cloudflare R2 upload (bypasses Vercel's 4.5MB body limit
-// AND Supabase free plan's 50MB/file wall). R2 free tier = 10GB storage.
+// Direct browser → S3 storage upload (Backblaze B2 / Cloudflare R2).
+// Bypasses Vercel's 4.5MB body limit AND Supabase free plan's 50MB/file wall.
 export const MAX_R2_BYTES = 5 * 1024 * 1024 * 1024; // 5GB single PUT
 
 /**
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "R2 সেটআপ হয়নি — Vercel → Environment Variables-এ R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET দিন, তারপর Redeploy করুন।",
+          "স্টোরেজ সেটআপ হয়নি — Vercel → Environment Variables-এ S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_BUCKET দিন (Backblaze B2), তারপর Redeploy করুন।",
       },
       { status: 400 }
     );
