@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT, PAYMENT_METHOD_BN, paymentKindBn } from "@/lib/format";
+import { formatBDT, PAYMENT_METHOD_BN, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
 import type { PaymentMethod } from "@/lib/types";
 
 type Step = "info" | "manual-pay";
@@ -21,9 +21,9 @@ export default function CheckoutClient() {
 
   function payInfo(m: string) {
     const raw: any = (numbers as any)[m];
-    if (!raw) return { number: "", kind: "sendmoney", image: "" };
-    if (typeof raw === "string") return { number: raw, kind: "sendmoney", image: "" };
-    return { number: raw.number ?? "", kind: raw.kind ?? "sendmoney", image: raw.image ?? "" };
+    if (!raw) return { number: "", kind: "sendmoney", image: "", enabled: true };
+    if (typeof raw === "string") return { number: raw, kind: "sendmoney", image: "", enabled: true };
+    return { number: raw.number ?? "", kind: raw.kind ?? "sendmoney", image: raw.image ?? "", enabled: raw.enabled !== false };
   }
   const [sslOn, setSslOn] = useState(false);
   const [step, setStep] = useState<Step>("info");
@@ -112,7 +112,7 @@ export default function CheckoutClient() {
     setError("");
     if (!name.trim()) return setError("আপনার নাম লিখুন");
     if (!validPhone) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
-    if (method !== "sslcommerz" && method !== "wallet" && !payInfo(method).number) {
+    if (method !== "sslcommerz" && method !== "wallet" && !isPaymentMethodLive(payInfo(method))) {
       return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
     }
     if (method === "wallet" && (walletBal === null || walletBal < finalTotal)) {
@@ -232,12 +232,13 @@ export default function CheckoutClient() {
               {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => {
                 const info = payInfo(m);
                 const kindBn = paymentKindBn(info.kind);
+                const live = isPaymentMethodLive(info);
                 return (
                   <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
                     icon={info.image ? "" : m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
                     img={info.image || undefined}
-                    title={PAYMENT_METHOD_BN[m]} desc={info.number ? `${kindBn}: ${info.number}` : "শীঘ্রই আসছে"}
-                    disabled={!info.number} />
+                    title={PAYMENT_METHOD_BN[m]} desc={live ? `${kindBn}: ${info.number}` : "শীঘ্রই আসছে"}
+                    disabled={!live} />
                 );
               })}
             </div>

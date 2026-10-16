@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatBDT, toBnDigits, timeAgo, paymentKindBn } from "@/lib/format";
+import { formatBDT, toBnDigits, timeAgo, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
 import type { Wallet, WalletTxn } from "@/lib/types";
 import AdSlot from "@/components/AdSlot";
 import MotionBg from "@/components/MotionBg";
@@ -145,7 +145,7 @@ export default function EarnClient({
     const raw: unknown = payNumbers[depMethod];
     if (!raw) return { number: "", kind: "sendmoney" };
     if (typeof raw === "string") return { number: raw, kind: "sendmoney" };
-    const o = raw as { number?: string; kind?: string };
+    const o = raw as { number?: string; kind?: string; enabled?: boolean };
     return { number: o.number ?? "", kind: o.kind ?? "sendmoney" };
   }
   function depPayNumber(): string {
@@ -165,6 +165,16 @@ export default function EarnClient({
   const [deposits, setDeposits] = useState<{ id: string; amount_bdt: number; method: string; trx_id: string; status: string }[]>([]);
   const [payNumbers, setPayNumbers] = useState<Record<string, unknown>>({});
   const [numCopied, setNumCopied] = useState(false);
+
+  const DEP_METHOD_KEYS = ["bkash", "nagad", "rocket"];
+  const liveDepMethods = DEP_METHOD_KEYS.filter((m) => isPaymentMethodLive(payNumbers[m] as never));
+  // keep the selected method valid if admin switched it off
+  useEffect(() => {
+    if (Object.keys(payNumbers).length > 0 && !isPaymentMethodLive(payNumbers[depMethod] as never) && liveDepMethods.length > 0) {
+      setDepMethod(liveDepMethods[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payNumbers]);
 
   const load = useCallback(async () => {
     const [wRes, cRes, rRes, dRes, sRes] = await Promise.all([
@@ -651,11 +661,17 @@ export default function EarnClient({
             className="field sm:col-span-2"
             required
           />
-          <select value={depMethod} onChange={(e) => setDepMethod(e.target.value)} className="field">
-            <option value="bkash">বিকাশ</option>
-            <option value="nagad">নগদ</option>
-            <option value="rocket">রকেট</option>
-          </select>
+          {liveDepMethods.length > 0 ? (
+            <select value={depMethod} onChange={(e) => setDepMethod(e.target.value)} className="field">
+              {liveDepMethods.map((m) => (
+                <option key={m} value={m}>{m === "bkash" ? "বিকাশ" : m === "nagad" ? "নগদ" : "রকেট"}</option>
+              ))}
+            </select>
+          ) : (
+            <p className="rounded-xl bg-white/[0.03] px-4 py-3 text-sm text-slate-500 sm:col-span-2">
+              ডিপোজিট মাধ্যম এখন বন্ধ আছে — পরে আবার চেষ্টা করুন।
+            </p>
+          )}
           <input
             value={depTrx}
             onChange={(e) => setDepTrx(e.target.value)}

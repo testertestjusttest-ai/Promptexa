@@ -187,24 +187,30 @@ export function activeSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[]
 
 export type PaymentNumberInfo = {
   number: string;
-  kind: "merchant" | "sendmoney";
+  kind: "merchant" | "sendmoney" | "payment" | "cashout";
   image: string;
+  /** admin on/off switch; missing = on (backward compatible) */
+  enabled: boolean;
 };
 
-/** Normalize legacy string values → { number, kind, image }. */
+/** Normalize legacy string values → { number, kind, image, enabled }. */
 export function normalizePaymentNumbers(
   raw: Record<string, unknown>
 ): Record<string, PaymentNumberInfo> {
   const out: Record<string, PaymentNumberInfo> = {};
   for (const [k, v] of Object.entries(raw ?? {})) {
     if (typeof v === "string") {
-      out[k] = { number: v, kind: "merchant", image: "" };
+      out[k] = { number: v, kind: "merchant", image: "", enabled: true };
     } else if (v && typeof v === "object") {
       const o = v as Record<string, unknown>;
+      const kind = String(o.kind ?? "merchant");
       out[k] = {
         number: String(o.number ?? ""),
-        kind: o.kind === "sendmoney" ? "sendmoney" : "merchant",
+        kind: (["sendmoney", "payment", "cashout", "merchant"] as const).includes(kind as never)
+          ? (kind as PaymentNumberInfo["kind"])
+          : "merchant",
         image: String(o.image ?? ""),
+        enabled: o.enabled !== false,
       };
     }
   }

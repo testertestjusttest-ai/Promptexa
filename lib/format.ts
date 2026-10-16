@@ -52,6 +52,15 @@ export function paymentKindBn(kind?: string | null): string {
   return PAYMENT_KIND_BN[kind || ""] || "পেমেন্ট";
 }
 
+/** A manual payment method is live when it has a number and isn't switched off. */
+export function isPaymentMethodLive(
+  info: { number?: string; enabled?: boolean } | string | null | undefined
+): boolean {
+  if (!info) return false;
+  if (typeof info === "string") return info.trim() !== "";
+  return !!(info.number && info.number.trim() && info.enabled !== false);
+}
+
 export function timeAgo(iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "এইমাত্র";

@@ -90,17 +90,24 @@ export default function SettingsClient() {
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="glass rounded-2xl p-6">
         <h2 className="font-display text-lg font-bold text-white">💳 ম্যানুয়াল পেমেন্ট নম্বর</h2>
-        <p className="mt-1 text-xs text-slate-500">চেকআউটে কাস্টমার এই নম্বরগুলো দেখবে। খালি রাখলে সেই মাধ্যম বন্ধ থাকবে।</p>
+        <p className="mt-1 text-xs text-slate-500">প্রতিটা মাধ্যম আলাদা করে চালু/বন্ধ করুন — বন্ধ থাকলে কাস্টমার সেটা দেখবে না।</p>
         <div className="mt-4 space-y-5">
           {([["bkash", "বিকাশ"], ["nagad", "নগদ"], ["rocket", "রকেট"]] as const).map(([k, label]) => {
             const rawInfo = numbers[k] && typeof numbers[k] === "object" ? numbers[k] : { number: numbers[k] ?? "", kind: "sendmoney", image: "" };
             // legacy "merchant" is now "payment"
             const info = { ...rawInfo, kind: rawInfo.kind === "merchant" ? "payment" : rawInfo.kind || "sendmoney" };
-            const set = (patch: Partial<{ number: string; kind: string; image: string }>) =>
+            const set = (patch: Partial<{ number: string; kind: string; image: string; enabled: boolean }>) =>
               setNumbers({ ...numbers, [k]: { ...info, ...patch } });
+            const isOn = info.enabled !== false;
             return (
-              <div key={k} className="rounded-xl bg-black/20 p-4">
-                <p className="mb-2 text-sm font-bold text-white">{label}</p>
+              <div key={k} className={`rounded-xl bg-black/20 p-4 ${isOn ? "" : "opacity-60"}`}>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-bold text-white">{label}</p>
+                  <button onClick={() => set({ enabled: !isOn })}
+                    className={`rounded-full px-3 py-1.5 text-xs font-bold transition ${isOn ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>
+                    {isOn ? "🟢 চালু" : "🔴 বন্ধ"}
+                  </button>
+                </div>
                 <label className="mb-1 block text-xs text-slate-400">নম্বর</label>
                 <input value={info.number} onChange={(e) => set({ number: e.target.value })}
                   placeholder="01XXXXXXXXX" className="field" inputMode="numeric" />
