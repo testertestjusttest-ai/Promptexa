@@ -116,7 +116,7 @@ export default function CheckoutClient() {
       return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
     }
     if (method === "wallet" && (walletBal === null || walletBal < finalTotal)) {
-      return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — অ্যাড দেখে আয় করুন!");
+      return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — নিচের অপশন থেকে ব্যালেন্স বাড়ান।");
     }
     setLoading(true);
     try {
@@ -241,6 +241,29 @@ export default function CheckoutClient() {
                 );
               })}
             </div>
+
+            {method === "wallet" && walletBal !== null && walletBal < finalTotal && (
+              <div className="mt-4 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
+                <p className="text-sm font-bold text-amber-200">⚠️ ওয়ালেটে যথেষ্ট ব্যালেন্স নেই</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  আছে: {formatBDT(walletBal)} — দরকার: {formatBDT(finalTotal)}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/earn"
+                    className="rounded-xl bg-[#d7ff3f]/10 px-3 py-2.5 text-center text-sm font-bold text-[#d7ff3f] transition hover:bg-[#d7ff3f]/20"
+                  >
+                    📺 অ্যাড দেখে আয় করুন
+                  </Link>
+                  <Link
+                    href="/earn#deposit"
+                    className="rounded-xl bg-white/5 px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-white/10"
+                  >
+                    💰 ডিপোজিট করুন
+                  </Link>
+                </div>
+              </div>
+            )}
 
             <div className="mt-5">
               <label className="mb-1.5 block text-sm font-medium text-slate-300">

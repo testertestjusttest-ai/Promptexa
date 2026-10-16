@@ -591,7 +591,7 @@ export default function EarnClient({
       </div>
 
       {/* deposit */}
-      <div className="glass mt-6 rounded-3xl p-6">
+      <div id="deposit" className="glass mt-6 scroll-mt-24 rounded-3xl p-6">
         <h2 className="font-display text-lg font-bold text-white">💰 ওয়ালেটে টাকা জমা (ডিপোজিট)</h2>
         <p className="mt-1 text-xs text-slate-500">
           বিকাশ / নগদ / রকেটে পাঠিয়ে TrxID দিন — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে
