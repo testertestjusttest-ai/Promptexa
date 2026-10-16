@@ -198,6 +198,18 @@ export function activeSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[]
   return ads.slots.filter((s) => s.placement === placement && s.enabled && s.code.trim() !== "");
 }
 
+/**
+ * Movie pages: match by placement OR by slot id.
+ * The movie slots have fixed ids ("movie_list" etc.), so ads keep working
+ * even if the placement dropdown was changed by mistake in admin.
+ */
+export function activeMovieSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[] {
+  if (!ads.master_enabled) return [];
+  return ads.slots.filter(
+    (s) => (s.placement === placement || s.id === placement) && s.enabled && s.code.trim() !== ""
+  );
+}
+
 export type PaymentNumberInfo = {
   number: string;
   kind: "merchant" | "sendmoney" | "payment" | "cashout";

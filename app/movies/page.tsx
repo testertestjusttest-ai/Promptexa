@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getMovies } from "@/lib/movies";
-import { getAdsConfig, activeSlots } from "@/lib/catalog";
+import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export const metadata = {
 
 export default async function MoviesPage() {
   const [movies, ads] = await Promise.all([getMovies(), getAdsConfig()]);
-  const topAds = activeSlots(ads, "movie_list");
+  const topAds = activeMovieSlots(ads, "movie_list");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">

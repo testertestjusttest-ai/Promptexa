@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMovieBySlug } from "@/lib/movies";
-import { getAdsConfig, activeSlots } from "@/lib/catalog";
+import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 import StepGate from "../../_components/StepGate";
 
@@ -18,7 +18,7 @@ export default async function DownloadStepPage({
   const movie = await getMovieBySlug(slug);
   if (!movie || !movie.download_url) notFound();
   const ads = await getAdsConfig();
-  const stepAds = activeSlots(ads, "movie_step");
+  const stepAds = activeMovieSlots(ads, "movie_step");
 
   // ---------- final: download link ready ----------
   if (step === "ready") {

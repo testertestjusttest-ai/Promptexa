@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMovieBySlug, bumpMovieViews } from "@/lib/movies";
-import { getAdsConfig, activeSlots } from "@/lib/catalog";
+import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function MovieDetailPage({
   const movie = await getMovieBySlug(slug);
   if (!movie) notFound();
   const ads = await getAdsConfig();
-  const detailAds = activeSlots(ads, "movie_detail");
+  const detailAds = activeMovieSlots(ads, "movie_detail");
   bumpMovieViews(movie.id);
 
   const hasVideo = !!movie.video_url;
