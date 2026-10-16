@@ -184,7 +184,7 @@ export default function FilesManager({
             <p className="mt-2 text-sm font-semibold text-white">
               {uploading ? "আপলোড হচ্ছে..." : "APK / ফাইল সিলেক্ট করুন"}
             </p>
-            <p className="text-xs text-slate-500">সর্বোচ্চ ২GB • বড় ফাইল R2-তে সরাসরি আপলোড (দ্রুত)</p>
+            <p className="text-xs text-slate-500">সর্বোচ্চ ২GB • বড় ফাইল B2-তে সরাসরি আপলোড (দ্রুত)</p>
             <input
               type="file"
               className="hidden"
