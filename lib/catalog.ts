@@ -104,7 +104,11 @@ export type AdPlacement =
   | "popup"
   | "sitewide"
   | "earn_top"
-  | "earn_bottom";
+  | "earn_bottom"
+  | "movie_list"
+  | "movie_detail"
+  | "movie_step"
+  | "movie_player";
 
 export interface AdSlotDef {
   id: string;
@@ -128,6 +132,10 @@ const DEFAULT_ADS: AdsConfig = {
     { id: "popup", name: "পপআপ", placement: "popup", code: "", enabled: false },
     { id: "earn_top", name: "আয় পেজ — উপরে", placement: "earn_top", code: "", enabled: true },
     { id: "earn_bottom", name: "আয় পেজ — নিচে", placement: "earn_bottom", code: "", enabled: true },
+    { id: "movie_list", name: "🎬 মুভি লিস্ট পেজ", placement: "movie_list", code: "", enabled: true },
+    { id: "movie_detail", name: "🎬 মুভি ডিটেইল পেজ", placement: "movie_detail", code: "", enabled: true },
+    { id: "movie_step", name: "🎬 মুভি — ধাপ পেজ (ইন্টারস্টিশিয়াল)", placement: "movie_step", code: "", enabled: true },
+    { id: "movie_player", name: "🎬 মুভি — প্লেয়ার পেজ", placement: "movie_player", code: "", enabled: true },
     {
       id: "monetag_3524319",
       name: "Monetag Zone 3524319",
@@ -147,22 +155,27 @@ const DEFAULT_ADS: AdsConfig = {
 /** Normalize old flat ads config (v2) into the slot structure. */
 function normalizeAds(raw: unknown): AdsConfig {
   const v = (raw ?? {}) as Record<string, unknown>;
+  let master: boolean;
+  let slots: AdSlotDef[];
   if (Array.isArray(v.slots)) {
-    return {
-      master_enabled: v.master_enabled !== false,
-      slots: (v.slots as AdSlotDef[]).filter((s) => s && typeof s.id === "string"),
-    };
-  }
-  // legacy flat shape → slots
-  const str = (k: string) => (typeof v[k] === "string" ? (v[k] as string) : "");
-  return {
-    master_enabled: v.enabled !== false,
-    slots: DEFAULT_ADS.slots.map((s) =>
+    master = v.master_enabled !== false;
+    slots = (v.slots as AdSlotDef[]).filter((s) => s && typeof s.id === "string");
+  } else {
+    // legacy flat shape → slots
+    master = v.enabled !== false;
+    const str = (k: string) => (typeof v[k] === "string" ? (v[k] as string) : "");
+    slots = DEFAULT_ADS.slots.map((s) =>
       s.id === "monetag_3524319"
         ? s
         : { ...s, code: str(s.placement === "popup" ? "popup" : s.id) }
-    ),
-  };
+    );
+  }
+  // merge any default slots missing from stored config (new placements added in code)
+  const ids = new Set(slots.map((s) => s.id));
+  for (const d of DEFAULT_ADS.slots) {
+    if (!ids.has(d.id)) slots.push({ ...d });
+  }
+  return { master_enabled: master, slots };
 }
 
 export async function getAdsConfig(): Promise<AdsConfig> {
