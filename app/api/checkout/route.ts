@@ -3,6 +3,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { generateOrderNumber } from "@/lib/format";
 import { isSslEnabled } from "@/lib/sslcommerz";
 import { confirmOrderPayment } from "@/lib/delivery";
+import { getValidPromo } from "@/lib/promo";
 
 type CheckoutItem = { product_id: string; plan_id: string; qty: number };
 
@@ -14,11 +15,12 @@ type CheckoutItem = { product_id: string; plan_id: string; qty: number };
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { customer, items, payment_method, notes } = body as {
+    const { customer, items, payment_method, notes, promo_code } = body as {
       customer: { name: string; phone: string; email?: string };
       items: CheckoutItem[];
       payment_method: string;
       notes?: string;
+      promo_code?: string;
     };
 
     if (!customer?.name?.trim() || !customer?.phone?.trim()) {
@@ -111,11 +113,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ভুল অর্ডার" }, { status: 400 });
     }
 
+    // promo code: validated server-side, discount computed from DB prices
+    let promoCodeNorm: string | null = null;
+    let promoId: string | null = null;
+    let discountBdt = 0;
+    if (promo_code && String(promo_code).trim()) {
+      const pr = await getValidPromo(supabase, String(promo_code), total);
+      if (!pr.ok) {
+        return NextResponse.json({ error: pr.error }, { status: 400 });
+      }
+      promoCodeNorm = pr.promo.code;
+      promoId = pr.promo.id;
+      discountBdt = pr.discount_bdt;
+    }
+    const finalTotal = total - discountBdt;
+
     // wallet: atomic debit BEFORE creating the order
     if (payment_method === "wallet") {
       const { data: spendRes, error: spendErr } = await supabase.rpc("wallet_spend", {
         p_user: userId,
-        p_amount: total,
+        p_amount: finalTotal,
         p_note: "DigiPlyra অর্ডার",
         p_ref: null,
       });
@@ -144,7 +161,9 @@ export async function POST(req: Request) {
               ? "payment_pending"
               : "pending",
         payment_method,
-        total_bdt: total,
+        total_bdt: finalTotal,
+        promo_code: promoCodeNorm,
+        discount_bdt: discountBdt,
         notes: (notes || "").trim().slice(0, 2000) || null,
       })
       .select("id, order_number")
@@ -161,10 +180,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি" }, { status: 500 });
     }
 
+    // consume one promo use (best-effort; order stays valid even on race)
+    if (promoId) {
+      try {
+        await supabase.rpc("promo_consume", { p_id: promoId });
+      } catch {
+        /* usage count sync is non-critical */
+      }
+    }
+
     await supabase.from("payments").insert({
       order_id: order.id,
       method: payment_method,
-      amount_bdt: total,
+      amount_bdt: finalTotal,
       status: payment_method === "wallet" ? "success" : "pending",
     });
 
@@ -175,7 +203,9 @@ export async function POST(req: Request) {
         ok: true,
         order_id: order.id,
         order_number: order.order_number,
-        total_bdt: total,
+        total_bdt: finalTotal,
+        discount_bdt: discountBdt,
+        promo_code: promoCodeNorm,
         paid: true,
       });
     }
@@ -184,7 +214,9 @@ export async function POST(req: Request) {
       ok: true,
       order_id: order.id,
       order_number: order.order_number,
-      total_bdt: total,
+      total_bdt: finalTotal,
+      discount_bdt: discountBdt,
+      promo_code: promoCodeNorm,
     });
   } catch (e) {
     console.error("checkout error", e);

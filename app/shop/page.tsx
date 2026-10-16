@@ -7,18 +7,26 @@ import AdSlot, { AdPopup } from "@/components/AdSlot";
 import { activeSlots } from "@/lib/catalog";
 import ReviewsSection from "@/components/ReviewsSection";
 import { DEMOS } from "../web-dev/demos/demos";
+import { toBnDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featured, categories, store, slides, ads] = await Promise.all([
+  const [featured, allActive, categories, store, slides, ads] = await Promise.all([
     getProducts(true),
+    getProducts(false),
     getCategories(),
     getStoreInfo(),
     getSlides(),
     getAdsConfig(),
   ]);
-  const showcase = featured.length > 0 ? featured : [];
+  // Always show 4: featured first, then fill with other active products
+  const seen = new Set(featured.map((p) => p.id));
+  const showcase = [...featured];
+  for (const p of allActive) {
+    if (showcase.length >= 4) break;
+    if (!seen.has(p.id)) showcase.push(p);
+  }
 
   return (
     <div>
@@ -68,7 +76,7 @@ export default async function HomePage() {
           sub="হাজারো কাস্টমারের বিশ্বস্ত পছন্দ — আজই আপনারটা নিন"
         />
         {showcase.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
             {showcase.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -130,7 +138,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-8 text-center">
           <Link href="/demos" className="btn-ghost">
-            সব ৫০টি ডেমো দেখুন →
+            সব {toBnDigits(DEMOS.length)}টি ডেমো দেখুন →
           </Link>
         </div>
       </section>

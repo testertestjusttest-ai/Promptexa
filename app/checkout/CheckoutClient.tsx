@@ -37,6 +37,43 @@ export default function CheckoutClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [walletBal, setWalletBal] = useState<number | null>(null);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ code: string; discount_percent: number; discount_bdt: number } | null>(null);
+  const [promoMsg, setPromoMsg] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  const discountBdt = promoApplied?.discount_bdt ?? 0;
+  const finalTotal = Math.max(0, total - discountBdt);
+
+  // cart changed → re-validate promo next time; drop stale discount
+  useEffect(() => {
+    setPromoApplied(null);
+    setPromoMsg("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items.length]);
+
+  async function applyPromo() {
+    const code = promoInput.trim();
+    if (!code) return setPromoMsg("প্রোমো কোড লিখুন");
+    setPromoLoading(true);
+    setPromoMsg("");
+    try {
+      const res = await fetch("/api/promos/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, total_bdt: total }),
+      });
+      const d = await res.json();
+      if (!res.ok || !d.ok) throw new Error(d.error || "কোড প্রযোজ্য নয়");
+      setPromoApplied({ code: d.code, discount_percent: d.discount_percent, discount_bdt: d.discount_bdt });
+      setPromoMsg(`✅ ${d.code} — ${d.discount_percent}% ছাড় পেয়েছেন!`);
+    } catch (e) {
+      setPromoApplied(null);
+      setPromoMsg("⚠️ " + (e instanceof Error ? e.message : "কোড প্রযোজ্য নয়"));
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/public/settings")
@@ -78,7 +115,7 @@ export default function CheckoutClient() {
     if (method !== "sslcommerz" && method !== "wallet" && !payInfo(method).number) {
       return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
     }
-    if (method === "wallet" && (walletBal === null || walletBal < total)) {
+    if (method === "wallet" && (walletBal === null || walletBal < finalTotal)) {
       return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — অ্যাড দেখে আয় করুন!");
     }
     setLoading(true);
@@ -95,6 +132,7 @@ export default function CheckoutClient() {
           })),
           payment_method: method,
           notes: notes.trim() || undefined,
+          promo_code: promoApplied?.code || undefined,
         }),
       });
       const data = await res.json();
@@ -222,7 +260,7 @@ export default function CheckoutClient() {
             )}
 
             <button onClick={placeOrder} disabled={loading} className="btn-vault mt-6 w-full text-base">
-              {loading ? "প্রসেস হচ্ছে..." : method === "sslcommerz" ? `পেমেন্ট করুন — ${formatBDT(total)}` : `অর্ডার করুন — ${formatBDT(total)}`}
+              {loading ? "প্রসেস হচ্ছে..." : method === "sslcommerz" ? `পেমেন্ট করুন — ${formatBDT(finalTotal)}` : `অর্ডার করুন — ${formatBDT(finalTotal)}`}
             </button>
             <p className="mt-3 text-center text-xs text-slate-500">🔒 আপনার তথ্য সম্পূর্ণ নিরাপদ</p>
           </div>
@@ -296,10 +334,53 @@ export default function CheckoutClient() {
             ))}
           </ul>
           <div className="divider-glow my-4" />
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400">সর্বমোট</span>
-            <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(step === "manual-pay" ? orderTotal : total)}</span>
-          </div>
+          {step === "info" && (
+            <div className="mb-4">
+              <p className="mb-1.5 text-sm font-medium text-slate-300">🎟️ প্রোমো কোড <span className="text-slate-500">(যদি থাকে)</span></p>
+              {promoApplied ? (
+                <div className="flex items-center justify-between rounded-xl bg-[#d7ff3f]/10 px-3.5 py-2.5">
+                  <span className="font-mono text-sm font-bold text-[#d7ff3f]">{promoApplied.code} <span className="font-sans font-medium text-slate-300">— {promoApplied.discount_percent}% ছাড়</span></span>
+                  <button onClick={() => { setPromoApplied(null); setPromoInput(""); setPromoMsg(""); }} className="text-xs font-bold text-slate-400 hover:text-red-300">✕ বাদ দিন</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24))}
+                    placeholder="কোড লিখুন"
+                    className="field uppercase"
+                  />
+                  <button onClick={applyPromo} disabled={promoLoading} className="btn-ghost shrink-0 px-4 text-sm">
+                    {promoLoading ? "..." : "প্রয়োগ"}
+                  </button>
+                </div>
+              )}
+              {promoMsg && <p className="mt-2 text-xs text-slate-400">{promoMsg}</p>}
+            </div>
+          )}
+          {step === "manual-pay" ? (
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">সর্বমোট</span>
+              <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(orderTotal)}</span>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-400">সাবটোটাল</span>
+                <span className="font-semibold text-slate-200">{formatBDT(total)}</span>
+              </div>
+              {discountBdt > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[#d7ff3f]">প্রোমো ছাড় ({promoApplied?.code})</span>
+                  <span className="font-semibold text-[#d7ff3f]">− {formatBDT(discountBdt)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-slate-400">সর্বমোট</span>
+                <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(finalTotal)}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
