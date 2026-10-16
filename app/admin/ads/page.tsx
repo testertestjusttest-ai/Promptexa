@@ -81,7 +81,7 @@ export default function AdminAdsPage() {
       <div className="glass mt-6 flex items-center justify-between rounded-2xl p-4">
         <div>
           <p className="font-semibold text-white">সব বিজ্ঞাপন</p>
-          <p className="text-xs text-slate-400">বন্ধ করলে সাইটে কোনো বিজ্ঞাপন দেখাবে না</p>
+          <p className="text-xs text-slate-400">বন্ধ করলে মুভি পেজ ছাড়া বাকি সাইটে কোনো বিজ্ঞাপন দেখাবে না (মুভির অ্যাড প্রতিটা স্লটের নিজের টগলে চলে)</p>
         </div>
         <button
           onClick={() => update({ master_enabled: !ads.master_enabled })}

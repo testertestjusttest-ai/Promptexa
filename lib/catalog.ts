@@ -199,12 +199,12 @@ export function activeSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[]
 }
 
 /**
- * Movie pages: match by placement OR by slot id.
- * The movie slots have fixed ids ("movie_list" etc.), so ads keep working
- * even if the placement dropdown was changed by mistake in admin.
+ * Movie pages: match by placement OR by slot id, and ignore the global
+ * master switch. Movie ads are controlled ONLY by their own per-slot
+ * toggles in Admin → বিজ্ঞাপন, so the shop can stay ad-free while the
+ * movie pages keep earning.
  */
 export function activeMovieSlots(ads: AdsConfig, placement: AdPlacement): AdSlotDef[] {
-  if (!ads.master_enabled) return [];
   return ads.slots.filter(
     (s) => (s.placement === placement || s.id === placement) && s.enabled && s.code.trim() !== ""
   );
