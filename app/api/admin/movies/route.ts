@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin";
+import { cleanMovieLinks } from "@/lib/movies";
 
 function cleanSlug(raw: string, fallback: string): string {
   const s = (raw || "")
@@ -43,6 +44,8 @@ export async function POST(req: Request) {
       genre: String(b.genre || "").trim().slice(0, 80) || null,
       video_url: String(b.video_url || "").trim() || null,
       download_url: String(b.download_url || "").trim() || null,
+      watch_links: cleanMovieLinks(b.watch_links),
+      download_links: cleanMovieLinks(b.download_links),
       is_active: b.is_active !== false,
       is_featured: !!b.is_featured,
       sort: Math.floor(Number(b.sort)) || 0,
@@ -77,6 +80,9 @@ export async function PATCH(req: Request) {
   if (b.video_url !== undefined) patch.video_url = String(b.video_url).trim() || null;
   if (b.download_url !== undefined)
     patch.download_url = String(b.download_url).trim() || null;
+  if (b.watch_links !== undefined) patch.watch_links = cleanMovieLinks(b.watch_links);
+  if (b.download_links !== undefined)
+    patch.download_links = cleanMovieLinks(b.download_links);
   if (b.is_active !== undefined) patch.is_active = !!b.is_active;
   if (b.is_featured !== undefined) patch.is_featured = !!b.is_featured;
   if (b.sort !== undefined) patch.sort = Math.floor(Number(b.sort)) || 0;

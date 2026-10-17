@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+type MovieLink = { label: string; url: string };
+
 type Movie = {
   id: string;
   title: string;
@@ -12,6 +14,8 @@ type Movie = {
   genre: string | null;
   video_url: string | null;
   download_url: string | null;
+  watch_links: MovieLink[];
+  download_links: MovieLink[];
   is_active: boolean;
   is_featured: boolean;
   views: number;
@@ -27,10 +31,68 @@ const EMPTY = {
   genre: "",
   video_url: "",
   download_url: "",
+  watch_links: [] as MovieLink[],
+  download_links: [] as MovieLink[],
   is_active: true,
   is_featured: false,
   sort: "0",
 };
+
+/** Dynamic label+URL rows editor (watch/download buttons). */
+function LinkEditor({
+  title,
+  hint,
+  value,
+  onChange,
+}: {
+  title: string;
+  hint: string;
+  value: MovieLink[];
+  onChange: (v: MovieLink[]) => void;
+}) {
+  function upd(i: number, k: "label" | "url", v: string) {
+    onChange(value.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
+  }
+  return (
+    <div className="rounded-xl border border-white/10 p-3 sm:col-span-2">
+      <label className="mb-1 block text-xs font-medium text-slate-400">
+        {title} <span className="text-slate-500">({hint})</span>
+      </label>
+      {value.map((l, i) => (
+        <div key={i} className="mt-2 flex gap-2">
+          <input
+            value={l.label}
+            onChange={(e) => upd(i, "label", e.target.value)}
+            placeholder="বাটনের নাম — যেমন: টেরাবক্স ১"
+            className="field w-36 shrink-0"
+          />
+          <input
+            value={l.url}
+            onChange={(e) => upd(i, "url", e.target.value)}
+            placeholder="https://..."
+            className="field flex-1 font-mono text-xs"
+            dir="ltr"
+          />
+          <button
+            onClick={() => onChange(value.filter((_, j) => j !== i))}
+            className="shrink-0 rounded-xl bg-red-500/10 px-3 text-red-300"
+            title="মুছুন"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      {value.length < 8 && (
+        <button
+          onClick={() => onChange([...value, { label: "", url: "" }])}
+          className="mt-2 rounded-xl bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-white/10"
+        >
+          ＋ লিংক যোগ করুন
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function MoviesClient() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -96,6 +158,8 @@ export default function MoviesClient() {
         genre: form.genre,
         video_url: form.video_url,
         download_url: form.download_url,
+        watch_links: form.watch_links,
+        download_links: form.download_links,
         is_active: form.is_active,
         is_featured: form.is_featured,
         sort: form.sort,
@@ -129,6 +193,8 @@ export default function MoviesClient() {
       genre: m.genre ?? "",
       video_url: m.video_url ?? "",
       download_url: m.download_url ?? "",
+      watch_links: Array.isArray(m.watch_links) ? m.watch_links : [],
+      download_links: Array.isArray(m.download_links) ? m.download_links : [],
       is_active: m.is_active,
       is_featured: m.is_featured,
       sort: String(m.sort),
@@ -151,8 +217,88 @@ export default function MoviesClient() {
     load();
   }
 
+  // ---------- unlock gate settings ----------
+  const [ucount, setUcount] = useState("10");
+  const [ulinks, setUlinks] = useState("");
+  const [umsg, setUmsg] = useState("");
+  const [usaving, setUsaving] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/movie-unlock")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok) {
+          setUcount(String(d.ad_count ?? 10));
+          setUlinks(((d.ad_links as string[]) ?? []).join("\n"));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveUnlock() {
+    setUmsg("");
+    setUsaving(true);
+    try {
+      const r = await fetch("/api/admin/movie-unlock", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ad_count: ucount,
+          ad_links: ulinks.split("\n").map((s) => s.trim()).filter(Boolean),
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || "সেভ হয়নি");
+      setUmsg("✅ আনলক সেটিংস সেভ হয়েছে");
+    } catch (e) {
+      setUmsg("⚠️ " + (e instanceof Error ? e.message : "সেভ হয়নি"));
+    } finally {
+      setUsaving(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* unlock settings */}
+      <div className="glass rounded-2xl p-5 sm:p-6">
+        <h3 className="font-display text-base font-bold text-white">
+          🔓 আনলক সিস্টেম সেটিংস
+        </h3>
+        <p className="mt-1 text-xs text-slate-500">
+          দর্শক কয়টা এডে ক্লিক করলে মুভি লিংক আনলক হবে, আর প্রতিটা এডে ক্লিক করলে
+          কোন লিংকে যাবে — এখানে সেট করুন।
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[160px_1fr]">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-400">
+              এড সংখ্যা (১–২০)
+            </label>
+            <input
+              value={ucount}
+              onChange={(e) => setUcount(e.target.value.replace(/[^0-9]/g, "").slice(0, 2))}
+              inputMode="numeric"
+              className="field"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-400">
+              এড লিংকগুলো <span className="text-slate-500">(আপনার ডাইরেক্ট/স্মার্ট লিংক — প্রতি লাইনে ১টা; ঘুরিয়ে দেখাবে)</span>
+            </label>
+            <textarea
+              value={ulinks}
+              onChange={(e) => setUlinks(e.target.value)}
+              placeholder={"https://your-direct-link-1\nhttps://your-direct-link-2"}
+              className="field min-h-[80px] font-mono text-xs"
+              dir="ltr"
+            />
+          </div>
+        </div>
+        <button onClick={saveUnlock} disabled={usaving} className="btn-vault mt-3 text-sm">
+          {usaving ? "সেভ হচ্ছে..." : "💾 সেটিংস সেভ করুন"}
+        </button>
+        {umsg && <p className="mt-2 text-sm text-slate-300">{umsg}</p>}
+      </div>
+
       {/* form */}
       <div className="glass rounded-2xl p-5 sm:p-6">
         <h3 className="font-display text-base font-bold text-white">
@@ -207,6 +353,18 @@ export default function MoviesClient() {
             </label>
             <input value={form.download_url} onChange={(e) => set("download_url", e.target.value)} placeholder="https://..." className="field font-mono text-xs" dir="ltr" />
           </div>
+          <LinkEditor
+            title="🎬 দেখুন বাটনগুলো"
+            hint="আনলক হওয়ার পর দেখাবে — ৩/৪টা দিন: ২টায় টেরাবক্স লিংক, বাকিগুলোয় ডাইরেক্ট লিংক"
+            value={form.watch_links}
+            onChange={(v) => set("watch_links", v)}
+          />
+          <LinkEditor
+            title="⬇ ডাউনলোড বাটনগুলো"
+            hint="আনলক হওয়ার পর দেখাবে — ২টায় টেরাবক্স লিংক দিতে পারেন"
+            value={form.download_links}
+            onChange={(v) => set("download_links", v)}
+          />
           <div className="flex items-center gap-6">
             <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-300">
               <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="h-4 w-4 accent-[#d7ff3f]" />

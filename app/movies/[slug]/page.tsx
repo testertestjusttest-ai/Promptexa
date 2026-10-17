@@ -33,6 +33,11 @@ export default async function MovieDetailPage({
 
   const hasVideo = !!movie.video_url;
   const hasDownload = !!movie.download_url;
+  const hasLinks =
+    hasVideo ||
+    hasDownload ||
+    (movie.watch_links ?? []).length > 0 ||
+    (movie.download_links ?? []).length > 0;
 
   return (
     <MoviesBlue>
@@ -84,31 +89,20 @@ export default async function MovieDetailPage({
                 </p>
               )}
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {hasVideo ? (
-                  <Link
-                    href={`/movies/${movie.slug}/watch/1`}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#0b84ff] px-6 py-3.5 text-base font-extrabold text-white transition hover:bg-[#006fe0]"
-                  >
-                    ▶ মুভি দেখুন
-                  </Link>
-                ) : null}
-                {hasDownload ? (
-                  <Link
-                    href={`/movies/${movie.slug}/download/1`}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-base font-extrabold text-white transition hover:bg-white/20"
-                  >
-                    ⬇ ডাউনলোড
-                  </Link>
-                ) : null}
-              </div>
-              {!hasVideo && !hasDownload && (
-                <p className="mt-4 text-sm text-blue-100/70">
+              {hasLinks ? (
+                <Link
+                  href={`/movies/${movie.slug}/unlock`}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-[#0b84ff] px-6 py-3.5 text-base font-extrabold text-white transition hover:bg-[#006fe0]"
+                >
+                  🔓 মুভি আনলক করুন
+                </Link>
+              ) : (
+                <p className="text-sm text-blue-100/70">
                   এই মুভির লিংক এখনো যোগ করা হয়নি — শীঘ্রই আসছে।
                 </p>
               )}
               <p className="mt-4 text-xs text-blue-100/60">
-                ℹ️ দেখা বা ডাউনলোডের আগে কয়েকটি ছোট ধাপ পার হতে হবে — প্রতিটা
+                ℹ️ কয়েকটা এড দেখলেই দেখা ও ডাউনলোড লিংক আনলক হয়ে যাবে — প্রতিটা
                 ধাপে নির্দেশনা দেওয়া থাকবে।
               </p>
             </div>
