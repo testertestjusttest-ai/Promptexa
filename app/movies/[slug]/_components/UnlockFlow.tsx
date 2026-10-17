@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { MovieLink } from "@/lib/movies";
 
 const VERIFY_MS = 3000;
+const COOLDOWN_S = 15;
 
 /**
  * 10 ad-CARD unlock grid (MovieLinkBD style, blue theme).
  * Each card shows the movie poster. Tap a card → ad opens in a new tab →
- * 3s verify animation → card flips to ✅. When all cards are done,
- * quality-wise watch (4) + download (4) buttons unlock with animation.
+ * 3s verify animation → card flips to ✅ → 15s cooldown before the next
+ * card can be tapped. When all cards are done, a DIRECT watch button +
+ * separate quality buttons (and same for download) unlock with animation.
  */
 export default function UnlockFlow({
   posterUrl,
@@ -26,22 +28,36 @@ export default function UnlockFlow({
 }) {
   const [doneMap, setDoneMap] = useState<Record<number, boolean>>({});
   const [verifying, setVerifying] = useState<number | null>(null);
+  const [cooldown, setCooldown] = useState(0);
   const doneCount = Object.keys(doneMap).length;
   const unlocked = doneCount >= adCount;
   const firstPending = Array.from({ length: adCount }, (_, i) => i).find(
     (i) => !doneMap[i] && verifying !== i
   );
+  const locked = verifying !== null || cooldown > 0;
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   function clickCard(i: number) {
-    if (doneMap[i] || verifying !== null) return;
+    if (doneMap[i] || locked) return;
     const url = adLinks.length > 0 ? adLinks[i % adLinks.length] : "";
     if (url) window.open(url, "_blank", "noopener,noreferrer");
     setVerifying(i);
     setTimeout(() => {
       setDoneMap((m) => ({ ...m, [i]: true }));
       setVerifying(null);
+      setCooldown(COOLDOWN_S);
     }, VERIFY_MS);
   }
+
+  const watchDirect = watchLinks[0];
+  const watchQuality = watchLinks.slice(1, 4);
+  const dlDirect = downloadLinks[0];
+  const dlQuality = downloadLinks.slice(1, 4);
 
   return (
     <>
@@ -70,27 +86,35 @@ export default function UnlockFlow({
             style={{ width: `${(doneCount / adCount) * 100}%` }}
           />
         </div>
+        {cooldown > 0 && !unlocked && (
+          <p className="mt-2 text-center text-sm font-bold text-yellow-300">
+            ⏳ পরের এড {cooldown} সেকেন্ড পর ক্লিক করতে পারবেন
+          </p>
+        )}
       </div>
 
       {/* ad cards */}
       {!unlocked && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: adCount }).map((_, i) => {
+          {Array.from({ length: adCount }, (_, i) => i).map((i) => {
             const done = !!doneMap[i];
             const isVerifying = verifying === i;
-            const isNext = !done && !isVerifying && firstPending === i;
+            const isNext = !done && !isVerifying && firstPending === i && cooldown === 0;
             const url = adLinks.length > 0 ? adLinks[i % adLinks.length] : "";
+            const disabled = done || locked;
             return (
               <button
                 key={i}
                 onClick={() => clickCard(i)}
-                disabled={done || isVerifying}
+                disabled={disabled}
                 style={{ animationDelay: `${Math.min(i, 10) * 60}ms` }}
                 className={`ad-card group relative overflow-hidden rounded-xl text-left ring-1 transition-transform duration-300 ${
                   done
                     ? "ring-green-400/60"
                     : "ring-white/15 hover:scale-[1.04] hover:ring-yellow-300/70"
-                } ${isNext ? "ad-card-next ring-yellow-300" : ""}`}
+                } ${isNext ? "ad-card-next ring-yellow-300" : ""} ${
+                  disabled && !done ? "opacity-70" : ""
+                }`}
               >
                 <div className="aspect-[3/4] bg-black/40">
                   {posterUrl ? (
@@ -108,8 +132,11 @@ export default function UnlockFlow({
                   <p className="text-xs font-extrabold text-white">
                     {done ? "✅ সম্পন্ন" : `📢 এড ${i + 1}`}
                   </p>
-                  {!done && !isVerifying && (
+                  {!done && !isVerifying && cooldown === 0 && (
                     <p className="text-[10px] text-yellow-300">ট্যাপ করে এড দেখুন</p>
+                  )}
+                  {!done && !isVerifying && cooldown > 0 && (
+                    <p className="text-[10px] text-blue-100/70">⏳ {cooldown}s অপেক্ষা</p>
                   )}
                 </div>
                 {isVerifying && (
@@ -143,51 +170,73 @@ export default function UnlockFlow({
             <div className="ad-card-done text-5xl">🎉</div>
             <h2 className="mt-3 text-xl font-extrabold text-white">সব এড সম্পন্ন!</h2>
             <p className="mt-1 text-sm text-blue-100/70">
-              কোয়ালিটি বেছে নিয়ে দেখুন বা ডাউনলোড করুন
+              নিচে ডাইরেক্ট দেখুন অথবা কোয়ালিটি বেছে নিন
             </p>
           </div>
 
-          {watchLinks.length > 0 && (
+          {watchDirect && (
             <>
-              <h3 className="mt-6 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
-                🎬 ভিডিও দেখুন
-              </h3>
-              <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-                {watchLinks.slice(0, 4).map((l, i) => (
-                  <a
-                    key={i}
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ animationDelay: `${i * 80}ms` }}
-                    className="ad-card flex items-center justify-center gap-2 rounded-xl bg-[#0b84ff] px-4 py-3.5 text-base font-extrabold text-white transition hover:bg-[#006fe0]"
-                  >
-                    ▶ {l.label}
-                  </a>
-                ))}
-              </div>
+              <a
+                href={watchDirect.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-[#0b84ff] px-6 py-4 text-lg font-extrabold text-white shadow-lg shadow-blue-900/50 transition hover:bg-[#006fe0]"
+              >
+                ▶ ভিডিও দেখুন
+              </a>
+              {watchQuality.length > 0 && (
+                <>
+                  <h3 className="mt-5 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
+                    🎞 কোয়ালিটি বেছে নিন
+                  </h3>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {watchQuality.map((l, i) => (
+                      <a
+                        key={i}
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ animationDelay: `${i * 80}ms` }}
+                        className="ad-card flex items-center justify-center rounded-xl bg-white/10 px-2 py-3 text-sm font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20"
+                      >
+                        ▶ {l.label}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
 
-          {downloadLinks.length > 0 && (
+          {dlDirect && (
             <>
               <h3 className="mt-6 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
                 ⬇ ডাউনলোড করুন
               </h3>
-              <div className="mt-2 grid gap-2.5 sm:grid-cols-2">
-                {downloadLinks.slice(0, 4).map((l, i) => (
-                  <a
-                    key={i}
-                    href={l.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ animationDelay: `${i * 80}ms` }}
-                    className="ad-card flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-3.5 text-base font-extrabold text-white transition hover:bg-white/20"
-                  >
-                    ⬇ {l.label}
-                  </a>
-                ))}
-              </div>
+              <a
+                href={dlDirect.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-4 text-lg font-extrabold text-white transition hover:bg-white/20"
+              >
+                ⬇ ডাউনলোড
+              </a>
+              {dlQuality.length > 0 && (
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {dlQuality.map((l, i) => (
+                    <a
+                      key={i}
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ animationDelay: `${i * 80}ms` }}
+                      className="ad-card flex items-center justify-center rounded-xl bg-white/5 px-2 py-3 text-sm font-extrabold text-blue-50 ring-1 ring-white/15 transition hover:bg-white/15"
+                    >
+                      ⬇ {l.label}
+                    </a>
+                  ))}
+                </div>
+              )}
             </>
           )}
 
@@ -199,7 +248,8 @@ export default function UnlockFlow({
 
       {!unlocked && (
         <p className="mt-4 text-center text-xs text-blue-100/60">
-          💡 প্রতিটা কার্ডে ট্যাপ করুন — এড নতুন ট্যাবে খুলবে, ফিরে এসে দেখুন কার্ড ✅ হয়ে গেছে
+          💡 প্রতিটা কার্ডে ট্যাপ করুন — এড নতুন ট্যাবে খুলবে, তারপর {COOLDOWN_S} সেকেন্ড
+          অপেক্ষা করে পরের কার্ডে ট্যাপ করুন
         </p>
       )}
     </>
