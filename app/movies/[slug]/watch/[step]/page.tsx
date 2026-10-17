@@ -5,6 +5,7 @@ import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 import StepGate from "../../_components/StepGate";
 import PreRollPlayer from "../../_components/PreRollPlayer";
+import MoviesBlue from "../../../_components/MoviesBlue";
 
 export const dynamic = "force-dynamic";
 
@@ -26,40 +27,47 @@ export default async function WatchStepPage({
   if (step === "player") {
     const direct = isDirectVideo(movie.video_url);
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <Link href={`/movies/${movie.slug}`} className="text-sm font-medium text-slate-400 hover:text-[#d7ff3f]">
-          ← {movie.title}
-        </Link>
-        <h1 className="font-display mt-3 text-xl font-bold text-white sm:text-2xl">
-          ▶ {movie.title}
-          {movie.year ? <span className="ml-2 text-sm font-medium text-slate-500">{movie.year}</span> : null}
-        </h1>
+      <MoviesBlue>
+        <div className="mx-auto max-w-5xl px-3 py-6 sm:px-6">
+          <Link
+            href={`/movies/${movie.slug}`}
+            className="text-sm font-medium text-blue-100 hover:text-white"
+          >
+            ← {movie.title}
+          </Link>
+          <h1 className="mt-3 text-xl font-extrabold text-white sm:text-2xl">
+            ▶ {movie.title}
+            {movie.year ? (
+              <span className="ml-2 text-sm font-medium text-blue-100/70">{movie.year}</span>
+            ) : null}
+          </h1>
 
-        {playerAds.map((s) => (
-          <div key={s.id} className="mt-4">
-            <AdSlot code={s.code} />
+          {playerAds.map((s) => (
+            <div key={s.id} className="mt-4">
+              <AdSlot code={s.code} />
+            </div>
+          ))}
+
+          <div className="mt-4 overflow-hidden rounded-2xl bg-black ring-1 ring-white/15">
+            <PreRollPlayer
+              videoUrl={movie.video_url}
+              posterUrl={movie.poster_url}
+              title={movie.title}
+              adCodes={playerAds.map((s) => s.code)}
+              direct={direct}
+            />
           </div>
-        ))}
+          <p className="mt-3 text-center text-xs text-blue-100/60">
+            ভিডিও না চললে পেজ রিফ্রেশ করুন অথবা ডাউনলোড করে দেখুন
+          </p>
 
-        <div className="glass mt-4 overflow-hidden rounded-3xl">
-          <PreRollPlayer
-            videoUrl={movie.video_url}
-            posterUrl={movie.poster_url}
-            title={movie.title}
-            adCodes={playerAds.map((s) => s.code)}
-            direct={direct}
-          />
+          {playerAds.map((s) => (
+            <div key={`b-${s.id}`} className="mt-4">
+              <AdSlot code={s.code} />
+            </div>
+          ))}
         </div>
-        <p className="mt-3 text-center text-xs text-slate-600">
-          ভিডিও না চললে পেজ রিফ্রেশ করুন অথবা ডাউনলোড করে দেখুন
-        </p>
-
-        {playerAds.map((s) => (
-          <div key={`b-${s.id}`} className="mt-4">
-            <AdSlot code={s.code} />
-          </div>
-        ))}
-      </div>
+      </MoviesBlue>
     );
   }
 
@@ -69,35 +77,40 @@ export default async function WatchStepPage({
   const isLast = n === 2;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <Link href={`/movies/${movie.slug}`} className="text-sm font-medium text-slate-400 hover:text-[#d7ff3f]">
-        ← {movie.title}
-      </Link>
+    <MoviesBlue>
+      <div className="mx-auto max-w-3xl px-3 py-6 sm:px-6">
+        <Link
+          href={`/movies/${movie.slug}`}
+          className="text-sm font-medium text-blue-100 hover:text-white"
+        >
+          ← {movie.title}
+        </Link>
 
-      {stepAds.map((s) => (
-        <div key={s.id} className="mt-4">
-          <AdSlot code={s.code} />
-        </div>
-      ))}
+        {stepAds.map((s) => (
+          <div key={s.id} className="mt-4">
+            <AdSlot code={s.code} />
+          </div>
+        ))}
 
-      <StepGate
-        step={n}
-        totalSteps={TOTAL_STEPS}
-        title={n === 1 ? "📺 মুভি দেখার প্রস্তুতি" : "⚡ শেষ ধাপ!"}
-        desc={
-          n === 1
-            ? "নিচে একটি ছোট বিজ্ঞাপন দেখুন। কাউন্টডাউন শেষ হলে 'পরবর্তী ধাপ' বাটনে ক্লিক করুন — এভাবেই আমাদের সাইট ফ্রি থাকে।"
-            : "আর মাত্র একটা ধাপ! কাউন্টডাউন শেষ হলে নিচের বাটনে ক্লিক করলেই ভিডিও প্লেয়ার চালু হবে।"
-        }
-        nextHref={isLast ? `/movies/${movie.slug}/watch/player` : `/movies/${movie.slug}/watch/2`}
-        nextLabel={isLast ? "🎬 প্লেয়ার চালু করুন" : "পরবর্তী ধাপ →"}
-      />
+        <StepGate
+          step={n}
+          totalSteps={TOTAL_STEPS}
+          title={n === 1 ? "📺 মুভি দেখার প্রস্তুতি" : "⚡ শেষ ধাপ!"}
+          desc={
+            n === 1
+              ? "নিচে একটি ছোট বিজ্ঞাপন দেখুন। কাউন্টডাউন শেষ হলে 'পরবর্তী ধাপ' বাটনে ক্লিক করুন — এভাবেই আমাদের সাইট ফ্রি থাকে।"
+              : "আর মাত্র একটা ধাপ! কাউন্টডাউন শেষ হলে নিচের বাটনে ক্লিক করলেই ভিডিও প্লেয়ার চালু হবে।"
+          }
+          nextHref={isLast ? `/movies/${movie.slug}/watch/player` : `/movies/${movie.slug}/watch/2`}
+          nextLabel={isLast ? "🎬 প্লেয়ার চালু করুন" : "পরবর্তী ধাপ →"}
+        />
 
-      {stepAds.map((s) => (
-        <div key={`b-${s.id}`} className="mt-4">
-          <AdSlot code={s.code} />
-        </div>
-      ))}
-    </div>
+        {stepAds.map((s) => (
+          <div key={`b-${s.id}`} className="mt-4">
+            <AdSlot code={s.code} />
+          </div>
+        ))}
+      </div>
+    </MoviesBlue>
   );
 }
