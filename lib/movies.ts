@@ -12,6 +12,7 @@ export type Movie = {
   genre: string | null;
   video_url: string | null;
   download_url: string | null;
+  quality: string | null;
   watch_links: MovieLink[];
   download_links: MovieLink[];
   is_active: boolean;

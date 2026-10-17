@@ -57,6 +57,7 @@ export default async function MovieUnlockPage({
         </p>
 
         <UnlockFlow
+          posterUrl={movie.poster_url}
           watchLinks={watchLinks}
           downloadLinks={downloadLinks}
           adCount={settings.ad_count}

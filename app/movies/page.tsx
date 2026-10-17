@@ -72,6 +72,11 @@ export default async function MoviesPage() {
                       ⭐ ফিচার্ড
                     </span>
                   )}
+                  {m.quality && (
+                    <span className="absolute right-1.5 top-1.5 rounded bg-[#0b2545]/90 px-2 py-0.5 font-mono text-[10px] font-extrabold text-white ring-1 ring-white/25">
+                      {m.quality}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1.5 truncate text-sm font-bold text-white group-hover:underline">
                   {m.title}

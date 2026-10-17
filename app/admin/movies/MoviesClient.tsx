@@ -14,6 +14,7 @@ type Movie = {
   genre: string | null;
   video_url: string | null;
   download_url: string | null;
+  quality: string | null;
   watch_links: MovieLink[];
   download_links: MovieLink[];
   is_active: boolean;
@@ -31,6 +32,7 @@ const EMPTY = {
   genre: "",
   video_url: "",
   download_url: "",
+  quality: "",
   watch_links: [] as MovieLink[],
   download_links: [] as MovieLink[],
   is_active: true,
@@ -63,7 +65,7 @@ function LinkEditor({
           <input
             value={l.label}
             onChange={(e) => upd(i, "label", e.target.value)}
-            placeholder="বাটনের নাম — যেমন: টেরাবক্স ১"
+            placeholder="যেমন: 1080p Full HD"
             className="field w-36 shrink-0"
           />
           <input
@@ -158,6 +160,7 @@ export default function MoviesClient() {
         genre: form.genre,
         video_url: form.video_url,
         download_url: form.download_url,
+        quality: form.quality,
         watch_links: form.watch_links,
         download_links: form.download_links,
         is_active: form.is_active,
@@ -193,6 +196,7 @@ export default function MoviesClient() {
       genre: m.genre ?? "",
       video_url: m.video_url ?? "",
       download_url: m.download_url ?? "",
+      quality: m.quality ?? "",
       watch_links: Array.isArray(m.watch_links) ? m.watch_links : [],
       download_links: Array.isArray(m.download_links) ? m.download_links : [],
       is_active: m.is_active,
@@ -337,6 +341,12 @@ export default function MoviesClient() {
               <input value={form.genre} onChange={(e) => set("genre", e.target.value)} placeholder="অ্যাকশন" className="field" />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-400">কোয়ালিটি ব্যাজ</label>
+              <input value={form.quality} onChange={(e) => set("quality", e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 12))} placeholder="WEB-DL" className="field font-mono" dir="ltr" />
+            </div>
+          </div>
           <div className="sm:col-span-2">
             <label className="mb-1.5 block text-xs font-medium text-slate-400">বর্ণনা</label>
             <textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="মুভি সম্পর্কে ছোট বর্ণনা" className="field min-h-[70px]" />
@@ -355,13 +365,13 @@ export default function MoviesClient() {
           </div>
           <LinkEditor
             title="🎬 দেখুন বাটনগুলো"
-            hint="আনলক হওয়ার পর দেখাবে — ৩/৪টা দিন: ২টায় টেরাবক্স লিংক, বাকিগুলোয় ডাইরেক্ট লিংক"
+            hint="কোয়ালিটি অনুযায়ী ৪টা দিন — যেমন: 480p, 720p HD, 1080p, 4K"
             value={form.watch_links}
             onChange={(v) => set("watch_links", v)}
           />
           <LinkEditor
             title="⬇ ডাউনলোড বাটনগুলো"
-            hint="আনলক হওয়ার পর দেখাবে — ২টায় টেরাবক্স লিংক দিতে পারেন"
+            hint="কোয়ালিটি অনুযায়ী ৪টা দিন — যেমন: 480p, 720p HD, 1080p, 4K"
             value={form.download_links}
             onChange={(v) => set("download_links", v)}
           />

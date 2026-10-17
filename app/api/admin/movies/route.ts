@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       genre: String(b.genre || "").trim().slice(0, 80) || null,
       video_url: String(b.video_url || "").trim() || null,
       download_url: String(b.download_url || "").trim() || null,
+      quality: String(b.quality || "").trim().slice(0, 20) || null,
       watch_links: cleanMovieLinks(b.watch_links),
       download_links: cleanMovieLinks(b.download_links),
       is_active: b.is_active !== false,
@@ -80,6 +81,8 @@ export async function PATCH(req: Request) {
   if (b.video_url !== undefined) patch.video_url = String(b.video_url).trim() || null;
   if (b.download_url !== undefined)
     patch.download_url = String(b.download_url).trim() || null;
+  if (b.quality !== undefined)
+    patch.quality = String(b.quality).trim().slice(0, 20) || null;
   if (b.watch_links !== undefined) patch.watch_links = cleanMovieLinks(b.watch_links);
   if (b.download_links !== undefined)
     patch.download_links = cleanMovieLinks(b.download_links);

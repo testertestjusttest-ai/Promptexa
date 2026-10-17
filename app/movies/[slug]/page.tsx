@@ -79,6 +79,11 @@ export default async function MovieDetailPage({
                     🎭 {movie.genre}
                   </span>
                 )}
+                {movie.quality && (
+                  <span className="rounded-full bg-black/30 px-3 py-1 font-mono font-bold text-yellow-300">
+                    {movie.quality}
+                  </span>
+                )}
                 <span className="rounded-full bg-black/30 px-3 py-1 font-medium text-blue-50">
                   👁 {formatViews(movie.views)} বার দেখা
                 </span>
