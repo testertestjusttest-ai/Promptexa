@@ -4,6 +4,7 @@ import { getMovieBySlug, isDirectVideo } from "@/lib/movies";
 import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 import StepGate from "../../_components/StepGate";
+import PreRollPlayer from "../../_components/PreRollPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -41,25 +42,13 @@ export default async function WatchStepPage({
         ))}
 
         <div className="glass mt-4 overflow-hidden rounded-3xl">
-          <div className="aspect-video w-full bg-black">
-            {direct ? (
-              <video
-                src={movie.video_url}
-                controls
-                playsInline
-                className="h-full w-full"
-                poster={movie.poster_url ?? undefined}
-              />
-            ) : (
-              <iframe
-                src={movie.video_url}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title={movie.title}
-              />
-            )}
-          </div>
+          <PreRollPlayer
+            videoUrl={movie.video_url}
+            posterUrl={movie.poster_url}
+            title={movie.title}
+            adCodes={playerAds.map((s) => s.code)}
+            direct={direct}
+          />
         </div>
         <p className="mt-3 text-center text-xs text-slate-600">
           ভিডিও না চললে পেজ রিফ্রেশ করুন অথবা ডাউনলোড করে দেখুন
