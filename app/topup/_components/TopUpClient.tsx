@@ -33,7 +33,13 @@ const CAT_VOICE = {
   membership: VOICE.catMembership,
 } as const;
 
-export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) {
+export default function TopUpClient({
+  packages,
+  userName,
+}: {
+  packages: TopUpPackage[];
+  userName?: string | null;
+}) {
   const router = useRouter();
   const [cat, setCat] = useState<"all" | "diamond" | "membership" | "offer">("all");
   const [soundOn, setSoundOn] = useState(true);
@@ -55,7 +61,10 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
-        voiceTimer = setTimeout(() => speakBn(VOICE.welcome), 1000);
+        voiceTimer = setTimeout(
+          () => speakBn(userName ? VOICE.welcomeUser(userName) : VOICE.welcome),
+          1000
+        );
       }
     };
     window.addEventListener("pointerdown", go, { once: true });

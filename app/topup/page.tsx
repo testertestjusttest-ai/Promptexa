@@ -23,5 +23,30 @@ export default async function TopUpPage() {
   } catch {
     packages = [];
   }
-  return <TopUpClient packages={packages} />;
+
+  // logged-in user's first name for a personalized voice welcome
+  let userName: string | null = null;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+      const raw =
+        (prof?.full_name as string | null) ||
+        ((user.user_metadata as Record<string, unknown>)?.full_name as string | undefined) ||
+        user.email?.split("@")[0] ||
+        "";
+      const first = raw.trim().split(/\s+/)[0];
+      userName = first ? first : null;
+    }
+  } catch {
+    userName = null;
+  }
+
+  return <TopUpClient packages={packages} userName={userName} />;
 }
