@@ -311,7 +311,7 @@ export function speakBn(text: string) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "bn-BD";
-    u.rate = 0.95;
+    u.rate = 0.92; // slightly slower = clearer, complete delivery
     u.volume = 1;
     u.pitch = 1; // natural — no pitch shifting
     const v = pickVoice();
@@ -336,6 +336,8 @@ export const VOICE = {
   welcome: "ফ্রি ফায়ার ডায়মন্ড টপ-আপে স্বাগতম! পছন্দের প্যাকেজ সিলেক্ট করুন।",
   welcomeUser: (name: string) =>
     `${name}, ডিজিপ্লাইরাতে আপনাকে স্বাগতম! পছন্দের প্যাকেজ সিলেক্ট করুন।`,
+  /** short prompt for return visits (no repeat welcome) */
+  pickPackage: "পছন্দের প্যাকেজ সিলেক্ট করুন।",
   selected: (name: string) =>
     `${name} সিলেক্ট হয়েছে। এখন নিচে আপনার প্লেয়ার ইউআইডি আর মোবাইল নম্বর দিন।`,
   checkout: (name: string) => `${name} সিলেক্ট হয়েছে। চেকআউট পেজে নিয়ে যাওয়া হচ্ছে।`,

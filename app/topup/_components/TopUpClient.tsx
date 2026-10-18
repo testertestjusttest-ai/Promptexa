@@ -62,7 +62,15 @@ export default function TopUpClient({
     let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
     const sayWelcome = () => {
-      speakBn(userName ? VOICE.welcomeUser(userName) : VOICE.welcome);
+      // first visit this session → full welcome; coming back → short prompt only
+      let returning = false;
+      try {
+        returning = sessionStorage.getItem("topup_welcomed") === "1";
+        sessionStorage.setItem("topup_welcomed", "1");
+      } catch {
+        /* ignore */
+      }
+      speakBn(returning ? VOICE.pickPackage : userName ? VOICE.welcomeUser(userName) : VOICE.welcome);
     };
 
     const tryWelcome = () => {
