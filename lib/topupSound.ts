@@ -75,7 +75,7 @@ function noiseSrc(c: AudioContext, dur: number): AudioBufferSourceNode {
 export type GunKind = "tap" | "pistol" | "smg" | "rifle" | "shotgun" | "sniper";
 
 const GUN: Record<GunKind, { dur: number; cutoff: number; vol: number; base: number }> = {
-  tap: { dur: 0.14, cutoff: 4200, vol: 0.45, base: 160 },
+  tap: { dur: 0.14, cutoff: 4200, vol: 0.22, base: 160 },
   pistol: { dur: 0.2, cutoff: 3800, vol: 0.9, base: 145 },
   smg: { dur: 0.12, cutoff: 3600, vol: 0.75, base: 160 },
   rifle: { dur: 0.34, cutoff: 2300, vol: 1.0, base: 105 },
