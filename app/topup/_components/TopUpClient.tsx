@@ -53,25 +53,57 @@ export default function TopUpClient({
   const [tracked, setTracked] = useState<TopUpOrder[] | null>(null);
   const [tracking, setTracking] = useState(false);
 
-  // epic entrance: fanfare + Bangla welcome voice on first interaction
+  // welcome voice fires as soon as the page shows — no tap needed.
+  // (If the browser blocks speech before first interaction, the first tap replays it.)
   useEffect(() => {
     setSoundOn(soundEnabled());
     const cleanupGuns = initTapGuns();
-    let voiceTimer: ReturnType<typeof setTimeout> | null = null;
+    let welcomed = false;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const sayWelcome = () => {
+      speakBn(userName ? VOICE.welcomeUser(userName) : VOICE.welcome);
+    };
+
+    const tryWelcome = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      if (!soundEnabled() || welcomed) return;
+      welcomed = true;
+      sayWelcome();
+      // speech blocked without a user gesture? let the first tap replay it
+      fallbackTimer = setTimeout(() => {
+        try {
+          if (
+            typeof window !== "undefined" &&
+            "speechSynthesis" in window &&
+            !window.speechSynthesis.speaking &&
+            !window.speechSynthesis.pending
+          ) {
+            welcomed = false;
+          }
+        } catch {
+          /* ignore */
+        }
+      }, 700);
+    };
+
+    const welcomeTimer = setTimeout(tryWelcome, 1000);
+
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
-        voiceTimer = setTimeout(
-          () => speakBn(userName ? VOICE.welcomeUser(userName) : VOICE.welcome),
-          1000
-        );
+        if (!welcomed) {
+          welcomed = true;
+          fallbackTimer = setTimeout(sayWelcome, 900);
+        }
       }
     };
     window.addEventListener("pointerdown", go, { once: true });
     window.addEventListener("keydown", go, { once: true });
     return () => {
       cleanupGuns();
-      if (voiceTimer) clearTimeout(voiceTimer);
+      clearTimeout(welcomeTimer);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
       window.removeEventListener("pointerdown", go);
       window.removeEventListener("keydown", go);
     };

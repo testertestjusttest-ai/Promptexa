@@ -24,7 +24,7 @@ export default async function TopUpPage() {
     packages = [];
   }
 
-  // logged-in user's first name for a personalized voice welcome
+  // logged-in user's full name for a personalized voice welcome
   let userName: string | null = null;
   try {
     const {
@@ -41,8 +41,7 @@ export default async function TopUpPage() {
         ((user.user_metadata as Record<string, unknown>)?.full_name as string | undefined) ||
         user.email?.split("@")[0] ||
         "";
-      const first = raw.trim().split(/\s+/)[0];
-      userName = first ? first : null;
+      userName = raw.trim() ? raw.trim() : null;
     }
   } catch {
     userName = null;
