@@ -8,9 +8,6 @@ import { topupStatusBn } from "@/lib/topup";
 import {
   soundEnabled,
   setSoundEnabled,
-  bgmEnabled,
-  setBgmEnabled,
-  startBgm,
   gunshot,
   tierGun,
   initTapGuns,
@@ -40,7 +37,6 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   const router = useRouter();
   const [cat, setCat] = useState<"all" | "diamond" | "membership" | "offer">("all");
   const [soundOn, setSoundOn] = useState(true);
-  const [bgmOn, setBgmOn] = useState(true);
   const [stats, setStats] = useState<{
     total_delivered: number;
     today_delivered: number;
@@ -51,17 +47,15 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   const [tracked, setTracked] = useState<TopUpOrder[] | null>(null);
   const [tracking, setTracking] = useState(false);
 
-  // epic entrance: fanfare + Bangla welcome voice + ambient BGM on first interaction
+  // epic entrance: fanfare + Bangla welcome voice on first interaction
   useEffect(() => {
     setSoundOn(soundEnabled());
-    setBgmOn(bgmEnabled());
     initTapGuns();
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
         setTimeout(() => speakBn(VOICE.welcome), 1000);
       }
-      setTimeout(() => startBgm(), 2500);
     };
     window.addEventListener("pointerdown", go, { once: true });
     window.addEventListener("keydown", go, { once: true });
@@ -352,19 +346,6 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
           className="flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
         >
           {soundOn ? "🔊" : "🔇"}
-        </button>
-        <button
-          onClick={() => {
-            const next = !bgmOn;
-            setBgmEnabled(next);
-            setBgmOn(next);
-            if (next) speakBn(VOICE.bgmOn);
-            else speakBn(VOICE.bgmOff);
-          }}
-          aria-label="ব্যাকগ্রাউন্ড মিউজিক চালু বা বন্ধ করুন"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
-        >
-          {bgmOn ? "🎵" : "🚫"}
         </button>
       </div>
     </div>

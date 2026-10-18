@@ -35,21 +35,6 @@ export function setSoundEnabled(on: boolean): void {
   if (!on) stopVoice();
 }
 
-export function bgmEnabled(): boolean {
-  if (typeof window === "undefined") return true;
-  return localStorage.getItem("topup_bgm") !== "off";
-}
-
-export function setBgmEnabled(on: boolean): void {
-  try {
-    localStorage.setItem("topup_bgm", on ? "on" : "off");
-  } catch {
-    /* ignore */
-  }
-  if (on) startBgm();
-  else stopBgm();
-}
-
 /* ---------------- synth helpers ---------------- */
 
 function tone(
@@ -90,56 +75,115 @@ function noiseSrc(c: AudioContext, dur: number): AudioBufferSourceNode {
 export type GunKind = "tap" | "pistol" | "smg" | "rifle" | "shotgun" | "sniper";
 
 const GUN: Record<GunKind, { dur: number; cutoff: number; vol: number; base: number }> = {
-  tap: { dur: 0.12, cutoff: 4500, vol: 0.16, base: 170 },
-  pistol: { dur: 0.18, cutoff: 4000, vol: 0.34, base: 150 },
-  smg: { dur: 0.1, cutoff: 3800, vol: 0.26, base: 165 },
-  rifle: { dur: 0.32, cutoff: 2400, vol: 0.4, base: 110 },
-  shotgun: { dur: 0.5, cutoff: 1100, vol: 0.5, base: 70 },
-  sniper: { dur: 0.7, cutoff: 5200, vol: 0.44, base: 130 },
+  tap: { dur: 0.14, cutoff: 4200, vol: 0.45, base: 160 },
+  pistol: { dur: 0.2, cutoff: 3800, vol: 0.9, base: 145 },
+  smg: { dur: 0.12, cutoff: 3600, vol: 0.75, base: 160 },
+  rifle: { dur: 0.34, cutoff: 2300, vol: 1.0, base: 105 },
+  shotgun: { dur: 0.55, cutoff: 1000, vol: 1.0, base: 65 },
+  sniper: { dur: 0.75, cutoff: 5000, vol: 1.0, base: 125 },
 };
 
-/** Free Fire style gunshot — kind varies the weapon character */
+let gunBus: GainNode | null = null;
+let gunVerb: ConvolverNode | null = null;
+
+/** shared gun bus: limiter + generated outdoor reverb for realism */
+function getGunBus(c: AudioContext): GainNode {
+  if (!gunBus || gunBus.context !== c) {
+    gunBus = c.createGain();
+    const comp = c.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.knee.value = 18;
+    comp.ratio.value = 14;
+    comp.attack.value = 0.002;
+    comp.release.value = 0.24;
+    gunBus.connect(comp).connect(c.destination);
+    // synthetic outdoor impulse — makes shots feel real, not dry
+    const dur = 1.1;
+    const len = Math.max(1, Math.floor(c.sampleRate * dur));
+    const ir = c.createBuffer(2, len, c.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
+    }
+    gunVerb = c.createConvolver();
+    gunVerb.buffer = ir;
+    const wet = c.createGain();
+    wet.gain.value = 0.32;
+    gunVerb.connect(wet).connect(comp);
+  }
+  return gunBus;
+}
+
+/**
+ * Realistic loud gunshot — muzzle crack + body boom + sub thump + outdoor echo.
+ * Slight random jitter per shot so it never sounds like a loop.
+ */
 export function gunshot(kind: GunKind = "pistol") {
   const c = ac();
   if (!c || !soundEnabled()) return;
   const t = c.currentTime + 0.01;
   const p = GUN[kind];
+  const bus = getGunBus(c);
+  const jit = 1 + (Math.random() - 0.5) * 0.14;
 
-  // noise crack
+  // 1) muzzle crack — ultra-short bright transient
+  const crack = noiseSrc(c, 0.05);
+  const hf = c.createBiquadFilter();
+  hf.type = "highpass";
+  hf.frequency.value = 1400;
+  const cg = c.createGain();
+  cg.gain.setValueAtTime(Math.min(p.vol * 1.25, 1.0), t);
+  cg.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+  crack.connect(hf).connect(cg).connect(bus);
+  crack.start(t);
+
+  // 2) body boom — filtered noise sweeping down
   const src = noiseSrc(c, p.dur);
   const f = c.createBiquadFilter();
   f.type = "lowpass";
-  f.frequency.setValueAtTime(p.cutoff, t);
-  f.frequency.exponentialRampToValueAtTime(Math.max(p.cutoff * 0.15, 40), t + p.dur);
+  f.frequency.setValueAtTime(p.cutoff * jit, t);
+  f.frequency.exponentialRampToValueAtTime(Math.max(p.cutoff * 0.12, 40), t + p.dur);
   const g = c.createGain();
-  g.gain.setValueAtTime(p.vol, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(p.vol, t + 0.008);
   g.gain.exponentialRampToValueAtTime(0.001, t + p.dur);
-  src.connect(f).connect(g).connect(c.destination);
+  src.connect(f).connect(g);
+  g.connect(bus);
+  if (gunVerb) {
+    const send = c.createGain();
+    send.gain.value = 0.55;
+    g.connect(send).connect(gunVerb);
+  }
   src.start(t);
 
-  // body thump
+  // 3) chest sub thump
   const o = c.createOscillator();
   o.type = "sine";
-  o.frequency.setValueAtTime(p.base, t);
-  o.frequency.exponentialRampToValueAtTime(38, t + 0.16);
+  o.frequency.setValueAtTime(p.base * jit, t);
+  o.frequency.exponentialRampToValueAtTime(34, t + 0.2);
   const og = c.createGain();
-  og.gain.setValueAtTime(p.vol * 0.9, t);
-  og.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-  o.connect(og).connect(c.destination);
+  og.gain.setValueAtTime(Math.min(p.vol * 0.95, 1.0), t);
+  og.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+  o.connect(og).connect(bus);
   o.start(t);
-  o.stop(t + 0.3);
+  o.stop(t + 0.35);
 
   // sniper gets a distant echo crack
   if (kind === "sniper") {
-    const t2 = t + 0.28;
+    const t2 = t + 0.3;
     const src2 = noiseSrc(c, 0.25);
     const f2 = c.createBiquadFilter();
     f2.type = "lowpass";
-    f2.frequency.value = 1800;
+    f2.frequency.value = 1700;
     const g2 = c.createGain();
-    g2.gain.setValueAtTime(0.16, t2);
+    g2.gain.setValueAtTime(0.4, t2);
     g2.gain.exponentialRampToValueAtTime(0.001, t2 + 0.25);
-    src2.connect(f2).connect(g2).connect(c.destination);
+    src2.connect(f2).connect(g2).connect(bus);
+    if (gunVerb) {
+      const send2 = c.createGain();
+      send2.gain.value = 0.8;
+      g2.connect(send2).connect(gunVerb);
+    }
     src2.start(t2);
   }
 }
@@ -194,159 +238,14 @@ export function sfxFanfare() {
   tone(1568, 0.9, 0.6, "sine", 0.1);
 }
 
-/* ---------------- Free Fire style trap BGM ---------------- */
+// no background music — gunshots + voice only (removed per user request)
 
-let bgmTimer: ReturnType<typeof setInterval> | null = null;
-let bgmBar = 0;
-let bgmMaster: GainNode | null = null;
-let bgmPlaying = false;
-let bgmPausedHidden = false;
-
-const BGM_BB = 60 / 132; // beat seconds @132bpm
-const BGM_BAR_MS = BGM_BB * 8 * 1000;
-const BGM_ROOTS = [55, 55, 43.65, 49]; // A1 A1 F1 G1
-const BGM_LEAD = [220, 246.94, 261.63, 293.66, 329.63, 392]; // A minor
-
-function getBgmMaster(c: AudioContext): GainNode {
-  if (!bgmMaster || bgmMaster.context !== c) {
-    bgmMaster = c.createGain();
-    bgmMaster.gain.value = 1;
-    bgmMaster.connect(c.destination);
-  }
-  return bgmMaster;
-}
-
-/** duck BGM under voice guidance so speech stays loud and clear */
-function setDuck(on: boolean) {
-  const c = ac();
-  if (!c) return;
-  try {
-    getBgmMaster(c).gain.setTargetAtTime(on ? 0.12 : 1, c.currentTime, 0.25);
-  } catch {
-    /* ignore */
-  }
-}
-
-function bgmBar_() {
-  const c = ac();
-  if (!c || !bgmEnabled()) return;
-  const master = getBgmMaster(c);
-  const t0 = c.currentTime + 0.06;
-  const bar = bgmBar++;
-  const root = BGM_ROOTS[bar % BGM_ROOTS.length];
-
-  const env = (t: number, peak: number, dur: number): GainNode => {
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0001), t + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    g.connect(master);
-    return g;
-  };
-
-  // hard kicks — four on the floor
-  [0, 2, 4, 6].forEach((b) => {
-    const t = t0 + b * BGM_BB;
-    const o = c.createOscillator();
-    o.type = "sine";
-    o.frequency.setValueAtTime(130, t);
-    o.frequency.exponentialRampToValueAtTime(38, t + 0.12);
-    o.connect(env(t, 0.5, 0.2));
-    o.start(t);
-    o.stop(t + 0.28);
-  });
-
-  // clap/snare on 2 & 6
-  [2, 6].forEach((b) => {
-    const t = t0 + b * BGM_BB;
-    const src = noiseSrc(c, 0.22);
-    const f = c.createBiquadFilter();
-    f.type = "bandpass";
-    f.frequency.value = 1900;
-    f.Q.value = 0.9;
-    src.connect(f).connect(env(t, 0.2, 0.2));
-    src.start(t);
-  });
-
-  // hi-hats — 16ths with extra snap
-  for (let i = 0; i < 16; i++) {
-    const t = t0 + i * (BGM_BB / 2);
-    const src = noiseSrc(c, 0.05);
-    const f = c.createBiquadFilter();
-    f.type = "highpass";
-    f.frequency.value = 7500;
-    src.connect(f).connect(env(t, i % 4 === 0 ? 0.085 : 0.045, 0.04));
-    src.start(t);
-  }
-
-  // 808 bass slides
-  for (let i = 0; i < 4; i++) {
-    const t = t0 + i * BGM_BB * 2;
-    const next = BGM_ROOTS[(bar + (i === 3 ? 1 : 0)) % BGM_ROOTS.length];
-    const o = c.createOscillator();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(root, t);
-    o.frequency.setValueAtTime(root, t + BGM_BB * 1.4);
-    o.frequency.exponentialRampToValueAtTime(next, t + BGM_BB * 2);
-    const f = c.createBiquadFilter();
-    f.type = "lowpass";
-    f.frequency.value = 320;
-    o.connect(f).connect(env(t, 0.3, BGM_BB * 1.9));
-    o.start(t);
-    o.stop(t + BGM_BB * 2);
-  }
-
-  // aggressive lead riff — minor 8ths
-  const riff = [0, 2, 4, 3, 5, 4, 2, 1];
-  riff.forEach((s, i) => {
-    const t = t0 + i * BGM_BB;
-    const o = c.createOscillator();
-    o.type = "square";
-    o.frequency.value = BGM_LEAD[(s + bar) % BGM_LEAD.length];
-    const f = c.createBiquadFilter();
-    f.type = "lowpass";
-    f.frequency.value = 2300;
-    o.connect(f).connect(env(t, 0.06, BGM_BB * 0.9));
-    o.start(t);
-    o.stop(t + BGM_BB);
-  });
-}
-
-export function startBgm() {
-  if (bgmTimer || typeof window === "undefined") return;
-  if (!bgmEnabled()) return;
-  ac();
-  bgmPlaying = true;
-  bgmBar_();
-  bgmTimer = setInterval(bgmBar_, BGM_BAR_MS);
-}
-
-export function stopBgm() {
-  if (bgmTimer) {
-    clearInterval(bgmTimer);
-    bgmTimer = null;
-  }
-  bgmPlaying = false;
-}
-
-// auto-stop when the user leaves the site / tab hidden;
-// resume when they come back (if it was playing)
+// stop voice when the user leaves the site / tab hidden
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      if (bgmPlaying) {
-        bgmPausedHidden = true;
-        stopBgm();
-      }
-      stopVoice();
-    } else if (bgmPausedHidden && bgmEnabled()) {
-      bgmPausedHidden = false;
-      startBgm();
-    }
+    if (document.hidden) stopVoice();
   });
   window.addEventListener("pagehide", () => {
-    bgmPausedHidden = false;
-    stopBgm();
     stopVoice();
     try {
       ctx?.close();
@@ -354,7 +253,8 @@ if (typeof document !== "undefined") {
       /* ignore */
     }
     ctx = null;
-    bgmMaster = null;
+    gunBus = null;
+    gunVerb = null;
   });
 }
 
@@ -406,11 +306,7 @@ export function speakBn(text: string) {
     u.pitch = 1; // natural — no pitch shifting
     const v = pickVoice();
     if (v) u.voice = v;
-    setDuck(true);
-    u.onend = () => setDuck(false);
-    u.onerror = () => setDuck(false);
     window.speechSynthesis.speak(u);
-    setTimeout(() => setDuck(false), Math.max(4000, text.length * 120));
   } catch {
     /* ignore */
   }
@@ -443,7 +339,5 @@ export const VOICE = {
   tracking: "অর্ডার খোঁজা হচ্ছে।",
   trackFound: (n: number) => `${n}টি অর্ডার পাওয়া গেছে।`,
   trackEmpty: "এই নম্বরে কোনো অর্ডার পাওয়া যায়নি।",
-  bgmOn: "ব্যাকগ্রাউন্ড মিউজিক চালু হয়েছে।",
-  bgmOff: "ব্যাকগ্রাউন্ড মিউজিক বন্ধ হয়েছে।",
   soundOn: "সাউন্ড চালু হয়েছে।",
 };
