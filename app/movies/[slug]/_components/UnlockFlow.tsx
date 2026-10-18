@@ -54,10 +54,8 @@ export default function UnlockFlow({
     }, VERIFY_MS);
   }
 
-  const watchDirect = watchLinks[0];
-  const watchQuality = watchLinks.slice(1, 4);
-  const dlDirect = downloadLinks[0];
-  const dlQuality = downloadLinks.slice(1, 4);
+  const watchBtns = watchLinks.slice(0, 4);
+  const dlBtns = downloadLinks.slice(0, 4);
 
   return (
     <>
@@ -170,73 +168,57 @@ export default function UnlockFlow({
             <div className="ad-card-done text-5xl">🎉</div>
             <h2 className="mt-3 text-xl font-extrabold text-white">সব এড সম্পন্ন!</h2>
             <p className="mt-1 text-sm text-blue-100/70">
-              নিচে ডাইরেক্ট দেখুন অথবা কোয়ালিটি বেছে নিন
+              নিচের বাটনে WATCH NOW চাপুন — ডানপাশে কোয়ালিটি দেখে নিন
             </p>
           </div>
 
-          {watchDirect && (
+          {watchBtns.length > 0 && (
             <>
-              <a
-                href={watchDirect.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-[#0b84ff] px-6 py-4 text-lg font-extrabold text-white shadow-lg shadow-blue-900/50 transition hover:bg-[#006fe0]"
-              >
-                ▶ ভিডিও দেখুন
-              </a>
-              {watchQuality.length > 0 && (
-                <>
-                  <h3 className="mt-5 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
-                    🎞 কোয়ালিটি বেছে নিন
-                  </h3>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    {watchQuality.map((l, i) => (
-                      <a
-                        key={i}
-                        href={l.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ animationDelay: `${i * 80}ms` }}
-                        className="ad-card flex items-center justify-center rounded-xl bg-white/10 px-2 py-3 text-sm font-extrabold text-white ring-1 ring-white/20 transition hover:bg-white/20"
-                      >
-                        ▶ {l.label}
-                      </a>
-                    ))}
-                  </div>
-                </>
-              )}
+              <h3 className="mt-6 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
+                🎬 Watch
+              </h3>
+              <div className="mt-2 grid gap-2.5">
+                {watchBtns.map((l, i) => (
+                  <a
+                    key={i}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                    className="ad-card flex items-center justify-between rounded-2xl bg-[#0b84ff] px-5 py-4 font-extrabold text-white shadow-lg shadow-blue-900/50 transition hover:bg-[#006fe0]"
+                  >
+                    <span className="text-base">▶ WATCH NOW</span>
+                    <span className="rounded-lg bg-black/30 px-3 py-1.5 text-sm tracking-wide">
+                      {l.label}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </>
           )}
 
-          {dlDirect && (
+          {dlBtns.length > 0 && (
             <>
               <h3 className="mt-6 text-sm font-extrabold uppercase tracking-wide text-yellow-300">
-                ⬇ ডাউনলোড করুন
+                ⬇ Download
               </h3>
-              <a
-                href={dlDirect.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-4 text-lg font-extrabold text-white transition hover:bg-white/20"
-              >
-                ⬇ ডাউনলোড
-              </a>
-              {dlQuality.length > 0 && (
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  {dlQuality.map((l, i) => (
-                    <a
-                      key={i}
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ animationDelay: `${i * 80}ms` }}
-                      className="ad-card flex items-center justify-center rounded-xl bg-white/5 px-2 py-3 text-sm font-extrabold text-blue-50 ring-1 ring-white/15 transition hover:bg-white/15"
-                    >
-                      ⬇ {l.label}
-                    </a>
-                  ))}
-                </div>
-              )}
+              <div className="mt-2 grid gap-2.5">
+                {dlBtns.map((l, i) => (
+                  <a
+                    key={i}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                    className="ad-card flex items-center justify-between rounded-2xl border border-white/25 bg-white/10 px-5 py-4 font-extrabold text-white transition hover:bg-white/20"
+                  >
+                    <span className="text-base">⬇ DOWNLOAD NOW</span>
+                    <span className="rounded-lg bg-black/30 px-3 py-1.5 text-sm tracking-wide">
+                      {l.label}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </>
           )}
 

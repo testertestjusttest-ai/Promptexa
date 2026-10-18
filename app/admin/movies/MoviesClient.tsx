@@ -365,13 +365,13 @@ export default function MoviesClient() {
           </div>
           <LinkEditor
             title="🎬 দেখুন বাটনগুলো"
-            hint="১ম লিংক = বড় ▶ ভিডিও দেখুন বাটন, পরের ৩টা = কোয়ালিটি বাটন (480p, 720p HD, 1080p)"
+            hint="বাটনের নামে শুধু রেজুলেশন লিখুন — 480p, 720p HD, 1080p, 4K (বাটনে WATCH NOW + রেজুলেশন দেখাবে)"
             value={form.watch_links}
             onChange={(v) => set("watch_links", v)}
           />
           <LinkEditor
             title="⬇ ডাউনলোড বাটনগুলো"
-            hint="১ম লিংক = বড় ⬇ ডাউনলোড বাটন, পরের ৩টা = কোয়ালিটি বাটন"
+            hint="বাটনের নামে শুধু রেজুলেশন লিখুন — 480p, 720p HD, 1080p, 4K (বাটনে DOWNLOAD NOW + রেজুলেশন দেখাবে)"
             value={form.download_links}
             onChange={(v) => set("download_links", v)}
           />
