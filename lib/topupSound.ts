@@ -127,7 +127,7 @@ function bgmBar_() {
   // pad — soft detuned saws through lowpass
   const padGain = c.createGain();
   padGain.gain.setValueAtTime(0.0001, t0);
-  padGain.gain.exponentialRampToValueAtTime(0.05, t0 + 1.2);
+  padGain.gain.exponentialRampToValueAtTime(0.065, t0 + 1.2);
   padGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 3.9);
   const lp = c.createBiquadFilter();
   lp.type = "lowpass";
@@ -152,7 +152,7 @@ function bgmBar_() {
     o.frequency.setValueAtTime(65, t);
     o.frequency.exponentialRampToValueAtTime(38, t + 0.18);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.11, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
     o.connect(g).connect(c.destination);
     o.start(t);
@@ -168,7 +168,7 @@ function bgmBar_() {
     o.type = "triangle";
     o.frequency.value = f;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.045, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.06, t + 0.03);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
     o.connect(g).connect(c.destination);
     o.start(t);

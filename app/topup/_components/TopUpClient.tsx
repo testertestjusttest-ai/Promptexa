@@ -123,6 +123,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   function choose(p: TopUpPackage) {
     setSelected(p);
     setDone(null);
+    setStep(1);
     setError("");
     sfxSelect();
     speakBn(VOICE.selected(p.name));
@@ -138,8 +139,6 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   async function submit() {
     setError("");
     if (!selected) return fail("একটি প্যাকেজ সিলেক্ট করুন");
-    if (!isValidUid(uid)) return fail("সঠিক Player UID দিন — শুধু সংখ্যা, ৬ থেকে ১২ ডিজিট");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return fail("সঠিক মোবাইল নম্বর দিন");
     const pinfo = payInfo(numbers, method);
     if (!isPaymentMethodLive(pinfo)) return fail("এই পেমেন্ট মাধ্যমটি এখন বন্ধ আছে");
     if (!sender.trim() || !trx.trim()) return fail("সেন্ডার নম্বর ও TrxID দুটোই দিন");
@@ -204,6 +203,27 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   function fail(msg: string) {
     setError(msg);
     speakBn(msg);
+  }
+
+  const [step, setStep] = useState<1 | 2>(1);
+
+  function nextStep() {
+    setError("");
+    if (!selected) return fail("একটি প্যাকেজ সিলেক্ট করুন");
+    if (!isValidUid(uid)) return fail("সঠিক Player UID দিন — শুধু সংখ্যা, ৬ থেকে ১২ ডিজিট");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return fail("সঠিক মোবাইল নম্বর দিন");
+    sfxSelect();
+    speakBn("তথ্য ঠিক আছে। এখন পেমেন্ট সম্পন্ন করুন।");
+    setStep(2);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  }
+
+  function prevStep() {
+    setError("");
+    sfxClick();
+    speakBn("তথ্য পরিবর্তন করতে পারেন।");
+    setStep(1);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 
   return (
@@ -278,7 +298,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
               নিচে ফোন নম্বর দিয়ে অর্ডার ট্র্যাক করতে পারবেন।
             </p>
             <button
-              onClick={() => { setDone(null); setSelected(null); setUid(""); setSender(""); setTrx(""); }}
+              onClick={() => { setDone(null); setSelected(null); setStep(1); setUid(""); setPhone(""); setSender(""); setTrx(""); }}
               className="mt-6 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-8 py-3 font-extrabold transition hover:brightness-110"
             >
               আরেকটি অর্ডার করুন
@@ -411,12 +431,23 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                 <p className="mt-3 text-sm text-orange-100/60">👆 ওপরে একটি প্যাকেজ সিলেক্ট করুন</p>
               ) : (
                 <>
-                  <div className="mt-3 flex items-center justify-between rounded-2xl bg-black/30 px-4 py-3 text-sm">
-                    <span className="font-bold">{selected.name}</span>
-                    <span className="font-black text-amber-300">{formatBDT(Number(selected.price_bdt))}</span>
+                  {/* step progress */}
+                  <div className="mt-4 flex items-center gap-1.5 text-[11px] font-extrabold sm:text-xs">
+                    <StepPill n="১" t="আপনার তথ্য" active={step === 1} done={step > 1} />
+                    <div className={`h-0.5 flex-1 rounded ${step > 1 ? "bg-emerald-400/60" : "bg-white/10"}`} />
+                    <StepPill n="২" t="পেমেন্ট" active={step === 2} done={false} />
+                    <div className="h-0.5 flex-1 rounded bg-white/10" />
+                    <StepPill n="৩" t="ডেলিভারি" active={false} done={false} />
                   </div>
 
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {step === 1 ? (
+                    <>
+                      <div className="mt-4 flex items-center justify-between rounded-2xl border border-amber-400/20 bg-black/30 px-4 py-3 text-sm">
+                        <span className="font-bold">{selected.name}</span>
+                        <span className="font-black text-amber-300">{formatBDT(Number(selected.price_bdt))}</span>
+                      </div>
+
+                      <div className="mt-5 grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="mb-1.5 block text-sm font-bold">🎮 Player UID *</label>
                       <input
@@ -443,7 +474,53 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                     </div>
                   </div>
 
-                  {/* PAYMENT */}
+                  {error && (
+                    <p className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 p-3 text-sm font-bold text-red-300">
+                      ⚠️ {error}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={nextStep}
+                    className="mt-5 w-full rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-4 text-lg font-black text-black shadow-[0_8px_30px_rgba(255,120,0,0.35)] transition hover:brightness-110 active:scale-[0.99]"
+                  >
+                    💳 পেমেন্টে এগিয়ে যান ➡️
+                  </button>
+                  <p className="mt-2 text-center text-xs text-orange-100/40">
+                    পরের ধাপে পেমেন্ট করবেন — এখনো টাকা পাঠাতে হবে না
+                  </p>
+                    </>
+                  ) : (
+                    <>
+                      {/* order summary — UID + phone on top */}
+                      <div className="relative mt-4 overflow-hidden rounded-3xl border border-amber-400/30 bg-gradient-to-br from-amber-500/[0.12] via-black/40 to-orange-600/[0.08] p-5">
+                        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl" />
+                        <div className="relative flex items-center justify-between">
+                          <p className="text-xs font-black uppercase tracking-widest text-amber-300/80">🧾 অর্ডার সামারি</p>
+                          <button
+                            onClick={prevStep}
+                            className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white transition hover:bg-white/20"
+                          >
+                            ✏️ পরিবর্তন
+                          </button>
+                        </div>
+                        <div className="relative mt-3 space-y-2 text-sm">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold">{selected.name}</span>
+                            <span className="font-black text-amber-300">{formatBDT(Number(selected.price_bdt))}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                            <span className="text-white/50">🎮 Player UID</span>
+                            <span className="font-mono text-base font-black tracking-widest text-white">{uid}</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-white/50">📱 মোবাইল</span>
+                            <span className="font-mono font-bold text-white">{phone}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PAYMENT */}
                   <h3 className="mt-6 text-sm font-black">💳 পেমেন্ট মাধ্যম</h3>
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     {PAY_METHODS.map((m) => {
@@ -521,16 +598,27 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                     </p>
                   )}
 
-                  <button
-                    onClick={submit}
-                    disabled={placing}
-                    className="mt-5 w-full rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-4 text-lg font-black text-black shadow-[0_8px_30px_rgba(255,120,0,0.35)] transition hover:brightness-110 disabled:opacity-50"
-                  >
-                    {placing ? "⏳ অর্ডার হচ্ছে…" : `🚀 অর্ডার কনফার্ম — ${formatBDT(Number(selected.price_bdt))}`}
-                  </button>
+                  <div className="mt-5 flex gap-2">
+                    <button
+                      onClick={prevStep}
+                      aria-label="আগের ধাপে ফিরে যান"
+                      className="rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-lg font-black text-white transition hover:bg-white/10 active:scale-95"
+                    >
+                      ⬅️
+                    </button>
+                    <button
+                      onClick={submit}
+                      disabled={placing}
+                      className="flex-1 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-4 text-lg font-black text-black shadow-[0_8px_30px_rgba(255,120,0,0.35)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
+                    >
+                      {placing ? "⏳ অর্ডার হচ্ছে…" : `🚀 অর্ডার কনফার্ম — ${formatBDT(Number(selected.price_bdt))}`}
+                    </button>
+                  </div>
                   <p className="mt-2 text-center text-xs text-orange-100/40">
                     অর্ডার করলে আমাদের শর্তাবলীতে সম্মতি দিচ্ছেন • ভুল UID-এর দায় কাস্টমারের
                   </p>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -639,6 +727,23 @@ function Row({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
     <div className="flex items-center justify-between gap-3">
       <span className="text-white/50">{k}</span>
       <span className={`font-bold text-white ${mono ? "font-mono" : ""}`}>{v}</span>
+    </div>
+  );
+}
+
+function StepPill({ n, t, active, done }: { n: string; t: string; active: boolean; done: boolean }) {
+  return (
+    <div
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${
+        active
+          ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black shadow-[0_0_18px_rgba(255,150,0,0.55)]"
+          : done
+            ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-400/40"
+            : "bg-white/5 text-white/40"
+      }`}
+    >
+      <span className="font-black">{done ? "✓" : n}</span>
+      <span className="whitespace-nowrap">{t}</span>
     </div>
   );
 }
