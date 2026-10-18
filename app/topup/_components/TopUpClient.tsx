@@ -11,6 +11,9 @@ import {
   bgmEnabled,
   setBgmEnabled,
   startBgm,
+  gunshot,
+  tierGun,
+  initTapGuns,
   sfxClick,
   sfxSelect,
   sfxFanfare,
@@ -52,6 +55,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   useEffect(() => {
     setSoundOn(soundEnabled());
     setBgmOn(bgmEnabled());
+    initTapGuns();
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
@@ -77,6 +81,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   }, []);
 
   function goCheckout(p: TopUpPackage) {
+    gunshot(tierGun(p.diamonds, p.kind));
     sfxSelect();
     speakBn(VOICE.checkout(p.name));
     router.push(`/topup/checkout?package=${p.id}`);
@@ -203,7 +208,8 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
           ).map(([k, label]) => (
             <button
               key={k}
-              onClick={() => { sfxClick(); setCat(k); speakBn(CAT_VOICE[k]); }}
+              data-gun="smg"
+              onClick={() => { gunshot("smg"); sfxClick(); setCat(k); speakBn(CAT_VOICE[k]); }}
               className={`rounded-full px-4 py-2 text-xs font-extrabold transition ${
                 cat === k
                   ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
@@ -259,6 +265,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                 </div>
                 <button
                   onClick={() => goCheckout(p)}
+                  data-gun="tier"
                   className="mt-3 w-full rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-2.5 text-sm font-black text-black transition hover:brightness-110 active:scale-[0.98]"
                 >
                   🛒 কিনুন
@@ -280,7 +287,8 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
               className="flex-1 rounded-2xl border border-white/15 bg-black/40 px-4 py-3 outline-none placeholder:text-white/25 focus:border-amber-400"
             />
             <button
-              onClick={() => { sfxClick(); speakBn(VOICE.tracking); track(); }}
+              data-gun="rifle"
+              onClick={() => { gunshot("rifle"); sfxClick(); speakBn(VOICE.tracking); track(); }}
               disabled={tracking}
               className="rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-6 font-extrabold transition hover:brightness-110 disabled:opacity-50"
             >

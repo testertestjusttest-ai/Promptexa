@@ -10,6 +10,8 @@ import {
   bgmEnabled,
   setBgmEnabled,
   startBgm,
+  gunshot,
+  initTapGuns,
   sfxClick,
   sfxSelect,
   sfxSuccess,
@@ -72,6 +74,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
   useEffect(() => {
     setSoundOn(soundEnabled());
     setBgmOn(bgmEnabled());
+    initTapGuns();
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
@@ -100,7 +103,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
     setError("");
     if (!isValidUid(uid)) return fail("সঠিক Player UID দিন — শুধু সংখ্যা, ৬ থেকে ১২ ডিজিট");
     if (!/^01[3-9]\d{8}$/.test(phone.trim())) return fail("সঠিক মোবাইল নম্বর দিন");
-    sfxSelect();
+    gunshot("rifle");
     speakBn("তথ্য ঠিক আছে। এখন পেমেন্ট সম্পন্ন করুন।");
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -278,6 +281,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
 
                 <button
                   onClick={nextStep}
+                  data-gun="rifle"
                   className="mt-5 w-full rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-4 text-lg font-black text-black shadow-[0_8px_30px_rgba(255,120,0,0.35)] transition hover:brightness-110 active:scale-[0.99]"
                 >
                   💳 পেমেন্টে এগিয়ে যান ➡️
@@ -327,7 +331,9 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
                         <button
                           key={m}
                           disabled={!live}
+                          data-gun="pistol"
                           onClick={() => {
+                            gunshot("pistol");
                             sfxClick();
                             setMethod(m);
                             const pm = payInfo(numbers, m);
@@ -358,7 +364,9 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="font-mono text-2xl font-black tracking-widest text-amber-300">{info.number}</span>
                         <button
+                          data-gun="pistol"
                           onClick={() => {
+                            gunshot("pistol");
                             sfxClick();
                             copyNumber(info.number);
                             speakBn(VOICE.copied(METHOD_BN[method]));
@@ -408,7 +416,8 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
                       ⬅️
                     </button>
                     <button
-                      onClick={submit}
+                      onClick={() => { gunshot("sniper"); submit(); }}
+                      data-gun="sniper"
                       disabled={placing}
                       className="flex-1 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 py-4 text-lg font-black text-black shadow-[0_8px_30px_rgba(255,120,0,0.35)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
                     >
