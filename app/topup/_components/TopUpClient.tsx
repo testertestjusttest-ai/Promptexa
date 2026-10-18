@@ -18,6 +18,9 @@ import {
 import {
   soundEnabled,
   setSoundEnabled,
+  bgmEnabled,
+  setBgmEnabled,
+  startBgm,
   sfxClick,
   sfxSelect,
   sfxSuccess,
@@ -70,6 +73,12 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   const [tracking, setTracking] = useState(false);
   const [cat, setCat] = useState<"all" | "diamond" | "membership" | "offer">("all");
   const [soundOn, setSoundOn] = useState(true);
+  const [bgmOn, setBgmOn] = useState(true);
+  const [stats, setStats] = useState<{
+    total_delivered: number;
+    today_delivered: number;
+    recent: { package_name: string; phone: string }[];
+  } | null>(null);
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -82,14 +91,17 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
       .catch(() => {});
   }, []);
 
-  // epic entrance: fanfare + Bangla welcome voice on first interaction
+  // epic entrance: fanfare + Bangla welcome voice + ambient BGM on first interaction
   // (browsers block audio before the user taps anything)
   useEffect(() => {
     setSoundOn(soundEnabled());
+    setBgmOn(bgmEnabled());
     const go = () => {
-      if (!soundEnabled()) return;
-      sfxFanfare();
-      setTimeout(() => speakBn(VOICE.welcome), 1000);
+      if (soundEnabled()) {
+        sfxFanfare();
+        setTimeout(() => speakBn(VOICE.welcome), 1000);
+      }
+      setTimeout(() => startBgm(), 2500);
     };
     window.addEventListener("pointerdown", go, { once: true });
     window.addEventListener("keydown", go, { once: true });
@@ -97,6 +109,15 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
       window.removeEventListener("pointerdown", go);
       window.removeEventListener("keydown", go);
     };
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/topup/stats")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok) setStats(d);
+      })
+      .catch(() => {});
   }, []);
 
   function choose(p: TopUpPackage) {
@@ -116,12 +137,12 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
 
   async function submit() {
     setError("");
-    if (!selected) return setError("একটি প্যাকেজ সিলেক্ট করুন");
-    if (!isValidUid(uid)) return setError("সঠিক Player UID দিন (শুধু সংখ্যা, ৬–১২ ডিজিট)");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setError("সঠিক মোবাইল নম্বর দিন");
-    const info = payInfo(numbers, method);
-    if (!isPaymentMethodLive(info)) return setError("এই পেমেন্ট মাধ্যমটি এখন বন্ধ আছে");
-    if (!sender.trim() || !trx.trim()) return setError("সেন্ডার নম্বর ও TrxID দুটোই দিন");
+    if (!selected) return fail("একটি প্যাকেজ সিলেক্ট করুন");
+    if (!isValidUid(uid)) return fail("সঠিক Player UID দিন — শুধু সংখ্যা, ৬ থেকে ১২ ডিজিট");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return fail("সঠিক মোবাইল নম্বর দিন");
+    const pinfo = payInfo(numbers, method);
+    if (!isPaymentMethodLive(pinfo)) return fail("এই পেমেন্ট মাধ্যমটি এখন বন্ধ আছে");
+    if (!sender.trim() || !trx.trim()) return fail("সেন্ডার নম্বর ও TrxID দুটোই দিন");
     setPlacing(true);
     try {
       const r = await fetch("/api/topup/order", {
@@ -143,7 +164,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
       speakBn(VOICE.success);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "অর্ডার হয়নি");
+      fail(e instanceof Error ? e.message : "অর্ডার হয়নি, আবার চেষ্টা করুন");
     } finally {
       setPlacing(false);
     }
@@ -153,21 +174,37 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
     setTracked(null);
     if (!/^01[3-9]\d{8}$/.test(trackPhone.trim())) {
       setTracked([]);
+      speakBn(VOICE.trackEmpty);
       return;
     }
     setTracking(true);
     try {
       const r = await fetch(`/api/topup/orders?phone=${encodeURIComponent(trackPhone.trim())}`);
       const d = await r.json();
-      setTracked(d.ok ? (d.orders as TopUpOrder[]) : []);
+      const list = (d.ok ? d.orders : []) as TopUpOrder[];
+      setTracked(list);
+      speakBn(list.length > 0 ? VOICE.trackFound(list.length) : VOICE.trackEmpty);
     } catch {
       setTracked([]);
+      speakBn(VOICE.trackEmpty);
     } finally {
       setTracking(false);
     }
   }
 
   const info = payInfo(numbers, method);
+
+  const CAT_VOICE = {
+    all: VOICE.catAll,
+    offer: VOICE.catOffer,
+    diamond: VOICE.catDiamond,
+    membership: VOICE.catMembership,
+  } as const;
+
+  function fail(msg: string) {
+    setError(msg);
+    speakBn(msg);
+  }
 
   return (
     <div className="min-h-screen bg-[#0d0a07] text-white">
@@ -192,7 +229,35 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
               </span>
             ))}
           </div>
+          {/* live proof */}
+          {stats && stats.total_delivered > 0 && (
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-extrabold">
+              <span className="rounded-full bg-emerald-500/15 px-3 py-1.5 text-emerald-300 ring-1 ring-emerald-400/30">
+                🚚 মোট ডেলিভারি: {toBnDigits(stats.total_delivered)}
+              </span>
+              <span className="rounded-full bg-amber-500/15 px-3 py-1.5 text-amber-300 ring-1 ring-amber-400/30">
+                ⚡ আজ: {toBnDigits(stats.today_delivered)}
+              </span>
+            </div>
+          )}
         </div>
+
+        {/* recent deliveries ticker */}
+        {stats && stats.recent.length > 0 && (
+          <div className="relative mx-auto max-w-6xl overflow-hidden px-4 pb-2">
+            <style>{`@keyframes topup-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
+            <div className="flex w-max animate-[topup-marquee_25s_linear_infinite] gap-3">
+              {[...stats.recent, ...stats.recent].map((r, i) => (
+                <span
+                  key={i}
+                  className="whitespace-nowrap rounded-full border border-emerald-400/20 bg-emerald-500/[0.07] px-3 py-1.5 text-[11px] font-bold text-emerald-100/80"
+                >
+                  ✅ {r.phone} → {r.package_name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pb-20">
@@ -221,16 +286,22 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
           </div>
         ) : (
           <>
-            {/* STEPS */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            {/* STEPS — unique badges */}
+            <div className="relative grid grid-cols-3 gap-2 sm:gap-4">
+              <div className="absolute left-[18%] right-[18%] top-7 hidden h-[3px] rounded bg-gradient-to-r from-amber-500/10 via-amber-400/60 to-amber-500/10 sm:block" />
               {[
-                ["1️⃣", "প্যাকেজ বেছে নিন", "পছন্দের ডায়মন্ড প্যাক সিলেক্ট করুন"],
-                ["2️⃣", "UID ও পেমেন্ট দিন", "Player UID + বিকাশ/নগদে পেমেন্ট"],
-                ["3️⃣", "ডায়মন্ড পান", "৫–১৫ মিনিটে গেমে ডেলিভারি"],
-              ].map(([e, t, d]) => (
-                <div key={t} className="rounded-2xl border border-orange-400/20 bg-white/[0.03] p-3 text-center sm:p-5">
-                  <div className="text-2xl sm:text-3xl">{e}</div>
-                  <p className="mt-2 text-xs font-extrabold sm:text-sm">{t}</p>
+                ["১", "📦", "প্যাকেজ বেছে নিন", "পছন্দের ডায়মন্ড প্যাক সিলেক্ট করুন"],
+                ["২", "💳", "UID ও পেমেন্ট দিন", "Player UID + বিকাশ/নগদে পেমেন্ট"],
+                ["৩", "💎", "ডায়মন্ড পান", "৫–১৫ মিনিটে গেমে ডেলিভারি"],
+              ].map(([n, icon, t, d]) => (
+                <div key={t} className="relative rounded-3xl border border-orange-400/20 bg-gradient-to-b from-white/[0.05] to-transparent p-3 text-center sm:p-5">
+                  <div className="relative mx-auto flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16">
+                    <span className="absolute inset-0 animate-ping rounded-full bg-amber-500/20 [animation-duration:2.5s]" />
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-300 via-orange-500 to-red-600 shadow-[0_0_28px_rgba(255,140,0,0.55)] ring-2 ring-amber-200/60" />
+                    <span className="relative text-xl font-black text-black sm:text-2xl">{n}</span>
+                  </div>
+                  <div className="mt-2 text-lg">{icon}</div>
+                  <p className="mt-1 text-xs font-extrabold sm:text-sm">{t}</p>
                   <p className="mt-1 hidden text-xs text-orange-100/50 sm:block">{d}</p>
                 </div>
               ))}
@@ -254,7 +325,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
               ).map(([k, label]) => (
                 <button
                   key={k}
-                  onClick={() => { sfxClick(); setCat(k); }}
+                  onClick={() => { sfxClick(); setCat(k); speakBn(CAT_VOICE[k]); }}
                   className={`rounded-full px-4 py-2 text-xs font-extrabold transition ${
                     cat === k
                       ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
@@ -382,7 +453,14 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                         <button
                           key={m}
                           disabled={!live}
-                          onClick={() => { sfxClick(); setMethod(m); }}
+                          onClick={() => {
+                            sfxClick();
+                            setMethod(m);
+                            const pm = payInfo(numbers, m);
+                            if (isPaymentMethodLive(pm) && selected) {
+                              speakBn(VOICE.payMethod(METHOD_BN[m], pm.number, formatBDT(Number(selected.price_bdt))));
+                            }
+                          }}
                           className={`rounded-2xl border-2 p-3 text-center transition ${
                             method === m && live
                               ? "border-amber-400 bg-amber-400/15"
@@ -406,7 +484,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="font-mono text-2xl font-black tracking-widest text-amber-300">{info.number}</span>
                         <button
-                          onClick={() => { sfxClick(); copyNumber(info.number); }}
+                          onClick={() => { sfxClick(); copyNumber(info.number); speakBn(VOICE.copied(METHOD_BN[method])); }}
                           className="rounded-xl bg-amber-400 px-4 py-2 text-xs font-black text-black transition hover:brightness-110"
                         >
                           {copied ? "✓ কপি হয়েছে" : "📋 কপি"}
@@ -469,7 +547,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                   className="flex-1 rounded-2xl border border-white/15 bg-black/40 px-4 py-3 outline-none placeholder:text-white/25 focus:border-amber-400"
                 />
                 <button
-                  onClick={() => { sfxClick(); track(); }}
+                  onClick={() => { sfxClick(); speakBn(VOICE.tracking); track(); }}
                   disabled={tracking}
                   className="rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-6 font-extrabold transition hover:brightness-110 disabled:opacity-50"
                 >
@@ -519,22 +597,39 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
         )}
       </div>
 
-      {/* floating sound toggle */}
-      <button
-        onClick={() => {
-          const next = !soundOn;
-          setSoundEnabled(next);
-          setSoundOn(next);
-          if (next) {
-            sfxClick();
-            speakBn("সাউন্ড চালু হয়েছে");
-          }
-        }}
-        aria-label="সাউন্ড চালু বা বন্ধ করুন"
-        className="fixed bottom-5 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
-      >
-        {soundOn ? "🔊" : "🔇"}
-      </button>
+      {/* floating sound toggles */}
+      <div className="fixed bottom-5 left-5 z-40 flex flex-col gap-2">
+        <button
+          onClick={() => {
+            const next = !soundOn;
+            setSoundEnabled(next);
+            setSoundOn(next);
+            if (next) {
+              sfxClick();
+              speakBn(VOICE.soundOn);
+            }
+          }}
+          aria-label="সাউন্ড চালু বা বন্ধ করুন"
+          title="সাউন্ড (ভয়েস + এফেক্ট)"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
+        >
+          {soundOn ? "🔊" : "🔇"}
+        </button>
+        <button
+          onClick={() => {
+            const next = !bgmOn;
+            setBgmEnabled(next);
+            setBgmOn(next);
+            if (next) speakBn(VOICE.bgmOn);
+            else speakBn(VOICE.bgmOff);
+          }}
+          aria-label="ব্যাকগ্রাউন্ড মিউজিক চালু বা বন্ধ করুন"
+          title="ব্যাকগ্রাউন্ড মিউজিক"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
+        >
+          {bgmOn ? "🎵" : "🚫"}
+        </button>
+      </div>
     </div>
   );
 }
