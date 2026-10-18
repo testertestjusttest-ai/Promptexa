@@ -15,14 +15,24 @@ import {
   type TopUpOrder,
 } from "@/lib/topup";
 
+import {
+  soundEnabled,
+  setSoundEnabled,
+  sfxClick,
+  sfxSelect,
+  sfxSuccess,
+  sfxFanfare,
+  speakBn,
+  VOICE,
+} from "@/lib/topupSound";
+
 const PAY_METHODS = ["bkash", "nagad", "rocket"] as const;
 const METHOD_ICON: Record<string, string> = { bkash: "🩷", nagad: "🟠", rocket: "🟣" };
 const METHOD_BN: Record<string, string> = { bkash: "বিকাশ", nagad: "নগদ", rocket: "রকেট" };
 
 type PayInfo = { number: string; kind: string; image: string; enabled: boolean };
 
-function payInfo(numbers: Record<string, unknown>, m: string): PayInfo {
-  const raw = (numbers as Record<string, any>)[m];
+function payInfo(numbers: Record<string, unknown>, m: string): PayInfo {  const raw = (numbers as Record<string, any>)[m];
   if (!raw) return { number: "", kind: "sendmoney", image: "", enabled: true };
   if (typeof raw === "string")
     return { number: raw, kind: "sendmoney", image: "", enabled: true };
@@ -32,6 +42,14 @@ function payInfo(numbers: Record<string, unknown>, m: string): PayInfo {
     image: raw.image ?? "",
     enabled: raw.enabled !== false,
   };
+}
+
+/** card artwork by package size */
+function packArt(p: TopUpPackage): string | null {
+  if (p.kind === "membership") return null;
+  if (p.diamonds >= 1000) return "/topup/pack-legend.webp";
+  if (p.diamonds >= 200) return "/topup/pack-gold.webp";
+  return "/topup/pack-bronze.webp";
 }
 
 export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) {
@@ -51,6 +69,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   const [tracked, setTracked] = useState<TopUpOrder[] | null>(null);
   const [tracking, setTracking] = useState(false);
   const [cat, setCat] = useState<"all" | "diamond" | "membership" | "offer">("all");
+  const [soundOn, setSoundOn] = useState(true);
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -63,10 +82,29 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
       .catch(() => {});
   }, []);
 
+  // epic entrance: fanfare + Bangla welcome voice on first interaction
+  // (browsers block audio before the user taps anything)
+  useEffect(() => {
+    setSoundOn(soundEnabled());
+    const go = () => {
+      if (!soundEnabled()) return;
+      sfxFanfare();
+      setTimeout(() => speakBn(VOICE.welcome), 1000);
+    };
+    window.addEventListener("pointerdown", go, { once: true });
+    window.addEventListener("keydown", go, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", go);
+      window.removeEventListener("keydown", go);
+    };
+  }, []);
+
   function choose(p: TopUpPackage) {
     setSelected(p);
     setDone(null);
     setError("");
+    sfxSelect();
+    speakBn(VOICE.selected(p.name));
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 
@@ -101,6 +139,8 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || "অর্ডার হয়নি");
       setDone(d.order as TopUpOrder);
+      sfxSuccess();
+      speakBn(VOICE.success);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
       setError(e instanceof Error ? e.message : "অর্ডার হয়নি");
@@ -133,10 +173,11 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
     <div className="min-h-screen bg-[#0d0a07] text-white">
       {/* HERO */}
       <div className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,110,0,0.28),transparent_60%)]" />
-        <div className="pointer-events-none absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-orange-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0">
+          <img src="/topup/hero.webp" alt="" className="h-full w-full object-cover opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0a07]/40 via-[#0d0a07]/60 to-[#0d0a07]" />
+        </div>
         <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-12 text-center sm:pt-16">
-          <div className="text-6xl sm:text-7xl">💎</div>
           <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">
             Free Fire <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-500 bg-clip-text text-transparent">Diamond Top-Up</span>
           </h1>
@@ -213,7 +254,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
               ).map(([k, label]) => (
                 <button
                   key={k}
-                  onClick={() => setCat(k)}
+                  onClick={() => { sfxClick(); setCat(k); }}
                   className={`rounded-full px-4 py-2 text-xs font-extrabold transition ${
                     cat === k
                       ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
@@ -256,7 +297,20 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                           {p.badge}
                         </span>
                       )}
-                      <div className="text-3xl">{p.kind === "membership" ? "🎫" : "💎"}</div>
+                      <div className="text-3xl">
+                        {packArt(p) ? (
+                          <img
+                            src={packArt(p)!}
+                            alt={p.name}
+                            loading="lazy"
+                            className="h-24 w-full rounded-2xl object-cover ring-1 ring-white/10"
+                          />
+                        ) : (
+                          <span className="flex h-24 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/30 to-orange-600/10 text-5xl ring-1 ring-white/10">
+                            🎫
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-2 text-sm font-extrabold leading-tight">{p.name}</p>
                       {p.kind === "diamond" && p.diamonds > 0 && (
                         <p className="mt-0.5 text-xs text-orange-200/70">
@@ -328,7 +382,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                         <button
                           key={m}
                           disabled={!live}
-                          onClick={() => setMethod(m)}
+                          onClick={() => { sfxClick(); setMethod(m); }}
                           className={`rounded-2xl border-2 p-3 text-center transition ${
                             method === m && live
                               ? "border-amber-400 bg-amber-400/15"
@@ -352,7 +406,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="font-mono text-2xl font-black tracking-widest text-amber-300">{info.number}</span>
                         <button
-                          onClick={() => copyNumber(info.number)}
+                          onClick={() => { sfxClick(); copyNumber(info.number); }}
                           className="rounded-xl bg-amber-400 px-4 py-2 text-xs font-black text-black transition hover:brightness-110"
                         >
                           {copied ? "✓ কপি হয়েছে" : "📋 কপি"}
@@ -415,7 +469,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                   className="flex-1 rounded-2xl border border-white/15 bg-black/40 px-4 py-3 outline-none placeholder:text-white/25 focus:border-amber-400"
                 />
                 <button
-                  onClick={track}
+                  onClick={() => { sfxClick(); track(); }}
                   disabled={tracking}
                   className="rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 px-6 font-extrabold transition hover:brightness-110 disabled:opacity-50"
                 >
@@ -464,6 +518,23 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
           </>
         )}
       </div>
+
+      {/* floating sound toggle */}
+      <button
+        onClick={() => {
+          const next = !soundOn;
+          setSoundEnabled(next);
+          setSoundOn(next);
+          if (next) {
+            sfxClick();
+            speakBn("সাউন্ড চালু হয়েছে");
+          }
+        }}
+        aria-label="সাউন্ড চালু বা বন্ধ করুন"
+        className="fixed bottom-5 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-orange-400/30 bg-black/60 text-xl shadow-lg backdrop-blur transition hover:scale-110 active:scale-95"
+      >
+        {soundOn ? "🔊" : "🔇"}
+      </button>
     </div>
   );
 }
