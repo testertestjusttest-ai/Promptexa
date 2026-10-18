@@ -50,6 +50,7 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   const [trackPhone, setTrackPhone] = useState("");
   const [tracked, setTracked] = useState<TopUpOrder[] | null>(null);
   const [tracking, setTracking] = useState(false);
+  const [cat, setCat] = useState<"all" | "diamond" | "membership" | "offer">("all");
 
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -198,13 +199,47 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
             <h2 className="mt-10 text-xl font-black sm:text-2xl">
               💎 প্যাকেজ সিলেক্ট করুন
             </h2>
-            {packages.length === 0 ? (
-              <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-orange-100/60">
-                প্যাকেজ লোড হচ্ছে… (অ্যাডমিন থেকে প্যাকেজ যোগ করা না থাকলে এখানে দেখাবে না)
-              </p>
-            ) : (
+            <p className="mt-1 text-xs text-orange-100/50">
+              🎉 Free Fire-এর নতুন আপডেট/অফার এলে এখানেই নতুন প্যাকেজ যোগ হবে — পেজটি বুকমার্ক করে রাখুন
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(
+                [
+                  ["all", "📦 সব"],
+                  ["offer", "🔥 অফার"],
+                  ["diamond", "💎 ডায়মন্ড"],
+                  ["membership", "🎫 মেম্বারশিপ"],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setCat(k)}
+                  className={`rounded-full px-4 py-2 text-xs font-extrabold transition ${
+                    cat === k
+                      ? "bg-gradient-to-r from-amber-400 to-orange-500 text-black"
+                      : "border border-white/15 bg-white/[0.04] text-orange-100/70 hover:border-orange-400/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {(() => {
+              const list = packages.filter((p) => {
+                if (cat === "diamond") return p.kind === "diamond";
+                if (cat === "membership") return p.kind === "membership";
+                if (cat === "offer") return p.old_price_bdt != null && Number(p.old_price_bdt) > Number(p.price_bdt);
+                return true;
+              });
+              if (list.length === 0)
+                return (
+                  <p className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center text-sm text-orange-100/60">
+                    {packages.length === 0 ? "প্যাকেজ লোড হচ্ছে…" : "এই ক্যাটাগরিতে এখন কোনো প্যাকেজ নেই"}
+                  </p>
+                );
+              return (
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {packages.map((p) => {
+                {list.map((p) => {
                   const active = selected?.id === p.id;
                   return (
                     <button
@@ -241,7 +276,8 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
                   );
                 })}
               </div>
-            )}
+              );
+            })()}
 
             {/* ORDER FORM */}
             <div ref={formRef} className="mt-10 scroll-mt-24 rounded-3xl border border-orange-400/25 bg-gradient-to-b from-orange-500/[0.07] to-transparent p-5 sm:p-8">
