@@ -9,7 +9,6 @@ import {
   soundEnabled,
   setSoundEnabled,
   gunshot,
-  tierGun,
   initTapGuns,
   sfxClick,
   sfxSelect,
@@ -127,7 +126,7 @@ export default function TopUpClient({
   }, []);
 
   function goCheckout(p: TopUpPackage) {
-    gunshot(tierGun(p.diamonds, p.kind));
+    gunshot("sniper"); // same gunshot for every package (3000-diamond sound)
     sfxSelect();
     speakBn(VOICE.checkout(p.name));
     router.push(`/topup/checkout?package=${p.id}`);
