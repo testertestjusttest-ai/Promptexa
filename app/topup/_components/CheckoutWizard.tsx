@@ -69,11 +69,12 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
   // entrance: fanfare + voice on first interaction
   useEffect(() => {
     setSoundOn(soundEnabled());
-    initTapGuns();
+    const cleanupGuns = initTapGuns();
+    let voiceTimer: ReturnType<typeof setTimeout> | null = null;
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
-        setTimeout(
+        voiceTimer = setTimeout(
           () => speakBn(`${pkg.name} চেকআউট। আপনার প্লেয়ার ইউআইডি আর মোবাইল নম্বর দিন।`),
           1000
         );
@@ -82,6 +83,8 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
     window.addEventListener("pointerdown", go, { once: true });
     window.addEventListener("keydown", go, { once: true });
     return () => {
+      cleanupGuns();
+      if (voiceTimer) clearTimeout(voiceTimer);
       window.removeEventListener("pointerdown", go);
       window.removeEventListener("keydown", go);
     };

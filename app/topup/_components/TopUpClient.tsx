@@ -50,16 +50,19 @@ export default function TopUpClient({ packages }: { packages: TopUpPackage[] }) 
   // epic entrance: fanfare + Bangla welcome voice on first interaction
   useEffect(() => {
     setSoundOn(soundEnabled());
-    initTapGuns();
+    const cleanupGuns = initTapGuns();
+    let voiceTimer: ReturnType<typeof setTimeout> | null = null;
     const go = () => {
       if (soundEnabled()) {
         sfxFanfare();
-        setTimeout(() => speakBn(VOICE.welcome), 1000);
+        voiceTimer = setTimeout(() => speakBn(VOICE.welcome), 1000);
       }
     };
     window.addEventListener("pointerdown", go, { once: true });
     window.addEventListener("keydown", go, { once: true });
     return () => {
+      cleanupGuns();
+      if (voiceTimer) clearTimeout(voiceTimer);
       window.removeEventListener("pointerdown", go);
       window.removeEventListener("keydown", go);
     };

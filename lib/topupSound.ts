@@ -196,17 +196,27 @@ export function tierGun(diamonds: number, kind: string): GunKind {
   return "pistol";
 }
 
-let tapGunInit = false;
-/** every tap on the page fires a soft shot — unless the element plays its own gun */
-export function initTapGuns() {
-  if (tapGunInit || typeof document === "undefined") return;
-  tapGunInit = true;
-  document.addEventListener("pointerdown", (e) => {
+let tapGunHandler: ((e: PointerEvent) => void) | null = null;
+/**
+ * every tap on the page fires a soft shot — unless the element plays its own gun.
+ * Returns a cleanup: call it when the page unmounts so the sound
+ * does NOT leak onto other pages (Next.js SPA navigation keeps the document alive).
+ */
+export function initTapGuns(): () => void {
+  if (typeof document === "undefined") return () => {};
+  if (tapGunHandler) document.removeEventListener("pointerdown", tapGunHandler);
+  tapGunHandler = (e: PointerEvent) => {
     if (!soundEnabled()) return;
     const t = e.target as HTMLElement | null;
     if (t && t.closest && t.closest("[data-gun]")) return;
     gunshot("tap");
-  });
+  };
+  document.addEventListener("pointerdown", tapGunHandler);
+  return () => {
+    if (tapGunHandler) document.removeEventListener("pointerdown", tapGunHandler);
+    tapGunHandler = null;
+    stopVoice();
+  };
 }
 
 /* ---------------- UI SFX ---------------- */
