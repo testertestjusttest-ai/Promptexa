@@ -108,6 +108,29 @@ export function sfxFanfare() {
 
 let bgmTimer: ReturnType<typeof setInterval> | null = null;
 let bgmBar = 0;
+let bgmMaster: GainNode | null = null;
+let bgmPlaying = false;
+let bgmPausedHidden = false;
+
+function getBgmMaster(c: AudioContext): GainNode {
+  if (!bgmMaster || bgmMaster.context !== c) {
+    bgmMaster = c.createGain();
+    bgmMaster.gain.value = 1;
+    bgmMaster.connect(c.destination);
+  }
+  return bgmMaster;
+}
+
+/** duck BGM under voice guidance so speech stays loud and clear */
+function setDuck(on: boolean) {
+  const c = ac();
+  if (!c) return;
+  try {
+    getBgmMaster(c).gain.setTargetAtTime(on ? 0.12 : 1, c.currentTime, 0.25);
+  } catch {
+    /* ignore */
+  }
+}
 
 const BGM_CHORDS: number[][] = [
   [110, 130.81, 164.81], // Am
@@ -125,6 +148,7 @@ function bgmBar_() {
   bgmBar++;
 
   // pad — soft detuned saws through lowpass
+  const master = getBgmMaster(c);
   const padGain = c.createGain();
   padGain.gain.setValueAtTime(0.0001, t0);
   padGain.gain.exponentialRampToValueAtTime(0.065, t0 + 1.2);
@@ -132,7 +156,7 @@ function bgmBar_() {
   const lp = c.createBiquadFilter();
   lp.type = "lowpass";
   lp.frequency.value = 700;
-  padGain.connect(lp).connect(c.destination);
+  padGain.connect(lp).connect(master);
   chord.forEach((f) => {
     const o = c.createOscillator();
     o.type = "sawtooth";
@@ -154,7 +178,7 @@ function bgmBar_() {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.14, t + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-    o.connect(g).connect(c.destination);
+    o.connect(g).connect(master);
     o.start(t);
     o.stop(t + 0.3);
   }
@@ -170,7 +194,7 @@ function bgmBar_() {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.06, t + 0.03);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-    o.connect(g).connect(c.destination);
+    o.connect(g).connect(master);
     o.start(t);
     o.stop(t + 0.8);
   }
@@ -180,6 +204,7 @@ export function startBgm() {
   if (bgmTimer || typeof window === "undefined") return;
   if (!bgmEnabled()) return;
   ac();
+  bgmPlaying = true;
   bgmBar_();
   bgmTimer = setInterval(bgmBar_, 4000);
 }
@@ -189,6 +214,36 @@ export function stopBgm() {
     clearInterval(bgmTimer);
     bgmTimer = null;
   }
+  bgmPlaying = false;
+}
+
+// auto-stop when the user leaves the site / tab hidden;
+// resume when they come back (if it was playing)
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (bgmPlaying) {
+        bgmPausedHidden = true;
+        stopBgm();
+      }
+      stopVoice();
+    } else if (bgmPausedHidden && bgmEnabled()) {
+      bgmPausedHidden = false;
+      startBgm();
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    bgmPausedHidden = false;
+    stopBgm();
+    stopVoice();
+    try {
+      ctx?.close();
+    } catch {
+      /* ignore */
+    }
+    ctx = null;
+    bgmMaster = null;
+  });
 }
 
 /* ---------------- Bangla female voice ---------------- */
@@ -208,32 +263,45 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
   window.speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-function pickVoice(): SpeechSynthesisVoice | undefined {
-  const bn = cachedVoices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("bn"));
-  const isFemale = (v: SpeechSynthesisVoice) =>
-    /female|woman|girl|nari|mahila|zira|samantha|lekha|isha/i.test(v.name);
-  return (
-    bn.find(isFemale) ||
-    bn.find((v) => /google/i.test(v.name)) ||
-    bn[0] ||
-    cachedVoices.find(isFemale) ||
-    cachedVoices[0]
-  );
+const FEMALE_HINT = /female|woman|girl|nari|mahila|mohila|zira|samantha|lekha|isha|tessa|veena/i;
+
+function isFemaleVoice(v: SpeechSynthesisVoice): boolean {
+  return FEMALE_HINT.test(v.name);
 }
 
-/** Bangla voice guidance (female voice preferred) */
+function pickVoice(): { voice: SpeechSynthesisVoice | undefined; female: boolean } {
+  const bn = cachedVoices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("bn"));
+  const femBn = bn.find(isFemaleVoice);
+  if (femBn) return { voice: femBn, female: true };
+  const googleBn = bn.find((v) => /google/i.test(v.name));
+  if (googleBn) return { voice: googleBn, female: false };
+  if (bn[0]) return { voice: bn[0], female: false };
+  const femAny = cachedVoices.find(isFemaleVoice);
+  if (femAny) return { voice: femAny, female: false };
+  return { voice: cachedVoices[0], female: false };
+}
+
+/** Bangla voice guidance — female voice preferred, max volume, BGM ducks underneath */
 export function speakBn(text: string) {
   if (typeof window === "undefined" || !soundEnabled()) return;
   if (!("speechSynthesis" in window)) return;
   try {
+    loadVoices(); // refresh — voices can arrive after page load
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "bn-BD";
     u.rate = 0.95;
-    u.pitch = 1.05;
-    const v = pickVoice();
-    if (v) u.voice = v;
+    u.volume = 1; // full volume
+    const { voice, female } = pickVoice();
+    if (voice) u.voice = voice;
+    // no female voice on this device → raise pitch so it sounds feminine
+    u.pitch = female ? 1.05 : 1.45;
+    setDuck(true);
+    u.onend = () => setDuck(false);
+    u.onerror = () => setDuck(false);
     window.speechSynthesis.speak(u);
+    // safety: never leave BGM ducked if events don't fire
+    setTimeout(() => setDuck(false), Math.max(4000, text.length * 120));
   } catch {
     /* ignore */
   }
