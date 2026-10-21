@@ -77,6 +77,17 @@ function navLinks(layout: string): { label: string; href: string }[] {
         { label: "ℹ️ সম্পর্কে", href: "/about" },
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
+    case "buyinghouse":
+      return [
+        { label: "🏠 হোম", href: "" },
+        { label: "🛠️ সার্ভিস", href: "/services" },
+        { label: "👕 প্রোডাক্ট", href: "/products" },
+        { label: "⚙️ প্রসেস", href: "/process" },
+        { label: "🏭 ফ্যাক্টরি", href: "/factories" },
+        { label: "📩 RFQ", href: "/rfq" },
+        { label: "ℹ️ সম্পর্কে", href: "/about" },
+        { label: "📞 যোগাযোগ", href: "/contact" },
+      ];
     case "casino":
       return [
         { label: "🏠 হোম", href: "" },

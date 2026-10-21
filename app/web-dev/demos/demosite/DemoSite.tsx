@@ -55,6 +55,10 @@ import {
 import { Empty, Page } from "./ui";
 import { DemoAdmin } from "./demo-admin";
 import { ClientAdmin } from "./client-admin";
+import {
+  BhHome, BhServices, BhServiceDetail, BhProducts, BhProductDetail, BhProcess,
+  BhFactories, BhRfq, BhAbout, BhContact, BhLogin, BhSignup, BhAccount, BuyingAdmin,
+} from "./buying-pages";
 
 function NotFound() {
   return (
@@ -77,7 +81,22 @@ export default function DemoSite({ page }: { page: string[] }) {
   let body: React.ReactNode = <NotFound />;
 
   // Per-demo admin panel (all layouts) — full business admin in client mode
-  if (p0 === "admin") body = clientSlug ? <ClientAdmin /> : <DemoAdmin />;
+  if (p0 === "admin") body = clientSlug ? <ClientAdmin /> : def.layout === "buyinghouse" ? <BuyingAdmin /> : <DemoAdmin />;
+  else if (def.layout === "buyinghouse") {
+    if (!p0) body = <BhHome />;
+    else if (p0 === "services") body = <BhServices />;
+    else if (p0 === "s" && p1) body = <BhServiceDetail id={p1} />;
+    else if (p0 === "products") body = <BhProducts />;
+    else if (p0 === "p" && p1) body = <BhProductDetail id={p1} />;
+    else if (p0 === "process") body = <BhProcess />;
+    else if (p0 === "factories") body = <BhFactories />;
+    else if (p0 === "rfq") body = <BhRfq />;
+    else if (p0 === "about") body = <BhAbout />;
+    else if (p0 === "contact") body = <BhContact />;
+    else if (p0 === "login") body = <BhLogin />;
+    else if (p0 === "signup") body = <BhSignup />;
+    else if (p0 === "account") body = <BhAccount />;
+  }
   else if (def.layout === "shop") {
     if (!p0) body = <ShopHome />;
     else if (p0 === "shop") body = <ShopAll />;
