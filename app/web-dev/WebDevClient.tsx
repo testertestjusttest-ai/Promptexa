@@ -67,7 +67,7 @@ export default function WebDevClient() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       {/* hero — 2026 split design with live demo preview */}
-      <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#070b16]">
+      <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#070b16] shadow-[0_0_120px_rgba(215,255,63,0.07)]">
         {/* mesh background */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           <WebDevHeroBg />
@@ -117,12 +117,13 @@ export default function WebDevClient() {
           </div>
 
           {/* right — live preview */}
-          <div className="relative mx-auto w-full max-w-[430px]">
+          <div className="relative mx-auto w-full max-w-[430px] lg:max-w-[470px]">
             <div className="absolute -inset-6 rounded-[40px] bg-gradient-to-tr from-[#d7ff3f]/15 via-transparent to-fuchsia-500/15 blur-2xl" aria-hidden />
             <Link href="/demobinancepro" className="group relative block overflow-hidden rounded-3xl border border-white/15 bg-[#0b1120] shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition duration-500 hover:-translate-y-1.5 hover:rotate-[0.5deg]">
               <span className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-red-500 px-2.5 py-1 text-[9px] font-black text-white shadow-lg"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> LIVE ডেমো</span>
-              <div className="pointer-events-none max-h-[340px] overflow-hidden [&_*]:!cursor-default">
+              <div className="pointer-events-none relative max-h-[340px] overflow-hidden [&_*]:!cursor-default">
                 {DEMOS[0].render()}
+                <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#0b1120] via-[#0b1120]/55 to-transparent" aria-hidden />
               </div>
               <div className="flex items-center justify-between border-t border-white/10 px-4 py-3">
                 <div>
@@ -132,12 +133,12 @@ export default function WebDevClient() {
                 <span className="rounded-full bg-[#d7ff3f] px-3.5 py-1.5 text-[11px] font-black text-black">ডেমো খুলুন →</span>
               </div>
             </Link>
-            {/* floating glass cards */}
-            <div className="animate-float-slow absolute -left-4 top-16 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "-4deg" }}>
+            {/* floating glass cards — kept INSIDE the preview frame */}
+            <div className="animate-float-slow pointer-events-none absolute left-3 top-14 z-10 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "-4deg" }}>
               <p className="text-[10px] font-bold text-slate-400">💰 নতুন অর্ডার</p>
               <p className="text-sm font-black text-white">#১০২৪ • ১,২৫০ টাকা</p>
             </div>
-            <div className="animate-float-slow absolute -right-3 bottom-20 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "4deg", animationDelay: "-2.5s" }}>
+            <div className="animate-float-slow pointer-events-none absolute bottom-16 right-3 z-10 hidden rounded-2xl border border-white/15 bg-[#0d1424]/90 px-3.5 py-2.5 shadow-2xl backdrop-blur sm:block" style={{ ["--tilt" as any]: "4deg", animationDelay: "-2.5s" }}>
               <p className="text-[10px] font-bold text-slate-400">📈 আজকের বিক্রি</p>
               <p className="text-sm font-black text-emerald-300">+৩৪% বৃদ্ধি</p>
             </div>
@@ -267,8 +268,9 @@ export default function WebDevClient() {
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {DEMOS.slice(0, 9).map((d) => (
             <Link key={d.slug} href={`/demo${d.slug}`} className="tilt-card group block overflow-hidden rounded-3xl border border-white/10 bg-[#0b1120] transition hover:border-[#d7ff3f]/40">
-              <div className="pointer-events-none max-h-[300px] overflow-hidden [&_*]:!cursor-default">
+              <div className="pointer-events-none relative max-h-[300px] overflow-hidden [&_*]:!cursor-default">
                 {d.render()}
+                <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#0b1120] via-[#0b1120]/50 to-transparent" aria-hidden />
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">

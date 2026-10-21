@@ -44,7 +44,7 @@ const HAND_GROUPS: Record<string, string> = {
   travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
   investpro: "💰 ফিনটেক", agroinvest: "💰 ফিনটেক", swiftex: "💰 ফিনটেক",
   payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক", trustpay: "💰 ফিনটেক",
-  binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং",
+  binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং", buyinghouse: "🏭 গার্মেন্টস",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -71,6 +71,32 @@ const HAND_DEMOS: Demo[] = [
           <span className="mt-3 inline-block rounded-full bg-[#f0b90b] px-4 py-1.5 text-[11px] font-black text-black">ট্রেড শুরু করুন</span>
         </div>
         <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">৬৬+ পেজ • স্পট • ফিউচার্স • P2P</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "buyinghouse",
+    name: "টেক্সব্রিজ সোর্সিং",
+    type: "গার্মেন্টস বায়িং হাউস",
+    desc: "আন্তর্জাতিক বায়ারদের জন্য সোর্সিং, QC, RFQ সিস্টেম ও প্রফেশনাল অ্যাডমিনসহ পূর্ণাঙ্গ বায়িং হাউস ওয়েবসাইট।",
+    price: "১২,৯৯৯ টাকা থেকে",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🧵 টেক্সব্রিজ" links={["সার্ভিস", "প্রোডাক্ট"]} cta="RFQ পাঠান" light />
+        <div className="bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-900 px-4 py-6 text-white">
+          <p className="text-[10px] font-black tracking-widest text-cyan-200">🏭 গার্মেন্টস বায়িং হাউস</p>
+          <p className="mt-2 text-lg font-black leading-snug">বাংলাদেশ থেকে বিশ্বমানের<br />গার্মেন্টস সোর্সিং</p>
+          <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+            {[["১২০+", "ফ্যাক্টরি"], ["৪০+", "দেশে রপ্তানি"], ["৯৮%", "অন-টাইম"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-black/30 px-2 py-1.5">
+                <p className="text-[11px] font-black">{v}</p>
+                <p className="text-[9px] opacity-70">{t}</p>
+              </div>
+            ))}
+          </div>
+          <span className="mt-3 inline-block rounded-full bg-white px-4 py-1.5 text-[11px] font-black text-slate-900">📩 ফ্রি কোটেশন নিন</span>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">RFQ সিস্টেম • QC রিপোর্ট • প্রফেশনাল অ্যাডমিন</p>
       </Frame>
     ),
   },
