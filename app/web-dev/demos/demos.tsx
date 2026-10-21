@@ -81,22 +81,26 @@ const HAND_DEMOS: Demo[] = [
     desc: "আন্তর্জাতিক বায়ারদের জন্য সোর্সিং, QC, RFQ সিস্টেম ও প্রফেশনাল অ্যাডমিনসহ পূর্ণাঙ্গ বায়িং হাউস ওয়েবসাইট।",
     price: "১২,৯৯৯ টাকা থেকে",
     render: () => (
-      <Frame dark>
-        <Nav logo="🧵 টেক্সব্রিজ" links={["সার্ভিস", "প্রোডাক্ট"]} cta="RFQ পাঠান" light />
-        <div className="bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-900 px-4 py-6 text-white">
-          <p className="text-[10px] font-black tracking-widest text-cyan-200">🏭 গার্মেন্টস বায়িং হাউস</p>
-          <p className="mt-2 text-lg font-black leading-snug">বাংলাদেশ থেকে বিশ্বমানের<br />গার্মেন্টস সোর্সিং</p>
-          <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+      <Frame>
+        <Nav logo="🧵 টেক্সব্রিজ" links={["সার্ভিস", "প্রোডাক্ট"]} cta="RFQ পাঠান" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/bh-img/hero.webp" alt="টেক্সব্রিজ শোরুম" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">বাংলাদেশ থেকে বিশ্বমানের গার্মেন্টস সোর্সিং</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
             {[["১২০+", "ফ্যাক্টরি"], ["৪০+", "দেশে রপ্তানি"], ["৯৮%", "অন-টাইম"]].map(([v, t]) => (
-              <div key={t} className="rounded-xl bg-black/30 px-2 py-1.5">
-                <p className="text-[11px] font-black">{v}</p>
-                <p className="text-[9px] opacity-70">{t}</p>
+              <div key={t} className="rounded-xl bg-sky-50 px-2 py-1.5 ring-1 ring-sky-100">
+                <p className="text-[11px] font-black text-sky-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
               </div>
             ))}
           </div>
-          <span className="mt-3 inline-block rounded-full bg-white px-4 py-1.5 text-[11px] font-black text-slate-900">📩 ফ্রি কোটেশন নিন</span>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-sky-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📩 ফ্রি কোটেশন</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">👕 প্রোডাক্ট</span>
+          </div>
         </div>
-        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">RFQ সিস্টেম • QC রিপোর্ট • প্রফেশনাল অ্যাডমিন</p>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">RFQ সিস্টেম • AQL QC রিপোর্ট • অপারেশনস অ্যাডমিন</p>
       </Frame>
     ),
   },

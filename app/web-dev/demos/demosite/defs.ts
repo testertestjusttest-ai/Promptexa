@@ -118,7 +118,7 @@ const NEWS_CATS = ["সব", "জাতীয়", "খেলা", "প্রয
 const HAND_DEFS: DemoSiteDef[] = [
   hand({
     slug: "buyinghouse", name: "টেক্সব্রিজ সোর্সিং", type: "গার্মেন্টস বায়িং হাউস", layout: "buyinghouse",
-    logoEmoji: "🧵", accent: "#38bdf8", dark: true, grad: "from-sky-600 via-blue-700 to-indigo-900",
+    logoEmoji: "🧵", accent: "#0284c7", dark: false, grad: "from-sky-600 via-blue-700 to-indigo-900",
     heroTitle: "বাংলাদেশ থেকে বিশ্বমানের গার্মেন্টস সোর্সিং", heroSub: "১২০+ যাচাইকৃত ফ্যাক্টরি • ৪০+ দেশে রপ্তানি", heroEmoji: "🏭",
     cats: ["সব", "নিট", "ওভেন", "ডেনিম", "সোয়েটার"], desc: "আন্তর্জাতিক বায়ারদের জন্য এন্ড-টু-এন্ড গার্মেন্টস সোর্সিং — ফ্যাক্টরি থেকে শিপমেন্ট পর্যন্ত QCসহ।",
     items: [

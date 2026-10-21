@@ -32,6 +32,15 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "buyinghouse": {
+    hero: "/bh-img/hero.webp",
+    cats: {
+      "নিট": "/bh-img/cat-1.webp",
+      "ওভেন": "/bh-img/cat-2.webp",
+      "ডেনিম": "/bh-img/cat-3.webp",
+      "সোয়েটার": "/bh-img/cat-4.webp",
+    },
+  },
   "cafe": {
     hero: "/demo-img/cafe/hero.webp",
     cats: {

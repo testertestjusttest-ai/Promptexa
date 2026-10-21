@@ -82,10 +82,11 @@ function navLinks(layout: string): { label: string; href: string }[] {
         { label: "🏠 হোম", href: "" },
         { label: "🛠️ সার্ভিস", href: "/services" },
         { label: "👕 প্রোডাক্ট", href: "/products" },
-        { label: "⚙️ প্রসেস", href: "/process" },
+        { label: "🔍 কোয়ালিটি", href: "/quality" },
         { label: "🏭 ফ্যাক্টরি", href: "/factories" },
+        { label: "🖼️ গ্যালারি", href: "/gallery" },
+        { label: "📰 ব্লগ", href: "/blog" },
         { label: "📩 RFQ", href: "/rfq" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
     case "casino":

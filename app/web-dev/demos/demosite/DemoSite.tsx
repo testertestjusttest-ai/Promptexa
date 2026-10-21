@@ -56,8 +56,8 @@ import { Empty, Page } from "./ui";
 import { DemoAdmin } from "./demo-admin";
 import { ClientAdmin } from "./client-admin";
 import {
-  BhHome, BhServices, BhServiceDetail, BhProducts, BhProductDetail, BhProcess,
-  BhFactories, BhRfq, BhAbout, BhContact, BhLogin, BhSignup, BhAccount, BuyingAdmin,
+  BhHome, BhServices, BhServiceDetail, BhProducts, BhProductDetail, BhProcess, BhQuality,
+  BhFactories, BhClients, BhGallery, BhBlog, BhBlogDetail, BhRfq, BhAbout, BhContact, BhLogin, BhSignup, BhAccount, BuyingAdmin,
 } from "./buying-pages";
 
 function NotFound() {
@@ -89,6 +89,10 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "products") body = <BhProducts />;
     else if (p0 === "p" && p1) body = <BhProductDetail id={p1} />;
     else if (p0 === "process") body = <BhProcess />;
+    else if (p0 === "quality") body = <BhQuality />;
+    else if (p0 === "clients") body = <BhClients />;
+    else if (p0 === "gallery") body = <BhGallery />;
+    else if (p0 === "blog") body = p1 ? <BhBlogDetail id={p1} /> : <BhBlog />;
     else if (p0 === "factories") body = <BhFactories />;
     else if (p0 === "rfq") body = <BhRfq />;
     else if (p0 === "about") body = <BhAbout />;
