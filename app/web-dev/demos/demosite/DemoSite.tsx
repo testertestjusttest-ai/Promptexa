@@ -3,6 +3,7 @@
 /** DemoSite router — maps URL segments to the right page per layout. */
 
 import Chrome from "./chrome";
+import { BhLangProvider } from "./bh-lang";
 import { useDemo } from "./store";
 import {
   ShopHome, ShopAll, ShopCategory, ShopProduct, ShopCart, ShopCheckout,
@@ -345,5 +346,12 @@ export default function DemoSite({ page }: { page: string[] }) {
     else if (p0 === "coin" && p1) body = <CexCoinDetail code={p1} />;
   }
 
+  if (def.layout === "buyinghouse") {
+    return (
+      <BhLangProvider>
+        <Chrome>{body}</Chrome>
+      </BhLangProvider>
+    );
+  }
   return <Chrome>{body}</Chrome>;
 }

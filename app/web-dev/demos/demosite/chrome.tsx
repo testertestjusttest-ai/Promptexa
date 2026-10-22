@@ -9,9 +9,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
+import { useBh, EN_NAME, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
 import { AdSlot, AnnouncementBar } from "./client-ads";
 
-function navLinks(layout: string): { label: string; href: string }[] {
+function navLinks(layout: string, lang?: string): { label: string; href: string }[] {
   switch (layout) {
     case "shop":
       return [
@@ -78,17 +79,29 @@ function navLinks(layout: string): { label: string; href: string }[] {
         { label: "📞 যোগাযোগ", href: "/contact" },
       ];
     case "buyinghouse":
-      return [
-        { label: "🏠 হোম", href: "" },
-        { label: "🛠️ সার্ভিস", href: "/services" },
-        { label: "👕 প্রোডাক্ট", href: "/products" },
-        { label: "🔍 কোয়ালিটি", href: "/quality" },
-        { label: "🏭 ফ্যাক্টরি", href: "/factories" },
-        { label: "🖼️ গ্যালারি", href: "/gallery" },
-        { label: "📰 ব্লগ", href: "/blog" },
-        { label: "📩 RFQ", href: "/rfq" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
-      ];
+      return lang === "en"
+        ? [
+            { label: "🏠 Home", href: "" },
+            { label: "🛠️ Services", href: "/services" },
+            { label: "👕 Products", href: "/products" },
+            { label: "🔍 Quality", href: "/quality" },
+            { label: "🏭 Factories", href: "/factories" },
+            { label: "🖼️ Gallery", href: "/gallery" },
+            { label: "📰 Blog", href: "/blog" },
+            { label: "📩 RFQ", href: "/rfq" },
+            { label: "📞 Contact", href: "/contact" },
+          ]
+        : [
+            { label: "🏠 হোম", href: "" },
+            { label: "🛠️ সার্ভিস", href: "/services" },
+            { label: "👕 প্রোডাক্ট", href: "/products" },
+            { label: "🔍 কোয়ালিটি", href: "/quality" },
+            { label: "🏭 ফ্যাক্টরি", href: "/factories" },
+            { label: "🖼️ গ্যালারি", href: "/gallery" },
+            { label: "📰 ব্লগ", href: "/blog" },
+            { label: "📩 RFQ", href: "/rfq" },
+            { label: "📞 যোগাযোগ", href: "/contact" },
+          ];
     case "casino":
       return [
         { label: "🏠 হোম", href: "" },
@@ -144,11 +157,15 @@ function drawerTheme(theme: string | undefined, dark: boolean) {
 
 export default function Chrome({ children }: { children: React.ReactNode }) {
   const { def, base, store, clientSlug } = useDemo();
+  const bh = useBh();
+  const isBh = def.layout === "buyinghouse";
+  const L = (bn: string, en: string) => (isBh ? bh.tx(bn, en) : bn);
+  const siteName = isBh && bh.lang === "en" ? EN_NAME : def.name;
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
   const [q, setQ] = useState("");
   const [mSearch, setMSearch] = useState(false);
-  const links = navLinks(def.layout);
+  const links = navLinks(def.layout, bh.lang);
   const dark = def.dark;
   const showCart = def.layout === "shop";
   const dt = drawerTheme(def.theme, dark);
@@ -171,36 +188,42 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
           <button
             onClick={() => setDrawer(true)}
-            aria-label="মেনু"
+            aria-label={L("মেনু", "Menu")}
             className={`grid h-10 w-10 place-items-center rounded-xl text-xl transition hover:scale-105 ${dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`}
           >
             ☰
           </button>
           <Link href={base} className="flex items-center gap-2">
             <span className="text-2xl">{def.logoEmoji}</span>
-            <span className="text-lg font-black tracking-tight">{def.name}</span>
+            <span className="text-lg font-black tracking-tight">{siteName}</span>
           </Link>
           <form onSubmit={goSearch} className="mx-2 hidden flex-1 md:block">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={`🔍 ${def.layout === "news" ? "খবর" : def.layout === "shop" ? "পণ্য" : "খুঁজুন"}...`}
+              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : `🔍 ${def.layout === "news" ? "খবর" : def.layout === "shop" ? "পণ্য" : "খুঁজুন"}...`}
               className={`w-full rounded-full border px-4 py-2 text-sm outline-none ${
                 dark ? "border-white/15 bg-white/5 text-white placeholder:text-slate-500" : "border-slate-200 bg-slate-100 placeholder:text-slate-400"
               }`}
             />
           </form>
           <div className="ml-auto flex items-center gap-1.5">
+            {isBh && (
+              <div className="mr-1 flex items-center rounded-full bg-slate-100 p-0.5 text-[11px] font-black ring-1 ring-slate-200">
+                <button onClick={() => bh.setLang("en")} className={`rounded-full px-2.5 py-1 transition ${bh.lang === "en" ? "bg-sky-600 text-white shadow" : "text-slate-500"}`}>EN</button>
+                <button onClick={() => bh.setLang("bn")} className={`rounded-full px-2.5 py-1 transition ${bh.lang === "bn" ? "bg-sky-600 text-white shadow" : "text-slate-500"}`}>বাং</button>
+              </div>
+            )}
             <button
               onClick={() => setMSearch((v) => !v)}
-              aria-label="সার্চ"
+              aria-label={L("সার্চ", "Search")}
               className={`grid h-10 w-10 place-items-center rounded-xl text-lg md:hidden ${dark ? "bg-white/10" : "bg-slate-100"}`}
             >
               🔍
             </button>
             <Link
               href={`${base}/${store.user ? "account" : "login"}`}
-              aria-label="অ্যাকাউন্ট"
+              aria-label={L("অ্যাকাউন্ট", "Account")}
               className={`grid h-10 w-10 place-items-center rounded-xl text-lg ${dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`}
             >
               {store.user ? <span className="grid h-7 w-7 place-items-center rounded-full text-sm font-black text-white" style={{ background: def.accent }}>{store.user.name[0]}</span> : "👤"}
@@ -208,7 +231,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             {showCart && (
               <Link
                 href={`${base}/cart`}
-                aria-label="কার্ট"
+                aria-label={L("কার্ট", "Cart")}
                 className={`relative grid h-10 w-10 place-items-center rounded-xl text-lg ${dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`}
               >
                 🛒
@@ -227,7 +250,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="🔍 খুঁজুন..."
+              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : "🔍 খুঁজুন..."}
               className={`w-full rounded-full border px-4 py-2 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-100"}`}
             />
           </form>
@@ -257,13 +280,13 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                     {def.logoEmoji}
                   </span>
                   <span>
-                    <span className="block text-base font-black leading-tight">{def.name}</span>
+                    <span className="block text-base font-black leading-tight">{siteName}</span>
                     <span className="block text-[10px] font-bold uppercase tracking-widest opacity-50">
-                      {def.layout === "shop" ? "অনলাইন শপ" : def.layout === "service" ? "সার্ভিস" : def.layout === "booking" ? "বুকিং" : def.layout === "news" ? "নিউজ পোর্টাল" : "ওয়েবসাইট"}
+                      {isBh ? bh.tx("গার্মেন্টস বায়িং হাউস", "Garments Buying House") : def.layout === "shop" ? "অনলাইন শপ" : def.layout === "service" ? "সার্ভিস" : def.layout === "booking" ? "বুকিং" : def.layout === "news" ? "নিউজ পোর্টাল" : "ওয়েবসাইট"}
                     </span>
                   </span>
                 </span>
-                <button onClick={() => setDrawer(false)} aria-label="বন্ধ" className="grid h-9 w-9 place-items-center rounded-full bg-black/10 text-lg transition hover:scale-105">✕</button>
+                <button onClick={() => setDrawer(false)} aria-label={L("বন্ধ", "Close")} className="grid h-9 w-9 place-items-center rounded-full bg-black/10 text-lg transition hover:scale-105">✕</button>
               </div>
               {/* User profile card */}
               {store.user ? (
@@ -282,11 +305,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <Link href={`${base}/login`} onClick={() => setDrawer(false)}
                     className="rounded-xl py-2.5 text-center text-sm font-black text-white shadow-lg transition hover:brightness-110" style={{ background: def.accent }}>
-                    🔑 লগইন
+                    {L("🔑 লগইন", "🔑 Login")}
                   </Link>
                   <Link href={`${base}/signup`} onClick={() => setDrawer(false)}
                     className={`rounded-xl py-2.5 text-center text-sm font-black transition ${dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`}>
-                    📝 সাইন আপ
+                    {L("📝 সাইন আপ", "📝 Sign Up")}
                   </Link>
                 </div>
               )}
@@ -296,11 +319,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="🔍 খুঁজুন..."
+                placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : "🔍 খুঁজুন..."}
                 className={`w-full ${dt.search} border px-4 py-2.5 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-50"}`}
               />
             </form>
-            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">মেনু</p>
+            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{L("মেনু", "Menu")}</p>
             <nav className="space-y-1">
               {links.map((l) => (
                 <Link key={l.href} href={`${base}${l.href}`} onClick={() => setDrawer(false)}
@@ -327,7 +350,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 </div>
               </>
             )}
-            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">আমার</p>
+            <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{L("আমার", "Account")}</p>
             <nav className="space-y-1">
               {store.user ? (
                 <>
@@ -340,16 +363,16 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 </>
               ) : (
                 <p className={`px-4 py-2 text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                  💡 লগইন করলে অর্ডার হিস্ট্রি ও অফার পাবেন
+                  {L("💡 লগইন করলে অর্ডার হিস্ট্রি ও অফার পাবেন", "💡 Log in to track your RFQs and orders")}
                 </p>
               )}
             </nav>
             </div>
             <div className={`mx-4 mb-4 mt-auto rounded-2xl p-4 text-sm ${dark ? "bg-white/5" : "bg-slate-50"}`}>
               <p className="font-bold">{def.contact}</p>
-              <p className="mt-1 text-xs opacity-60">{def.hours}</p>
+              <p className="mt-1 text-xs opacity-60">{isBh ? bh.tx(def.hours, EN_HOURS) : def.hours}</p>
               <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
-                ⚙️ {clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন"}
+                ⚙️ {isBh ? bh.tx(clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন", clientSlug ? "Admin Panel" : "Demo Admin") : clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন"}
               </Link>
             </div>
           </aside>
@@ -393,11 +416,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       <footer className={`mt-10 border-t ${dark ? "border-white/10 bg-black/30" : "border-slate-200 bg-white"}`}>
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="flex items-center gap-2 text-lg font-black"><span className="text-2xl">{def.logoEmoji}</span>{def.name}</p>
-            <p className="mt-2 text-xs leading-relaxed opacity-60">{def.about.slice(0, 120)}...</p>
+            <p className="flex items-center gap-2 text-lg font-black"><span className="text-2xl">{def.logoEmoji}</span>{siteName}</p>
+            <p className="mt-2 text-xs leading-relaxed opacity-60">{(isBh ? bh.tx(def.about, EN_ABOUT) : def.about).slice(0, 120)}...</p>
           </div>
           <div>
-            <p className="mb-3 text-sm font-black">লিংক</p>
+            <p className="mb-3 text-sm font-black">{L("লিংক", "Links")}</p>
             <div className="space-y-2 text-sm opacity-70">
               {links.slice(0, 5).map((l) => (
                 <Link key={l.href} href={`${base}${l.href}`} className="block hover:opacity-100 hover:underline">{l.label}</Link>
@@ -405,27 +428,27 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div>
-            <p className="mb-3 text-sm font-black">অ্যাকাউন্ট</p>
+            <p className="mb-3 text-sm font-black">{L("অ্যাকাউন্ট", "Account")}</p>
             <div className="space-y-2 text-sm opacity-70">
               {store.user ? (
                 <>
-                  <Link href={`${base}/account`} className="block hover:underline">👤 আমার অ্যাকাউন্ট</Link>
+                  <Link href={`${base}/account`} className="block hover:underline">{L("👤 আমার অ্যাকাউন্ট", "👤 My Account")}</Link>
                   {def.layout === "shop" && <Link href={`${base}/orders`} className="block hover:underline">📦 আমার অর্ডার</Link>}
                   {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} className="block hover:underline">💳 ওয়ালেট</Link>}
                 </>
               ) : (
                 <>
-                  <Link href={`${base}/login`} className="block hover:underline">🔑 লগইন</Link>
-                  <Link href={`${base}/signup`} className="block hover:underline">📝 সাইন আপ</Link>
+                  <Link href={`${base}/login`} className="block hover:underline">{L("🔑 লগইন", "🔑 Login")}</Link>
+                  <Link href={`${base}/signup`} className="block hover:underline">{L("📝 সাইন আপ", "📝 Sign Up")}</Link>
                 </>
               )}
               {def.layout === "shop" && <Link href={`${base}/track`} className="block hover:underline">📍 অর্ডার ট্র্যাক</Link>}
             </div>
           </div>
           <div>
-            <p className="mb-3 text-sm font-black">তথ্য</p>
+            <p className="mb-3 text-sm font-black">{L("তথ্য", "Information")}</p>
             <div className="space-y-2 text-sm opacity-70">
-              <Link href={`${base}/faq`} className="block hover:underline">❓ সচরাচর জিজ্ঞাসা</Link>
+              <Link href={`${base}/faq`} className="block hover:underline">{L("❓ সচরাচর জিজ্ঞাসা", "❓ FAQ")}</Link>
               {def.layout === "shop" && (
                 <>
                   <Link href={`${base}/shipping`} className="block hover:underline">🚚 ডেলিভারি নীতি</Link>
@@ -437,16 +460,16 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div>
-            <p className="mb-3 text-sm font-black">যোগাযোগ</p>
+            <p className="mb-3 text-sm font-black">{L("যোগাযোগ", "Contact")}</p>
             <div className="space-y-2 text-sm opacity-70">
               <p>📞 {def.contact}</p>
-              <p>📍 {def.address}</p>
-              <p>🕘 {def.hours}</p>
+              <p>📍 {isBh ? bh.tx(def.address, EN_ADDRESS) : def.address}</p>
+              <p>🕘 {isBh ? bh.tx(def.hours, EN_HOURS) : def.hours}</p>
             </div>
           </div>
         </div>
         <div className={`border-t py-4 text-center text-xs opacity-50 ${dark ? "border-white/10" : "border-slate-200"}`}>
-          © {toBnDigits(new Date().getFullYear())} {def.name}{clientSlug ? "" : " • ডেমো ওয়েবসাইট"}
+          © {isBh && bh.lang === "en" ? new Date().getFullYear() : toBnDigits(new Date().getFullYear())} {siteName}{clientSlug ? "" : isBh ? bh.tx(" • ডেমো ওয়েবসাইট", " • Demo Website") : " • ডেমো ওয়েবসাইট"}
         </div>
       </footer>
     </div>

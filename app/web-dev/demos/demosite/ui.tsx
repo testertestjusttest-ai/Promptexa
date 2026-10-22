@@ -24,12 +24,13 @@ export function Price({ v, accent, big, note }: { v: number; accent?: string; bi
   );
 }
 
-export function Stars({ rating, reviews }: { rating: number; reviews?: number }) {
+export function Stars({ rating, reviews, en = false }: { rating: number; reviews?: number; en?: boolean }) {
+  const fmt = (v: string) => (en ? v : toBnDigits(v));
   return (
     <span className="text-xs">
       <span className="text-amber-400">{"★".repeat(Math.round(rating))}{"☆".repeat(5 - Math.round(rating))}</span>
       <span className="ml-1 opacity-60">
-        {toBnDigits(rating.toFixed(1))}{reviews !== undefined && ` (${toBnDigits(reviews.toLocaleString("en-IN"))})`}
+        {fmt(rating.toFixed(1))}{reviews !== undefined && ` (${fmt(reviews.toLocaleString("en-IN"))})`}
       </span>
     </span>
   );
