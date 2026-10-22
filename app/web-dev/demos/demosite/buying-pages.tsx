@@ -185,11 +185,42 @@ export function BhHome() {
   ];
   return (
     <>
-      {/* HERO — photo split, light corporate */}
+      {/* HERO — photo first, stats, then headline text (order per user) */}
       <div className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-sky-100 blur-3xl" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-12 pt-10 sm:pt-14 lg:grid-cols-2">
-          <div>
+        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-8 sm:pt-10">
+          {/* 1) showroom photo */}
+          <div className="relative">
+            <div className="relative overflow-hidden rounded-[28px] shadow-[0_30px_60px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={def.heroImg ?? IMG("hero.webp")} alt={def.name} className="h-[300px] w-full object-cover sm:h-[440px]" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/70 to-transparent p-4 pt-14">
+                <p className="text-sm font-black text-white">🏭 শোরুম ও স্যাম্পল রুম — ঢাকা হেড অফিস</p>
+                <p className="text-xs text-white/75">প্রতিটি কালেকশনের লাইভ স্যাম্পল বায়ারের জন্য প্রস্তুত</p>
+              </div>
+            </div>
+            <div className="bh-float absolute -left-3 top-8 hidden rounded-2xl border border-slate-200 bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block">
+              <p className="text-[10px] font-bold text-slate-400">🔍 ফাইনাল QC</p>
+              <p className="text-sm font-black text-emerald-600">পাস ✓ AQL 2.5</p>
+            </div>
+            <div className="bh-float absolute -right-2 bottom-16 hidden rounded-2xl border border-slate-200 bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block" style={{ animationDelay: "-3s" }}>
+              <p className="text-[10px] font-bold text-slate-400">🚢 এই সপ্তাহে শিপমেন্ট</p>
+              <p className="text-sm font-black text-sky-700">১২টি অর্ডার • অন-টাইম</p>
+            </div>
+          </div>
+
+          {/* 2) stats band */}
+          <div className="mt-6 grid grid-cols-2 gap-3 rounded-3xl border border-slate-200 bg-white p-3 shadow-[0_2px_18px_rgba(15,23,42,0.05)] sm:grid-cols-4">
+            {stats.map(([v, suf, t]) => (
+              <div key={t} className="px-4 py-3 text-center">
+                <p className="text-2xl font-black text-sky-700 sm:text-3xl"><CountUp to={v} suffix={suf} /></p>
+                <p className="mt-0.5 text-[11px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* 3) headline text — below photo and stats */}
+          <div className="mt-10 max-w-3xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3.5 py-1.5 text-[11px] font-black text-sky-700 shadow-sm">
               <span className="relative flex h-2 w-2"><span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400" /><span className="h-2 w-2 rounded-full bg-emerald-500" /></span>
               গার্মেন্টস বায়িং হাউস — ঢাকা, বাংলাদেশ
@@ -211,37 +242,6 @@ export function BhHome() {
               <span>✓ ৪৮ ঘণ্টায় কোটেশন</span>
               <span>✓ AQL 2.5 ইন্সপেকশন</span>
             </div>
-          </div>
-
-          <div className="relative">
-            <div className="relative overflow-hidden rounded-[28px] shadow-[0_30px_60px_rgba(15,23,42,0.18)] ring-1 ring-slate-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={def.heroImg ?? IMG("hero.webp")} alt={def.name} className="h-[320px] w-full object-cover sm:h-[400px]" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/70 to-transparent p-4 pt-14">
-                <p className="text-sm font-black text-white">🏭 শোরুম ও স্যাম্পল রুম — ঢাকা হেড অফিস</p>
-                <p className="text-xs text-white/75">প্রতিটি কালেকশনের লাইভ স্যাম্পল বায়ারের জন্য প্রস্তুত</p>
-              </div>
-            </div>
-            <div className="bh-float absolute -left-3 top-8 hidden rounded-2xl border border-slate-200 bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block">
-              <p className="text-[10px] font-bold text-slate-400">🔍 ফাইনাল QC</p>
-              <p className="text-sm font-black text-emerald-600">পাস ✓ AQL 2.5</p>
-            </div>
-            <div className="bh-float absolute -right-2 bottom-16 hidden rounded-2xl border border-slate-200 bg-white/95 px-3.5 py-2.5 shadow-xl backdrop-blur sm:block" style={{ animationDelay: "-3s" }}>
-              <p className="text-[10px] font-bold text-slate-400">🚢 এই সপ্তাহে শিপমেন্ট</p>
-              <p className="text-sm font-black text-sky-700">১২টি অর্ডার • অন-টাইম</p>
-            </div>
-          </div>
-        </div>
-
-        {/* stats band */}
-        <div className="relative mx-auto max-w-6xl px-4 pb-10">
-          <div className="grid grid-cols-2 gap-3 rounded-3xl border border-slate-200 bg-white p-3 shadow-[0_2px_18px_rgba(15,23,42,0.05)] sm:grid-cols-4">
-            {stats.map(([v, suf, t]) => (
-              <div key={t} className="px-4 py-3 text-center">
-                <p className="text-2xl font-black text-sky-700 sm:text-3xl"><CountUp to={v} suffix={suf} /></p>
-                <p className="mt-0.5 text-[11px] font-bold text-slate-500">{t}</p>
-              </div>
-            ))}
           </div>
         </div>
         <style>{`
