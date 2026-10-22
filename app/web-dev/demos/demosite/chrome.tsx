@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
-import { useBh, EN_NAME, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
+import { useBh, BhLogo, EN_NAME, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
 import { AdSlot, AnnouncementBar } from "./client-ads";
 
 function navLinks(layout: string, lang?: string): { label: string; href: string }[] {
@@ -194,8 +194,15 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             ☰
           </button>
           <Link href={base} className="flex items-center gap-2">
-            <span className="text-2xl">{def.logoEmoji}</span>
-            <span className="text-lg font-black tracking-tight">{siteName}</span>
+            {isBh ? <BhLogo size={38} /> : <span className="text-2xl">{def.logoEmoji}</span>}
+            {isBh ? (
+              <span className="leading-none">
+                <span className="block whitespace-nowrap text-[17px] font-black tracking-tight">{siteName}</span>
+                <span className="mt-1 block text-[9px] font-black uppercase tracking-[0.22em] text-sky-600">{bh.tx("গার্মেন্টস বায়িং হাউস", "Garments Buying House")}</span>
+              </span>
+            ) : (
+              <span className="text-lg font-black tracking-tight">{siteName}</span>
+            )}
           </Link>
           <form onSubmit={goSearch} className="mx-2 hidden flex-1 md:block">
             <input
@@ -208,12 +215,6 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             />
           </form>
           <div className="ml-auto flex items-center gap-1.5">
-            {isBh && (
-              <div className="mr-1 flex items-center rounded-full bg-slate-100 p-0.5 text-[11px] font-black ring-1 ring-slate-200">
-                <button onClick={() => bh.setLang("en")} className={`rounded-full px-2.5 py-1 transition ${bh.lang === "en" ? "bg-sky-600 text-white shadow" : "text-slate-500"}`}>EN</button>
-                <button onClick={() => bh.setLang("bn")} className={`rounded-full px-2.5 py-1 transition ${bh.lang === "bn" ? "bg-sky-600 text-white shadow" : "text-slate-500"}`}>বাং</button>
-              </div>
-            )}
             <button
               onClick={() => setMSearch((v) => !v)}
               aria-label={L("সার্চ", "Search")}
@@ -276,9 +277,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <div className="p-5 pb-4" style={{ background: `linear-gradient(135deg, ${def.accent}22, transparent)` }}>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2.5">
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl text-2xl shadow-lg" style={{ background: def.accent }}>
-                    {def.logoEmoji}
-                  </span>
+                  {isBh ? <BhLogo size={44} /> : (
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl text-2xl shadow-lg" style={{ background: def.accent }}>
+                      {def.logoEmoji}
+                    </span>
+                  )}
                   <span>
                     <span className="block text-base font-black leading-tight">{siteName}</span>
                     <span className="block text-[10px] font-bold uppercase tracking-widest opacity-50">
@@ -333,6 +336,15 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
             </nav>
+            {isBh && (
+              <>
+                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{bh.tx("ভাষা", "Language")}</p>
+                <div className="flex gap-2">
+                  <button onClick={() => bh.setLang("en")} className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${bh.lang === "en" ? "text-white shadow-lg" : dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`} style={bh.lang === "en" ? { background: def.accent } : undefined}>English</button>
+                  <button onClick={() => bh.setLang("bn")} className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${bh.lang === "bn" ? "text-white shadow-lg" : dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`} style={bh.lang === "bn" ? { background: def.accent } : undefined}>বাংলা</button>
+                </div>
+              </>
+            )}
             {(def.layout === "shop" || def.layout === "gallery" || def.layout === "news") && def.cats.length > 1 && (
               <>
                 <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">ক্যাটাগরি</p>
@@ -416,7 +428,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
       <footer className={`mt-10 border-t ${dark ? "border-white/10 bg-black/30" : "border-slate-200 bg-white"}`}>
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="flex items-center gap-2 text-lg font-black"><span className="text-2xl">{def.logoEmoji}</span>{siteName}</p>
+            <p className="flex items-center gap-2 text-lg font-black">{isBh ? <BhLogo size={30} /> : <span className="text-2xl">{def.logoEmoji}</span>}{siteName}</p>
             <p className="mt-2 text-xs leading-relaxed opacity-60">{(isBh ? bh.tx(def.about, EN_ABOUT) : def.about).slice(0, 120)}...</p>
           </div>
           <div>

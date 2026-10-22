@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useBh, CAT_EN, RFQ_STATUS_EN, EN_NAME, EN_HERO_TITLE, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
+import { useBh, BhLogo, CAT_EN, RFQ_STATUS_EN, EN_NAME, EN_HERO_TITLE, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
 import { useDemo } from "./store";
 import { Page, SectionTitle, Back, Btn, Field, Area, Empty, Stars } from "./ui";
 
@@ -1392,7 +1392,7 @@ export function BuyingAdmin() {
       <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-[#f7f8fc] shadow-[0_18px_50px_rgba(15,23,42,0.10)] lg:flex">
         {/* sidebar */}
         <aside className="hidden w-56 shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:flex">
-          <p className="flex items-center gap-2 px-2 text-lg font-black text-slate-900"><span className="text-2xl">{def.logoEmoji}</span>{bh.tx(def.name, EN_NAME).split(" ")[0]}<span className="text-sky-600">Sync</span></p>
+          <p className="flex items-center gap-2 px-2 text-lg font-black text-slate-900"><BhLogo size={34} />{bh.tx(def.name, EN_NAME).split(" ")[0]}<span className="text-sky-600">Sync</span></p>
           <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">{bh.tx("অপারেশনস প্যানেল", "Operations Panel")}</p>
           <nav className="mt-5 space-y-1">
             {navItems.map(([k, e, t]) => (
