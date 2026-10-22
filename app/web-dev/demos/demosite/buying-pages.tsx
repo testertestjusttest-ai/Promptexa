@@ -597,7 +597,7 @@ export function BhServiceDetail({ id }: { id: string }) {
           <p className={`mt-2 font-black ${htx}`}>{bh.tx("এই সার্ভিস নিয়ে আলোচনা করুন", "Discuss This Service")}</p>
           <p className={`mt-1 text-sm ${sub}`}>{bh.tx("আপনার প্রোডাক্ট ও পরিমাণ জানালে ৪৮ ঘণ্টায় কোটেশন দেব।", "Tell us your product and quantity — get a quotation within 48 hours.")}</p>
           <Link href={`${base}/rfq`} className="mt-4 inline-block rounded-xl px-5 py-3 text-sm font-black text-white" style={{ background: def.accent }}>{bh.tx("📩 RFQ পাঠান", "📩 Send an RFQ")}</Link>
-          <p className={`mt-3 text-xs ${sub}`}>📞 {def.contact}</p>
+          <p className={`mt-3 text-xs ${sub}`}>📞 {bh.dg(def.contact)}</p>
         </div>
       </div>
     </Page>
@@ -1129,7 +1129,7 @@ export function BhContact() {
           ]).map(([e, t, v]) => (
             <div key={t} className={`${card} flex gap-3`}>
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-xl ring-1 ring-sky-100">{e}</span>
-              <span><b className={`block text-sm ${htx}`}>{t}</b><span className={`text-sm ${sub}`}>{v}</span></span>
+              <span><b className={`block text-sm ${htx}`}>{t}</b><span className={`text-sm ${sub}`}>{bh.dg(v)}</span></span>
             </div>
           ))}
           <div className="overflow-hidden rounded-3xl shadow-md">
@@ -1403,7 +1403,7 @@ export function BuyingAdmin() {
           </nav>
           <div className="mt-auto flex items-center gap-2.5 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-600 text-xs font-black text-white">{bh.tx("অ্যা", "A")}</span>
-            <span className="min-w-0"><b className="block truncate text-xs text-slate-800">{bh.tx("অ্যাডমিন", "Admin")}</b><span className="block truncate text-[11px] text-slate-400">{def.contact}</span></span>
+            <span className="min-w-0"><b className="block truncate text-xs text-slate-800">{bh.tx("অ্যাডমিন", "Admin")}</b><span className="block truncate text-[11px] text-slate-400">{bh.dg(def.contact)}</span></span>
           </div>
         </aside>
 
@@ -1714,7 +1714,7 @@ export function BuyingAdmin() {
                   <Btn accent={def.accent}>{saved ? bh.tx("✅ সেভ হয়েছে!", "✅ Saved!") : bh.tx("💾 সেভ করুন", "💾 Save")}</Btn>
                 </div>
               </form>
-              <p className="max-w-xl text-xs leading-relaxed text-slate-400">{bh.tx("সেটিংস বদলালে পুরো সাইটে (নাম, হিরো টেক্সট) সাথে সাথে প্রতিফলিত হয়।", "Settings changes reflect across the whole site (name, hero text) immediately.")} {bh.tx("কন্টাক্ট তথ্য", "Contact")}: {def.contact} • {BH_EMAIL}</p>
+              <p className="max-w-xl text-xs leading-relaxed text-slate-400">{bh.tx("সেটিংস বদলালে পুরো সাইটে (নাম, হিরো টেক্সট) সাথে সাথে প্রতিফলিত হয়।", "Settings changes reflect across the whole site (name, hero text) immediately.")} {bh.tx("কন্টাক্ট তথ্য", "Contact")}: {bh.dg(def.contact)} • {BH_EMAIL}</p>
             </div>
           )}
         </div>

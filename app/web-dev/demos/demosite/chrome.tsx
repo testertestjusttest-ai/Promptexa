@@ -369,7 +369,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             </nav>
             </div>
             <div className={`mx-4 mb-4 mt-auto rounded-2xl p-4 text-sm ${dark ? "bg-white/5" : "bg-slate-50"}`}>
-              <p className="font-bold">{def.contact}</p>
+              <p className="font-bold">{isBh ? bh.dg(def.contact) : def.contact}</p>
               <p className="mt-1 text-xs opacity-60">{isBh ? bh.tx(def.hours, EN_HOURS) : def.hours}</p>
               <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
                 ⚙️ {isBh ? bh.tx(clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন", clientSlug ? "Admin Panel" : "Demo Admin") : clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন"}
@@ -462,7 +462,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
           <div>
             <p className="mb-3 text-sm font-black">{L("যোগাযোগ", "Contact")}</p>
             <div className="space-y-2 text-sm opacity-70">
-              <p>📞 {def.contact}</p>
+              <p>📞 {isBh ? bh.dg(def.contact) : def.contact}</p>
               <p>📍 {isBh ? bh.tx(def.address, EN_ADDRESS) : def.address}</p>
               <p>🕘 {isBh ? bh.tx(def.hours, EN_HOURS) : def.hours}</p>
             </div>
