@@ -13,13 +13,13 @@ export function CasinoLobby() {
   const [cat, setCat] = useState("all");
   // Phase 6: admin category toggles hide categories from the lobby.
   const disabledCats = store.custom.customDisabledGameCats ?? [];
-  const cats = [["all", "🎮 সব"], ["slots", "🎰 স্লটস"], ["table", "🃏 টেবিল"], ["desi", "🪔 দেশি"], ["crash", "📈 ক্র্যাশ"], ["live", "🎥 লাইভ"]].filter(([id]) => id === "all" || !disabledCats.includes(id));
+  const cats = [["all", "🎮 All"], ["slots", "🎰 Slots"], ["table", "🃏 Table"], ["desi", "🪔 Desi"], ["crash", "📈 Crash"], ["live", "🎥 Live"]].filter(([id]) => id === "all" || !disabledCats.includes(id));
   const list = ALL_GAMES.filter((g) => !disabledCats.includes(g.cat) && (cat === "all" || g.cat === cat) && (!q || g.n.includes(q)));
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="🎰 ক্যাসিনো লবি" sub={`${bn(ALL_GAMES.length)}টি গেম`} />
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 গেম খুঁজুন..."
+      <Back href={base} label="Home" />
+      <SectionTitle t="🎰 Casino Lobby" sub={`${bn(ALL_GAMES.length)} games`} />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Search games..."
         className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500" />
       <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
         {cats.map(([id, t]) => (
@@ -27,7 +27,7 @@ export function CasinoLobby() {
             className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-black ${cat === id ? "bg-[#f5c518] text-black" : "bg-white/5 text-slate-300"}`}>{t}</button>
         ))}
       </div>
-      {list.length === 0 ? <Empty emoji="🔍" text="গেম পাওয়া যায়নি" /> : (
+      {list.length === 0 ? <Empty emoji="🔍" text="No games found" /> : (
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {list.map((g) => <GameCard key={g.id} g={g} />)}
         </div>
@@ -40,8 +40,8 @@ export function SlotsList() {
   const { base } = useSkin();
   return (
     <Page>
-      <Back href={`${base}/casino`} label="লবি" />
-      <SectionTitle t="🎰 স্লট গেমস" sub={`${bn(SLOT_GAMES.length)}টি স্লট`} />
+      <Back href={`${base}/casino`} label="Lobby" />
+      <SectionTitle t="🎰 Slot Games" sub={`${bn(SLOT_GAMES.length)} slots`} />
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {SLOT_GAMES.map((g) => <GameCard key={g.id} g={g} />)}
       </div>
@@ -139,7 +139,7 @@ function HoldWinBonus({ bet, onEnd }: { bet: number; onEnd: (win: number) => voi
       <div className="w-full max-w-[420px] overflow-hidden rounded-3xl border-2 border-amber-400/70 bg-gradient-to-b from-[#2a1503] via-[#160b02] to-black shadow-[0_0_60px_rgba(245,197,24,0.35)]">
         <div className="bg-gradient-to-b from-amber-500/30 to-transparent px-4 pb-2 pt-4 text-center">
           <p className="bg-gradient-to-b from-yellow-200 via-[#f5c518] to-amber-600 bg-clip-text text-3xl font-black tracking-wide text-transparent">🪙 HOLD & WIN</p>
-          <p className="mt-1 text-xs font-bold text-amber-200/80">কয়েন আটকে থাকবে • নতুন কয়েন = আবার ৩ রিস্পিন</p>
+          <p className="mt-1 text-xs font-bold text-amber-200/80">Coins stay locked • a new coin = 3 respins again</p>
         </div>
         <div className="mx-4 grid grid-cols-4 gap-1.5">
           {[["GRAND", 500, "from-red-500 to-red-800"], ["MAJOR", 100, "from-fuchsia-500 to-purple-800"], ["MINOR", 25, "from-sky-500 to-blue-800"], ["MINI", 10, "from-emerald-500 to-green-800"]].map(([t, x, gr]) => (
@@ -163,11 +163,11 @@ function HoldWinBonus({ bet, onEnd }: { bet: number; onEnd: (win: number) => voi
           ))}
         </div>
         <div className="flex items-center justify-between px-4 pb-4">
-          <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white">🔄 রিস্পিন: {bn(respins)}</span>
+          <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-black text-white">🔄 Respins: {bn(respins)}</span>
           {done ? (
             <span className="dp-coinpop rounded-full bg-gradient-to-b from-yellow-300 to-amber-600 px-4 py-1.5 text-sm font-black text-black">🏆 {money(finalTotal)}</span>
           ) : (
-            <span className="text-xs font-bold text-white/60">কয়েন জমছে…</span>
+            <span className="text-xs font-bold text-white/60">Coins accumulating…</span>
           )}
         </div>
       </div>
@@ -278,8 +278,8 @@ export function SlotGame({ id }: { id: string }) {
       const ratio = total / bet;
       setTier(ratio >= 25 ? "mega" : "win");
       setCoins(Array.from({ length: ratio >= 25 ? 26 : 12 }, (_, i) => i));
-      setMsg(`🪙 HOLD & WIN — ${money(total)} জিতেছেন!`);
-    } else setMsg("বোনাস শেষ — আবার চেষ্টা করুন");
+      setMsg(`🪙 HOLD & WIN — you won ${money(total)}!`);
+    } else setMsg("Bonus over — try again");
     setHoldWin(null);
   }
 
@@ -302,7 +302,7 @@ export function SlotGame({ id }: { id: string }) {
   function doSpin(isFree: boolean, betAmt: number) {
     if (stateRef.current.spinning) return;
     if (!isFree) {
-      if (!store.payWithWallet(betAmt, `🎰 ${g.n}`)) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); setAutoLeft(0); return; }
+      if (!store.payWithWallet(betAmt, `🎰 ${g.n}`)) { setMsg("Low balance — deposit to continue"); setAutoLeft(0); return; }
     }
     setSpinning(true);
     setWinCells([]); setWinLines([]); setTier(""); setCoins([]); setNearMiss(false); setMsg("");
@@ -338,20 +338,20 @@ export function SlotGame({ id }: { id: string }) {
         const ratio = effWin / betAmt;
         setTier(ratio >= 25 ? "mega" : ratio >= 10 ? "big" : "win");
         setCoins(Array.from({ length: ratio >= 10 ? 26 : 12 }, (_, i) => i));
-        setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : `🎉 জিতেছেন!`);
+        setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : `🎉 You won!`);
       } else {
         // near-miss detection — exactly 2 matching from left on any line
         const nm = SLOT_LINES.some((line) => final[line[0]] !== SCATTER && final[line[0]] !== COIN && final[line[1]] === final[line[0]] && final[line[2]] !== final[line[0]]);
         setNearMiss(nm);
-        setMsg(nm ? "😱 আরেকটু হলেই জিততেন! আবার স্পিন করুন" : isFree ? "" : "আবার চেষ্টা করুন — ভাগ্য ঘুরবেই!");
+        setMsg(nm ? "😱 So close! Spin again" : isFree ? "" : "Try again — your luck will turn!");
       }
       // finish credits the win (topUp) + records history. Free rounds record bet 0.
       finish(isFree ? 0 : betAmt, effWin);
       if (coinCount >= 5 && !isFree && !holdWin) {
-        setMsg("🪙 HOLD & WIN বোনাস!");
+        setMsg("🪙 HOLD & WIN bonus!");
         later(() => setHoldWin({ paid: false }), 900);
       } else if (newFree > 0) {
-        setMsg(`⭐⭐⭐ ${bn(newFree)}টি ফ্রি স্পিন! সব জয় ২x`);
+        setMsg(`⭐⭐⭐ ${bn(newFree)} free spins! All wins 2x`);
         setFreeLeft(newFree);
         setFreeWon(0);
       }
@@ -374,7 +374,7 @@ export function SlotGame({ id }: { id: string }) {
 
   useEffect(() => {
     if (freeLeft === 0 && freeWon > 0 && !spinning) {
-      setMsg(`🎁 ফ্রি স্পিন শেষ! মোট জিতেছেন ${money(freeWon)}`);
+      setMsg(`🎁 Free spins over! You won ${money(freeWon)} in total`);
       setFreeWon(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -384,7 +384,7 @@ export function SlotGame({ id }: { id: string }) {
 
   return (
     <Page>
-      <Back href={`${base}/games`} label="গেম লবি" />
+      <Back href={`${base}/games`} label="Game lobby" />
       <style>{`
         @keyframes dp-fall { 0% { transform: translateY(-240%) scaleY(1.22) scaleX(.92); opacity: 0; filter: blur(3px) } 45% { opacity: 1; filter: blur(0) } 62% { transform: translateY(5%) scaleY(.86) scaleX(1.06) } 80% { transform: translateY(-2.5%) scaleY(1.04) scaleX(.98) } 100% { transform: translateY(0) scaleY(1) scaleX(1); opacity: 1 } }
         @keyframes dp-coin { 0% { transform: translateY(0) rotate(0) scale(1); opacity: 1 } 100% { transform: translateY(-190px) rotate(340deg) scale(.4); opacity: 0 } }
@@ -413,9 +413,9 @@ export function SlotGame({ id }: { id: string }) {
         <div className="relative px-3 pb-4 pt-4 sm:px-5">
           {/* balance + session strip — always visible while playing */}
           <div className="mb-3 flex items-center justify-between gap-2 rounded-2xl bg-black/45 px-3.5 py-2 ring-1 ring-white/10">
-            <p className="text-xs font-bold text-white/75">💰 ব্যালেন্স <b className="text-sm text-[#f5c518]">{money(store.wallet)}</b></p>
-            <p className="text-xs font-bold text-white/75">🏆 এই সেশনে জয় <b className="text-sm text-emerald-300">{money(totalWin)}</b></p>
-            <Link href={`${base}/deposit`} className="rounded-lg bg-[#f5c518] px-2.5 py-1 text-[11px] font-black text-black">＋ টপ-আপ</Link>
+            <p className="text-xs font-bold text-white/75">💰 Balance <b className="text-sm text-[#f5c518]">{money(store.wallet)}</b></p>
+            <p className="text-xs font-bold text-white/75">🏆 Won this session <b className="text-sm text-emerald-300">{money(totalWin)}</b></p>
+            <Link href={`${base}/deposit`} className="rounded-lg bg-[#f5c518] px-2.5 py-1 text-[11px] font-black text-black">＋ Top-up</Link>
           </div>
 
           {/* jackpot tiers — progressive */}
@@ -440,7 +440,7 @@ export function SlotGame({ id }: { id: string }) {
           {/* free spin banner */}
           {freeLeft > 0 && (
             <div className="mx-auto mt-3 w-fit rounded-full bg-gradient-to-r from-fuchsia-600 to-purple-600 px-4 py-1.5 text-xs font-black text-white shadow-lg">
-              🎁 ফ্রি স্পিন বাকি: {bn(freeLeft)} • সব জয় ২x • জমেছে {money(freeWon)}
+              🎁 Free spins left: {bn(freeLeft)} • all wins 2x • collected {money(freeWon)}
             </div>
           )}
 
@@ -487,26 +487,26 @@ export function SlotGame({ id }: { id: string }) {
           <div className="mx-auto mt-3 flex max-w-[560px] items-center justify-center gap-3">
             <p className="text-sm font-black tracking-[0.3em] text-[#f5c518]">TOTAL WIN</p>
             <p className={`text-2xl font-black tabular-nums ${dispTotal > 0 ? "text-white" : "text-white/50"}`}>{money(dispTotal)}</p>
-            {nearMiss && !spinning && <span className="animate-pulse rounded-full bg-red-500/20 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/50">😱 আরেকটু হলেই!</span>}
+            {nearMiss && !spinning && <span className="animate-pulse rounded-full bg-red-500/20 px-2.5 py-1 text-[10px] font-black text-red-300 ring-1 ring-red-400/50">😱 So close!</span>}
           </div>
           {msg && <p className="mt-1.5 text-center text-xs font-bold text-white/85">{msg}</p>}
 
           {/* ===== CONTROL BAR (JILI style, mobile-fit) ===== */}
           <div className="mx-auto mt-3 grid max-w-[560px] grid-cols-[44px_1fr_72px_44px_44px] items-center gap-2">
             <div className="flex flex-col items-center gap-1">
-              <button onClick={() => setTurbo((t) => !t)} className={`grid h-11 w-11 place-items-center rounded-full border text-lg transition active:scale-90 ${turbo ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="টার্বো">⚡</button>
-              <span className="text-[9px] font-bold text-white/60">টার্বো</span>
+              <button onClick={() => setTurbo((t) => !t)} className={`grid h-11 w-11 place-items-center rounded-full border text-lg transition active:scale-90 ${turbo ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="Turbo">⚡</button>
+              <span className="text-[9px] font-bold text-white/60">Turbo</span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center justify-between gap-1 rounded-full border border-white/20 bg-black/45 p-1">
                 <button onClick={() => setBet(BET_STEPS[Math.max(0, betIdx - 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">−</button>
                 <div className="min-w-0 text-center">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/55">বাজি</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/55">Bet</p>
                   <p className="truncate text-sm font-black text-white">{money(bet)}</p>
                 </div>
                 <button onClick={() => setBet(BET_STEPS[Math.min(BET_STEPS.length - 1, betIdx + 1)])} disabled={spinning || freeLeft > 0} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-lg font-black text-white transition active:scale-90 disabled:opacity-40">＋</button>
               </div>
-              <p className="mt-1 text-center text-[9px] font-bold text-white/60">সর্বোচ্চ জয় {money(bet * 1000)}</p>
+              <p className="mt-1 text-center text-[9px] font-bold text-white/60">Max win {money(bet * 1000)}</p>
             </div>
             {/* SPIN */}
             <button onClick={() => doSpin(false, bet)} disabled={spinning || freeLeft > 0}
@@ -516,15 +516,15 @@ export function SlotGame({ id }: { id: string }) {
             </button>
             <div className="flex flex-col items-center gap-1">
               <button onClick={() => setAutoLeft(autoLeft > 0 ? 0 : 30)} disabled={spinning && autoLeft === 0}
-                className={`grid h-11 w-11 place-items-center rounded-full border text-sm font-black transition active:scale-90 ${autoLeft > 0 ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="অটো">
+                className={`grid h-11 w-11 place-items-center rounded-full border text-sm font-black transition active:scale-90 ${autoLeft > 0 ? "border-[#f5c518] bg-[#f5c518]/25 text-[#f5c518]" : "border-white/20 bg-black/40 text-white/70"}`} aria-label="Auto">
                 {autoLeft > 0 ? bn(autoLeft) : "▶"}
               </button>
-              <span className="text-[9px] font-bold text-white/60">অটো ৩০</span>
+              <span className="text-[9px] font-bold text-white/60">Auto 30</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <button onClick={() => { if (stateRef.current.spinning || holdWin) return; if (store.payWithWallet(bet * 50, `🎁 ${g.n} বোনাস`)) { setMsg(""); setHoldWin({ paid: true }); } else setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); }}
-                className="grid h-11 w-11 place-items-center rounded-full border border-amber-300/60 bg-gradient-to-b from-amber-400/30 to-amber-600/30 text-lg transition active:scale-90" aria-label="বোনাস কিনুন">🎁</button>
-              <span className="text-[9px] font-bold text-white/60">বোনাস</span>
+              <button onClick={() => { if (stateRef.current.spinning || holdWin) return; if (store.payWithWallet(bet * 50, `🎁 ${g.n} bonus`)) { setMsg(""); setHoldWin({ paid: true }); } else setMsg("Low balance — deposit to continue"); }}
+                className="grid h-11 w-11 place-items-center rounded-full border border-amber-300/60 bg-gradient-to-b from-amber-400/30 to-amber-600/30 text-lg transition active:scale-90" aria-label="Buy bonus">🎁</button>
+              <span className="text-[9px] font-bold text-white/60">Bonus</span>
             </div>
           </div>
         </div>
@@ -534,14 +534,14 @@ export function SlotGame({ id }: { id: string }) {
 
       {/* paytable */}
       <div className="mx-auto mt-4 max-w-[560px] rounded-2xl border border-white/10 bg-[#101828]/90 p-4">
-        <p className="text-sm font-black text-[#f5c518]">💰 পে-টেবিল (লাইনে ৩/৪/৫টি)</p>
-        <p className="mt-1 text-xs text-slate-300">🪙 <b className="text-white">৫+ কয়েন</b> = HOLD & WIN বোনাস (জ্যাকপট পর্যন্ত!) • ⭐ ৩+ = ৮ ফ্রি স্পিন</p>
+        <p className="text-sm font-black text-[#f5c518]">💰 Paytable (3/4/5 in a line)</p>
+        <p className="mt-1 text-xs text-slate-300">🪙 <b className="text-white">5+ coins</b> = HOLD & WIN bonus (up to the jackpot!) • ⭐ 3+ = 8 free spins</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-300 sm:grid-cols-4">
           {syms.slice(0, 8).map((s, i) => (
             <p key={i}>{s} <b className="text-white">{bn(SLOT_PAY[i][0])}x / {bn(SLOT_PAY[i][1])}x / {bn(SLOT_PAY[i][2])}x</b></p>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-slate-500">৫টি পে-লাইন • ⭐ Scatter ৩+ = ৮ ফ্রি স্পিন (২x) • RTP {g.rtp} • মোট জয় এই সেশনে: {money(totalWin)}</p>
+        <p className="mt-2 text-[11px] text-slate-500">5 pay-lines • ⭐ Scatter 3+ = 8 free spins (2x) • RTP {g.rtp} • total won this session: {money(totalWin)}</p>
       </div>
     </Page>
   );
@@ -550,10 +550,10 @@ export function LiveCasino() {
   const { base } = useSkin();
   return (
     <Page>
-      <Back href={`${base}/casino`} label="লবি" />
-      <SectionTitle t="🎥 লাইভ ক্যাসিনো" sub="রিয়েল ডিলার (সিমুলেটেড)" />
+      <Back href={`${base}/casino`} label="Lobby" />
+      <SectionTitle t="🎥 Live Casino" sub="Real dealer (simulated)" />
       <div className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-center text-xs text-red-200">
-        🔴 এখন {bn(LIVE_GAMES.length)}টি টেবিল লাইভ — ডিলার অপেক্ষা করছে
+        🔴 {bn(LIVE_GAMES.length)} tables live now — the dealer is waiting
       </div>
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {LIVE_GAMES.map((g) => <GameCard key={g.id} g={g} />)}
@@ -570,39 +570,39 @@ export function LiveGameDetail({ id }: { id: string }) {
     const t = setInterval(() => setSeats(3 + Math.floor(Math.random() * 8)), 5000);
     return () => clearInterval(t);
   }, []);
-  if (!g) return <Page narrow><Empty emoji="🔍" text="টেবিল পাওয়া যায়নি" /></Page>;
+  if (!g) return <Page narrow><Empty emoji="🔍" text="Table not found" /></Page>;
   const target = g.id.replace("live-", "");
   const targetGame = ALL_GAMES.find((x) => x.id === target);
   const joinHref = targetGame ? `${base}${gameHref(targetGame)}` : `${base}/casino`;
   return (
     <Page narrow>
-      <Back href={`${base}/casino/live`} label="লাইভ ক্যাসিনো" />
+      <Back href={`${base}/casino/live`} label="Live casino" />
       <div className={`${card} overflow-hidden`}>
         <div className="relative bg-gradient-to-b from-emerald-950 to-[#0b1120] p-6 text-center">
-          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white animate-pulse">🔴 লাইভ</span>
+          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-black text-white animate-pulse">🔴 Live</span>
           <p className="text-6xl">{g.e}</p>
           <h1 className="mt-2 text-xl font-black">{g.n}</h1>
-          <p className={`mt-1 text-xs ${sub}`}>🎩 ডিলার: রিয়া • 💺 {bn(seats)} জন খেলছেন</p>
+          <p className={`mt-1 text-xs ${sub}`}>🎩 Dealer: Riya • 💺 {bn(seats)} players playing</p>
           {/* simulated dealer video */}
           <div className="mx-auto mt-4 flex h-36 max-w-sm items-center justify-center rounded-2xl border border-emerald-800 bg-black/50">
             <div className="text-center">
               <p className="text-5xl animate-pulse">🎩</p>
-              <p className="mt-1 text-[11px] text-slate-400">ডিলার ভিডিও (সিমুলেটেড)</p>
+              <p className="mt-1 text-[11px] text-slate-400">Dealer video (simulated)</p>
             </div>
           </div>
         </div>
         <div className="p-4">
-          <p className="mb-2 text-sm font-black text-[#f5c518]">💬 লাইভ চ্যাট (ডেমো)</p>
+          <p className="mb-2 text-sm font-black text-[#f5c518]">💬 Live chat (demo)</p>
           <div className="mb-3 max-h-28 space-y-1 overflow-y-auto text-xs">
-            {["রহিম: শুভকামনা সবাইকে! 🍀", "সাকিব: ডিলার আজ দারুণ", "নুসরাত: বড় জয় আসছে...", "করিম: তিন পাত্তি সেরা!"].map((c, i) => (
+            {["Rahim: Good luck everyone! 🍀", "Sakib: The dealer is great today", "Nusrat: A big win is coming...", "Karim: Teen Patti is the best!"].map((c, i) => (
               <p key={i} className={sub}>{c}</p>
             ))}
           </div>
           <Link href={joinHref}
             className="block w-full rounded-xl bg-[#f5c518] py-3 text-center font-black text-black">
-            ▶️ টেবিলে যোগ দিন
+            ▶️ Join the table
           </Link>
-          <p className="mt-2 text-center text-[11px] text-slate-500">ডেমো টেবিল — একই গেম ইঞ্জিনে খেলুন</p>
+          <p className="mt-2 text-center text-[11px] text-slate-500">Demo table — play on the same game engine</p>
         </div>
       </div>
     </Page>
@@ -613,7 +613,7 @@ export function LiveGameDetail({ id }: { id: string }) {
 
 export function RouletteGame() {
   const { store } = useSkin();
-  const finish = useGameRound("রুলেট");
+  const finish = useGameRound("Roulette");
   const [bet, setBet] = useState(50);
   const [pick, setPick] = useState<"red" | "black" | number>("red");
   const [spinning, setSpinning] = useState(false);
@@ -624,7 +624,7 @@ export function RouletteGame() {
   function spin() {
     setMsg("");
     if (spinning) return;
-    if (!store.payWithWallet(bet, "🎡 রুলেট")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🎡 Roulette")) { setMsg("Low balance — deposit to continue"); return; }
     setSpinning(true);
     let n = 0;
     const t = setInterval(() => {
@@ -639,7 +639,7 @@ export function RouletteGame() {
         else if (pick === "red" && isRed && r !== 0) win = Math.round(bet * 1.95);
         else if (pick === "black" && !isRed && r !== 0) win = Math.round(bet * 1.95);
         finish(bet, win);
-        setMsg(win > 0 ? `🎉 ${bn(r)}! জিতেছেন ${money(win)}` : `😅 ${bn(r)} — হারলেন`);
+        setMsg(win > 0 ? `🎉 ${bn(r)}! You won ${money(win)}` : `😅 ${bn(r)} — you lost`);
         setSpinning(false);
       }
     }, 100);
@@ -647,26 +647,26 @@ export function RouletteGame() {
 
   const color = num === null ? "" : num === 0 ? "bg-emerald-600" : REDS.includes(num) ? "bg-red-600" : "bg-slate-800";
   return (
-    <GameShell title="রুলেট" emoji="🎡" rtp="৯৭.৩%">
+    <GameShell title="Roulette" emoji="🎡" rtp="97.3%">
       <div className="flex justify-center">
         <div className={`flex h-28 w-28 items-center justify-center rounded-full border-4 border-[#f5c518] text-4xl font-black text-white transition ${spinning ? "animate-spin" : ""} ${color || "bg-slate-800"}`}>
           {num === null ? "🎡" : bn(num)}
         </div>
       </div>
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <p className="mb-1.5 mt-4 text-xs font-bold text-slate-400">বেছে নিন</p>
+      <p className="mb-1.5 mt-4 text-xs font-bold text-slate-400">Choose</p>
       <div className="grid grid-cols-2 gap-1.5">
-        <button onClick={() => setPick("red")} className={`rounded-xl py-2.5 font-black ${pick === "red" ? "bg-red-600 text-white" : "bg-white/5"}`}>🔴 লাল (১.৯৫x)</button>
-        <button onClick={() => setPick("black")} className={`rounded-xl py-2.5 font-black ${pick === "black" ? "bg-slate-700 text-white ring-2 ring-white/40" : "bg-white/5"}`}>⚫ কালো (১.৯৫x)</button>
+        <button onClick={() => setPick("red")} className={`rounded-xl py-2.5 font-black ${pick === "red" ? "bg-red-600 text-white" : "bg-white/5"}`}>🔴 Red (1.95x)</button>
+        <button onClick={() => setPick("black")} className={`rounded-xl py-2.5 font-black ${pick === "black" ? "bg-slate-700 text-white ring-2 ring-white/40" : "bg-white/5"}`}>⚫ Black (1.95x)</button>
       </div>
       <div className="mt-2 flex flex-wrap gap-1">
         {[0, 7, 14, 21, 28, 36].map((v) => (
-          <button key={v} onClick={() => setPick(v)} className={`rounded-lg px-2.5 py-1 text-xs font-black ${pick === v ? "bg-[#f5c518] text-black" : "bg-white/10"}`}>{bn(v)} (৩৫x)</button>
+          <button key={v} onClick={() => setPick(v)} className={`rounded-lg px-2.5 py-1 text-xs font-black ${pick === v ? "bg-[#f5c518] text-black" : "bg-white/10"}`}>{bn(v)} (35x)</button>
         ))}
       </div>
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
       <button onClick={spin} disabled={spinning} className="mt-4 w-full rounded-2xl bg-[#f5c518] py-3.5 text-lg font-black text-black disabled:opacity-50">
-        {spinning ? "🌀 ঘুরছে..." : "🎡 স্পিন"}
+        {spinning ? "🌀 Spinning..." : "🎡 Spin"}
       </button>
     </GameShell>
   );
@@ -686,7 +686,7 @@ const bjVal = (hand: string[]) => {
 
 export function BlackjackGame() {
   const { store } = useSkin();
-  const finish = useGameRound("ব্ল্যাকজ্যাক");
+  const finish = useGameRound("Blackjack");
   const [bet, setBet] = useState(50);
   const [ph, setPh] = useState<string[]>([]);
   const [dh, setDh] = useState<string[]>([]);
@@ -695,7 +695,7 @@ export function BlackjackGame() {
 
   function deal() {
     setMsg("");
-    if (!store.payWithWallet(bet, "🂡 ব্ল্যাকজ্যাক")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🂡 Blackjack")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const p = [drawCard(used), drawCard(used)], d = [drawCard(used), drawCard(used)];
     setPh(p); setDh(d); setStage("play");
@@ -713,7 +713,7 @@ export function BlackjackGame() {
     else if (dv > 21 || pv > dv) win = bet * 2;
     else if (pv === dv) win = bet;
     finish(bet, win);
-    setMsg(win > bet ? `🎉 জিতেছেন ${money(win)}!` : win === bet ? "🤝 ড্র — বাজি ফেরত" : `😅 হেরেছেন (ডিলার ${bn(dv)})`);
+    setMsg(win > bet ? `🎉 You won ${money(win)}!` : win === bet ? "🤝 Draw — bet returned" : `😅 You lost (dealer ${bn(dv)})`);
     setStage("done");
   }
   const hit = () => {
@@ -725,33 +725,33 @@ export function BlackjackGame() {
   };
 
   return (
-    <GameShell title="ব্ল্যাকজ্যাক" emoji="🂡" rtp="৯৯.৪%">
+    <GameShell title="Blackjack" emoji="🂡" rtp="99.4%">
       {stage === "bet" ? (
         <>
           <p className="text-center text-6xl">🂡</p>
-          <p className="mt-2 text-center text-sm text-slate-400">২১-এর কাছাকাছি যান, পার হবেন না!</p>
-          <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
+          <p className="mt-2 text-center text-sm text-slate-400">Get close to 21, don't go over!</p>
+          <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
           {msg && <p className="mt-2 text-center text-xs font-bold text-red-300">{msg}</p>}
-          <button onClick={deal} className="mt-4 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🃏 ডিল করুন</button>
+          <button onClick={deal} className="mt-4 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🃏 Deal</button>
         </>
       ) : (
         <>
           <div className="rounded-2xl bg-emerald-950/50 p-3">
-            <p className="text-xs text-slate-400">ডিলার {stage === "play" ? "(একটি গোপন)" : ""} — {stage === "done" ? bn(bjVal(dh)) : "?"}</p>
+            <p className="text-xs text-slate-400">Dealer {stage === "play" ? "(one hidden)" : ""} — {stage === "done" ? bn(bjVal(dh)) : "?"}</p>
             <div className="mt-1 flex gap-1.5">{dh.map((c, i) => <span key={i}>{i === 1 && stage === "play" ? <span className="inline-flex h-14 w-11 items-center justify-center rounded-lg bg-[#f5c518]/20 text-lg">❓</span> : <CardView c={c} />}</span>)}</div>
           </div>
           <div className="mt-3 rounded-2xl bg-emerald-950/50 p-3">
-            <p className="text-xs text-slate-400">আপনি — {bn(bjVal(ph))}</p>
+            <p className="text-xs text-slate-400">You — {bn(bjVal(ph))}</p>
             <div className="mt-1 flex gap-1.5">{ph.map((c, i) => <CardView key={i} c={c} />)}</div>
           </div>
           {msg && <p className="mt-3 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
           {stage === "play" ? (
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <button onClick={hit} className="rounded-xl bg-[#f5c518] py-3 font-black text-black">👆 হিট</button>
-              <button onClick={() => end(ph, dh)} className="rounded-xl border border-white/20 py-3 font-black">✋ স্ট্যান্ড</button>
+              <button onClick={hit} className="rounded-xl bg-[#f5c518] py-3 font-black text-black">👆 Hit</button>
+              <button onClick={() => end(ph, dh)} className="rounded-xl border border-white/20 py-3 font-black">✋ Stand</button>
             </div>
           ) : (
-            <button onClick={() => { setStage("bet"); setPh([]); setDh([]); setMsg(""); }} className="mt-4 w-full rounded-xl bg-[#f5c518] py-3 font-black text-black">🔄 আবার খেলুন</button>
+            <button onClick={() => { setStage("bet"); setPh([]); setDh([]); setMsg(""); }} className="mt-4 w-full rounded-xl bg-[#f5c518] py-3 font-black text-black">🔄 Play again</button>
           )}
         </>
       )}
@@ -761,7 +761,7 @@ export function BlackjackGame() {
 
 export function BaccaratGame() {
   const { store } = useSkin();
-  const finish = useGameRound("ব্যাকারাট");
+  const finish = useGameRound("Baccarat");
   const [bet, setBet] = useState(50);
   const [pick, setPick] = useState<"player" | "banker" | "tie">("player");
   const [ph, setPh] = useState<string[]>([]);
@@ -772,7 +772,7 @@ export function BaccaratGame() {
 
   function play() {
     setMsg("");
-    if (!store.payWithWallet(bet, "🃏 ব্যাকারাট")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🃏 Baccarat")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const p = [drawCard(used), drawCard(used)], b = [drawCard(used), drawCard(used)];
     if (bv(p) <= 5) p.push(drawCard(used));
@@ -784,25 +784,25 @@ export function BaccaratGame() {
     else if (pv > bval && pick === "player") win = bet * 2;
     else if (bval > pv && pick === "banker") win = Math.round(bet * 1.95);
     finish(bet, win);
-    setMsg(win > 0 ? `🎉 জিতেছেন ${money(win)}!` : `😅 হেরেছেন (প্লেয়ার ${bn(pv)} — ব্যাংকার ${bn(bval)})`);
+    setMsg(win > 0 ? `🎉 You won ${money(win)}!` : `😅 You lost (player ${bn(pv)} — banker ${bn(bval)})`);
   }
   return (
-    <GameShell title="ব্যাকারাট" emoji="🃏" rtp="৯৮.৯%">
+    <GameShell title="Baccarat" emoji="🃏" rtp="98.9%">
       {(["player", "banker", "tie"] as const).map((k) => (
         <button key={k} onClick={() => { setPick(k); setDone(false); }}
           className={`mb-1.5 w-full rounded-xl py-2.5 text-sm font-black ${pick === k ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>
-          {k === "player" ? "🧍 প্লেয়ার (২x)" : k === "banker" ? "🏦 ব্যাংকার (১.৯৫x)" : "🤝 টাই (৮x)"}
+          {k === "player" ? "🧍 Player (2x)" : k === "banker" ? "🏦 Banker (1.95x)" : "🤝 Tie (8x)"}
         </button>
       ))}
       {done && (
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">প্লেয়ার {bn(bv(ph))}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">ব্যাংকার {bn(bv(bh))}</p><div className="mt-1 flex justify-center gap-1">{bh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">Player {bn(bv(ph))}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">Banker {bn(bv(bh))}</p><div className="mt-1 flex justify-center gap-1">{bh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
         </div>
       )}
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
-      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🃏 ডিল করুন</button>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
+      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🃏 Deal</button>
     </GameShell>
   );
 }
@@ -827,11 +827,11 @@ const cmpHands = (a: [number, number[]], b: [number, number[]]) => {
   for (let i = 0; i < 3; i++) if (a[1][i] !== b[1][i]) return a[1][i] - b[1][i];
   return 0;
 };
-const POKER_NAMES = ["হাই কার্ড", "পেয়ার", "কালার", "সিকোয়েন্স", "পিওর সিকোয়েন্স", "ট্রায়ো"];
+const POKER_NAMES = ["High Card", "Pair", "Colour", "Sequence", "Pure Sequence", "Trio"];
 
 export function PokerGame() {
   const { store } = useSkin();
-  const finish = useGameRound("থ্রি-কার্ড পোকার");
+  const finish = useGameRound("Three-Card Poker");
   const [bet, setBet] = useState(50);
   const [ph, setPh] = useState<string[]>([]);
   const [dh, setDh] = useState<string[]>([]);
@@ -839,7 +839,7 @@ export function PokerGame() {
   const [msg, setMsg] = useState("");
   function play() {
     setMsg("");
-    if (!store.payWithWallet(bet, "♠️ পোকার")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "♠️ Poker")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const p = [drawCard(used), drawCard(used), drawCard(used)];
     const d = [drawCard(used), drawCard(used), drawCard(used)];
@@ -847,27 +847,27 @@ export function PokerGame() {
     const cmp = cmpHands(pokerRank(p), pokerRank(d));
     const win = cmp > 0 ? bet * 2 : cmp === 0 ? bet : 0;
     finish(bet, win);
-    setMsg(win > bet ? `🎉 জিতেছেন ${money(win)}! (${POKER_NAMES[pokerRank(p)[0]]})` : win === bet ? "🤝 ড্র — বাজি ফেরত" : `😅 হেরেছেন (ডিলার: ${POKER_NAMES[pokerRank(d)[0]]})`);
+    setMsg(win > bet ? `🎉 You won ${money(win)}! (${POKER_NAMES[pokerRank(p)[0]]})` : win === bet ? "🤝 Draw — bet returned" : `😅 You lost (dealer: ${POKER_NAMES[pokerRank(d)[0]]})`);
   }
   return (
-    <GameShell title="থ্রি-কার্ড পোকার" emoji="♠️" rtp="৯৬.৬%">
-      <p className="mb-3 text-center text-xs text-slate-400">ডিলারের চেয়ে ভালো হাত বানান</p>
+    <GameShell title="Three-Card Poker" emoji="♠️" rtp="96.6%">
+      <p className="mb-3 text-center text-xs text-slate-400">Make a better hand than the dealer</p>
       {done ? (
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">আপনি — {POKER_NAMES[pokerRank(ph)[0]]}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">ডিলার — {POKER_NAMES[pokerRank(dh)[0]]}</p><div className="mt-1 flex justify-center gap-1">{dh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">You — {POKER_NAMES[pokerRank(ph)[0]]}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">Dealer — {POKER_NAMES[pokerRank(dh)[0]]}</p><div className="mt-1 flex justify-center gap-1">{dh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
         </div>
       ) : <p className="py-8 text-center text-6xl">🂠🂠🂠</p>}
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
-      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">♠️ ডিল করুন</button>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
+      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">♠️ Deal</button>
     </GameShell>
   );
 }
 
 export function TeenPattiGame() {
   const { store } = useSkin();
-  const finish = useGameRound("তিন পাত্তি");
+  const finish = useGameRound("Teen Patti");
   const [bet, setBet] = useState(50);
   const [ph, setPh] = useState<string[]>([]);
   const [dh, setDh] = useState<string[]>([]);
@@ -875,7 +875,7 @@ export function TeenPattiGame() {
   const [msg, setMsg] = useState("");
   function play() {
     setMsg("");
-    if (!store.payWithWallet(bet, "🪔 তিন পাত্তি")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🪔 Teen Patti")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const p = [drawCard(used), drawCard(used), drawCard(used)];
     const d = [drawCard(used), drawCard(used), drawCard(used)];
@@ -883,29 +883,29 @@ export function TeenPattiGame() {
     const cmp = cmpHands(pokerRank(p), pokerRank(d));
     const win = cmp > 0 ? bet * 2 : cmp === 0 ? bet : 0;
     finish(bet, win);
-    setMsg(win > bet ? `🎉 শাবাশ! জিতেছেন ${money(win)} (${POKER_NAMES[pokerRank(p)[0]]})` : win === bet ? "🤝 ড্র — বাজি ফেরত" : `😅 হেরেছেন (প্রতিপক্ষ: ${POKER_NAMES[pokerRank(d)[0]]})`);
+    setMsg(win > bet ? `🎉 Well done! You won ${money(win)} (${POKER_NAMES[pokerRank(p)[0]]})` : win === bet ? "🤝 Draw — bet returned" : `😅 You lost (opponent: ${POKER_NAMES[pokerRank(d)[0]]})`);
   }
   return (
-    <GameShell title="তিন পাত্তি" emoji="🪔" rtp="৯৭.১%">
+    <GameShell title="Teen Patti" emoji="🪔" rtp="97.1%">
       <div className="mb-2 flex justify-center gap-1 text-[11px] text-slate-400">
         {POKER_NAMES.map((n, i) => <span key={n} className="rounded bg-white/5 px-1.5 py-0.5">{n}{i < 5 ? " <" : ""}</span>)}
       </div>
       {done ? (
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">আপনি — {POKER_NAMES[pokerRank(ph)[0]]}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
-          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">প্রতিপক্ষ — {POKER_NAMES[pokerRank(dh)[0]]}</p><div className="mt-1 flex justify-center gap-1">{dh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">You — {POKER_NAMES[pokerRank(ph)[0]]}</p><div className="mt-1 flex justify-center gap-1">{ph.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
+          <div className="rounded-xl bg-white/5 p-2 text-center"><p className="text-xs text-slate-400">Opponent — {POKER_NAMES[pokerRank(dh)[0]]}</p><div className="mt-1 flex justify-center gap-1">{dh.map((c, i) => <CardView key={i} c={c} small />)}</div></div>
         </div>
       ) : <p className="py-8 text-center text-6xl">🪔</p>}
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি (চাল)</p><BetChips bet={bet} setBet={setBet} /></div>
-      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🪔 পাত্তি দেখুন</button>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet (move)</p><BetChips bet={bet} setBet={setBet} /></div>
+      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🪔 Show cards</button>
     </GameShell>
   );
 }
 
 export function AndarBaharGame() {
   const { store } = useSkin();
-  const finish = useGameRound("অন্দর বাহার");
+  const finish = useGameRound("Andar Bahar");
   const [bet, setBet] = useState(50);
   const [pick, setPick] = useState<"andar" | "bahar">("andar");
   const [mid, setMid] = useState("");
@@ -914,7 +914,7 @@ export function AndarBaharGame() {
   const [msg, setMsg] = useState("");
   function play() {
     setMsg(""); setSeq([]); setDone(false);
-    if (!store.payWithWallet(bet, "🎴 অন্দর বাহার")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🎴 Andar Bahar")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const m = drawCard(used);
     setMid(m);
@@ -934,36 +934,36 @@ export function AndarBaharGame() {
         setDone(true);
         const win = winner === pick ? Math.round(bet * 1.9) : 0;
         finish(bet, win);
-        setMsg(win > 0 ? `🎉 ${winner === "andar" ? "অন্দর" : "বাহার"} জিতলো! ${money(win)}` : `😅 ${winner === "andar" ? "অন্দর" : "বাহার"} জিতলো — হারলেন`);
+        setMsg(win > 0 ? `🎉 ${winner === "andar" ? "Andar" : "Bahar"} won! ${money(win)}` : `😅 ${winner === "andar" ? "Andar" : "Bahar"} won — you lost`);
       }
     }, 350);
   }
   return (
-    <GameShell title="অন্দর বাহার" emoji="🎴" rtp="৯৬.৮%">
+    <GameShell title="Andar Bahar" emoji="🎴" rtp="96.8%">
       <div className="grid grid-cols-2 gap-2">
         {(["andar", "bahar"] as const).map((k) => (
           <button key={k} onClick={() => setPick(k)} className={`rounded-xl py-3 font-black ${pick === k ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>
-            {k === "andar" ? "⬅️ অন্দর" : "বাহার ➡️"}<br /><span className="text-xs">১.৯x</span>
+            {k === "andar" ? "⬅️ Andar" : "Bahar ➡️"}<br /><span className="text-xs">1.9x</span>
           </button>
         ))}
       </div>
       {mid && (
         <div className="mt-3 rounded-xl bg-white/5 p-3 text-center">
-          <p className="text-[11px] text-slate-400">মাঝের পাত্তি</p>
+          <p className="text-[11px] text-slate-400">Middle card</p>
           <div className="mt-1 flex justify-center"><CardView c={mid} /></div>
           <div className="mt-2 flex flex-wrap justify-center gap-1">{seq.map((c, i) => <span key={i} className={i % 2 === 0 ? "mr-1" : ""}><CardView c={c} small /></span>)}</div>
         </div>
       )}
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
-      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🎴 খেলুন</button>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
+      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🎴 Play</button>
     </GameShell>
   );
 }
 
 export function DragonTigerGame() {
   const { store } = useSkin();
-  const finish = useGameRound("ড্রাগন টাইগার");
+  const finish = useGameRound("Dragon Tiger");
   const [bet, setBet] = useState(50);
   const [pick, setPick] = useState<"dragon" | "tiger" | "tie">("dragon");
   const [dc, setDc] = useState("");
@@ -971,7 +971,7 @@ export function DragonTigerGame() {
   const [msg, setMsg] = useState("");
   function play() {
     setMsg("");
-    if (!store.payWithWallet(bet, "🐉 ড্রাগন টাইগার")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🐉 Dragon Tiger")) { setMsg("Low balance — deposit to continue"); return; }
     const used = new Set<string>();
     const d = drawCard(used), t = drawCard(used);
     setDc(d); setTc(t);
@@ -981,24 +981,24 @@ export function DragonTigerGame() {
     else if (dv > tv && pick === "dragon") win = Math.round(bet * 1.95);
     else if (tv > dv && pick === "tiger") win = Math.round(bet * 1.95);
     finish(bet, win);
-    setMsg(win > 0 ? `🎉 জিতেছেন ${money(win)}!` : `😅 হেরেছেন (ড্রাগন ${d} vs টাইগার ${t})`);
+    setMsg(win > 0 ? `🎉 You won ${money(win)}!` : `😅 You lost (dragon ${d} vs tiger ${t})`);
   }
   return (
-    <GameShell title="ড্রাগন টাইগার" emoji="🐉" rtp="৯৬.৭%">
+    <GameShell title="Dragon Tiger" emoji="🐉" rtp="96.7%">
       <div className="grid grid-cols-3 gap-1.5">
         {(["dragon", "tiger", "tie"] as const).map((k) => (
           <button key={k} onClick={() => setPick(k)} className={`rounded-xl py-2.5 text-sm font-black ${pick === k ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>
-            {k === "dragon" ? "🐉 ড্রাগন" : k === "tiger" ? "🐯 টাইগার" : "🤝 টাই"}<br /><span className="text-[11px]">{k === "tie" ? "৮x" : "১.৯৫x"}</span>
+            {k === "dragon" ? "🐉 Dragon" : k === "tiger" ? "🐯 Tiger" : "🤝 Tie"}<br /><span className="text-[11px]">{k === "tie" ? "8x" : "1.95x"}</span>
           </button>
         ))}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <div className="rounded-xl bg-white/5 p-3 text-center"><p className="text-xs text-slate-400">🐉 ড্রাগন</p><div className="mt-1 flex justify-center">{dc ? <CardView c={dc} /> : <span className="text-4xl">❓</span>}</div></div>
-        <div className="rounded-xl bg-white/5 p-3 text-center"><p className="text-xs text-slate-400">🐯 টাইগার</p><div className="mt-1 flex justify-center">{tc ? <CardView c={tc} /> : <span className="text-4xl">❓</span>}</div></div>
+        <div className="rounded-xl bg-white/5 p-3 text-center"><p className="text-xs text-slate-400">🐉 Dragon</p><div className="mt-1 flex justify-center">{dc ? <CardView c={dc} /> : <span className="text-4xl">❓</span>}</div></div>
+        <div className="rounded-xl bg-white/5 p-3 text-center"><p className="text-xs text-slate-400">🐯 Tiger</p><div className="mt-1 flex justify-center">{tc ? <CardView c={tc} /> : <span className="text-4xl">❓</span>}</div></div>
       </div>
       {msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
-      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🐉 ডিল করুন</button>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
+      <button onClick={play} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🐉 Deal</button>
     </GameShell>
   );
 }
@@ -1019,7 +1019,7 @@ function useCrashEngine(gameName: string) {
   function start() {
     setMsg(""); setCashed(0);
     if (stage === "flying") return;
-    if (!store.payWithWallet(bet, `📈 ${gameName}`)) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, `📈 ${gameName}`)) { setMsg("Low balance — deposit to continue"); return; }
     // house edge: crash point distribution
     const r = Math.random();
     const cp = r < 0.03 ? 1 : Math.max(1, +(0.99 / (1 - Math.random() * 0.97)).toFixed(2));
@@ -1034,7 +1034,7 @@ function useCrashEngine(gameName: string) {
         if (timer.current) clearInterval(timer.current);
         setStage("done");
         finish(bet, 0);
-        setMsg(`💥 ${bn(cp.toFixed(2))}x-এ ক্র্যাশ! বাজি হারলেন`);
+        setMsg(`💥 Crashed at ${bn(cp.toFixed(2))}x! You lost the bet`);
       }
     }, 120);
   }
@@ -1044,7 +1044,7 @@ function useCrashEngine(gameName: string) {
     const win = Math.round(bet * mult);
     setCashed(win);
     finish(bet, win);
-    setMsg(`🎉 ${bn(mult.toFixed(2))}x-এ ক্যাশআউট! জিতেছেন ${money(win)}`);
+    setMsg(`🎉 Cashed out at ${bn(mult.toFixed(2))}x! You won ${money(win)}`);
     setStage("done");
   }
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
@@ -1053,14 +1053,14 @@ function useCrashEngine(gameName: string) {
 }
 
 export function CrashGame() {
-  const e = useCrashEngine("ক্র্যাশ");
+  const e = useCrashEngine("Crash");
   const pts = Array.from({ length: 20 }, (_, i) => {
     const x = (i / 19) * 100;
     const y = 100 - Math.min(100, (Math.pow(e.mult, 0.5) - 1) * 30 * (i / 19));
     return `${x},${y}`;
   }).join(" ");
   return (
-    <GameShell title="ক্র্যাশ" emoji="📈" rtp="৯৭.০%">
+    <GameShell title="Crash" emoji="📈" rtp="97.0%">
       <div className="rounded-2xl bg-black/50 p-4">
         <svg viewBox="0 0 100 100" className="h-44 w-full">
           <polyline points={pts} fill="none" stroke={e.stage === "done" && e.cashed === 0 ? "#ef4444" : "#f5c518"} strokeWidth="2.5" />
@@ -1069,27 +1069,27 @@ export function CrashGame() {
         <p className={`text-center text-5xl font-black ${e.stage === "done" && e.cashed === 0 ? "text-red-400" : "text-[#f5c518]"}`}>
           {bn(e.mult.toFixed(2))}x
         </p>
-        <p className="text-center text-[11px] text-slate-500">ক্র্যাশের আগেই ক্যাশআউট করুন!</p>
+        <p className="text-center text-[11px] text-slate-500">Cash out before the crash!</p>
       </div>
       {e.msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{e.msg}</p>}
       {e.stage === "idle" && (<>
-        <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={e.bet} setBet={e.setBet} /></div>
-        <button onClick={e.start} className="mt-3 w-full rounded-2xl bg-emerald-500 py-3.5 font-black text-white">🚀 বাজি ধরুন ও শুরু করুন</button>
+        <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={e.bet} setBet={e.setBet} /></div>
+        <button onClick={e.start} className="mt-3 w-full rounded-2xl bg-emerald-500 py-3.5 font-black text-white">🚀 Place your bet & start</button>
       </>)}
       {e.stage === "flying" && (
         <button onClick={e.cashout} className="mt-3 w-full animate-pulse rounded-2xl bg-[#f5c518] py-4 text-xl font-black text-black">
-          💰 ক্যাশআউট — {money(Math.round(e.bet * e.mult))}
+          💰 Cashout — {money(Math.round(e.bet * e.mult))}
         </button>
       )}
       {e.stage === "done" && (
-        <button onClick={e.reset} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🔄 নতুন রাউন্ড</button>
+        <button onClick={e.reset} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🔄 New round</button>
       )}
     </GameShell>
   );
 }
 
 export function AviatorGame() {
-  const e = useCrashEngine("জেট ফ্লাইট");
+  const e = useCrashEngine("Jet Flight");
   const [auto, setAuto] = useState("");
   useEffect(() => {
     if (e.stage === "flying" && auto) {
@@ -1100,7 +1100,7 @@ export function AviatorGame() {
   const left = Math.min(88, (e.mult - 1) * 22);
   const bottom = Math.min(72, (e.mult - 1) * 18);
   return (
-    <GameShell title="জেট ফ্লাইট" emoji="✈️" rtp="৯৭.০%">
+    <GameShell title="Jet Flight" emoji="✈️" rtp="97.0%">
       <div className="relative h-48 overflow-hidden rounded-2xl bg-gradient-to-b from-sky-950 to-[#0b1120]">
         <p className="absolute right-3 top-2 text-[11px] text-slate-400">☁️ ☁️ ☁️</p>
         {e.stage !== "idle" && (
@@ -1115,21 +1115,21 @@ export function AviatorGame() {
       </div>
       {e.msg && <p className="mt-2 text-center text-sm font-black text-[#f5c518]">{e.msg}</p>}
       {e.stage === "idle" && (<>
-        <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={e.bet} setBet={e.setBet} /></div>
+        <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={e.bet} setBet={e.setBet} /></div>
         <div className="mt-2 flex items-center gap-2">
-          <label className="text-xs text-slate-400">🤖 অটো ক্যাশআউট:</label>
-          <input value={auto} onChange={(ev) => setAuto(ev.target.value.replace(/[^0-9.]/g, ""))} placeholder="যেমন ২.০" className="w-24 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-center text-sm text-white outline-none" />
+          <label className="text-xs text-slate-400">🤖 Auto cashout:</label>
+          <input value={auto} onChange={(ev) => setAuto(ev.target.value.replace(/[^0-9.]/g, ""))} placeholder="e.g. 2.0" className="w-24 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-center text-sm text-white outline-none" />
           <span className="text-xs text-slate-500">x</span>
         </div>
-        <button onClick={e.start} className="mt-3 w-full rounded-2xl bg-red-600 py-3.5 font-black text-white">✈️ উড্ডয়ন শুরু</button>
+        <button onClick={e.start} className="mt-3 w-full rounded-2xl bg-red-600 py-3.5 font-black text-white">✈️ Take off</button>
       </>)}
       {e.stage === "flying" && (
         <button onClick={e.cashout} className="mt-3 w-full animate-pulse rounded-2xl bg-[#f5c518] py-4 text-xl font-black text-black">
-          💰 ক্যাশআউট — {money(Math.round(e.bet * e.mult))}
+          💰 Cashout — {money(Math.round(e.bet * e.mult))}
         </button>
       )}
       {e.stage === "done" && (
-        <button onClick={e.reset} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🔄 নতুন ফ্লাইট</button>
+        <button onClick={e.reset} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black">🔄 New flight</button>
       )}
     </GameShell>
   );
@@ -1137,7 +1137,7 @@ export function AviatorGame() {
 
 export function DiceGame() {
   const { store } = useSkin();
-  const finish = useGameRound("ডাইস");
+  const finish = useGameRound("Dice");
   const [bet, setBet] = useState(50);
   const [pick, setPick] = useState<"small" | "big" | number>("big");
   const [roll, setRoll] = useState<number | null>(null);
@@ -1146,7 +1146,7 @@ export function DiceGame() {
   function play() {
     setMsg("");
     if (rolling) return;
-    if (!store.payWithWallet(bet, "🎲 ডাইস")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🎲 Dice")) { setMsg("Low balance — deposit to continue"); return; }
     setRolling(true);
     let n = 0;
     const t = setInterval(() => {
@@ -1160,45 +1160,45 @@ export function DiceGame() {
         else if (pick === "small" && r <= 3) win = Math.round(bet * 1.9);
         else if (pick === "big" && r >= 4) win = Math.round(bet * 1.9);
         finish(bet, win);
-        setMsg(win > 0 ? `🎉 ${bn(r)}! জিতেছেন ${money(win)}` : `😅 ${bn(r)} পড়লো — হারলেন`);
+        setMsg(win > 0 ? `🎉 ${bn(r)}! You won ${money(win)}` : `😅 ${bn(r)} came up — you lost`);
         setRolling(false);
       }
     }, 90);
   }
   const faces = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
   return (
-    <GameShell title="ডাইস" emoji="🎲" rtp="৯৭.৫%">
+    <GameShell title="Dice" emoji="🎲" rtp="97.5%">
       <div className="flex justify-center py-4">
         <span className={`text-8xl ${rolling ? "animate-bounce" : ""}`}>{roll ? faces[roll] : "🎲"}</span>
       </div>
       {msg && <p className="text-center text-sm font-black text-[#f5c518]">{msg}</p>}
       <div className="mt-2 grid grid-cols-2 gap-1.5">
-        <button onClick={() => setPick("small")} className={`rounded-xl py-2.5 font-black ${pick === "small" ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>⬇️ ছোট (১-৩)<br /><span className="text-xs">১.৯x</span></button>
-        <button onClick={() => setPick("big")} className={`rounded-xl py-2.5 font-black ${pick === "big" ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>⬆️ বড় (৪-৬)<br /><span className="text-xs">১.৯x</span></button>
+        <button onClick={() => setPick("small")} className={`rounded-xl py-2.5 font-black ${pick === "small" ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>⬇️ Small (1-3)<br /><span className="text-xs">1.9x</span></button>
+        <button onClick={() => setPick("big")} className={`rounded-xl py-2.5 font-black ${pick === "big" ? "bg-[#f5c518] text-black" : "bg-white/5"}`}>⬆️ Big (4-6)<br /><span className="text-xs">1.9x</span></button>
       </div>
       <div className="mt-2 flex gap-1">
         {[1, 2, 3, 4, 5, 6].map((v) => (
-          <button key={v} onClick={() => setPick(v)} className={`flex-1 rounded-lg py-1.5 text-xs font-black ${pick === v ? "bg-[#f5c518] text-black" : "bg-white/10"}`}>{bn(v)}<br />৫x</button>
+          <button key={v} onClick={() => setPick(v)} className={`flex-1 rounded-lg py-1.5 text-xs font-black ${pick === v ? "bg-[#f5c518] text-black" : "bg-white/10"}`}>{bn(v)}<br />5x</button>
         ))}
       </div>
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
       <button onClick={play} disabled={rolling} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black disabled:opacity-50">
-        {rolling ? "🎲 ঘুরছে..." : "🎲 রোল করুন"}
+        {rolling ? "🎲 Rolling..." : "🎲 Roll"}
       </button>
     </GameShell>
   );
 }
 
 const WHEEL_SEGS = [
-  { t: "0x", v: 0, c: "#1f2937" }, { t: "১.২x", v: 1.2, c: "#065f46" },
-  { t: "0x", v: 0, c: "#1f2937" }, { t: "২x", v: 2, c: "#b45309" },
-  { t: "০.৫x", v: 0.5, c: "#374151" }, { t: "১.৫x", v: 1.5, c: "#065f46" },
-  { t: "0x", v: 0, c: "#1f2937" }, { t: "৫x", v: 5, c: "#f5c518" },
+  { t: "0x", v: 0, c: "#1f2937" }, { t: "1.2x", v: 1.2, c: "#065f46" },
+  { t: "0x", v: 0, c: "#1f2937" }, { t: "2x", v: 2, c: "#b45309" },
+  { t: "0.5x", v: 0.5, c: "#374151" }, { t: "1.5x", v: 1.5, c: "#065f46" },
+  { t: "0x", v: 0, c: "#1f2937" }, { t: "5x", v: 5, c: "#f5c518" },
 ];
 
 export function WheelGame() {
   const { store } = useSkin();
-  const finish = useGameRound("ভাগ্যের চাকা");
+  const finish = useGameRound("Wheel of Fortune");
   const [bet, setBet] = useState(50);
   const [angle, setAngle] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -1206,7 +1206,7 @@ export function WheelGame() {
   function spin() {
     setMsg("");
     if (spinning) return;
-    if (!store.payWithWallet(bet, "🎡 ভাগ্যের চাকা")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🎡 Wheel of Fortune")) { setMsg("Low balance — deposit to continue"); return; }
     setSpinning(true);
     const seg = Math.floor(Math.random() * 8);
     const target = 360 * 6 + (360 - seg * 45) - 22.5;
@@ -1215,11 +1215,11 @@ export function WheelGame() {
       setSpinning(false);
       const w = Math.round(bet * WHEEL_SEGS[seg].v);
       finish(bet, w);
-      setMsg(w > 0 ? `🎉 ${WHEEL_SEGS[seg].t}-তে থামলো! জিতেছেন ${money(w)}` : "😅 ০x — হারলেন, আবার চেষ্টা করুন");
+      setMsg(w > 0 ? `🎉 Stopped at ${WHEEL_SEGS[seg].t}! You won ${money(w)}` : "😅 0x — you lost, try again");
     }, 3200);
   }
   return (
-    <GameShell title="ভাগ্যের চাকা" emoji="🎡" rtp="৯৬.৩%">
+    <GameShell title="Wheel of Fortune" emoji="🎡" rtp="96.3%">
       <div className="flex justify-center py-2">
         <div className="relative h-56 w-56">
           <div className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 text-3xl">🔻</div>
@@ -1234,9 +1234,9 @@ export function WheelGame() {
         </div>
       </div>
       {msg && <p className="mt-1 text-center text-sm font-black text-[#f5c518]">{msg}</p>}
-      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p><BetChips bet={bet} setBet={setBet} /></div>
+      <div className="mt-3"><p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p><BetChips bet={bet} setBet={setBet} /></div>
       <button onClick={spin} disabled={spinning} className="mt-3 w-full rounded-2xl bg-[#f5c518] py-3.5 font-black text-black disabled:opacity-50">
-        {spinning ? "🌀 ঘুরছে..." : "🎡 চাকা ঘুরান"}
+        {spinning ? "🌀 Spinning..." : "🎡 Spin the wheel"}
       </button>
     </GameShell>
   );
@@ -1250,18 +1250,18 @@ export function GameHistory() {
   const totalWin = store.gameHistory.reduce((s, g) => s + g.win, 0);
   return (
     <Page>
-      <Back href={`${base}/casino`} label="লবি" />
-      <SectionTitle t="📜 গেম হিস্ট্রি" sub={`${bn(store.gameHistory.length)}টি রাউন্ড`} />
+      <Back href={`${base}/casino`} label="Lobby" />
+      <SectionTitle t="📜 Game History" sub={`${bn(store.gameHistory.length)} rounds`} />
       <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-        <div className={`${card} p-3`}><p className="text-sm font-black">{money(totalBet)}</p><p className={`text-[11px] ${sub}`}>মোট বাজি</p></div>
-        <div className={`${card} p-3`}><p className="text-sm font-black text-emerald-300">{money(totalWin)}</p><p className={`text-[11px] ${sub}`}>মোট জয়</p></div>
-        <div className={`${card} p-3`}><p className={`text-sm font-black ${totalWin - totalBet >= 0 ? "text-emerald-300" : "text-red-300"}`}>{totalWin - totalBet >= 0 ? "+" : ""}{money(totalWin - totalBet)}</p><p className={`text-[11px] ${sub}`}>লাভ/লস</p></div>
+        <div className={`${card} p-3`}><p className="text-sm font-black">{money(totalBet)}</p><p className={`text-[11px] ${sub}`}>Total bets</p></div>
+        <div className={`${card} p-3`}><p className="text-sm font-black text-emerald-300">{money(totalWin)}</p><p className={`text-[11px] ${sub}`}>Total wins</p></div>
+        <div className={`${card} p-3`}><p className={`text-sm font-black ${totalWin - totalBet >= 0 ? "text-emerald-300" : "text-red-300"}`}>{totalWin - totalBet >= 0 ? "+" : ""}{money(totalWin - totalBet)}</p><p className={`text-[11px] ${sub}`}>Profit/Loss</p></div>
       </div>
-      {store.gameHistory.length === 0 ? <Empty emoji="📜" text="এখনো খেলেননি" /> : (
+      {store.gameHistory.length === 0 ? <Empty emoji="📜" text="You haven't played yet" /> : (
         <div className="space-y-1.5">
           {store.gameHistory.map((g) => (
             <div key={g.id} className={`${card} flex items-center justify-between p-2.5 text-sm`}>
-              <div><b>{g.game}</b><p className={`text-[11px] ${sub}`}>{fmtTime(g.date)} • বাজি {money(g.bet)}</p></div>
+              <div><b>{g.game}</b><p className={`text-[11px] ${sub}`}>{fmtTime(g.date)} • bet {money(g.bet)}</p></div>
               <b className={g.win > 0 ? "text-emerald-300" : "text-red-300"}>{g.win > 0 ? `+${money(g.win)}` : `-${money(g.bet)}`}</b>
             </div>
           ))}
@@ -1275,16 +1275,16 @@ export function Tournaments() {
   const { base, card, sub } = useSkin();
   return (
     <Page>
-      <Back href={`${base}/casino`} label="লবি" />
-      <SectionTitle t="🏆 টুর্নামেন্ট" sub="বড় পুরস্কার জিতুন" />
+      <Back href={`${base}/casino`} label="Lobby" />
+      <SectionTitle t="🏆 Tournaments" sub="Win big prizes" />
       <div className="space-y-3">
         {TOURNAMENTS.map((t) => (
           <Link key={t.id} href={`${base}/casino/tournaments/${t.id}`} className={`${card} block p-4 transition hover:border-[#f5c518]/50`}>
             <div className="flex items-start justify-between">
               <div><p className="text-lg font-black">{t.t}</p><p className={`mt-1 text-xs ${sub}`}>{t.desc}</p></div>
-              <div className="text-right"><p className="text-lg font-black text-[#f5c518]">{money(t.prize)}</p><p className={`text-[11px] ${sub}`}>প্রাইজ পুল</p></div>
+              <div className="text-right"><p className="text-lg font-black text-[#f5c518]">{money(t.prize)}</p><p className={`text-[11px] ${sub}`}>Prize pool</p></div>
             </div>
-            <div className="mt-2 flex justify-between text-[11px] text-slate-400"><span>👥 {bn(t.players)} জন</span><span>⏰ {t.ends}</span></div>
+            <div className="mt-2 flex justify-between text-[11px] text-slate-400"><span>👥 {bn(t.players)} players</span><span>⏰ {t.ends}</span></div>
           </Link>
         ))}
       </div>
@@ -1296,33 +1296,33 @@ export function TournamentDetail({ id }: { id: string }) {
   const { base, card, sub, store } = useSkin();
   const t = TOURNAMENTS.find((x) => x.id === id);
   const [joined, setJoined] = useState(false);
-  if (!t) return <Page narrow><Empty emoji="🔍" text="টুর্নামেন্ট পাওয়া যায়নি" /></Page>;
-  const leaders = [["রহিম_৯৯", "১২,৪৫০"], ["সাকিব_কিং", "১১,২০০"], ["নুসরাত_৭", "১০,৮৯০"], ["করিম_২১", "৯,৪৫০"], ["তানভীর_X", "৮,৯০০"]].map(([n, p], i) => ({ n, p, i }));
+  if (!t) return <Page narrow><Empty emoji="🔍" text="Tournament not found" /></Page>;
+  const leaders = [["Rahim_99", "12,450"], ["Sakib_King", "11,200"], ["Nusrat_7", "10,890"], ["Karim_21", "9,450"], ["Tanvir_X", "8,900"]].map(([n, p], i) => ({ n, p, i }));
   return (
     <Page narrow>
-      <Back href={`${base}/casino/tournaments`} label="টুর্নামেন্ট" />
+      <Back href={`${base}/casino/tournaments`} label="Tournaments" />
       <div className={`${card} p-5 text-center`}>
         <p className="text-5xl">{t.e}</p>
         <h1 className="mt-2 text-xl font-black">{t.t}</h1>
         <p className="mt-1 text-2xl font-black text-[#f5c518]">{money(t.prize)}</p>
-        <p className={`text-xs ${sub}`}>প্রাইজ পুল • {t.ends}</p>
+        <p className={`text-xs ${sub}`}>Prize pool • {t.ends}</p>
         <p className="mt-3 text-sm text-slate-300">{t.body}</p>
         {joined ? (
-          <p className="mt-4 rounded-xl bg-emerald-500/15 py-2.5 text-sm font-black text-emerald-300">✅ আপনি যোগ দিয়েছেন! শুভকামনা 🍀</p>
+          <p className="mt-4 rounded-xl bg-emerald-500/15 py-2.5 text-sm font-black text-emerald-300">✅ You have joined! Good luck 🍀</p>
         ) : (
           <button onClick={() => { if (!store.user) { setJoined(false); } else setJoined(true); }} className="mt-4 w-full rounded-xl bg-[#f5c518] py-3 font-black text-black">
-            {store.user ? "🚀 টুর্নামেন্টে যোগ দিন (ফ্রি)" : "🔑 যোগ দিতে লগইন করুন"}
+            {store.user ? "🚀 Join the tournament (free)" : "🔑 Log in to join"}
           </button>
         )}
-        {!store.user && !joined && <Link href={`${base}/login`} className="mt-2 block text-xs text-[#f5c518] underline">লগইন পেজ →</Link>}
+        {!store.user && !joined && <Link href={`${base}/login`} className="mt-2 block text-xs text-[#f5c518] underline">Login page →</Link>}
       </div>
       <div className={`${card} mt-3 p-4`}>
-        <p className="mb-2 text-sm font-black text-[#f5c518]">🏅 লিডারবোর্ড</p>
+        <p className="mb-2 text-sm font-black text-[#f5c518]">🏅 Leaderboard</p>
         <div className="space-y-1.5">
           {leaders.map((l) => (
             <div key={l.n} className="flex items-center justify-between rounded-xl bg-white/[0.04] px-3 py-2 text-sm">
-              <span>{["🥇", "🥈", "🥉", "৪.", "৫."][l.i]} <b>{l.n}</b></span>
-              <span className="font-black text-[#f5c518]">{bn(l.p)} পয়েন্ট</span>
+              <span>{["🥇", "🥈", "🥉", "4.", "5."][l.i]} <b>{l.n}</b></span>
+              <span className="font-black text-[#f5c518]">{bn(l.p)} points</span>
             </div>
           ))}
         </div>
@@ -1338,27 +1338,27 @@ export function Jackpots() {
     const t = setInterval(() => setPots((p) => p.map((v) => v + Math.floor(Math.random() * 900))), 3000);
     return () => clearInterval(t);
   }, []);
-  const names = ["💎 মেগা জ্যাকপট", "👑 রয়েল জ্যাকপট", "⭐ ডেইলি জ্যাকপট"];
+  const names = ["💎 Mega Jackpot", "👑 Royal Jackpot", "⭐ Daily Jackpot"];
   return (
     <Page>
-      <Back href={`${base}/casino`} label="লবি" />
-      <SectionTitle t="💰 জ্যাকপট" sub="প্রতি মুহূর্তে বাড়ছে" />
+      <Back href={`${base}/casino`} label="Lobby" />
+      <SectionTitle t="💰 Jackpots" sub="Growing every moment" />
       <div className="space-y-3">
         {pots.map((p, i) => (
           <div key={i} className="relative overflow-hidden rounded-3xl border border-[#f5c518]/30 bg-gradient-to-br from-[#1a1405] to-[#0b1120] p-6 text-center">
             <div className="pointer-events-none absolute inset-0 opacity-20" style={{ background: "radial-gradient(circle at 50% 0%, #f5c51855, transparent 70%)" }} />
             <p className="text-lg font-black">{names[i]}</p>
             <p className="mt-1 text-4xl font-black tabular-nums text-[#f5c518]">{money(p)}</p>
-            <p className={`mt-1 text-[11px] ${sub}`}>⏱️ যেকোনো স্পিনে জিততে পারেন</p>
-            <Link href={`${base}/casino/slots/royal`} className="mt-3 inline-block rounded-xl bg-[#f5c518] px-6 py-2.5 text-sm font-black text-black">🎰 এখনই খেলুন</Link>
+            <p className={`mt-1 text-[11px] ${sub}`}>⏱️ You can win on any spin</p>
+            <Link href={`${base}/casino/slots/royal`} className="mt-3 inline-block rounded-xl bg-[#f5c518] px-6 py-2.5 text-sm font-black text-black">🎰 Play now</Link>
           </div>
         ))}
       </div>
       <div className={`${card} mt-4 p-4`}>
-        <p className="mb-2 text-sm font-black text-[#f5c518]">🏆 সাম্প্রতিক জ্যাকপট জয়ী</p>
+        <p className="mb-2 text-sm font-black text-[#f5c518]">🏆 Recent jackpot winners</p>
         <div className="space-y-1.5 text-xs">
-          {[["আরিফুল", "২,৪৫,০০০", "২ ঘণ্টা আগে"], ["শারমিন", "৮৯,৫০০", "৫ ঘণ্টা আগে"], ["মেহেদি", "১,১২,০০০", "গতকাল"]].map(([n, a, t]) => (
-            <div key={n} className="flex justify-between"><span>🎉 <b>{n}***</b> <span className={sub}>{t}</span></span><b className="text-emerald-300">{bn(a)} টাকা</b></div>
+          {[["Ariful", "2,45,000", "2 hours ago"], ["Sharmin", "89,500", "5 hours ago"], ["Mehedi", "1,12,000", "Yesterday"]].map(([n, a, t]) => (
+            <div key={n} className="flex justify-between"><span>🎉 <b>{n}***</b> <span className={sub}>{t}</span></span><b className="text-emerald-300">{bn(a)} credits</b></div>
           ))}
         </div>
       </div>

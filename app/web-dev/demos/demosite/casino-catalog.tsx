@@ -100,7 +100,7 @@ export function CatalogTile({ g, small, fav, onFav }: { g: CatalogGame; small?: 
           <p className="text-[10px] text-slate-400">👥 {g.players} • RTP {bn(g.rtp.toFixed(1))}%</p>
         </div>
         {onFav && (
-          <button onClick={() => onFav(g.id)} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm transition active:scale-90 ${fav ? "bg-red-500/20 text-red-400" : "bg-white/5 text-slate-500 hover:text-white"}`} aria-label="ফেভারিট">
+          <button onClick={() => onFav(g.id)} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm transition active:scale-90 ${fav ? "bg-red-500/20 text-red-400" : "bg-white/5 text-slate-500 hover:text-white"}`} aria-label="Favourite">
             {fav ? "❤️" : "🤍"}
           </button>
         )}
@@ -111,14 +111,14 @@ export function CatalogTile({ g, small, fav, onFav }: { g: CatalogGame; small?: 
 }
 
 const CAT_TABS: { id: string; n: string; e: string }[] = [
-  { id: "all", n: "সব গেম", e: "🎮" },
-  { id: "slots", n: "স্লটস", e: "🎰" },
-  { id: "crash", n: "ক্র্যাশ", e: "📈" },
-  { id: "mines", n: "মাইনস", e: "💣" },
-  { id: "plinko", n: "প্লিংকো", e: "🔵" },
-  { id: "dice", n: "ডাইস", e: "🎲" },
-  { id: "wheel", n: "হুইল", e: "🎡" },
-  { id: "hilo", n: "হাই-লো", e: "🃏" },
+  { id: "all", n: "All games", e: "🎮" },
+  { id: "slots", n: "Slots", e: "🎰" },
+  { id: "crash", n: "Crash", e: "📈" },
+  { id: "mines", n: "Mines", e: "💣" },
+  { id: "plinko", n: "Plinko", e: "🔵" },
+  { id: "dice", n: "Dice", e: "🎲" },
+  { id: "wheel", n: "Wheel", e: "🎡" },
+  { id: "hilo", n: "Hi-Lo", e: "🃏" },
 ];
 
 /** Top-of-lobby strip: balance + total won + rounds played. */
@@ -129,16 +129,16 @@ function LobbyStats() {
   return (
     <div className="mb-4 grid grid-cols-3 gap-2">
       <div className="rounded-2xl border border-[#f5c518]/25 bg-gradient-to-b from-[#1a1405] to-[#101828] p-3 text-center">
-        <p className="text-[10px] font-bold text-slate-400">💰 আমার ব্যালেন্স</p>
+        <p className="text-[10px] font-bold text-slate-400">💰 My balance</p>
         <p className="mt-0.5 text-base font-black text-[#f5c518]">{money(store.wallet)}</p>
       </div>
       <div className="rounded-2xl border border-emerald-400/25 bg-gradient-to-b from-emerald-950/60 to-[#101828] p-3 text-center">
-        <p className="text-[10px] font-bold text-slate-400">🏆 মোট জিতেছেন</p>
+        <p className="text-[10px] font-bold text-slate-400">🏆 Total won</p>
         <p className="mt-0.5 text-base font-black text-emerald-300">{money(totalWon)}</p>
       </div>
       <div className="rounded-2xl border border-white/10 bg-[#101828] p-3 text-center">
-        <p className="text-[10px] font-bold text-slate-400">🎮 রাউন্ড খেলেছেন</p>
-        <p className="mt-0.5 text-base font-black text-white">{bn(store.gameHistory.length)}টি <span className="text-[10px] font-bold text-slate-500">• বাজি {money(totalBet)}</span></p>
+        <p className="text-[10px] font-bold text-slate-400">🎮 Rounds played</p>
+        <p className="mt-0.5 text-base font-black text-white">{bn(store.gameHistory.length)} <span className="text-[10px] font-bold text-slate-500">• Bet {money(totalBet)}</span></p>
       </div>
     </div>
   );
@@ -151,9 +151,10 @@ export function CatalogLobby() {
   const [provider, setProvider] = useState(() => {
     try {
       const p = localStorage.getItem("dp_provider");
-      if (p) { localStorage.removeItem("dp_provider"); return p; }
+      // Legacy: older browsers stored the Bangla "all providers" sentinel; map it to the English one.
+      if (p) { localStorage.removeItem("dp_provider"); return p === "সব প্রোভাইডার" ? "All providers" : p; }
     } catch {}
-    return "সব প্রোভাইডার";
+    return "All providers";
   });
   const [q, setQ] = useState("");
   const [shown, setShown] = useState(48);
@@ -166,17 +167,17 @@ export function CatalogLobby() {
   const filtered = useMemo(() => GAME_CATALOG.filter((g) =>
     !disabledCats.includes(catalogCatGroup(g.cat)) &&
     (cat === "all" || g.cat === cat) &&
-    (provider === "সব প্রোভাইডার" || g.provider === provider) &&
+    (provider === "All providers" || g.provider === provider) &&
     (!q || g.n.includes(q) || g.provider.includes(q)) &&
     (tab === "games" || (tab === "new" && g.isNew) || (tab === "fav" && favs.includes(g.id)))
   ), [cat, provider, q, tab, favs, disabledCats]);
   return (
     <Page>
-      <SectionTitle t="🎮 গেম লবি" sub={`মোট ${bn(GAME_CATALOG.length)}+ গেম • সব নিজস্ব ইঞ্জিনে চলে`} />
+      <SectionTitle t="🎮 Game Lobby" sub={`${bn(GAME_CATALOG.length)}+ games total • all run on our own engines`} />
       <LobbyStats />
       {/* lobby tabs */}
       <div className="mb-3 grid grid-cols-5 gap-1.5">
-        {([["games", "🎮", "সব গেম"], ["new", "🆕", "নতুন"], ["bonus", "🎁", "বোনাস"], ["cashback", "💸", "ক্যাশব্যাক"], ["fav", "⭐", "ফেভারিট"]] as const).map(([id, e, t]) => (
+        {([["games", "🎮", "All games"], ["new", "🆕", "New"], ["bonus", "🎁", "Bonus"], ["cashback", "💸", "Cashback"], ["fav", "⭐", "Favourites"]] as const).map(([id, e, t]) => (
           <button key={id} onClick={() => { setTab(id); setShown(48); }}
             className={`rounded-2xl py-2.5 text-center transition ${tab === id ? "bg-[#f5c518] text-black" : "border border-white/10 bg-white/[0.04] text-slate-300"}`}>
             <p className="text-lg leading-none">{e}</p>
@@ -187,10 +188,10 @@ export function CatalogLobby() {
       </div>
       {tab === "bonus" && (
         <div className="mb-4 space-y-2">
-          {[["🎁 ১০০% ওয়েলকাম বোনাস", "প্রথম ডিপোজিটে ২০,০০০ টাকা পর্যন্ত বোনাস", "/promotions"], ["🔄 ফ্রি স্পিন প্যাক", "প্রতিদিন লগইনে ২০টি ফ্রি স্পিন", "/promotions"], ["👥 রেফার বোনাস", "বন্ধুকে আনুন, ৫০০ টাকা করে পান", "/referral"]].map(([t, d, h]) => (
+          {[["🎁 100% Welcome Bonus", "Bonus up to 20,000 credits on your first deposit", "/promotions"], ["🔄 Free Spin Pack", "20 free spins for logging in every day", "/promotions"], ["👥 Referral Bonus", "Bring a friend, get 500 credits each", "/referral"]].map(([t, d, h]) => (
             <Link key={t} href={`${base}${h}`} className="flex items-center justify-between rounded-2xl border border-[#f5c518]/25 bg-gradient-to-r from-[#1a1405] to-[#101828] p-4">
               <div><p className="text-sm font-black text-white">{t}</p><p className="mt-0.5 text-xs text-slate-400">{d}</p></div>
-              <span className="rounded-full bg-[#f5c518] px-3 py-1.5 text-xs font-black text-black">নিন →</span>
+              <span className="rounded-full bg-[#f5c518] px-3 py-1.5 text-xs font-black text-black">Claim →</span>
             </Link>
           ))}
         </div>
@@ -198,13 +199,13 @@ export function CatalogLobby() {
       {tab === "cashback" && (
         <div className="mb-4 overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-br from-emerald-950/50 to-[#101828] p-5 text-center">
           <p className="text-3xl">💸</p>
-          <p className="mt-2 text-lg font-black text-white">সাপ্তাহিক ক্যাশব্যাক</p>
-          <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-slate-300">প্রতি সোমবার আপনার সাপ্তাহিক নিট লসের <b className="text-emerald-300">১০% পর্যন্ত</b> ফেরত পান। ভিআইপি লেভেল যত উঁচু, ক্যাশব্যাক তত বেশি।</p>
-          <Link href={`${base}/vip`} className="mt-3 inline-block rounded-full bg-emerald-500 px-5 py-2 text-xs font-black text-black">ভিআইপি দেখুন →</Link>
+          <p className="mt-2 text-lg font-black text-white">Weekly Cashback</p>
+          <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-slate-300">Get up to <b className="text-emerald-300">10%</b> of your weekly net loss back every Monday. The higher your VIP level, the higher the cashback.</p>
+          <Link href={`${base}/vip`} className="mt-3 inline-block rounded-full bg-emerald-500 px-5 py-2 text-xs font-black text-black">See VIP →</Link>
         </div>
       )}
       {(tab === "games" || tab === "new" || tab === "fav") && (<>
-      <input value={q} onChange={(e) => { setQ(e.target.value); setShown(48); }} placeholder="🔍 গেম খুঁজুন..."
+      <input value={q} onChange={(e) => { setQ(e.target.value); setShown(48); }} placeholder="🔍 Search games..."
         className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500" />
       <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
         {CAT_TABS.map((t) => (
@@ -215,22 +216,22 @@ export function CatalogLobby() {
         ))}
       </div>
       <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
-        {["সব প্রোভাইডার", ...PROVIDERS].map((pv) => (
+        {["All providers", ...PROVIDERS].map((pv) => (
           <button key={pv} onClick={() => { setProvider(pv); setShown(48); }}
             className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold transition ${provider === pv ? "bg-white text-black" : "border border-white/10 bg-white/[0.03] text-slate-400"}`}>
             {pv}
           </button>
         ))}
       </div>
-      <p className={`mb-3 text-xs ${sub}`}>{bn(filtered.length)}টি গেম পাওয়া গেছে</p>
-      {filtered.length === 0 ? <Empty emoji="🎮" text="কোনো গেম পাওয়া যায়নি" /> : (
+      <p className={`mb-3 text-xs ${sub}`}>{bn(filtered.length)} games found</p>
+      {filtered.length === 0 ? <Empty emoji="🎮" text="No games found" /> : (
         <>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
             {filtered.slice(0, shown).map((g) => <CatalogTile key={g.id} g={g} fav={favs.includes(g.id)} onFav={toggle} />)}
           </div>
           {shown < filtered.length && (
             <button onClick={() => setShown((v) => v + 48)} className="mt-5 w-full rounded-2xl border border-[#f5c518]/40 bg-[#f5c518]/10 py-3 text-sm font-black text-[#f5c518] transition active:scale-[0.99]">
-              আরো গেম দেখুন (বাকি {bn(filtered.length - shown)}টি)
+              See more games ({bn(filtered.length - shown)} left)
             </button>
           )}
         </>
@@ -245,7 +246,7 @@ export function CatalogLobby() {
 export function MinesGame() {
   const { store, card } = useSkin();
   const cfg = useCasinoConfig();
-  const finish = useGameRound("💣 মাইনস");
+  const finish = useGameRound("💣 Mines");
   const SIZE = 25;
   const [bet, setBet] = useState(50);
   const [mineCount, setMineCount] = useState(3);
@@ -265,17 +266,17 @@ export function MinesGame() {
 
   function start() {
     if (playing) return;
-    if (!store.payWithWallet(bet, "💣 মাইনস")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "💣 Mines")) { setMsg("Low balance — deposit to continue"); return; }
     const ms = new Set<number>();
     while (ms.size < mineCount) ms.add(Math.floor(Math.random() * SIZE));
-    setMines(ms); setOpen(new Set()); setBusted(null); setPlaying(true); setMsg("টাইল খুলুন — বোমা এড়িয়ে চলুন!");
+    setMines(ms); setOpen(new Set()); setBusted(null); setPlaying(true); setMsg("Open tiles — dodge the bombs!");
   }
   function pick(i: number) {
     if (!playing || open.has(i)) return;
     if (mines.has(i)) {
       setBusted(i); setPlaying(false);
       finish(bet, 0);
-      setMsg("💥 বোমা! বাজি হারালেন");
+      setMsg("💥 Bomb! You lost the bet");
       return;
     }
     const no = new Set(open); no.add(i); setOpen(no);
@@ -289,11 +290,11 @@ export function MinesGame() {
     const w = Math.round(bet * m * (cfg.rtp / 100));
     setPlaying(false);
     finish(bet, w);
-    setMsg(`🎉 ক্যাশআউট! জিতেছেন ${money(w)}`);
+    setMsg(`🎉 Cashout! You won ${money(w)}`);
   }
 
   return (
-    <GameShell title="মাইনস" emoji="💣" rtp={`${bn(cfg.rtp)}%`}>
+    <GameShell title="Mines" emoji="💣" rtp={`${bn(cfg.rtp)}%`}>
       <style>{`@keyframes dp-flip { 0% { transform: rotateY(90deg) scale(.7); opacity: 0 } 100% { transform: rotateY(0) scale(1); opacity: 1 } } .dp-flip { animation: dp-flip .3s ease both }`}</style>
       <div className="grid grid-cols-5 gap-1.5">
         {Array.from({ length: SIZE }, (_, i) => {
@@ -316,17 +317,17 @@ export function MinesGame() {
       {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
       {playing && (
         <div className={`${card} mt-3 flex items-center justify-between p-3`}>
-          <p className="text-xs text-slate-300">💎 খোলা: <b>{bn(open.size)}</b> • মাল্টিপ্লায়ার: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
+          <p className="text-xs text-slate-300">💎 Opened: <b>{bn(open.size)}</b> • Multiplier: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
           <p className="text-sm font-black text-emerald-300">{money(Math.round(bet * mult))}</p>
         </div>
       )}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div>
-          <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
+          <p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p>
           <BetChips bet={bet} setBet={setBet} />
         </div>
         <div>
-          <p className="mb-1.5 text-xs font-bold text-slate-400">বোমার সংখ্যা: {bn(mineCount)}</p>
+          <p className="mb-1.5 text-xs font-bold text-slate-400">Number of bombs: {bn(mineCount)}</p>
           <div className="flex gap-1">
             {[1, 3, 5, 10, 24].map((n) => (
               <button key={n} disabled={playing} onClick={() => setMineCount(n)}
@@ -336,9 +337,9 @@ export function MinesGame() {
         </div>
       </div>
       {playing ? (
-        <button onClick={() => cashout()} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.98]">💵 ক্যাশআউট {money(Math.round(bet * mult))}</button>
+        <button onClick={() => cashout()} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.98]">💵 Cashout {money(Math.round(bet * mult))}</button>
       ) : (
-        <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">💣 খেলা শুরু</button>
+        <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">💣 Start game</button>
       )}
     </GameShell>
   );
@@ -355,7 +356,7 @@ const PLINKO_MULTS: Record<number, number[]> = {
 export function PlinkoGame() {
   const { store } = useSkin();
   const cfg = useCasinoConfig();
-  const finish = useGameRound("🔵 প্লিংকো");
+  const finish = useGameRound("🔵 Plinko");
   const [bet, setBet] = useState(50);
   const [rows, setRows] = useState(12);
   const [ball, setBall] = useState<{ x: number; y: number; slot: number } | null>(null);
@@ -366,7 +367,7 @@ export function PlinkoGame() {
 
   function drop() {
     if (dropping) return;
-    if (!store.payWithWallet(bet, "🔵 প্লিংকো")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(bet, "🔵 Plinko")) { setMsg("Low balance — deposit to continue"); return; }
     setDropping(true); setMsg("");
     // binomial walk
     let slot = 0;
@@ -382,7 +383,7 @@ export function PlinkoGame() {
         const w = Math.round(bet * m);
         setHist((h) => [m, ...h].slice(0, 10));
         finish(bet, w);
-        setMsg(w >= bet ? `🎉 ${bn(m.toFixed(1))}x — জিতেছেন ${money(w)}!` : `${bn(m.toFixed(1))}x — পেয়েছেন ${money(w)}`);
+        setMsg(w >= bet ? `🎉 ${bn(m.toFixed(1))}x — you won ${money(w)}!` : `${bn(m.toFixed(1))}x — you got ${money(w)}`);
         setDropping(false);
         setBall(null);
         return;
@@ -392,7 +393,7 @@ export function PlinkoGame() {
   }
 
   return (
-    <GameShell title="প্লিংকো" emoji="🔵" rtp={`${bn(cfg.rtp)}%`}>
+    <GameShell title="Plinko" emoji="🔵" rtp={`${bn(cfg.rtp)}%`}>
       <div className="relative mx-auto max-w-[340px] rounded-2xl bg-black/40 px-2 pb-2 pt-4">
         {Array.from({ length: rows }, (_, r) => (
           <div key={r} className="flex justify-center gap-0" style={{ marginBottom: 6 }}>
@@ -414,19 +415,19 @@ export function PlinkoGame() {
       {hist.length > 0 && <div className="mt-2 flex flex-wrap justify-center gap-1">{hist.map((m, i) => <span key={i} className={`rounded-full px-2 py-0.5 text-[10px] font-black ${m >= 1 ? "bg-emerald-500/20 text-emerald-300" : "bg-white/10 text-slate-300"}`}>{bn(m.toFixed(1))}x</span>)}</div>}
       {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
       <div className="mt-4">
-        <p className="mb-1.5 text-xs font-bold text-slate-400">সারি</p>
+        <p className="mb-1.5 text-xs font-bold text-slate-400">Rows</p>
         <div className="flex gap-1.5">
           {[8, 12, 16].map((r) => (
-            <button key={r} disabled={dropping} onClick={() => setRows(r)} className={`flex-1 rounded-lg py-2 text-xs font-black transition ${rows === r ? "bg-[#f5c518] text-black" : "border border-white/15 bg-white/5 text-slate-300"}`}>{bn(r)} সারি</button>
+            <button key={r} disabled={dropping} onClick={() => setRows(r)} className={`flex-1 rounded-lg py-2 text-xs font-black transition ${rows === r ? "bg-[#f5c518] text-black" : "border border-white/15 bg-white/5 text-slate-300"}`}>{bn(r)} Rows</button>
           ))}
         </div>
       </div>
       <div className="mt-3">
-        <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
+        <p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p>
         <BetChips bet={bet} setBet={setBet} />
       </div>
       <button onClick={drop} disabled={dropping} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98] disabled:opacity-50">
-        {dropping ? "🔵 বল পড়ছে..." : "🔵 বল ছাড়ুন"}
+        {dropping ? "🔵 Ball dropping..." : "🔵 Drop the ball"}
       </button>
     </GameShell>
   );
@@ -437,7 +438,7 @@ export function PlinkoGame() {
 export function HiLoGame() {
   const { store, card } = useSkin();
   const cfg = useCasinoConfig();
-  const finish = useGameRound("🃏 হাই-লো");
+  const finish = useGameRound("🃏 Hi-Lo");
   const fresh = () => drawCard(new Set<string>());
   const [bet, setBet] = useState(50);
   const [cur, setCur] = useState<string>(() => fresh());
@@ -448,8 +449,8 @@ export function HiLoGame() {
   const mult = useMemo(() => Math.pow(1.42, streak) * (cfg.rtp / 97), [streak, cfg.rtp]);
 
   function start() {
-    if (!store.payWithWallet(bet, "🃏 হাই-লো")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
-    setCur(fresh()); setStreak(0); setPlaying(true); setFlipKey((k) => k + 1); setMsg("পরের কার্ড বড় না ছোট — অনুমান করুন!");
+    if (!store.payWithWallet(bet, "🃏 Hi-Lo")) { setMsg("Low balance — deposit to continue"); return; }
+    setCur(fresh()); setStreak(0); setPlaying(true); setFlipKey((k) => k + 1); setMsg("Guess whether the next card is higher or lower!");
   }
   function guess(dir: "hi" | "lo") {
     if (!playing) return;
@@ -460,11 +461,11 @@ export function HiLoGame() {
     setCur(nxt);
     if (win) {
       setStreak((v) => v + 1);
-      setMsg(`✅ ঠিক! ধারাবাহিক জয়: ${bn(streak + 1)}`);
+      setMsg(`✅ Correct! Winning streak: ${bn(streak + 1)}`);
     } else {
       setPlaying(false);
       finish(bet, 0);
-      setMsg(`❌ ভুল! কার্ড ছিল ${nxt} — বাজি হারালেন`);
+      setMsg(`❌ Wrong! The card was ${nxt} — you lost the bet`);
     }
   }
   function cashout() {
@@ -472,37 +473,37 @@ export function HiLoGame() {
     const w = Math.round(bet * mult);
     setPlaying(false);
     finish(bet, w);
-    setMsg(`🎉 ক্যাশআউট! জিতেছেন ${money(w)}`);
+    setMsg(`🎉 Cashout! You won ${money(w)}`);
   }
 
   return (
-    <GameShell title="হাই-লো কার্ড" emoji="🃏" rtp={`${bn(cfg.rtp)}%`}>
+    <GameShell title="Hi-Lo Card" emoji="🃏" rtp={`${bn(cfg.rtp)}%`}>
       <style>{`@keyframes dp-cardfall { 0% { transform: translateY(-46px) rotate(-7deg) scale(.85); opacity: 0 } 60% { transform: translateY(4px) rotate(2deg); opacity: 1 } 100% { transform: translateY(0) rotate(0) } } .dp-cardfall { animation: dp-cardfall .38s cubic-bezier(.2,.9,.3,1.25) both }`}</style>
       <div className="flex items-center justify-center py-4">
         <div key={flipKey} className="dp-cardfall" style={{ transform: "scale(1.6)" }}><CardView c={cur} /></div>
       </div>
       <div className={`${card} mt-4 flex items-center justify-between p-3`}>
-        <p className="text-xs text-slate-300">🔥 ধারাবাহিক জয়: <b className="text-white">{bn(streak)}</b></p>
-        <p className="text-xs text-slate-300">মাল্টিপ্লায়ার: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
+        <p className="text-xs text-slate-300">🔥 Winning streak: <b className="text-white">{bn(streak)}</b></p>
+        <p className="text-xs text-slate-300">Multiplier: <b className="text-[#f5c518]">{bn(mult.toFixed(2))}x</b></p>
         <p className="text-sm font-black text-emerald-300">{playing ? money(Math.round(bet * mult)) : money(0)}</p>
       </div>
       {msg && <p className="mt-3 text-center text-sm font-black text-slate-200">{msg}</p>}
       {!playing ? (
         <>
           <div className="mt-4">
-            <p className="mb-1.5 text-xs font-bold text-slate-400">বাজি</p>
+            <p className="mb-1.5 text-xs font-bold text-slate-400">Bet</p>
             <BetChips bet={bet} setBet={setBet} />
           </div>
-          <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">🃏 খেলা শুরু</button>
+          <button onClick={start} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-amber-500 to-[#f5c518] py-4 text-lg font-black text-black shadow-lg transition active:scale-[0.98]">🃏 Start game</button>
         </>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-2.5">
-          <button onClick={() => guess("hi")} className="rounded-2xl bg-gradient-to-b from-sky-500 to-blue-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬆️ বড় হবে</button>
-          <button onClick={() => guess("lo")} className="rounded-2xl bg-gradient-to-b from-violet-500 to-purple-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬇️ ছোট হবে</button>
-          <button onClick={cashout} disabled={streak === 0} className="col-span-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-3.5 text-base font-black text-white shadow-lg transition active:scale-[0.98] disabled:opacity-40">💵 ক্যাশআউট {streak > 0 ? money(Math.round(bet * mult)) : ""}</button>
+          <button onClick={() => guess("hi")} className="rounded-2xl bg-gradient-to-b from-sky-500 to-blue-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬆️ Higher</button>
+          <button onClick={() => guess("lo")} className="rounded-2xl bg-gradient-to-b from-violet-500 to-purple-700 py-4 text-lg font-black text-white shadow-lg transition active:scale-[0.97]">⬇️ Lower</button>
+          <button onClick={cashout} disabled={streak === 0} className="col-span-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-500 py-3.5 text-base font-black text-white shadow-lg transition active:scale-[0.98] disabled:opacity-40">💵 Cashout {streak > 0 ? money(Math.round(bet * mult)) : ""}</button>
         </div>
       )}
-      <p className="mt-2 text-center text-[11px] text-slate-500">একই মানের কার্ড আসলে হার • প্রতিটি সঠিক অনুমানে মাল্টিপ্লায়ার বাড়ে</p>
+      <p className="mt-2 text-center text-[11px] text-slate-500">A card of the same value loses • each correct guess raises the multiplier</p>
     </GameShell>
   );
 }

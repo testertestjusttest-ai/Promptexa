@@ -809,7 +809,8 @@ export function BhQuality() {
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className={card}>
           <p className={`font-black ${htx}`}>{bh.tx("📊 AQL 2.5 স্যাম্পলিং টেবিল (সারসংক্ষেপ)", "📊 AQL 2.5 Sampling Table (Summary)")}</p>
-          <table className="mt-3 w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="mt-3 min-w-[520px] w-full text-left text-sm">
             <thead><tr className="border-b border-slate-200 text-xs text-slate-400"><th className="pb-2">{bh.tx("লট সাইজ", "Lot Size")}</th><th className="pb-2">{bh.tx("স্যাম্পল", "Sample")}</th><th className="pb-2">{bh.tx("মেজর ডিফেক্ট সহনীয়", "Major Defects Allowed")}</th></tr></thead>
             <tbody>
               {aql.map(([a, b, c]) => (
@@ -817,6 +818,7 @@ export function BhQuality() {
               ))}
             </tbody>
           </table>
+          </div>
           <p className={`mt-2 text-xs ${sub}`}>{bh.tx("স্ট্যান্ডার্ড", "Standard")}: ANSI/ASQ Z1.4, General Inspection Level II</p>
         </div>
         <div className={card}>

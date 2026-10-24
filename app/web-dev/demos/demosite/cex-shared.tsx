@@ -8,7 +8,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoCoin } from "./types";
 import { Page, SectionTitle, Empty, Back } from "./ui";
@@ -20,39 +19,39 @@ export const CexAccount = ShopAccount;
 export const CexAbout = ShopAbout;
 export const CexContact = ShopContact;
 
-export const bn = (n: number | string) => toBnDigits(n);
+export const bn = (n: number | string) => String(n); // Latin digits in the default (English) view
 export const USD_BDT = 121; // demo conversion rate
 export const fmtUSD = (n: number) =>
   n >= 1000
-    ? toBnDigits(n.toLocaleString("en-US", { maximumFractionDigits: 2 }))
+    ? n.toLocaleString("en-US", { maximumFractionDigits: 2 })
     : n >= 1
-      ? toBnDigits(n.toLocaleString("en-US", { maximumFractionDigits: 2 }))
-      : toBnDigits(n.toLocaleString("en-US", { maximumFractionDigits: 4 }));
-export const fmtBDT = (usd: number) => toBnDigits(Math.round(usd * USD_BDT).toLocaleString("en-IN"));
+      ? n.toLocaleString("en-US", { maximumFractionDigits: 2 })
+      : n.toLocaleString("en-US", { maximumFractionDigits: 4 });
+export const fmtBDT = (usd: number) => Math.round(usd * USD_BDT).toLocaleString("en-US");
 export const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
 
 /* ================= DATA ================= */
 
 export interface CexCoin extends DemoCoin {
-  bn: string; // Bengali name
+  bn: string; // Localised display name (English in the default view)
   vol: string; // 24h volume
   high: number;
   low: number;
 }
 
 export const CEX_COINS: CexCoin[] = [
-  { code: "BTC", name: "Bitcoin", bn: "বিটকয়েন", price: 97400, change: 2.4, e: "₿", vol: "৩৮.২B", high: 98500, low: 94800 },
-  { code: "ETH", name: "Ethereum", bn: "ইথেরিয়াম", price: 3420, change: 1.8, e: "Ξ", vol: "১৮.৬B", high: 3490, low: 3310 },
-  { code: "BNB", name: "BNB", bn: "বিএনবি", price: 692, change: -0.8, e: "🟡", vol: "২.১B", high: 705, low: 680 },
-  { code: "SOL", name: "Solana", bn: "সোলানা", price: 214, change: 5.2, e: "◎", vol: "৫.৪B", high: 219, low: 201 },
-  { code: "XRP", name: "XRP", bn: "এক্সআরপি", price: 2.35, change: 3.1, e: "✕", vol: "৮.৯B", high: 2.42, low: 2.24 },
-  { code: "DOGE", name: "Dogecoin", bn: "ডোজকয়েন", price: 0.32, change: -1.2, e: "Ð", vol: "৩.৩B", high: 0.335, low: 0.31 },
-  { code: "ADA", name: "Cardano", bn: "কার্ডানো", price: 0.98, change: 0.7, e: "₳", vol: "১.২B", high: 1.01, low: 0.95 },
-  { code: "AVAX", name: "Avalanche", bn: "অ্যাভালাঞ্চ", price: 42.5, change: 2.9, e: "🔺", vol: "৯৮০M", high: 43.8, low: 40.9 },
-  { code: "LINK", name: "Chainlink", bn: "চেইনলিংক", price: 22.8, change: 4.1, e: "⬡", vol: "৭৬০M", high: 23.4, low: 21.7 },
-  { code: "DOT", name: "Polkadot", bn: "পোলকাডট", price: 8.9, change: -0.5, e: "●", vol: "৪২০M", high: 9.1, low: 8.7 },
-  { code: "USDT", name: "Tether", bn: "টিথার", price: 1.0, change: 0.01, e: "₮", vol: "৬৫.১B", high: 1.001, low: 0.999 },
-  { code: "TRX", name: "Tron", bn: "ট্রন", price: 0.27, change: 1.5, e: "🔱", vol: "৮৯০M", high: 0.278, low: 0.262 },
+  { code: "BTC", name: "Bitcoin", bn: "Bitcoin", price: 97400, change: 2.4, e: "₿", vol: "38.2B", high: 98500, low: 94800 },
+  { code: "ETH", name: "Ethereum", bn: "Ethereum", price: 3420, change: 1.8, e: "Ξ", vol: "18.6B", high: 3490, low: 3310 },
+  { code: "BNB", name: "BNB", bn: "BNB", price: 692, change: -0.8, e: "🟡", vol: "2.1B", high: 705, low: 680 },
+  { code: "SOL", name: "Solana", bn: "Solana", price: 214, change: 5.2, e: "◎", vol: "5.4B", high: 219, low: 201 },
+  { code: "XRP", name: "XRP", bn: "XRP", price: 2.35, change: 3.1, e: "✕", vol: "8.9B", high: 2.42, low: 2.24 },
+  { code: "DOGE", name: "Dogecoin", bn: "Dogecoin", price: 0.32, change: -1.2, e: "Ð", vol: "3.3B", high: 0.335, low: 0.31 },
+  { code: "ADA", name: "Cardano", bn: "Cardano", price: 0.98, change: 0.7, e: "₳", vol: "1.2B", high: 1.01, low: 0.95 },
+  { code: "AVAX", name: "Avalanche", bn: "Avalanche", price: 42.5, change: 2.9, e: "🔺", vol: "980M", high: 43.8, low: 40.9 },
+  { code: "LINK", name: "Chainlink", bn: "Chainlink", price: 22.8, change: 4.1, e: "⬡", vol: "760M", high: 23.4, low: 21.7 },
+  { code: "DOT", name: "Polkadot", bn: "Polkadot", price: 8.9, change: -0.5, e: "●", vol: "420M", high: 9.1, low: 8.7 },
+  { code: "USDT", name: "Tether", bn: "Tether", price: 1.0, change: 0.01, e: "₮", vol: "65.1B", high: 1.001, low: 0.999 },
+  { code: "TRX", name: "Tron", bn: "Tron", price: 0.27, change: 1.5, e: "🔱", vol: "890M", high: 0.278, low: 0.262 },
 ];
 
 export const coinOf = (code: string, coins: CexCoin[] = CEX_COINS): CexCoin =>
@@ -95,64 +94,64 @@ export function priceSeries(code: string, points = 48, coins: CexCoin[] = CEX_CO
 }
 
 export const P2P_ADS = [
-  { id: "p2p1", side: "buy", coin: "USDT", price: 122.5, min: 5000, max: 200000, trader: "ঢাকা ট্রেডার", trades: 1240, rate: 98.7, pay: ["বিকাশ", "নগদ"] },
-  { id: "p2p2", side: "buy", coin: "USDT", price: 122.8, min: 10000, max: 500000, trader: "ক্রিপ্টো বিডি", trades: 3560, rate: 99.1, pay: ["বিকাশ", "রকেট"] },
-  { id: "p2p3", side: "sell", coin: "USDT", price: 120.2, min: 5000, max: 150000, trader: "সিলেট এক্সচেঞ্জ", trades: 890, rate: 97.9, pay: ["নগদ"] },
-  { id: "p2p4", side: "buy", coin: "BTC", price: 11850000, min: 50000, max: 2000000, trader: "হোল্ডার বিডি", trades: 210, rate: 99.5, pay: ["বিকাশ"] },
-  { id: "p2p5", side: "sell", coin: "BTC", price: 11620000, min: 100000, max: 5000000, trader: "মাইনার হাউস", trades: 540, rate: 98.2, pay: ["নগদ", "রকেট"] },
-  { id: "p2p6", side: "sell", coin: "ETH", price: 408000, min: 20000, max: 800000, trader: "চট্টগ্রাম ক্রিপ্টো", trades: 670, rate: 98.8, pay: ["বিকাশ", "নগদ", "রকেট"] },
+  { id: "p2p1", side: "buy", coin: "USDT", price: 122.5, min: 5000, max: 200000, trader: "Dhaka Trader", trades: 1240, rate: 98.7, pay: ["bKash", "Nagad"] },
+  { id: "p2p2", side: "buy", coin: "USDT", price: 122.8, min: 10000, max: 500000, trader: "Crypto BD", trades: 3560, rate: 99.1, pay: ["bKash", "Rocket"] },
+  { id: "p2p3", side: "sell", coin: "USDT", price: 120.2, min: 5000, max: 150000, trader: "Sylhet Exchange", trades: 890, rate: 97.9, pay: ["Nagad"] },
+  { id: "p2p4", side: "buy", coin: "BTC", price: 11850000, min: 50000, max: 2000000, trader: "Holder BD", trades: 210, rate: 99.5, pay: ["bKash"] },
+  { id: "p2p5", side: "sell", coin: "BTC", price: 11620000, min: 100000, max: 5000000, trader: "Miner House", trades: 540, rate: 98.2, pay: ["Nagad", "Rocket"] },
+  { id: "p2p6", side: "sell", coin: "ETH", price: 408000, min: 20000, max: 800000, trader: "Chattogram Crypto", trades: 670, rate: 98.8, pay: ["bKash", "Nagad", "Rocket"] },
 ];
 
 export const LAUNCHPADS = [
-  { id: "lp1", n: "নোভাচেইন (NVC)", e: "🌐", price: "0.05 USDT", goal: "৫M USDT", progress: 78, ends: "২ দিন বাকি", desc: "লেয়ার-২ স্কেলিং সলিউশন — ১০০x ফাস্টার ট্রানজেকশন।" },
-  { id: "lp2", n: "গ্রিনফাই (GRN)", e: "🌱", price: "0.12 USDT", goal: "৩M USDT", progress: 45, ends: "৫ দিন বাকি", desc: "কার্বন ক্রেডিট ট্রেডিং প্ল্যাটফর্ম ব্লকচেইনে।" },
-  { id: "lp3", n: "গেমভার্স (GMV)", e: "🎮", price: "0.08 USDT", goal: "৮M USDT", progress: 92, ends: "১২ ঘণ্টা বাকি", desc: "প্লে-টু-আর্ন গেমিং ইকোসিস্টেম — ২M+ ওয়েটলিস্ট।" },
+  { id: "lp1", n: "NovaChain (NVC)", e: "🌐", price: "0.05 USDT", goal: "5M USDT", progress: 78, ends: "2 days left", desc: "Layer-2 scaling solution — 100x faster transactions." },
+  { id: "lp2", n: "GreenFi (GRN)", e: "🌱", price: "0.12 USDT", goal: "3M USDT", progress: 45, ends: "5 days left", desc: "Carbon-credit trading platform on blockchain." },
+  { id: "lp3", n: "GameVerse (GMV)", e: "🎮", price: "0.08 USDT", goal: "8M USDT", progress: 92, ends: "12 hours left", desc: "Play-to-earn gaming ecosystem — 2M+ on the waitlist." },
 ];
 
 export const EARN_PRODUCTS = [
-  { id: "e1", coin: "BTC", apy: 4.2, type: "ফ্লেক্সিবল", min: "0.001 BTC", e: "₿" },
-  { id: "e2", coin: "ETH", apy: 5.8, type: "৩০ দিন লকড", min: "0.01 ETH", e: "Ξ" },
-  { id: "e3", coin: "USDT", apy: 8.5, type: "ফ্লেক্সিবল", min: "10 USDT", e: "₮" },
-  { id: "e4", coin: "BNB", apy: 6.2, type: "৬০ দিন লকড", min: "0.1 BNB", e: "🟡" },
-  { id: "e5", coin: "SOL", apy: 9.4, type: "৯০ দিন লকড", min: "0.5 SOL", e: "◎" },
+  { id: "e1", coin: "BTC", apy: 4.2, type: "Flexible", min: "0.001 BTC", e: "₿" },
+  { id: "e2", coin: "ETH", apy: 5.8, type: "Locked for 30 days", min: "0.01 ETH", e: "Ξ" },
+  { id: "e3", coin: "USDT", apy: 8.5, type: "Flexible", min: "10 USDT", e: "₮" },
+  { id: "e4", coin: "BNB", apy: 6.2, type: "Locked for 60 days", min: "0.1 BNB", e: "🟡" },
+  { id: "e5", coin: "SOL", apy: 9.4, type: "Locked for 90 days", min: "0.5 SOL", e: "◎" },
 ];
 
 export const NFTS = [
-  { id: "n1", n: "ঢাকার রিকশা #001", e: "🛺", price: 0.45, coin: "ETH", artist: "আর্ট বিডি" },
-  { id: "n2", n: "পদ্মা সানসেট", e: "🌅", price: 0.28, coin: "ETH", artist: "পিক্সেল রানা" },
-  { id: "n3", n: "বাঘের চোখ", e: "🐯", price: 1.2, coin: "ETH", artist: "ওয়াইল্ড এনএফটি" },
-  { id: "n4", n: "সাইবার টাইগার", e: "🤖", price: 0.85, coin: "ETH", artist: "মেটা ঢাকা" },
-  { id: "n5", n: "নকশী কাঁথা", e: "🧵", price: 0.15, coin: "ETH", artist: "হেরিটেজ ল্যাব" },
-  { id: "n6", n: "ক্রিকেট লিজেন্ড", e: "🏏", price: 2.1, coin: "ETH", artist: "স্পোর্টস মিন্ট" },
+  { id: "n1", n: "Dhaka Rickshaw #001", e: "🛺", price: 0.45, coin: "ETH", artist: "Art BD" },
+  { id: "n2", n: "Padma Sunset", e: "🌅", price: 0.28, coin: "ETH", artist: "Pixel Rana" },
+  { id: "n3", n: "Tiger's Eye", e: "🐯", price: 1.2, coin: "ETH", artist: "Wild NFT" },
+  { id: "n4", n: "Cyber Tiger", e: "🤖", price: 0.85, coin: "ETH", artist: "Meta Dhaka" },
+  { id: "n5", n: "Nakshi Kantha", e: "🧵", price: 0.15, coin: "ETH", artist: "Heritage Lab" },
+  { id: "n6", n: "Cricket Legend", e: "🏏", price: 2.1, coin: "ETH", artist: "Sports Mint" },
 ];
 
 export const ANNOUNCEMENTS = [
-  { id: "a1", t: "নতুন লিস্টিং: নোভাচেইন (NVC/USDT)", d: "১২ অক্টোবর ২০২৬", body: "নোভাচেইন (NVC) স্পট মার্কেটে লিস্ট হচ্ছে। ট্রেডিং শুরু: ১২ অক্টোবর, দুপুর ২টা (বাংলাদেশ সময়)। ডিপোজিট এখনই খোলা আছে।" },
-  { id: "a2", t: "সিস্টেম আপগ্রেড — ১৪ অক্টোবর", d: "১০ অক্টোবর ২০২৬", body: "১৪ অক্টোবর রাত ২টা–৪টা পর্যন্ত ফিউচার্স ট্রেডিং সাময়িক বন্ধ থাকবে। স্পট ট্রেডিং চালু থাকবে।" },
-  { id: "a3", t: "USDT স্টেকিং APY বেড়ে ৮.৫%", d: "৮ অক্টোবর ২০২৬", body: "ফ্লেক্সিবল সেভিংসে USDT-এর বার্ষিক মুনাফা এখন ৮.৫%। যেকোনো সময় তোলা যাবে।" },
-  { id: "a4", t: "P2P-তে নতুন পেমেন্ট: উপায়", d: "৫ অক্টোবর ২০২৬", body: "P2P ট্রেডিংয়ে এখন উপায় (Upay) সাপোর্টেড। ৫০০+ নতুন মার্চেন্ট যোগ দিয়েছে।" },
+  { id: "a1", t: "New listing: NovaChain (NVC/USDT)", d: "12 October 2026", body: "NovaChain (NVC) is listing on the spot market. Trading starts 12 October at 2 PM (Bangladesh time). Deposits are already open." },
+  { id: "a2", t: "System upgrade — 14 October", d: "10 October 2026", body: "Futures trading will be paused on 14 October from 2–4 AM. Spot trading stays open." },
+  { id: "a3", t: "USDT staking APY rises to 8.5%", d: "8 October 2026", body: "Annual returns on USDT in Flexible Savings are now 8.5%. You can withdraw at any time." },
+  { id: "a4", t: "New P2P payment: Upay", d: "5 October 2026", body: "Upay is now supported in P2P trading. 500+ new merchants have joined." },
 ];
 
 export const FAQS = [
-  { q: "অ্যাকাউন্ট কিভাবে খুলবো?", a: "সাইন আপ পেজে মোবাইল নম্বর ও পাসওয়ার্ড দিন, OTP ভেরিফাই করুন — ২ মিনিটেই অ্যাকাউন্ট রেডি।" },
-  { q: "KYC কি বাধ্যতামূলক?", a: "ডিপোজিট ও ট্রেডিংয়ের জন্য বেসিক KYC (NID/পাসপোর্ট) প্রয়োজন। যাচাই হতে ১০–৩০ মিনিট লাগে।" },
-  { q: "টাকা কিভাবে জমা দেবো?", a: "বিকাশ/নগদ/রকেট দিয়ে ফিয়াট ডিপোজিট, অথবা অন্য ওয়ালেট থেকে ক্রিপ্টো পাঠাতে পারেন।" },
-  { q: "ট্রেডিং ফি কত?", a: "স্পট মেকার ০.১%, টেকার ০.১%। BNB দিয়ে ফি দিলে ২৫% ছাড়।" },
-  { q: "টাকা তোলা কি নিরাপদ?", a: "হ্যাঁ — উইথড্রতে 2FA + ইমেইল কনফার্মেশন বাধ্যতামূলক।" },
-  { q: "P2P কি?", a: "ব্যবহারকারী-থেকে-ব্যবহারকারী সরাসরি কেনাবেচা — এসক্রো সুরক্ষাসহ।" },
+  { q: "How do I open an account?", a: "Enter your mobile number and password on the sign-up page and verify the OTP — your account is ready in 2 minutes." },
+  { q: "Is KYC mandatory?", a: "Basic KYC (NID/passport) is required for deposits and trading. Verification takes 10–30 minutes." },
+  { q: "How do I deposit?", a: "Deposit fiat with bKash/Nagad/Rocket, or send crypto from another wallet." },
+  { q: "What are the trading fees?", a: "Spot maker 0.1%, taker 0.1%. Pay fees with BNB for a 25% discount." },
+  { q: "Is withdrawing safe?", a: "Yes — withdrawals require 2FA + email confirmation." },
+  { q: "What is P2P?", a: "Direct user-to-user buying and selling — with escrow protection." },
 ];
 
 export const BLOGS = [
-  { id: "b1", t: "বিটকয়েন ১ লাখ ডলারের পথে?", e: "₿", d: "১০ অক্টোবর", body: "বিশ্লেষকদের মতে ETF ইনফ্লো ও হালভিং-পরবর্তী সাইকেলে বিটকয়েন নতুন রেকর্ডের দিকে এগোচ্ছে। সাপোর্ট ৯০K, রেজিস্ট্যান্স ১০০K।" },
-  { id: "b2", t: "নতুনদের জন্য ৫টি ট্রেডিং ভুল", e: "⚠️", d: "৭ অক্টোবর", body: "লিভারেজের অপব্যবহার, স্টপ-লস না দেওয়া, FOMO ট্রেডিং — নতুন ট্রেডারদের সবচেয়ে সাধারণ ৫টি ভুল ও এড়ানোর উপায়।" },
-  { id: "b3", t: "স্টেকিং বনাম ট্রেডিং: কোনটি ভালো?", e: "⚖️", d: "৩ অক্টোবর", body: "প্যাসিভ আয় চাইলে স্টেকিং (৪–৯% APY), সক্রিয় মুনাফা চাইলে ট্রেডিং — ঝুঁকি ও রিটার্নের পূর্ণ তুলনা।" },
+  { id: "b1", t: "Is Bitcoin headed for $100K?", e: "₿", d: "10 October", body: "Analysts say ETF inflows and the post-halving cycle are pushing Bitcoin toward a new record. Support at 90K, resistance at 100K." },
+  { id: "b2", t: "5 Trading Mistakes Beginners Make", e: "⚠️", d: "7 October", body: "Misusing leverage, skipping stop-losses, FOMO trading — the 5 most common mistakes new traders make, and how to avoid them." },
+  { id: "b3", t: "Staking vs Trading: Which Is Better?", e: "⚖️", d: "3 October", body: "Want passive returns? Staking (4–9% APY). Want active returns? Trading — a full risk-and-return comparison." },
 ];
 
 export const ACADEMY = [
-  { id: "ac1", t: "ব্লকচেইন কী?", e: "⛓️", level: "বিগিনার", body: "ব্লকচেইন হলো বিকেন্দ্রীভূত ডিজিটাল খতিয়ান — হাজারো কম্পিউটারে একই রেকর্ড থাকে, তাই জালিয়াতি প্রায় অসম্ভব।" },
-  { id: "ac2", t: "ওয়ালেট ও প্রাইভেট কী", e: "🔑", level: "বিগিনার", body: "প্রাইভেট কী = আপনার টাকার চাবি। কাউকে দেবেন না। সিড ফ্রেজ কাগজে লিখে নিরাপদে রাখুন।" },
-  { id: "ac3", t: "ক্যান্ডেলস্টিক চার্ট পড়া", e: "📊", level: "ইন্টারমিডিয়েট", body: "সবুজ ক্যান্ডেল = দাম বেড়েছে, লাল = কমেছে। বডি ও উইক দেখে বায়ার-সেলার চাপ বোঝা যায়।" },
-  { id: "ac4", t: "লিভারেজ ও লিকুইডেশন", e: "⚡", level: "অ্যাডভান্সড", body: "১০x লিভারেজে ১০% মুভমেন্ট = ১০০% লাভ/ক্ষতি। লিকুইডেশন প্রাইসের আগেই স্টপ-লস দিন।" },
+  { id: "ac1", t: "What is blockchain?", e: "⛓️", level: "Beginner", body: "A blockchain is a decentralised digital ledger — the same record lives on thousands of computers, making fraud almost impossible." },
+  { id: "ac2", t: "Wallets & Private Keys", e: "🔑", level: "Beginner", body: "Your private key is the key to your funds. Never share it. Write your seed phrase on paper and keep it safe." },
+  { id: "ac3", t: "Reading Candlestick Charts", e: "📊", level: "Intermediate", body: "A green candle means the price rose, red means it fell. The body and wick show buyer–seller pressure." },
+  { id: "ac4", t: "Leverage & Liquidation", e: "⚡", level: "Advanced", body: "At 10x leverage, a 10% move = 100% profit or loss. Set a stop-loss before the liquidation price." },
 ];
 
 /* ================= HELPERS ================= */
@@ -292,7 +291,7 @@ export function TradeChart({ code, height = 220 }: { code: string; height?: numb
         <circle cx={w} cy={y(data[data.length - 1])} r="4" fill={col} />
       </svg>
       <div className="flex justify-between text-[10px] opacity-40">
-        <span>২৪ঘ আগে</span><span>এখন</span>
+        <span>24h ago</span><span>Now</span>
       </div>
     </div>
   );
@@ -329,11 +328,11 @@ export function OrderBook({ code, compact }: { code: string; compact?: boolean }
   );
   return (
     <div>
-      <div className="flex justify-between px-2 py-1 text-[10px] opacity-40"><span>দাম (USDT)</span><span>পরিমাণ</span></div>
+      <div className="flex justify-between px-2 py-1 text-[10px] opacity-40"><span>Price (USDT)</span><span>Amount</span></div>
       {rows.asks.map((r, i) => <Row key={"a" + i} p={r.p} q={r.q} ask />)}
       <div className="flex items-center gap-2 px-2 py-1.5">
         <span className={`text-sm font-black ${c.change >= 0 ? "text-[#0ecb81]" : "text-[#f6465d]"}`}>${fmtUSD(c.price)}</span>
-        <span className="text-[10px] opacity-40">≈ {fmtBDT(c.price)} টাকা</span>
+        <span className="text-[10px] opacity-40">≈ {fmtBDT(c.price)} BDT</span>
       </div>
       {rows.bids.map((r, i) => <Row key={"b" + i} p={r.p} q={r.q} ask={false} />)}
     </div>
@@ -355,7 +354,7 @@ export function PageHead({ t, sub }: { t: string; sub?: string }) {
   const { base } = useDemo();
   return (
     <div className="mb-4">
-      <Back href={base} label="হোম" />
+      <Back href={base} label="Home" />
       <SectionTitle t={t} sub={sub} />
     </div>
   );
@@ -390,7 +389,7 @@ export function WalletShell({ t, sub, children }: { t: string; sub?: string; chi
   const { base } = useDemo();
   return (
     <Page>
-      <Back href={`${base}/wallet`} label="ওয়ালেট" />
+      <Back href={`${base}/wallet`} label="Wallet" />
       <SectionTitle t={t} sub={sub} />
       {children}
     </Page>

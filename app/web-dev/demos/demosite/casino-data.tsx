@@ -10,12 +10,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
 
-export const bn = (n: number | string) => toBnDigits(String(n));
-export const money = (n: number) => `${toBnDigits(Math.round(n).toLocaleString("en-IN"))} টাকা`;
+export const bn = (n: number | string) => String(n);
+export const money = (n: number) => `${Math.round(n).toLocaleString("en-US")} credits`;
 export const GOLD = "#f5c518";
 
 /* ============================== data ============================== */
@@ -31,7 +30,7 @@ export interface CasiMatch {
   he: string;
   ae: string;
   time: string;
-  /** days from today: negative = finished (ফলাফল), 0 = today, positive = upcoming */
+  /** days from today: negative = finished (result), 0 = today, positive = upcoming */
   day: number;
   live?: boolean;
   minute?: string;
@@ -49,10 +48,10 @@ export interface FutureMarket {
 }
 
 export const SPORTS: { id: SportId; n: string; e: string }[] = [
-  { id: "cricket", n: "ক্রিকেট", e: "🏏" },
-  { id: "football", n: "ফুটবল", e: "⚽" },
-  { id: "tennis", n: "টেনিস", e: "🎾" },
-  { id: "basketball", n: "বাস্কেটবল", e: "🏀" },
+  { id: "cricket", n: "Cricket", e: "🏏" },
+  { id: "football", n: "Football", e: "⚽" },
+  { id: "tennis", n: "Tennis", e: "🎾" },
+  { id: "basketball", n: "Basketball", e: "🏀" },
 ];
 
 export const sportName = (id: SportId) => SPORTS.find((s) => s.id === id)?.n ?? id;
@@ -67,61 +66,61 @@ export function fxRng(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const BN_MONTHS = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+const EN_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 export function dayLabel(day: number): string {
-  if (day === 0) return "আজ";
-  if (day === 1) return "আগামীকাল";
-  if (day === -1) return "গতকাল";
-  if (day < 0 && day >= -6) return `${bn(Math.abs(day))} দিন আগে`;
+  if (day === 0) return "Today";
+  if (day === 1) return "Tomorrow";
+  if (day === -1) return "Yesterday";
+  if (day < 0 && day >= -6) return `${bn(Math.abs(day))} days ago`;
   const d = new Date(); d.setDate(d.getDate() + day);
-  return `${bn(d.getDate())} ${BN_MONTHS[d.getMonth()]}`;
+  return `${bn(d.getDate())} ${EN_MONTHS[d.getMonth()]}`;
 }
 
 type Team = { n: string; e: string; s: number };
 export const FX_TEAMS: Record<SportId, { leagues: string[]; teams: Team[] }> = {
   cricket: {
-    leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইন্ডিয়ান প্রিমিয়ার লিগ","টি-টোয়েন্টি আন্তর্জাতিক","ওয়ানডে সিরিজ","টেস্ট সিরিজ","এশিয়া কাপ"],
+    leagues: ["Bangladesh Premier League","Indian Premier League","T20 International","ODI Series","Test Series","Asia Cup"],
     teams: [
-      { n: "ঢাকা ডমিনেটর্স", e: "badge:ঢ:#dc2626", s: 4 }, { n: "কুমিল্লা ভিক্টোরিয়ান্স", e: "badge:কু:#2563eb", s: 5 },
-      { n: "রংপুর রাইডার্স", e: "badge:রং:#ca8a04", s: 4 }, { n: "সিলেট স্ট্রাইকার্স", e: "badge:সি:#7c3aed", s: 3 },
-      { n: "চট্টগ্রাম চ্যালেঞ্জার্স", e: "badge:চ:#0d9488", s: 3 }, { n: "খুলনা টাইগার্স", e: "badge:খু:#ea580c", s: 3 },
-      { n: "বরিশাল ফরচুন", e: "badge:ব:#f97316", s: 4 }, { n: "বাংলাদেশ", e: "🇧🇩", s: 4 },
-      { n: "ভারত", e: "🇮🇳", s: 5 }, { n: "পাকিস্তান", e: "🇵🇰", s: 4 },
-      { n: "শ্রীলঙ্কা", e: "🇱🇰", s: 3 }, { n: "অস্ট্রেলিয়া", e: "🇦🇺", s: 5 },
-      { n: "ইংল্যান্ড", e: "🇬🇧", s: 4 }, { n: "আফগানিস্তান", e: "🇦🇫", s: 3 },
-      { n: "মুম্বাই ইন্ডিয়ান্স", e: "badge:মু:#2563eb", s: 5 }, { n: "চেন্নাই সুপার কিংস", e: "badge:চে:#ca8a04", s: 5 },
+      { n: "Dhaka Dominators", e: "badge:D:#dc2626", s: 4 }, { n: "Cumilla Victorians", e: "badge:Cu:#2563eb", s: 5 },
+      { n: "Rangpur Riders", e: "badge:Ra:#ca8a04", s: 4 }, { n: "Sylhet Strikers", e: "badge:Sy:#7c3aed", s: 3 },
+      { n: "Chattogram Challengers", e: "badge:Ch:#0d9488", s: 3 }, { n: "Khulna Tigers", e: "badge:Kh:#ea580c", s: 3 },
+      { n: "Barishal Fortune", e: "badge:Ba:#f97316", s: 4 }, { n: "Bangladesh", e: "🇧🇩", s: 4 },
+      { n: "India", e: "🇮🇳", s: 5 }, { n: "Pakistan", e: "🇵🇰", s: 4 },
+      { n: "Sri Lanka", e: "🇱🇰", s: 3 }, { n: "Australia", e: "🇦🇺", s: 5 },
+      { n: "England", e: "🇬🇧", s: 4 }, { n: "Afghanistan", e: "🇦🇫", s: 3 },
+      { n: "Mumbai Indians", e: "badge:Mu:#2563eb", s: 5 }, { n: "Chennai Super Kings", e: "badge:Ch:#ca8a04", s: 5 },
     ],
   },
   football: {
-    leagues: ["বাংলাদেশ প্রিমিয়ার লিগ","ইংলিশ প্রিমিয়ার লিগ","লা লিগা","উয়েফা চ্যাম্পিয়ন্স লিগ","বুন্দেসলিগা"],
+    leagues: ["Bangladesh Premier League","English Premier League","La Liga","UEFA Champions League","Bundesliga"],
     teams: [
-      { n: "ঢাকা আবাহনী", e: "badge:আ:#2563eb", s: 4 }, { n: "মোহামেডান SC", e: "badge:মো:#1f2937", s: 4 },
-      { n: "বসুন্ধরা কিংস", e: "badge:ব:#7c3aed", s: 5 }, { n: "সাইফ স্পোর্টিং", e: "badge:সা:#ca8a04", s: 3 },
-      { n: "চট্টগ্রাম আবাহনী", e: "badge:চ:#059669", s: 3 }, { n: "রহমতগঞ্জ", e: "badge:র:#dc2626", s: 2 },
-      { n: "আর্সেনাল", e: "badge:আ:#dc2626", s: 5 }, { n: "চেলসি", e: "badge:চে:#2563eb", s: 4 },
-      { n: "লিভারপুল", e: "badge:লি:#dc2626", s: 5 }, { n: "ম্যান সিটি", e: "badge:সি:#0ea5e9", s: 5 },
-      { n: "রিয়াল মাদ্রিদ", e: "badge:রি:#e2e8f0", s: 5 }, { n: "বার্সেলোনা", e: "badge:বা:#7c3aed", s: 4 },
-      { n: "বায়ার্ন মিউনিখ", e: "badge:বা:#dc2626", s: 5 }, { n: "পিএসজি", e: "badge:পি:#1d4ed8", s: 4 },
-      { n: "বাংলাদেশ", e: "🇧🇩", s: 3 }, { n: "ভারত", e: "🇮🇳", s: 3 },
+      { n: "Dhaka Abahani", e: "badge:A:#2563eb", s: 4 }, { n: "Mohammedan SC", e: "badge:Mo:#1f2937", s: 4 },
+      { n: "Bashundhara Kings", e: "badge:Ba:#7c3aed", s: 5 }, { n: "Saif Sporting", e: "badge:Sa:#ca8a04", s: 3 },
+      { n: "Chattogram Abahani", e: "badge:Ch:#059669", s: 3 }, { n: "Rahmatganj", e: "badge:Ra:#dc2626", s: 2 },
+      { n: "Arsenal", e: "badge:A:#dc2626", s: 5 }, { n: "Chelsea", e: "badge:Ch:#2563eb", s: 4 },
+      { n: "Liverpool", e: "badge:Li:#dc2626", s: 5 }, { n: "Man City", e: "badge:Ma:#0ea5e9", s: 5 },
+      { n: "Real Madrid", e: "badge:Re:#e2e8f0", s: 5 }, { n: "Barcelona", e: "badge:Ba:#7c3aed", s: 4 },
+      { n: "Bayern Munich", e: "badge:Ba:#dc2626", s: 5 }, { n: "PSG", e: "badge:Pa:#1d4ed8", s: 4 },
+      { n: "Bangladesh", e: "🇧🇩", s: 3 }, { n: "India", e: "🇮🇳", s: 3 },
     ],
   },
   tennis: {
-    leagues: ["এটিপি ফাইনালস","ডব্লিউটিএ ফাইনালস","এটিপি ৫০০","অস্ট্রেলিয়ান ওপেন","দুবাই চ্যাম্পিয়নশিপ"],
+    leagues: ["ATP Finals","WTA Finals","ATP 500","Australian Open","Dubai Championships"],
     teams: [
-      { n: "কার্লোস আলকারাজ", e: "🇪🇸", s: 5 }, { n: "ইয়ানিক সিনার", e: "🇮🇹", s: 5 },
-      { n: "নোভাক জোকোভিচ", e: "🇷🇸", s: 5 }, { n: "দানিল মেদভেদেভ", e: "🇷🇺", s: 4 },
-      { n: "ইগা শিয়নতেক", e: "🇵🇱", s: 5 }, { n: "আরিনা সাবালেঙ্কা", e: "🇧🇾", s: 5 },
-      { n: "হোলগার রুন", e: "🇩🇰", s: 3 }, { n: "ফেলিক্স ওজার", e: "🇨🇦", s: 3 },
-      { n: "জেসিকা পেগুলা", e: "🇺🇸", s: 4 }, { n: "কোকো গফ", e: "🇺🇸", s: 4 },
+      { n: "Carlos Alcaraz", e: "🇪🇸", s: 5 }, { n: "Jannik Sinner", e: "🇮🇹", s: 5 },
+      { n: "Novak Djokovic", e: "🇷🇸", s: 5 }, { n: "Daniil Medvedev", e: "🇷🇺", s: 4 },
+      { n: "Iga Świątek", e: "🇵🇱", s: 5 }, { n: "Aryna Sabalenka", e: "🇧🇾", s: 5 },
+      { n: "Holger Rune", e: "🇩🇰", s: 3 }, { n: "Félix Auger", e: "🇨🇦", s: 3 },
+      { n: "Jessica Pegula", e: "🇺🇸", s: 4 }, { n: "Coco Gauff", e: "🇺🇸", s: 4 },
     ],
   },
   basketball: {
-    leagues: ["এনবিএ","বাংলাদেশ বাস্কেটবল লিগ"],
+    leagues: ["NBA","Bangladesh Basketball League"],
     teams: [
-      { n: "লেকার্স", e: "badge:লে:#ca8a04", s: 4 }, { n: "সেল্টিক্স", e: "badge:সে:#059669", s: 5 },
-      { n: "ওয়ারিয়র্স", e: "badge:ও:#2563eb", s: 4 }, { n: "নাগেটস", e: "badge:না:#92400e", s: 4 },
-      { n: "বাক্স", e: "badge:বা:#059669", s: 4 }, { n: "হিট", e: "badge:হি:#dc2626", s: 3 },
-      { n: "ঢাকা গ্ল্যাডিয়েটর্স", e: "badge:গ্ল:#dc2626", s: 3 }, { n: "চট্টগ্রাম টাইটান্স", e: "badge:টা:#2563eb", s: 3 },
+      { n: "Lakers", e: "badge:La:#ca8a04", s: 4 }, { n: "Celtics", e: "badge:Ce:#059669", s: 5 },
+      { n: "Warriors", e: "badge:Wa:#2563eb", s: 4 }, { n: "Nuggets", e: "badge:Nu:#92400e", s: 4 },
+      { n: "Bucks", e: "badge:Bu:#059669", s: 4 }, { n: "Heat", e: "badge:He:#dc2626", s: 3 },
+      { n: "Dhaka Gladiators", e: "badge:Gl:#dc2626", s: 3 }, { n: "Chattogram Titans", e: "badge:Ti:#2563eb", s: 3 },
     ],
   },
 };
@@ -135,7 +134,7 @@ function fxOdds(sh: number, sa: number, draw: boolean, r: () => number) {
   if (draw) o.d = +(2.6 + Math.abs(diff) * 0.35 + (r() - 0.5) * 0.4).toFixed(2);
   return o;
 }
-const FX_TIMES = ["বিকাল ৪:০০","সন্ধ্যা ৬:৩০","রাত ৮:০০","রাত ৯:৩০","দুপুর ১:৩০","সকাল ১০:০০"];
+const FX_TIMES = ["4:00 PM","6:30 PM","8:00 PM","9:30 PM","1:30 PM","10:00 AM"];
 
 function buildFixtures(): CasiMatch[] {
   const out: CasiMatch[] = [];
@@ -145,18 +144,18 @@ function buildFixtures(): CasiMatch[] {
 
   // ---------- LIVE (curated, always on) ----------
   const liveDefs: CasiMatch[] = [
-    { id: "L1", sport: "cricket", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা ডমিনেটর্স", away: "কুমিল্লা ভিক্টোরিয়ান্স", he: "badge:ঢ:#dc2626", ae: "badge:কু:#2563eb", time: "লাইভ", day: 0, live: true, minute: "১৪.২ ওভার", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
-    { id: "L2", sport: "cricket", league: "টি-টোয়েন্টি আন্তর্জাতিক", home: "বাংলাদেশ", away: "ভারত", he: "🇧🇩", ae: "🇮🇳", time: "লাইভ", day: 0, live: true, minute: "২য় ইনিংস • ৮.৪ ওভার", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
-    { id: "L3", sport: "cricket", league: "ইন্ডিয়ান প্রিমিয়ার লিগ", home: "মুম্বাই ইন্ডিয়ান্স", away: "চেন্নাই সুপার কিংস", he: "badge:মু:#2563eb", ae: "badge:চে:#ca8a04", time: "লাইভ", day: 0, live: true, minute: "১১.৫ ওভার", hs: 108, as: 1, odds: { h: 1.72, a: 2.1 } },
-    { id: "L4", sport: "football", league: "ইংলিশ প্রিমিয়ার লিগ", home: "আর্সেনাল", away: "চেলসি", he: "badge:আ:#dc2626", ae: "badge:চে:#2563eb", time: "লাইভ", day: 0, live: true, minute: "৬৭'", hs: 2, as: 1, odds: { h: 1.62, d: 3.8, a: 5.0 } },
-    { id: "L5", sport: "football", league: "বাংলাদেশ প্রিমিয়ার লিগ", home: "ঢাকা আবাহনী", away: "মোহামেডান SC", he: "badge:আ:#2563eb", ae: "badge:মো:#1f2937", time: "লাইভ", day: 0, live: true, minute: "৩৪'", hs: 1, as: 0, odds: { h: 1.7, d: 3.4, a: 4.6 } },
-    { id: "L6", sport: "football", league: "লা লিগা", home: "রিয়াল মাদ্রিদ", away: "বার্সেলোনা", he: "badge:রি:#e2e8f0", ae: "badge:বা:#7c3aed", time: "লাইভ", day: 0, live: true, minute: "৫৫'", hs: 1, as: 1, odds: { h: 2.5, d: 2.9, a: 2.8 } },
-    { id: "L7", sport: "tennis", league: "এটিপি ফাইনালস", home: "কার্লোস আলকারাজ", away: "ইয়ানিক সিনার", he: "🇪🇸", ae: "🇮🇹", time: "লাইভ", day: 0, live: true, minute: "সেট ৩", hs: 1, as: 1, odds: { h: 1.8, a: 2.0 } },
-    { id: "L8", sport: "tennis", league: "ডব্লিউটিএ ফাইনালস", home: "ইগা শিয়নতেক", away: "আরিনা সাবালেঙ্কা", he: "🇵🇱", ae: "🇧🇾", time: "লাইভ", day: 0, live: true, minute: "সেট ২", hs: 0, as: 1, odds: { h: 2.3, a: 1.62 } },
-    { id: "L9", sport: "basketball", league: "এনবিএ", home: "লেকার্স", away: "সেল্টিক্স", he: "badge:লে:#ca8a04", ae: "badge:সে:#059669", time: "লাইভ", day: 0, live: true, minute: "Q3 • ৪:১২", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
-    { id: "L10", sport: "cricket", league: "এশিয়া কাপ", home: "পাকিস্তান", away: "শ্রীলঙ্কা", he: "🇵🇰", ae: "🇱🇰", time: "লাইভ", day: 0, live: true, minute: "১৭.৩ ওভার", hs: 156, as: 4, odds: { h: 1.66, a: 2.2 } },
-    { id: "L11", sport: "football", league: "উয়েফা চ্যাম্পিয়ন্স লিগ", home: "বায়ার্ন মিউনিখ", away: "পিএসজি", he: "badge:বা:#dc2626", ae: "badge:পি:#1d4ed8", time: "লাইভ", day: 0, live: true, minute: "৭৮'", hs: 2, as: 2, odds: { h: 2.9, d: 2.7, a: 2.6 } },
-    { id: "L12", sport: "basketball", league: "এনবিএ", home: "ওয়ারিয়র্স", away: "নাগেটস", he: "badge:ও:#2563eb", ae: "badge:না:#92400e", time: "লাইভ", day: 0, live: true, minute: "Q2 • ৭:৪৫", hs: 54, as: 49, odds: { h: 1.8, a: 2.0 } },
+    { id: "L1", sport: "cricket", league: "Bangladesh Premier League", home: "Dhaka Dominators", away: "Cumilla Victorians", he: "badge:D:#dc2626", ae: "badge:Cu:#2563eb", time: "Live", day: 0, live: true, minute: "14.2 overs", hs: 142, as: 3, odds: { h: 1.85, a: 1.95 } },
+    { id: "L2", sport: "cricket", league: "T20 International", home: "Bangladesh", away: "India", he: "🇧🇩", ae: "🇮🇳", time: "Live", day: 0, live: true, minute: "2nd innings • 8.4 overs", hs: 96, as: 2, odds: { h: 2.4, a: 1.55 } },
+    { id: "L3", sport: "cricket", league: "Indian Premier League", home: "Mumbai Indians", away: "Chennai Super Kings", he: "badge:Mu:#2563eb", ae: "badge:Ch:#ca8a04", time: "Live", day: 0, live: true, minute: "11.5 overs", hs: 108, as: 1, odds: { h: 1.72, a: 2.1 } },
+    { id: "L4", sport: "football", league: "English Premier League", home: "Arsenal", away: "Chelsea", he: "badge:A:#dc2626", ae: "badge:Ch:#2563eb", time: "Live", day: 0, live: true, minute: "67'", hs: 2, as: 1, odds: { h: 1.62, d: 3.8, a: 5.0 } },
+    { id: "L5", sport: "football", league: "Bangladesh Premier League", home: "Dhaka Abahani", away: "Mohammedan SC", he: "badge:A:#2563eb", ae: "badge:Mo:#1f2937", time: "Live", day: 0, live: true, minute: "34'", hs: 1, as: 0, odds: { h: 1.7, d: 3.4, a: 4.6 } },
+    { id: "L6", sport: "football", league: "La Liga", home: "Real Madrid", away: "Barcelona", he: "badge:Re:#e2e8f0", ae: "badge:Ba:#7c3aed", time: "Live", day: 0, live: true, minute: "55'", hs: 1, as: 1, odds: { h: 2.5, d: 2.9, a: 2.8 } },
+    { id: "L7", sport: "tennis", league: "ATP Finals", home: "Carlos Alcaraz", away: "Jannik Sinner", he: "🇪🇸", ae: "🇮🇹", time: "Live", day: 0, live: true, minute: "Set 3", hs: 1, as: 1, odds: { h: 1.8, a: 2.0 } },
+    { id: "L8", sport: "tennis", league: "WTA Finals", home: "Iga Świątek", away: "Aryna Sabalenka", he: "🇵🇱", ae: "🇧🇾", time: "Live", day: 0, live: true, minute: "Set 2", hs: 0, as: 1, odds: { h: 2.3, a: 1.62 } },
+    { id: "L9", sport: "basketball", league: "NBA", home: "Lakers", away: "Celtics", he: "badge:La:#ca8a04", ae: "badge:Ce:#059669", time: "Live", day: 0, live: true, minute: "Q3 • 4:12", hs: 78, as: 82, odds: { h: 2.1, a: 1.72 } },
+    { id: "L10", sport: "cricket", league: "Asia Cup", home: "Pakistan", away: "Sri Lanka", he: "🇵🇰", ae: "🇱🇰", time: "Live", day: 0, live: true, minute: "17.3 overs", hs: 156, as: 4, odds: { h: 1.66, a: 2.2 } },
+    { id: "L11", sport: "football", league: "UEFA Champions League", home: "Bayern Munich", away: "PSG", he: "badge:Ba:#dc2626", ae: "badge:Pa:#1d4ed8", time: "Live", day: 0, live: true, minute: "78'", hs: 2, as: 2, odds: { h: 2.9, d: 2.7, a: 2.6 } },
+    { id: "L12", sport: "basketball", league: "NBA", home: "Warriors", away: "Nuggets", he: "badge:Wa:#2563eb", ae: "badge:Nu:#92400e", time: "Live", day: 0, live: true, minute: "Q2 • 7:45", hs: 54, as: 49, odds: { h: 1.8, a: 2.0 } },
   ];
   out.push(...liveDefs);
 
@@ -215,61 +214,61 @@ export const FINISHED_MATCHES = MATCHES.filter((m) => m.day < 0).sort((a, b) => 
 
 /** Futures / outright betting markets. */
 export const FUTURES: FutureMarket[] = [
-  { id: "fu1", title: "আইসিসি ওয়ানডে বিশ্বকাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏆", ends: "নভেম্বর ২০২৭", selections: [
-    { name: "ভারত", flag: "🇮🇳", odds: 3.4 }, { name: "অস্ট্রেলিয়া", flag: "🇦🇺", odds: 4.0 }, { name: "ইংল্যান্ড", flag: "🇬🇧", odds: 5.5 },
-    { name: "পাকিস্তান", flag: "🇵🇰", odds: 7.0 }, { name: "নিউজিল্যান্ড", flag: "🇳🇿", odds: 8.0 }, { name: "বাংলাদেশ", flag: "🇧🇩", odds: 12.0 }] },
-  { id: "fu2", title: "বাংলাদেশ প্রিমিয়ার লিগ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "ফেব্রুয়ারি ২০২৭", selections: [
-    { name: "কুমিল্লা ভিক্টোরিয়ান্স", flag: "🟦", odds: 4.5 }, { name: "ঢাকা ডমিনেটর্স", flag: "🟥", odds: 5.0 },
-    { name: "রংপুর রাইডার্স", flag: "🟨", odds: 5.5 }, { name: "বরিশাল ফরচুন", flag: "🟠", odds: 6.0 }, { name: "সিলেট স্ট্রাইকার্স", flag: "🟪", odds: 7.5 }] },
-  { id: "fu3", title: "ইংলিশ প্রিমিয়ার লিগ ২০২৬/২৭ — চ্যাম্পিয়ন", e: "⚽", ends: "মে ২০২৭", selections: [
-    { name: "ম্যান সিটি", flag: "🩵", odds: 2.8 }, { name: "আর্সেনাল", flag: "🔴", odds: 3.2 },
-    { name: "লিভারপুল", flag: "🔴", odds: 4.5 }, { name: "চেলসি", flag: "🔵", odds: 9.0 }, { name: "টটেনহ্যাম", flag: "⚪", odds: 15.0 }] },
-  { id: "fu4", title: "উয়েফা চ্যাম্পিয়ন্স লিগ ২০২৭ — বিজয়ী", e: "⭐", ends: "জুন ২০২৭", selections: [
-    { name: "রিয়াল মাদ্রিদ", flag: "⚪", odds: 5.0 }, { name: "ম্যান সিটি", flag: "🩵", odds: 5.5 },
-    { name: "বায়ার্ন মিউনিখ", flag: "🔴", odds: 7.0 }, { name: "বার্সেলোনা", flag: "🔵", odds: 8.0 }, { name: "পিএসজি", flag: "🔵", odds: 9.0 }] },
-  { id: "fu5", title: "এশিয়া কাপ ২০২৭ — চ্যাম্পিয়ন", e: "🏏", ends: "সেপ্টেম্বর ২০২৭", selections: [
-    { name: "ভারত", flag: "🟧", odds: 2.6 }, { name: "পাকিস্তান", flag: "🇵🇰", odds: 4.0 },
-    { name: "শ্রীলঙ্কা", flag: "🇱🇰", odds: 5.5 }, { name: "বাংলাদেশ", flag: "🇧🇩", odds: 6.5 }, { name: "আফগানিস্তান", flag: "🇦🇫", odds: 9.0 }] },
-  { id: "fu6", title: "অস্ট্রেলিয়ান ওপেন ২০২৭ (পুরুষ একক) — চ্যাম্পিয়ন", e: "🎾", ends: "জানুয়ারি ২০২৭", selections: [
-    { name: "কার্লোস আলকারাজ", flag: "🇪🇸", odds: 3.0 }, { name: "ইয়ানিক সিনার", flag: "🇮🇹", odds: 3.4 },
-    { name: "নোভাক জোকোভিচ", flag: "🇷🇸", odds: 5.0 }, { name: "দানিল মেদভেদেভ", flag: "🇷🇺", odds: 9.0 }] },
+  { id: "fu1", title: "ICC ODI World Cup 2027 — Champion", e: "🏆", ends: "November 2027", selections: [
+    { name: "India", flag: "🇮🇳", odds: 3.4 }, { name: "Australia", flag: "🇦🇺", odds: 4.0 }, { name: "England", flag: "🇬🇧", odds: 5.5 },
+    { name: "Pakistan", flag: "🇵🇰", odds: 7.0 }, { name: "New Zealand", flag: "🇳🇿", odds: 8.0 }, { name: "Bangladesh", flag: "🇧🇩", odds: 12.0 }] },
+  { id: "fu2", title: "Bangladesh Premier League 2027 — Champion", e: "🏏", ends: "February 2027", selections: [
+    { name: "Cumilla Victorians", flag: "🟦", odds: 4.5 }, { name: "Dhaka Dominators", flag: "🟥", odds: 5.0 },
+    { name: "Rangpur Riders", flag: "🟨", odds: 5.5 }, { name: "Barishal Fortune", flag: "🟠", odds: 6.0 }, { name: "Sylhet Strikers", flag: "🟪", odds: 7.5 }] },
+  { id: "fu3", title: "English Premier League 2026/27 — Champion", e: "⚽", ends: "May 2027", selections: [
+    { name: "Man City", flag: "🩵", odds: 2.8 }, { name: "Arsenal", flag: "🔴", odds: 3.2 },
+    { name: "Liverpool", flag: "🔴", odds: 4.5 }, { name: "Chelsea", flag: "🔵", odds: 9.0 }, { name: "Tottenham", flag: "⚪", odds: 15.0 }] },
+  { id: "fu4", title: "UEFA Champions League 2027 — Winner", e: "⭐", ends: "June 2027", selections: [
+    { name: "Real Madrid", flag: "⚪", odds: 5.0 }, { name: "Man City", flag: "🩵", odds: 5.5 },
+    { name: "Bayern Munich", flag: "🔴", odds: 7.0 }, { name: "Barcelona", flag: "🔵", odds: 8.0 }, { name: "PSG", flag: "🔵", odds: 9.0 }] },
+  { id: "fu5", title: "Asia Cup 2027 — Champion", e: "🏏", ends: "September 2027", selections: [
+    { name: "India", flag: "🟧", odds: 2.6 }, { name: "Pakistan", flag: "🇵🇰", odds: 4.0 },
+    { name: "Sri Lanka", flag: "🇱🇰", odds: 5.5 }, { name: "Bangladesh", flag: "🇧🇩", odds: 6.5 }, { name: "Afghanistan", flag: "🇦🇫", odds: 9.0 }] },
+  { id: "fu6", title: "Australian Open 2027 (Men's Singles) — Champion", e: "🎾", ends: "January 2027", selections: [
+    { name: "Carlos Alcaraz", flag: "🇪🇸", odds: 3.0 }, { name: "Jannik Sinner", flag: "🇮🇹", odds: 3.4 },
+    { name: "Novak Djokovic", flag: "🇷🇸", odds: 5.0 }, { name: "Daniil Medvedev", flag: "🇷🇺", odds: 9.0 }] },
 ];
 
 export interface CasiGame { id: string; n: string; e: string; cat: string; players: string; rtp: string; hot?: boolean }
 
 export const SLOT_GAMES: CasiGame[] = [
-  { id: "royal", n: "রয়েল স্লটস", e: "🎰", cat: "slots", players: "১২.৪ক", rtp: "৯৬.৫%", hot: true },
-  { id: "golden7", n: "গোল্ডেন সেভেন", e: "7️⃣", cat: "slots", players: "৮.১ক", rtp: "৯৬.২%" },
-  { id: "fruit", n: "ফ্রুট ফ্রেনজি", e: "🍒", cat: "slots", players: "৬.৭ক", rtp: "৯৫.৮%", hot: true },
-  { id: "diamond", n: "ডায়মন্ড রাশ", e: "💎", cat: "slots", players: "৫.২ক", rtp: "৯৬.৯%" },
-  { id: "lucky", n: "লাকি স্পিন", e: "🍀", cat: "slots", players: "৪.৩ক", rtp: "৯৫.৫%" },
-  { id: "pharaoh", n: "ফারাও'স গোল্ড", e: "🏺", cat: "slots", players: "৩.৯ক", rtp: "৯৬.১%" },
+  { id: "royal", n: "Royal Slots", e: "🎰", cat: "slots", players: "12.4K", rtp: "96.5%", hot: true },
+  { id: "golden7", n: "Golden Seven", e: "7️⃣", cat: "slots", players: "8.1K", rtp: "96.2%" },
+  { id: "fruit", n: "Fruit Frenzy", e: "🍒", cat: "slots", players: "6.7K", rtp: "95.8%", hot: true },
+  { id: "diamond", n: "Diamond Rush", e: "💎", cat: "slots", players: "5.2K", rtp: "96.9%" },
+  { id: "lucky", n: "Lucky Spin", e: "🍀", cat: "slots", players: "4.3K", rtp: "95.5%" },
+  { id: "pharaoh", n: "Pharaoh's Gold", e: "🏺", cat: "slots", players: "3.9K", rtp: "96.1%" },
 ];
 
 export const TABLE_GAMES: CasiGame[] = [
-  { id: "roulette", n: "রুলেট", e: "🎡", cat: "table", players: "৯.৩ক", rtp: "৯৭.৩%", hot: true },
-  { id: "blackjack", n: "ব্ল্যাকজ্যাক", e: "🂡", cat: "table", players: "৭.৮ক", rtp: "৯৯.৪%", hot: true },
-  { id: "baccarat", n: "ব্যাকারাট", e: "🃏", cat: "table", players: "৬.১ক", rtp: "৯৮.৯%" },
-  { id: "poker", n: "থ্রি-কার্ড পোকার", e: "♠️", cat: "table", players: "৪.৭ক", rtp: "৯৬.৬%" },
-  { id: "teenpatti", n: "তিন পাত্তি", e: "🪔", cat: "desi", players: "১১.২ক", rtp: "৯৭.১%", hot: true },
-  { id: "andarbahar", n: "অন্দর বাহার", e: "🎴", cat: "desi", players: "৮.৯ক", rtp: "৯৬.৮%", hot: true },
-  { id: "dragontiger", n: "ড্রাগন টাইগার", e: "🐉", cat: "desi", players: "৭.৪ক", rtp: "৯৬.৭%" },
+  { id: "roulette", n: "Roulette", e: "🎡", cat: "table", players: "9.3K", rtp: "97.3%", hot: true },
+  { id: "blackjack", n: "Blackjack", e: "🂡", cat: "table", players: "7.8K", rtp: "99.4%", hot: true },
+  { id: "baccarat", n: "Baccarat", e: "🃏", cat: "table", players: "6.1K", rtp: "98.9%" },
+  { id: "poker", n: "Three-Card Poker", e: "♠️", cat: "table", players: "4.7K", rtp: "96.6%" },
+  { id: "teenpatti", n: "Teen Patti", e: "🪔", cat: "desi", players: "11.2K", rtp: "97.1%", hot: true },
+  { id: "andarbahar", n: "Andar Bahar", e: "🎴", cat: "desi", players: "8.9K", rtp: "96.8%", hot: true },
+  { id: "dragontiger", n: "Dragon Tiger", e: "🐉", cat: "desi", players: "7.4K", rtp: "96.7%" },
 ];
 
 export const CRASH_GAMES: CasiGame[] = [
-  { id: "crash", n: "ক্র্যাশ", e: "📈", cat: "crash", players: "১৫.৬ক", rtp: "৯৭.০%", hot: true },
-  { id: "aviator", n: "জেট ফ্লাইট", e: "✈️", cat: "crash", players: "১৮.২ক", rtp: "৯৭.০%", hot: true },
-  { id: "dice", n: "ডাইস", e: "🎲", cat: "crash", players: "৯.৮ক", rtp: "৯৭.৫%" },
-  { id: "wheel", n: "ভাগ্যের চাকা", e: "🎡", cat: "crash", players: "৭.৩ক", rtp: "৯৬.৩%" },
+  { id: "crash", n: "Crash", e: "📈", cat: "crash", players: "15.6K", rtp: "97.0%", hot: true },
+  { id: "aviator", n: "Jet Flight", e: "✈️", cat: "crash", players: "18.2K", rtp: "97.0%", hot: true },
+  { id: "dice", n: "Dice", e: "🎲", cat: "crash", players: "9.8K", rtp: "97.5%" },
+  { id: "wheel", n: "Wheel of Fortune", e: "🎡", cat: "crash", players: "7.3K", rtp: "96.3%" },
 ];
 
 export const LIVE_GAMES: CasiGame[] = [
-  { id: "live-roulette", n: "লাইভ রুলেট", e: "🎥", cat: "live", players: "২.১ক", rtp: "৯৭.৩%", hot: true },
-  { id: "live-blackjack", n: "লাইভ ব্ল্যাকজ্যাক", e: "🎥", cat: "live", players: "১.৮ক", rtp: "৯৯.৪%" },
-  { id: "live-baccarat", n: "লাইভ ব্যাকারাট", e: "🎥", cat: "live", players: "১.৫ক", rtp: "৯৮.৯%" },
-  { id: "live-teenpatti", n: "লাইভ তিন পাত্তি", e: "🎥", cat: "live", players: "২.৪ক", rtp: "৯৭.১%", hot: true },
-  { id: "live-dragontiger", n: "লাইভ ড্রাগন টাইগার", e: "🎥", cat: "live", players: "১.৯ক", rtp: "৯৬.৭%" },
-  { id: "live-andarbahar", n: "লাইভ অন্দর বাহার", e: "🎥", cat: "live", players: "১.৬ক", rtp: "৯৬.৮%" },
+  { id: "live-roulette", n: "Live Roulette", e: "🎥", cat: "live", players: "2.1K", rtp: "97.3%", hot: true },
+  { id: "live-blackjack", n: "Live Blackjack", e: "🎥", cat: "live", players: "1.8K", rtp: "99.4%" },
+  { id: "live-baccarat", n: "Live Baccarat", e: "🎥", cat: "live", players: "1.5K", rtp: "98.9%" },
+  { id: "live-teenpatti", n: "Live Teen Patti", e: "🎥", cat: "live", players: "2.4K", rtp: "97.1%", hot: true },
+  { id: "live-dragontiger", n: "Live Dragon Tiger", e: "🎥", cat: "live", players: "1.9K", rtp: "96.7%" },
+  { id: "live-andarbahar", n: "Live Andar Bahar", e: "🎥", cat: "live", players: "1.6K", rtp: "96.8%" },
 ];
 
 export const ALL_GAMES = [...SLOT_GAMES, ...TABLE_GAMES, ...CRASH_GAMES, ...LIVE_GAMES];
@@ -297,10 +296,10 @@ export interface CatalogGame {
 }
 
 export const PROVIDERS = [
-  "DigiPlay Originals", "রয়েল গেমিং", "মেগাউইন স্টুডিও", "গোল্ডেন টাচ",
-  "নোভা সফট", "টাইগার গেমস", "লাকি স্পিন ল্যাব", "পদ্মা গেমিং",
-  "ঢাকা প্লে", "স্পিন হাউস বিডি", "জেম ওয়ার্কস", "ভিক্টরি ল্যাব",
-  "ক্রাউন গেমিং", "থান্ডার প্লে", "ফরচুন কিং", "নিয়ন স্টার",
+  "DigiPlay Originals", "Royal Gaming", "MegaWin Studio", "Golden Touch",
+  "Nova Soft", "Tiger Games", "Lucky Spin Lab", "Padma Gaming",
+  "Dhaka Play", "Spin House BD", "Gem Works", "Victory Lab",
+  "Crown Gaming", "Thunder Play", "Fortune King", "Neon Star",
 ];
 
 const GRADS = [
@@ -314,57 +313,57 @@ const GRADS = [
 
 /** Themed slot symbol sets — each theme gives the slot engine a unique look. */
 const SLOT_THEMES: { name: string; syms: string[] }[] = [
-  { name: "ফলের বাগান", syms: ["🍒", "🍋", "🍇", "🍉", "🍓", "🔔", "⭐", "7️⃣"] },
-  { name: "রত্ন খনি", syms: ["💎", "🔷", "🔶", "💠", "🔮", "✨", "👑", "💍"] },
-  { name: "মিশরের ধন", syms: ["🏺", "🐪", "🔺", "👁️", "🪲", "⚱️", "🌙", "👑"] },
-  { name: "ড্রাগন রাজ্য", syms: ["🐉", "🔥", "🏮", "🧧", "🪭", "🎋", "💰", "🐲"] },
-  { name: "মহাকাশ যাত্রা", syms: ["🚀", "🪐", "⭐", "🌙", "👽", "🛸", "☄️", "🔭"] },
-  { name: "সাগর তলা", syms: ["🐠", "🐙", "🦑", "🐚", "⚓", "🔱", "🦈", "🫧"] },
-  { name: "জঙ্গল সাফারি", syms: ["🦁", "🐘", "🦒", "🦓", "🐆", "🌴", "🦜", "🐒"] },
-  { name: "মিষ্টির দুনিয়া", syms: ["🍬", "🍭", "🧁", "🍩", "🍫", "🍦", "🍰", "🍯"] },
-  { name: "ওয়াইল্ড ওয়েস্ট", syms: ["🤠", "🐴", "🔫", "⭐", "🏜️", "🌵", "🥃", "💰"] },
-  { name: "ভাইকিং যুদ্ধ", syms: ["⚔️", "🛡️", "⛵", "🪓", "🐺", "⚡", "🏔️", "👑"] },
-  { name: "লাক্সারি লাইফ", syms: ["💎", "🏎️", "⌚", "👜", "🥂", "💳", "🛥️", "👑"] },
-  { name: "জাপানি বাগান", syms: ["🌸", "🎋", "🏯", "🎎", "🍵", "🪭", "🎏", "🌺"] },
-  { name: "যাদুর জগৎ", syms: ["🔮", "🪄", "🧙", "🦉", "🌙", "⚗️", "📜", "✨"] },
-  { name: "ফারাও সমাধি", syms: ["⚱️", "🏺", "🐍", "☀️", "🔺", "👁️", "🪲", "💛"] },
-  { name: "ক্রিস্টাল গুহা", syms: ["💜", "💙", "💚", "💛", "🧡", "❤️", "🔮", "✨"] },
-  { name: "আগুন পাহাড়", syms: ["🌋", "🔥", "💥", "🪨", "🦖", "🌋", "☄️", "🌡️"] },
-  { name: "বরফ রাজ্য", syms: ["❄️", "⛄", "🐧", "🧊", "🌨️", "🦌", "🐻‍❄️", "💙"] },
-  { name: "সোনার খনি", syms: ["⛏️", "💰", "🏆", "💛", "🪙", "🚂", "💎", "🔦"] },
-  { name: "রংধনু উপত্যকা", syms: ["🌈", "🦄", "☁️", "⭐", "🍀", "🌟", "💫", "🎈"] },
-  { name: "সার্কাস মেলা", syms: ["🎪", "🤹", "🎠", "🎡", "🍿", "🎈", "🥁", "🎭"] },
-  { name: "মরুভূমি অভিযান", syms: ["🏜️", "🐪", "🦂", "🌵", "☀️", "🧭", "💧", "🏺"] },
-  { name: "সাইবার সিটি", syms: ["🤖", "🌆", "💾", "🔋", "🛸", "🎮", "📡", "💡"] },
-  { name: "রাজকীয় দরবার", syms: ["👑", "🏰", "⚜️", "🛡️", "🍷", "🎺", "💂", "🗝️"] },
+  { name: "Fruit Garden", syms: ["🍒", "🍋", "🍇", "🍉", "🍓", "🔔", "⭐", "7️⃣"] },
+  { name: "Gem Mine", syms: ["💎", "🔷", "🔶", "💠", "🔮", "✨", "👑", "💍"] },
+  { name: "Egyptian Treasure", syms: ["🏺", "🐪", "🔺", "👁️", "🪲", "⚱️", "🌙", "👑"] },
+  { name: "Dragon Kingdom", syms: ["🐉", "🔥", "🏮", "🧧", "🪭", "🎋", "💰", "🐲"] },
+  { name: "Space Journey", syms: ["🚀", "🪐", "⭐", "🌙", "👽", "🛸", "☄️", "🔭"] },
+  { name: "Under the Sea", syms: ["🐠", "🐙", "🦑", "🐚", "⚓", "🔱", "🦈", "🫧"] },
+  { name: "Jungle Safari", syms: ["🦁", "🐘", "🦒", "🦓", "🐆", "🌴", "🦜", "🐒"] },
+  { name: "Sweet World", syms: ["🍬", "🍭", "🧁", "🍩", "🍫", "🍦", "🍰", "🍯"] },
+  { name: "Wild West", syms: ["🤠", "🐴", "🔫", "⭐", "🏜️", "🌵", "🥃", "💰"] },
+  { name: "Viking Battle", syms: ["⚔️", "🛡️", "⛵", "🪓", "🐺", "⚡", "🏔️", "👑"] },
+  { name: "Luxury Life", syms: ["💎", "🏎️", "⌚", "👜", "🥂", "💳", "🛥️", "👑"] },
+  { name: "Japanese Garden", syms: ["🌸", "🎋", "🏯", "🎎", "🍵", "🪭", "🎏", "🌺"] },
+  { name: "Magic World", syms: ["🔮", "🪄", "🧙", "🦉", "🌙", "⚗️", "📜", "✨"] },
+  { name: "Pharaoh's Tomb", syms: ["⚱️", "🏺", "🐍", "☀️", "🔺", "👁️", "🪲", "💛"] },
+  { name: "Crystal Cave", syms: ["💜", "💙", "💚", "💛", "🧡", "❤️", "🔮", "✨"] },
+  { name: "Fire Mountain", syms: ["🌋", "🔥", "💥", "🪨", "🦖", "🌋", "☄️", "🌡️"] },
+  { name: "Ice Kingdom", syms: ["❄️", "⛄", "🐧", "🧊", "🌨️", "🦌", "🐻‍❄️", "💙"] },
+  { name: "Gold Mine", syms: ["⛏️", "💰", "🏆", "💛", "🪙", "🚂", "💎", "🔦"] },
+  { name: "Rainbow Valley", syms: ["🌈", "🦄", "☁️", "⭐", "🍀", "🌟", "💫", "🎈"] },
+  { name: "Circus Fair", syms: ["🎪", "🤹", "🎠", "🎡", "🍿", "🎈", "🥁", "🎭"] },
+  { name: "Desert Expedition", syms: ["🏜️", "🐪", "🦂", "🌵", "☀️", "🧭", "💧", "🏺"] },
+  { name: "Cyber City", syms: ["🤖", "🌆", "💾", "🔋", "🛸", "🎮", "📡", "💡"] },
+  { name: "Royal Court", syms: ["👑", "🏰", "⚜️", "🛡️", "🍷", "🎺", "💂", "🗝️"] },
 ];
 
 /** Gradient per slot theme — stage & tiles always match the game's world. */
 const THEME_GRADS = [
-  "from-lime-600 via-green-800 to-slate-900",      // ফলের বাগান
-  "from-violet-600 via-purple-900 to-slate-900",   // রত্ন খনি
-  "from-amber-500 via-yellow-800 to-stone-900",     // মিশরের ধন
-  "from-red-600 via-rose-900 to-slate-900",         // ড্রাগন রাজ্য
-  "from-indigo-600 via-blue-950 to-black",          // মহাকাশ যাত্রা
-  "from-cyan-500 via-sky-800 to-slate-900",         // সাগর তলা
-  "from-emerald-600 via-green-900 to-slate-900",    // জঙ্গল সাফারি
-  "from-pink-500 via-rose-700 to-slate-900",        // মিষ্টির দুনিয়া
-  "from-orange-600 via-amber-900 to-stone-900",     // ওয়াইল্ড ওয়েস্ট
-  "from-slate-500 via-slate-800 to-slate-950",      // ভাইকিং যুদ্ধ
-  "from-yellow-500 via-amber-800 to-neutral-900",   // লাক্সারি লাইফ
-  "from-rose-400 via-pink-800 to-slate-900",        // জাপানি বাগান
-  "from-purple-600 via-indigo-950 to-black",        // যাদুর জগৎ
-  "from-yellow-600 via-amber-900 to-stone-950",     // ফারাও সমাধি
-  "from-fuchsia-500 via-purple-900 to-slate-950",   // ক্রিস্টাল গুহা
-  "from-orange-500 via-red-900 to-slate-950",       // আগুন পাহাড়
-  "from-sky-400 via-cyan-800 to-slate-900",         // বরফ রাজ্য
-  "from-amber-400 via-yellow-800 to-stone-900",     // সোনার খনি
-  "from-violet-500 via-fuchsia-800 to-slate-900",   // রংধনু উপত্যকা
-  "from-red-500 via-rose-900 to-slate-950",         // সার্কাস মেলা
+  "from-lime-600 via-green-800 to-slate-900",      // Fruit Garden
+  "from-violet-600 via-purple-900 to-slate-900",   // Gem Mine
+  "from-amber-500 via-yellow-800 to-stone-900",     // Egyptian Treasure
+  "from-red-600 via-rose-900 to-slate-900",         // Dragon Kingdom
+  "from-indigo-600 via-blue-950 to-black",          // Space Journey
+  "from-cyan-500 via-sky-800 to-slate-900",         // Under the Sea
+  "from-emerald-600 via-green-900 to-slate-900",    // Jungle Safari
+  "from-pink-500 via-rose-700 to-slate-900",        // Sweet World
+  "from-orange-600 via-amber-900 to-stone-900",     // Wild West
+  "from-slate-500 via-slate-800 to-slate-950",      // Viking Battle
+  "from-yellow-500 via-amber-800 to-neutral-900",   // Luxury Life
+  "from-rose-400 via-pink-800 to-slate-900",        // Japanese Garden
+  "from-purple-600 via-indigo-950 to-black",        // Magic World
+  "from-yellow-600 via-amber-900 to-stone-950",     // Pharaoh's Tomb
+  "from-fuchsia-500 via-purple-900 to-slate-950",   // Crystal Cave
+  "from-orange-500 via-red-900 to-slate-950",       // Fire Mountain
+  "from-sky-400 via-cyan-800 to-slate-900",         // Ice Kingdom
+  "from-amber-400 via-yellow-800 to-stone-900",     // Gold Mine
+  "from-violet-500 via-fuchsia-800 to-slate-900",   // Rainbow Valley
+  "from-red-500 via-rose-900 to-slate-950",         // Circus Fair
 ];
 
-const SLOT_PREFIX = ["মেগা", "রয়েল", "সুপার", "আল্ট্রা", "গ্র্যান্ড", "লাকি", "গোল্ডেন", "ম্যাজিক", "ওয়াইল্ড", "ক্রেজি", "বিগ", "প্রিমিয়াম"];
-const SLOT_SUFFIX = ["রিলস", "স্পিন", "জ্যাকপট", "উইন", "ফরচুন", "বোনানজা", "রাশ", "ডিলাক্স", "ম্যানিয়া", "ওয়ার্ল্ড"];
+const SLOT_PREFIX = ["Mega", "Royal", "Super", "Ultra", "Grand", "Lucky", "Golden", "Magic", "Wild", "Crazy", "Big", "Premium"];
+const SLOT_SUFFIX = ["Reels", "Spin", "Jackpot", "Win", "Fortune", "Bonanza", "Rush", "Deluxe", "Mania", "World"];
 
 function seededNum(seed: string, mod: number): number {
   let h = 0;
@@ -390,7 +389,7 @@ function buildCatalog(): CatalogGame[] {
           cat: "slots",
           engine: "slots",
           provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-          players: `${(seededNum(id + "p", 180) / 10 + 0.3).toFixed(1)}ক`,
+          players: `${(seededNum(id + "p", 180) / 10 + 0.3).toFixed(1)}K`,
           rtp: 94 + seededNum(id + "r", 50) / 10,
           hot: seededNum(id + "h", 12) === 0,
           grad: THEME_GRADS[t],
@@ -401,18 +400,18 @@ function buildCatalog(): CatalogGame[] {
     }
   }
   // --- Crash family: 60 variants
-  const crashNames = ["রকেট", "জেট", "বেলুন", "বুল", "চাঁদ", "বিমান", "বাইক", "ট্রেন", "হেলিকপ্টার", "স্পিড বোট"];
-  const crashStyles = ["ক্র্যাশ", "ফ্লাইট", "রাইড", "রান", "এক্স"];
+  const crashNames = ["Rocket", "Jet", "Balloon", "Bull", "Moon", "Plane", "Bike", "Train", "Helicopter", "Speed Boat"];
+  const crashStyles = ["Crash", "Flight", "Ride", "Run", "X"];
   let ci = 0;
   for (const cn of crashNames) {
     for (const cs of crashStyles) {
       ci++;
       const id = `crash-${ci}`;
       out.push({
-        id, n: `${cn} ${cs}`, e: cn === "বিমান" || cn === "জেট" ? "✈️" : "🚀",
+        id, n: `${cn} ${cs}`, e: cn === "Plane" || cn === "Jet" ? "✈️" : "🚀",
         cat: "crash", engine: ci % 3 === 0 ? "aviator" : "crash",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 250) / 10 + 0.5).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 250) / 10 + 0.5).toFixed(1)}K`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: ci <= 6,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🚀"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -420,17 +419,17 @@ function buildCatalog(): CatalogGame[] {
     }
   }
   // --- Mines: 40 variants
-  const mineNames = ["রত্ন", "সোনা", "বোমা", "হীরা", "ট্রেজার", "ক্রিস্টাল", "কয়লা", "রুবি"];
+  const mineNames = ["Gem", "Gold", "Bomb", "Diamond", "Treasure", "Crystal", "Coal", "Ruby"];
   let mi = 0;
   for (const mn of mineNames) {
     for (let v = 1; v <= 5; v++) {
       mi++;
       const id = `mines-${mi}`;
       out.push({
-        id, n: `${mn} মাইনস ${v > 1 ? bn(v) : ""}`.trim(), e: "💣",
+        id, n: `${mn} Mines ${v > 1 ? bn(v) : ""}`.trim(), e: "💣",
         cat: "mines", engine: "mines",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 120) / 10 + 0.2).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 120) / 10 + 0.2).toFixed(1)}K`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: mi <= 4,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["💣", "💎"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -439,15 +438,15 @@ function buildCatalog(): CatalogGame[] {
   }
   // --- Plinko: 24 variants
   let pi = 0;
-  for (const pn of ["গোল্ডেন", "নিয়ন", "রয়েল", "ক্যাজুয়াল", "টার্বো", "মেগা"]) {
+  for (const pn of ["Golden", "Neon", "Royal", "Casual", "Turbo", "Mega"]) {
     for (let v = 1; v <= 4; v++) {
       pi++;
       const id = `plinko-${pi}`;
       out.push({
-        id, n: `${pn} প্লিংকো ${v > 1 ? bn(v) : ""}`.trim(), e: "🔵",
+        id, n: `${pn} Plinko ${v > 1 ? bn(v) : ""}`.trim(), e: "🔵",
         cat: "plinko", engine: "plinko",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 90) / 10 + 0.2).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 90) / 10 + 0.2).toFixed(1)}K`,
         rtp: 95 + seededNum(id + "r", 40) / 10, hot: pi <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🔵"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -456,15 +455,15 @@ function buildCatalog(): CatalogGame[] {
   }
   // --- Dice: 30 variants
   let di = 0;
-  for (const dn of ["লাকি", "গোল্ডেন", "ডাবল", "রয়েল", "স্পিড", "ম্যাজিক"]) {
+  for (const dn of ["Lucky", "Golden", "Double", "Royal", "Speed", "Magic"]) {
     for (let v = 1; v <= 5; v++) {
       di++;
       const id = `dice-${di}`;
       out.push({
-        id, n: `${dn} ডাইস ${v > 1 ? bn(v) : ""}`.trim(), e: "🎲",
+        id, n: `${dn} Dice ${v > 1 ? bn(v) : ""}`.trim(), e: "🎲",
         cat: "dice", engine: "dice",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 100) / 10 + 0.2).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 100) / 10 + 0.2).toFixed(1)}K`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: di <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎲"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -473,15 +472,15 @@ function buildCatalog(): CatalogGame[] {
   }
   // --- Wheel: 24 variants
   let wi = 0;
-  for (const wn of ["লাকি", "গোল্ডেন", "মানি", "মেগা", "রয়েল", "স্পিন"]) {
+  for (const wn of ["Lucky", "Golden", "Money", "Mega", "Royal", "Spin"]) {
     for (let v = 1; v <= 4; v++) {
       wi++;
       const id = `wheel-${wi}`;
       out.push({
-        id, n: `${wn} হুইল ${v > 1 ? bn(v) : ""}`.trim(), e: "🎡",
+        id, n: `${wn} Wheel ${v > 1 ? bn(v) : ""}`.trim(), e: "🎡",
         cat: "wheel", engine: "wheel",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 80) / 10 + 0.2).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 80) / 10 + 0.2).toFixed(1)}K`,
         rtp: 95 + seededNum(id + "r", 40) / 10, hot: wi <= 3,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🎡"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -490,15 +489,15 @@ function buildCatalog(): CatalogGame[] {
   }
   // --- HiLo cards: 18 variants
   let hi = 0;
-  for (const hn of ["রয়েল", "স্পিড", "গোল্ডেন", "ক্লাসিক", "টার্বো", "ভিআইপি"]) {
+  for (const hn of ["Royal", "Speed", "Golden", "Classic", "Turbo", "VIP"]) {
     for (let v = 1; v <= 3; v++) {
       hi++;
       const id = `hilo-${hi}`;
       out.push({
-        id, n: `${hn} হাই-লো ${v > 1 ? bn(v) : ""}`.trim(), e: "🃏",
+        id, n: `${hn} Hi-Lo ${v > 1 ? bn(v) : ""}`.trim(), e: "🃏",
         cat: "hilo", engine: "hilo",
         provider: PROVIDERS[seededNum(id, PROVIDERS.length)],
-        players: `${(seededNum(id + "p", 60) / 10 + 0.2).toFixed(1)}ক`,
+        players: `${(seededNum(id + "p", 60) / 10 + 0.2).toFixed(1)}K`,
         rtp: 96 + seededNum(id + "r", 30) / 10, hot: hi <= 2,
         grad: GRADS[seededNum(id + "g", GRADS.length)], syms: ["🃏"],
       isNew: seededNum(id + "nw", 100) < 9,
@@ -514,23 +513,23 @@ function buildCatalog(): CatalogGame[] {
 }
 
 const _CATALOG = buildCatalog();
-// ★ Pinned #1 — সুপার এস (own IP flagship card slot)
+// ★ Pinned #1 — Super Ace (own IP flagship card slot)
 _CATALOG.unshift({
-  id: "superace-1", n: "সুপার এস", e: "🂡", cat: "slots", engine: "superace",
-  provider: "DigiPlay Originals", players: "32.8ক", rtp: 96.8, hot: true, isNew: true,
+  id: "superace-1", n: "Super Ace", e: "🂡", cat: "slots", engine: "superace",
+  provider: "DigiPlay Originals", players: "32.8K", rtp: 96.8, hot: true, isNew: true,
   grad: "from-amber-500 via-yellow-600 to-orange-800",
   syms: ["🂡", "🃏", "👑", "💎", "♠️", "♥️", "♣️", "♦️"],
 });
 // AI covers — matched to themes
 const COVER_MAP: [string, string][] = [
   ["superace-1", "covers/superace.webp"],
-  ["ফলের বাগান", "covers/fruit.webp"],
-  ["আগুন পাহাড়", "covers/volcano.webp"],
-  ["রত্ন খনি", "covers/gems.webp"],
-  ["মিশরের ধন", "covers/egypt.webp"],
-  ["ড্রাগন রাজ্য", "covers/dragon.webp"],
-  ["সোনার খনি", "covers/gold.webp"],
-  ["যাদুর জগৎ", "covers/magic.webp"],
+  ["Fruit Garden", "covers/fruit.webp"],
+  ["Fire Mountain", "covers/volcano.webp"],
+  ["Gem Mine", "covers/gems.webp"],
+  ["Egyptian Treasure", "covers/egypt.webp"],
+  ["Dragon Kingdom", "covers/dragon.webp"],
+  ["Gold Mine", "covers/gold.webp"],
+  ["Magic World", "covers/magic.webp"],
 ];
 for (const [key, file] of COVER_MAP) {
   const g = key === "superace-1"
@@ -603,35 +602,35 @@ export function useCasinoConfig(): { rtp: number; minBet: number; maxBet: number
 }
 
 export const PROMOS = [
-  { id: "p1", t: "🎁 ১০০% ওয়েলকাম বোনাস", e: "🎁", d: "প্রথম ডিপোজিটে ১০০% বোনাস — সর্বোচ্চ ৫,০০০ টাকা পর্যন্ত!", body: "নতুন খেলোয়াড়দের জন্য বিশেষ অফার। প্রথম ডিপোজিটে ১০০% বোনাস পান — সর্বোচ্চ ৫,০০০ টাকা। বোনাস পেতে ন্যূনতম ৫০০ টাকা ডিপোজিট করুন। বোনাসের টাকা ১০ গুণ ওয়েজার করে তুলতে পারবেন। অফারটি অ্যাকাউন্ট খোলার ৭ দিনের মধ্যে প্রযোজ্য।" },
-  { id: "p2", t: "💸 সাপ্তাহিক ক্যাশব্যাক ১০%", e: "💸", d: "হারানো টাকার ১০% ফেরত — প্রতি সোমবার!", body: "সপ্তাহে ক্যাসিনোতে নেট লস হলে ১০% ক্যাশব্যাক পাবেন প্রতি সোমবার সকালে। সর্বোচ্চ ১০,০০০ টাকা পর্যন্ত। কোনো ওয়েজার শর্ত নেই — সরাসরি উইথড্র করতে পারবেন।" },
-  { id: "p3", t: "⚽ স্পোর্টস বুস্টার", e: "⚽", d: "মাল্টি বেটে ২৫% পর্যন্ত এক্সট্রা জয়!", body: "৫ বা তার বেশি সিলেকশনের মাল্টি বেট জিতলে অতিরিক্ত বোনাস: ৫ সিলেকশনে ৫%, ৮ সিলেকশনে ১৫%, ১২+ সিলেকশনে ২৫% এক্সট্রা।" },
-  { id: "p4", t: "👑 ভিআইপি রিলোড বোনাস", e: "👑", d: "ভিআইপি সদস্যদের প্রতিদিন ২০% রিলোড!", body: "গোল্ড ও তার উপরের ভিআইপি সদস্যরা প্রতিদিনের প্রথম ডিপোজিটে ২০% রিলোড বোনাস পাবেন — সর্বোচ্চ ৩,০০০ টাকা।" },
-  { id: "p5", t: "🎰 ফ্রি স্পিন ফ্রাইডে", e: "🎰", d: "প্রতি শুক্রবার ৫০টি ফ্রি স্পিন!", body: "শুক্রবার ১,০০০ টাকা ডিপোজিট করলেই রয়েল স্লটসে ৫০টি ফ্রি স্পিন। ফ্রি স্পিনের জয় ৫ গুণ ওয়েজারে উইথড্রযোগ্য।" },
+  { id: "p1", t: "🎁 100% Welcome Bonus", e: "🎁", d: "100% bonus on your first deposit — up to 5,000 credits!", body: "Special offer for new players. Get a 100% bonus on your first deposit — up to 5,000 credits. Deposit at least 500 credits to claim the bonus. Bonus credits can be withdrawn after wagering 10x. The offer is valid for 7 days after opening your account." },
+  { id: "p2", t: "💸 Weekly Cashback 10%", e: "💸", d: "10% of net losses back — every Monday!", body: "If you have a net loss at the casino during the week, you get 10% cashback every Monday morning. Up to 10,000 credits. No wagering requirement — you can withdraw directly." },
+  { id: "p3", t: "⚽ Sports Booster", e: "⚽", d: "Up to 25% extra winnings on multi bets!", body: "Extra bonus when a multi bet with 5 or more selections wins: 5% for 5 selections, 15% for 8 selections, 25% extra for 12+ selections." },
+  { id: "p4", t: "👑 VIP Reload Bonus", e: "👑", d: "20% daily reload for VIP members!", body: "Gold and higher VIP members get a 20% reload bonus on their first deposit each day — up to 3,000 credits." },
+  { id: "p5", t: "🎰 Free Spin Friday", e: "🎰", d: "50 free spins every Friday!", body: "Deposit 1,000 credits on Friday and get 50 free spins on Royal Slots. Free-spin winnings are withdrawable after 5x wagering." },
 ];
 
 export const TOURNAMENTS = [
-  { id: "t1", t: "🏆 সাপ্তাহিক স্লট রেস", e: "🏆", prize: 100000, ends: "২ দিন বাকি", players: 1243, desc: "সপ্তাহের সর্বোচ্চ স্লট জয়ের ভিত্তিতে র‍্যাংকিং। টপ ৫০ জন পুরস্কার পাবেন।", body: "রয়েল স্লটস, গোল্ডেন সেভেন ও ফ্রুট ফ্রেনজিতে খেলে পয়েন্ট জমান। প্রতি ১০০ টাকা জয়ে ১ পয়েন্ট। পুরস্কার: ১ম — ২৫,০০০ টাকা, ২য় — ১৫,০০০ টাকা, ৩য় — ১০,০০০ টাকা, ৪র্থ–১০ম — ৫,০০০ টাকা, ১১তম–৫০তম — ১,০০০ টাকা।" },
-  { id: "t2", t: "♠️ পোকার চ্যাম্পিয়নশিপ", e: "♠️", prize: 50000, ends: "৫ দিন বাকি", players: 486, desc: "থ্রি-কার্ড পোকারে সেরাদের লড়াই।", body: "প্রতিদিন রাত ৯টায় কোয়ালিফায়ার রাউন্ড। ফাইনাল রবিবার রাত ১০টা। এন্ট্রি ফি ৫০০ টাকা — বিজয়ী পাবেন ২০,০০০ টাকা!" },
-  { id: "t3", t: "✈️ জেট ফ্লাইট মাস্টার্স", e: "✈️", prize: 75000, ends: "১ দিন বাকি", players: 2108, desc: "সর্বোচ্চ মাল্টিপ্লায়ারে ক্যাশআউটের প্রতিযোগিতা।", body: "জেট ফ্লাইটে ১০x বা তার বেশি মাল্টিপ্লায়ারে ক্যাশআউট করলেই এন্ট্রি। সর্বোচ্চ মাল্টিপ্লায়ারধারী ৩০ জন পুরস্কার পাবেন।" },
+  { id: "t1", t: "🏆 Weekly Slot Race", e: "🏆", prize: 100000, ends: "2 days left", players: 1243, desc: "Ranking based on the week's highest slot wins. The top 50 players win prizes.", body: "Collect points by playing Royal Slots, Golden Seven and Fruit Frenzy. 1 point per 100 credits won. Prizes: 1st — 25,000 credits, 2nd — 15,000 credits, 3rd — 10,000 credits, 4th–10th — 5,000 credits, 11th–50th — 1,000 credits." },
+  { id: "t2", t: "♠️ Poker Championship", e: "♠️", prize: 50000, ends: "5 days left", players: 486, desc: "A battle of the best in Three-Card Poker.", body: "Qualifier rounds every day at 9 PM. Final on Sunday at 10 PM. Entry fee 500 credits — the winner gets 20,000 credits!" },
+  { id: "t3", t: "✈️ Jet Flight Masters", e: "✈️", prize: 75000, ends: "1 day left", players: 2108, desc: "A competition for cashing out at the highest multiplier.", body: "Cash out at 10x or higher in Jet Flight to enter. The 30 players with the highest multipliers win prizes." },
 ];
 
 export const BLOG_POSTS = [
-  { id: "b1", t: "ব্ল্যাকজ্যাকের ৫টি জয়ের কৌশল", e: "🂡", c: "কৌশল", time: "২ ঘণ্টা আগে", body: "ব্ল্যাকজ্যাক শুধু ভাগ্যের খেলা নয় — সঠিক কৌশলে হাউস এজ ০.৫%-এ নামিয়ে আনা যায়। ১) সবসময় ৮ ও এস স্প্লিট করুন। ২) ডিলারের ৬ বা কম থাকলে ১২+ হাতে স্ট্যান্ড করুন। ৩) ১১ হাতে সবসময় ডাবল ডাউন। ৪) কখনো ইন্স্যুরেন্স নেবেন না। ৫) বাজেট ঠিক করে খেলুন — হেরে গেলে তাড়াহুড়ো করে বাজি বাড়াবেন না।" },
-  { id: "b2", t: "বাংলাদেশ বনাম ভারত: ম্যাচ প্রিভিউ", e: "🏏", c: "প্রিভিউ", time: "৫ ঘণ্টা আগে", body: "টি-টোয়েন্টি সিরিজের দ্বিতীয় ম্যাচে মুখোমুখি বাংলাদেশ-ভারত। প্রথম ম্যাচে বাংলাদেশের বোলাররা দুর্দান্ত করলেও ব্যাটিং ব্যর্থতায় হার। আজকের ম্যাচে টস গুরুত্বপূর্ণ — শিশিরের কারণে পরে ব্যাট করা সুবিধাজনক। আমাদের বিশ্লেষণে ভারত ফেভারিট (১.৫৫), তবে বাংলাদেশের হোম কন্ডিশন সুবিধা (২.৪০) মূল্যবান হতে পারে।" },
-  { id: "b3", t: "ক্র্যাশ গেমে ব্যাংকরোল ম্যানেজমেন্ট", e: "📈", c: "কৌশল", time: "১ দিন আগে", body: "ক্র্যাশ/জেট ফ্লাইটে দীর্ঘমেয়াদে টিকে থাকার মূলমন্ত্র ব্যাংকরোল ম্যানেজমেন্ট। প্রতি বাজি মোট ব্যালেন্সের ২%-এর বেশি নয়। ১.৫x-এ অটো ক্যাশআউট সেট করুন — ছোট কিন্তু নিয়মিত জয় বড় লস এড়ায়। কখনো 'একটা বড় জয়ে সব উসুল' মানসিকতায় খেলবেন না।" },
-  { id: "b4", t: "তিন পাত্তি: হাতের র‍্যাংকিং গাইড", e: "🪔", c: "গাইড", time: "২ দিন আগে", body: "তিন পাত্তিতে হাতের শক্তি: ট্রায়ো (তিনটি একই) > পিওর সিকোয়েন্স > সিকোয়েন্স > কালার > পেয়ার > হাই কার্ড। ব্লাইন্ড খেলা ঝুঁকিপূর্ণ কিন্তু প্রতিপক্ষকে চাপে ফেলে। মনে রাখুন — ভালো হাত না থাকলে ফোল্ড করাই বুদ্ধিমানের কাজ।" },
+  { id: "b1", t: "5 Blackjack Winning Strategies", e: "🂡", c: "Strategy", time: "2 hours ago", body: "Blackjack is not just a game of luck — with the right strategy the house edge can be brought down to 0.5%. 1) Always split 8s and Aces. 2) Stand on 12+ when the dealer shows 6 or less. 3) Always double down on 11. 4) Never take insurance. 5) Play to a budget — don't raise your bets in a rush after a loss." },
+  { id: "b2", t: "Bangladesh vs India: Match Preview", e: "🏏", c: "Preview", time: "5 hours ago", body: "Bangladesh face India in the second match of the T20 series. In the first match Bangladesh's bowlers were excellent but batting let them down. The toss matters today — dew makes batting second advantageous. Our analysis makes India favourites (1.55), but Bangladesh's home conditions (2.40) could offer value." },
+  { id: "b3", t: "Bankroll Management in Crash Games", e: "📈", c: "Strategy", time: "1 day ago", body: "The key to lasting in Crash/Jet Flight is bankroll management. Never bet more than 2% of your total balance per bet. Set auto cash-out at 1.5x — small but regular wins avoid big losses. Never play with a 'one big win will recover everything' mindset." },
+  { id: "b4", t: "Teen Patti: Hand Rankings Guide", e: "🪔", c: "Guide", time: "2 days ago", body: "Hand strength in Teen Patti: Trio (three of a kind) > Pure Sequence > Sequence > Colour > Pair > High Card. Playing blind is risky but puts opponents under pressure. Remember — folding without a good hand is the smart move." },
 ];
 
 export const FAQS = [
-  { q: "এটা কি আসল টাকার সাইট?", a: "না। এটি একটি ডেমো ওয়েবসাইট — সব ব্যালেন্স, বাজি ও জয় ভার্চুয়াল। কোনো আসল টাকা জমা বা উত্তোলন হয় না।" },
-  { q: "অ্যাকাউন্ট খুলতে কী লাগে?", a: "শুধু নাম, মোবাইল নম্বর ও পাসওয়ার্ড। সাইন আপ করলেই ৫,০০০ টাকা ডেমো বোনাস পাবেন।" },
-  { q: "ডিপোজিট কিভাবে করবো?", a: "ওয়ালেট পেজ থেকে বিকাশ/নগদ/রকেট সিলেক্ট করে ডেমো TrxID দিলেই ব্যালেন্স যোগ হবে (ডেমো)।" },
-  { q: "বাজি কিভাবে ধরবো?", a: "যেকোনো ম্যাচের অডসে ক্লিক করলে বেট স্লিপে যোগ হবে। স্টেক দিয়ে 'বাজি কনফার্ম' চাপুন।" },
-  { q: "জেতা টাকা কিভাবে তুলবো?", a: "ডেমোতে উইথড্র পেজ থেকে রিকোয়েস্ট করলে সাথে সাথে ব্যালেন্স থেকে কেটে 'প্রসেসিং' দেখাবে।" },
-  { q: "অডস মানে কী?", a: "অডস ২.০০ মানে ১০০ টাকা বাজিতে জিতলে ২০০ টাকা ফেরত (লাভ ১০০)। অডস যত কম, জয়ের সম্ভাবনা তত বেশি।" },
-  { q: "লাইভ বেটিং কী?", a: "চলমান ম্যাচে বাজি ধরা। খেলার পরিস্থিতি অনুযায়ী অডস বদলায় — দ্রুত সিদ্ধান্ত নিতে হয়।" },
-  { q: "ভিআইপি প্রোগ্রাম কী?", a: "নিয়মিত খেলোয়াড়রা পয়েন্ট জমিয়ে ব্রোঞ্জ→সিলভার→গোল্ড→প্ল্যাটিনাম→ডায়মন্ড লেভেলে উঠতে পারেন। উচ্চ লেভেলে ক্যাশব্যাক ও বোনাস বেশি।" },
+  { q: "Is this a real-money site?", a: "No. This is a demo website — all balances, bets and wins are virtual. No real money is deposited or withdrawn." },
+  { q: "What do I need to open an account?", a: "Just a name, mobile number and password. Sign up and you get a 5,000-credit demo bonus." },
+  { q: "How do I deposit?", a: "From the wallet page, select bKash/Nagad/Rocket and enter a demo TrxID — the balance is added (demo)." },
+  { q: "How do I place a bet?", a: "Click the odds of any match to add it to the bet slip. Enter a stake and press 'Confirm bet'." },
+  { q: "How do I withdraw winnings?", a: "In the demo, requesting from the withdraw page immediately deducts the balance and shows 'Processing'." },
+  { q: "What do odds mean?", a: "Odds of 2.00 mean a 100-credit bet returns 200 credits if it wins (100 profit). The lower the odds, the higher the chance of winning." },
+  { q: "What is live betting?", a: "Betting on a match in progress. Odds change with the state of play — you need to decide quickly." },
+  { q: "What is the VIP programme?", a: "Regular players collect points to move up Bronze → Silver → Gold → Platinum → Diamond levels. Higher levels get more cashback and bonuses." },
 ];
 
 /* ============================== helpers ============================== */
@@ -687,11 +686,11 @@ function BalanceBar() {
   return (
     <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#f5c518]/25 bg-gradient-to-r from-[#1a1405] to-[#101828] px-4 py-3">
       <div>
-        <p className="text-[11px] text-slate-400">💰 ব্যালেন্স</p>
+        <p className="text-[11px] text-slate-400">💰 Balance</p>
         <p className="text-xl font-black text-[#f5c518]">{money(store.wallet)}</p>
       </div>
       <Link href={`${base}/deposit`} className="rounded-xl bg-[#f5c518] px-4 py-2 text-sm font-black text-black">
-        ＋ ডিপোজিট
+        ＋ Deposit
       </Link>
     </div>
   );
@@ -703,10 +702,10 @@ export function OddsBtn({ match, label, odds, small, flash }: { match: CasiMatch
   const [added, setAdded] = useState(false);
   return (
     <button
-      onClick={() => { add({ matchId: match.id, match: `${match.home} বনাম ${match.away}`, selection: label, odds, live: match.live }); setAdded(true); setTimeout(() => setAdded(false), 900); }}
+      onClick={() => { add({ matchId: match.id, match: `${match.home} vs ${match.away}`, selection: label, odds, live: match.live }); setAdded(true); setTimeout(() => setAdded(false), 900); }}
       className={`flex items-center justify-center gap-1 rounded-xl border font-black transition active:scale-95 ${small ? "px-2.5 py-1.5 text-[11px]" : "px-3 py-2 text-xs"} ${added ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : flash === 1 ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-200" : flash === -1 ? "border-red-400/60 bg-red-500/15 text-red-200" : "border-[#f5c518]/30 bg-[#f5c518]/10 text-[#f5c518] hover:bg-[#f5c518]/20"}`}
     >
-      {added ? "✓ যোগ হয়েছে" : (<>{flash === 1 && <span className="text-[9px]">▲</span>}{flash === -1 && <span className="text-[9px]">▼</span>}{label} {bn(odds.toFixed(2))}</>)}
+      {added ? "✓ Added" : (<>{flash === 1 && <span className="text-[9px]">▲</span>}{flash === -1 && <span className="text-[9px]">▼</span>}{label} {bn(odds.toFixed(2))}</>)}
     </button>
   );
 }
@@ -727,7 +726,7 @@ function leagueGrad(league: string): string {
 export function scoreLine(m: CasiMatch): string {
   if (m.hs === undefined || m.as === undefined) return "";
   if (m.sport === "cricket") return `${bn(m.hs)}/${bn(m.as)}`;
-  if (m.sport === "tennis") return `${bn(m.hs)} - ${bn(m.as)} সেট`;
+  if (m.sport === "tennis") return `${bn(m.hs)} - ${bn(m.as)} sets`;
   return `${bn(m.hs)} - ${bn(m.as)}`;
 }
 
@@ -744,10 +743,10 @@ export function MatchCard({ m, ticked, livePulse }: { m: CasiMatch; ticked?: Tic
         <span className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-300">{sportIcon(m.sport)} {m.league}</span>
         {t.live ? (
           <span className={`flex shrink-0 items-center gap-1 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-black text-red-400 ring-1 ring-red-500/40 ${livePulse ? "animate-pulse" : ""}`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> লাইভ • {m.minute}
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Live • {m.minute}
           </span>
         ) : finished ? (
-          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-300">সমাপ্ত</span>
+          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold text-slate-300">Finished</span>
         ) : (
           <span className="shrink-0 text-[10px] font-bold text-slate-400">🕐 {m.time}</span>
         )}
@@ -770,17 +769,17 @@ export function MatchCard({ m, ticked, livePulse }: { m: CasiMatch; ticked?: Tic
       {/* odds */}
       {!finished && (
         <div className="flex items-center gap-1.5 px-3 pb-3 pt-2.5" onClick={(e) => e.stopPropagation()}>
-          <OddsBtn match={t} label="১" odds={t.odds.h} small flash={t.dirH} />
+          <OddsBtn match={t} label="1" odds={t.odds.h} small flash={t.dirH} />
           {t.odds.d !== undefined && <OddsBtn match={t} label="X" odds={t.odds.d} small flash={t.dirD} />}
-          <OddsBtn match={t} label="২" odds={t.odds.a} small flash={t.dirA} />
+          <OddsBtn match={t} label="2" odds={t.odds.a} small flash={t.dirA} />
           <Link href={`${base}/match/${m.id}`} className="ml-auto rounded-lg px-2 py-1 text-[11px] font-bold text-slate-400 hover:text-white">
-            +{bn(m.sport === "football" ? 24 : 18)} মার্কেট →
+            +{bn(m.sport === "football" ? 24 : 18)} markets →
           </Link>
         </div>
       )}
       {finished && (
         <div className="px-3 pb-3 pt-1">
-          <p className="text-[11px] font-bold text-slate-400">✅ ফলাফল: <b className="text-white">{scoreLine(m)}</b> — {m.hs === m.as ? "ড্র" : hw ? `${m.home} জয়ী` : `${m.away} জয়ী`}</p>
+          <p className="text-[11px] font-bold text-slate-400">✅ Result: <b className="text-white">{scoreLine(m)}</b> — {m.hs === m.as ? "Draw" : hw ? `${m.home} won` : `${m.away} won`}</p>
         </div>
       )}
     </div>
@@ -791,7 +790,7 @@ function sportIcon(sport: SportId): string {
   return sport === "cricket" ? "🏏" : sport === "football" ? "⚽" : sport === "tennis" ? "🎾" : "🏀";
 }
 
-/** Team emblem: national teams show real flags (🇧🇩), clubs show a colored letter badge. e = "badge:ঢ:#dc2626" for clubs. */
+/** Team emblem: national teams show real flags (🇧🇩), clubs show a colored letter badge. e = "badge:D:#dc2626" for clubs. */
 export function TeamEmblem({ e, size = "md" }: { e: string; size?: "sm" | "md" | "lg" | "xl" }) {
   const cls = size === "xl" ? "text-4xl" : size === "lg" ? "text-3xl" : size === "md" ? "text-2xl" : "text-lg";
   if (e.startsWith("badge:")) {
@@ -818,11 +817,11 @@ export function GameCard({ g }: { g: CasiGame }) {
   const { base } = useSkin();
   return (
     <Link href={`${base}${gameHref(g)}`} className="group relative overflow-hidden rounded-2xl border border-[#f5c518]/15 bg-gradient-to-br from-[#141b2e] to-[#0b1120] p-4 text-center transition hover:border-[#f5c518]/50 hover:shadow-[0_0_20px_rgba(245,197,24,0.15)]">
-      {g.hot && <span className="absolute right-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">🔥 হট</span>}
+      {g.hot && <span className="absolute right-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">🔥 Hot</span>}
       <p className="text-5xl transition group-hover:scale-110">{g.e}</p>
       <p className="mt-2 text-sm font-black">{g.n}</p>
       <p className="mt-1 text-[11px] text-slate-400">👥 {g.players} • RTP {g.rtp}</p>
-      <span className="mt-2 inline-block rounded-lg bg-[#f5c518] px-4 py-1 text-xs font-black text-black">▶️ খেলুন</span>
+      <span className="mt-2 inline-block rounded-lg bg-[#f5c518] px-4 py-1 text-xs font-black text-black">▶️ Play</span>
     </Link>
   );
 }
@@ -831,7 +830,7 @@ export function GameShell({ title, emoji, children, rtp }: { title: string; emoj
   const { base } = useSkin();
   return (
     <Page narrow>
-      <Back href={`${base}/casino`} label="ক্যাসিনো লবি" />
+      <Back href={`${base}/casino`} label="Casino lobby" />
       <BalanceBar />
       <div className="rounded-3xl border border-[#f5c518]/25 bg-gradient-to-b from-[#141b2e] to-[#0b1120] p-5">
         <div className="flex items-center justify-between">
@@ -840,7 +839,7 @@ export function GameShell({ title, emoji, children, rtp }: { title: string; emoj
         </div>
         <div className="mt-4">{children}</div>
       </div>
-      <p className="mt-3 text-center text-[11px] text-slate-500">🎮 ডেমো গেম — ভার্চুয়াল ব্যালেন্সে খেলুন, আসল টাকা নয়</p>
+      <p className="mt-3 text-center text-[11px] text-slate-500">🎮 Demo game — play with a virtual balance, not real money</p>
     </Page>
   );
 }

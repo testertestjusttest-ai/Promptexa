@@ -3,20 +3,30 @@
 /** Per-demo admin panel — customize theme, colors, names, hero.
  * Changes apply live and persist in browser-local storage per demo slug.
  * When handing over to a client, these settings travel with the handover kit.
+ *
+ * Language (Phase 8, demo-lang pattern): when a demo-lang provider is
+ * mounted (reworked demos), strings follow it — English by default, Bangla
+ * only when the visitor switched to Bangla (Hindi falls back to English).
+ * Legacy demos mount no provider, so they keep the previous Bangla strings
+ * exactly as before. This panel is NOT removed: AgencyDemoAdmin embeds it
+ * (agency-admin.tsx) because it alone provides the theme picker, accent /
+ * dark-mode controls, site-name / logo / hero edits and the handover-kit
+ * download — none of those exist in AgencyDemoAdmin itself.
  */
 
 import { useState } from "react";
 import Link from "next/link";
 import { useDemo } from "./store";
+import { useDemoLangOpt } from "./demo-lang";
 import { Page, SectionTitle, Back } from "./ui";
 
 const THEMES = [
-  { id: "aurora", n: "অরোরা", d: "স্লাইডার হিরো, গ্রেডিয়েন্ট", e: "🌌" },
-  { id: "split", n: "স্প্লিট", d: "বামে লেখা, ডানে ছবি", e: "◧" },
-  { id: "minimal", n: "মিনিমাল", d: "পরিষ্কার, হালকা", e: "○" },
-  { id: "bold", n: "বোল্ড", d: "বড় টাইপ, ডার্ক", e: "💥" },
-  { id: "elegant", n: "এলিগ্যান্ট", d: "সেরিফ, রিফাইন্ড", e: "✨" },
-  { id: "playful", n: "প্লেফুল", d: "রঙিন, গোলগাল", e: "🎈" },
+  { id: "aurora", n: "অরোরা", en: "Aurora", d: "স্লাইডার হিরো, গ্রেডিয়েন্ট", ed: "Slider hero, gradient", e: "🌌" },
+  { id: "split", n: "স্প্লিট", en: "Split", d: "বামে লেখা, ডানে ছবি", ed: "Text left, image right", e: "◧" },
+  { id: "minimal", n: "মিনিমাল", en: "Minimal", d: "পরিষ্কার, হালকা", ed: "Clean, light", e: "○" },
+  { id: "bold", n: "বোল্ড", en: "Bold", d: "বড় টাইপ, ডার্ক", ed: "Big type, dark", e: "💥" },
+  { id: "elegant", n: "এলিগ্যান্ট", en: "Elegant", d: "সেরিফ, রিফাইন্ড", ed: "Serif, refined", e: "✨" },
+  { id: "playful", n: "প্লেফুল", en: "Playful", d: "রঙিন, গোলগাল", ed: "Colourful, rounded", e: "🎈" },
 ];
 
 const ACCENTS = [
@@ -26,6 +36,9 @@ const ACCENTS = [
 
 export function DemoAdmin() {
   const { def, base, store } = useDemo();
+  const dl = useDemoLangOpt();
+  // English-first pick when a provider is mounted; legacy Bangla otherwise.
+  const L = (en: string, bn: string) => (dl ? dl.L(en, bn) : bn);
   const dark = def.dark;
   const [name, setName] = useState(store.custom.siteName ?? def.name);
   const [logo, setLogo] = useState(store.custom.logoEmoji ?? def.logoEmoji);
@@ -44,18 +57,18 @@ export function DemoAdmin() {
   };
 
   const stats = [
-    ["🛒", "অর্ডার", store.orders.length],
-    ["📅", "বুকিং", store.bookings.length],
-    ["💼", "বিনিয়োগ", store.investments.length],
-    ["💱", "এক্সচেঞ্জ", store.exchanges.length],
-    ["💰", "ডিপোজিট", store.deposits.length],
-    ["👛", "কয়েন Tx", store.coinTxs.length],
+    ["🛒", L("Orders", "অর্ডার"), store.orders.length],
+    ["📅", L("Bookings", "বুকিং"), store.bookings.length],
+    ["💼", L("Investments", "বিনিয়োগ"), store.investments.length],
+    ["💱", L("Exchanges", "এক্সচেঞ্জ"), store.exchanges.length],
+    ["💰", L("Deposits", "ডিপোজিট"), store.deposits.length],
+    ["👛", L("Coin Tx", "কয়েন Tx"), store.coinTxs.length],
   ];
 
   return (
     <Page>
-      <Back href={base} label="সাইটে ফিরুন" />
-      <SectionTitle t="⚙️ ডেমো অ্যাডমিন" sub={`${def.name} — কাস্টমাইজেশন`} />
+      <Back href={base} label={L("Back to site", "সাইটে ফিরুন")} />
+      <SectionTitle t={L("⚙️ Demo Admin", "⚙️ ডেমো অ্যাডমিন")} sub={`${def.name} — ${L("Customization", "কাস্টমাইজেশন")}`} />
 
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {stats.map(([e, t, v]) => (
@@ -68,8 +81,8 @@ export function DemoAdmin() {
       </div>
 
       <div className={`${card} mt-4 p-5`}>
-        <p className="text-sm font-black">🎨 থিম বেছে নিন</p>
-        <p className={`mt-1 text-xs ${sub}`}>পুরো সাইটের লুক বদলে যাবে</p>
+        <p className="text-sm font-black">{L("🎨 Choose a theme", "🎨 থিম বেছে নিন")}</p>
+        <p className={`mt-1 text-xs ${sub}`}>{L("The whole site's look will change", "পুরো সাইটের লুক বদলে যাবে")}</p>
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {THEMES.map((t) => {
             const active = (store.custom.theme ?? def.theme) === t.id;
@@ -81,8 +94,8 @@ export function DemoAdmin() {
                 style={active ? ({ "--tw-ring-color": def.accent } as any) : undefined}
               >
                 <p className="text-2xl">{t.e}</p>
-                <p className="mt-1 text-sm font-black">{t.n} {active && "✓"}</p>
-                <p className={`text-[11px] ${sub}`}>{t.d}</p>
+                <p className="mt-1 text-sm font-black">{L(t.en, t.n)} {active && "✓"}</p>
+                <p className={`text-[11px] ${sub}`}>{L(t.ed, t.d)}</p>
               </button>
             );
           })}
@@ -90,7 +103,7 @@ export function DemoAdmin() {
       </div>
 
       <div className={`${card} mt-4 p-5`}>
-        <p className="text-sm font-black">🌈 অ্যাকসেন্ট কালার</p>
+        <p className="text-sm font-black">{L("🌈 Accent colour", "🌈 অ্যাকসেন্ট কালার")}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {ACCENTS.map((c) => {
             const active = (store.custom.accent ?? def.accent) === c;
@@ -108,7 +121,7 @@ export function DemoAdmin() {
           })}
         </div>
         <div className="mt-4 flex items-center gap-3">
-          <p className="text-sm font-black">🌙 ডার্ক মোড</p>
+          <p className="text-sm font-black">{L("🌙 Dark mode", "🌙 ডার্ক মোড")}</p>
           <button
             onClick={() => store.saveCustom({ dark: !(store.custom.dark ?? def.dark) })}
             className={`relative h-7 w-12 rounded-full transition ${(store.custom.dark ?? def.dark) ? "bg-emerald-500" : "bg-slate-300"}`}
@@ -120,73 +133,73 @@ export function DemoAdmin() {
 
       {def.layout === "casino" && (
         <div className={`${card} mt-4 space-y-3 p-5`}>
-          <p className="text-sm font-black">🎰 ক্যাসিনো কন্ট্রোল — উইন চান্স (RTP)</p>
-          <p className={`text-[11px] ${sub}`}>সাইট ওনার হিসেবে আপনি ঠিক করুন খেলোয়াড়রা কতটা জিতবে। কম RTP = আপনার লাভ বেশি।</p>
+          <p className="text-sm font-black">{L("🎰 Casino controls — win chance (RTP)", "🎰 ক্যাসিনো কন্ট্রোল — উইন চান্স (RTP)")}</p>
+          <p className={`text-[11px] ${sub}`}>{L("As the site owner, decide how much players win. Lower RTP = more profit for you.", "সাইট ওনার হিসেবে আপনি ঠিক করুন খেলোয়াড়রা কতটা জিতবে। কম RTP = আপনার লাভ বেশি।")}</p>
           <div>
             <div className="flex items-center justify-between">
               <label className={`text-[11px] ${sub}`}>RTP: <b>{String(store.custom.casinoRtp ?? 96)}%</b></label>
-              <span className="text-[11px]">হাউস এজ: {(100 - Number(store.custom.casinoRtp ?? 96)).toFixed(1)}%</span>
+              <span className="text-[11px]">{L("House edge", "হাউস এজ")}: {(100 - Number(store.custom.casinoRtp ?? 96)).toFixed(1)}%</span>
             </div>
             <input type="range" min={50} max={99} step={0.5}
               value={Number(store.custom.casinoRtp ?? 96)}
               onChange={(e) => store.saveCustom({ casinoRtp: Number(e.target.value) })}
               className="mt-2 w-full accent-amber-500" />
-            <div className="flex justify-between text-[10px] opacity-60"><span>৫০% (কঠিন)</span><span>৯৬% (স্ট্যান্ডার্ড)</span><span>৯৯% (সহজ)</span></div>
+            <div className="flex justify-between text-[10px] opacity-60"><span>{L("50% (Hard)", "৫০% (কঠিন)")}</span><span>{L("96% (Standard)", "৯৬% (স্ট্যান্ডার্ড)")}</span><span>{L("99% (Easy)", "৯৯% (সহজ)")}</span></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`text-[11px] ${sub}`}>সর্বনিম্ন বাজি (টাকা)</label>
+              <label className={`text-[11px] ${sub}`}>{L("Minimum bet (Tk)", "সর্বনিম্ন বাজি (টাকা)")}</label>
               <input type="number" value={Number(store.custom.casinoMinBet ?? 10)}
                 onChange={(e) => store.saveCustom({ casinoMinBet: Number(e.target.value) })}
                 className={`${input} mt-1`} />
             </div>
             <div>
-              <label className={`text-[11px] ${sub}`}>সর্বোচ্চ বাজি (টাকা)</label>
+              <label className={`text-[11px] ${sub}`}>{L("Maximum bet (Tk)", "সর্বোচ্চ বাজি (টাকা)")}</label>
               <input type="number" value={Number(store.custom.casinoMaxBet ?? 50000)}
                 onChange={(e) => store.saveCustom({ casinoMaxBet: Number(e.target.value) })}
                 className={`${input} mt-1`} />
             </div>
           </div>
-          <p className={`text-[11px] ${sub}`}>🖼️ ব্যানার: কাস্টমার সাইটে ক্লায়েন্ট অ্যাডমিন → 🎰 ক্যাসিনো ট্যাব থেকে ব্যানার ছবি/টাইটেল/লিংক বদলানো যায়।</p>
+          <p className={`text-[11px] ${sub}`}>{L("🖼️ Banners: on a customer site, banner images / titles / links can be changed from Client Admin → 🎰 Casino tab.", "🖼️ ব্যানার: কাস্টমার সাইটে ক্লায়েন্ট অ্যাডমিন → 🎰 ক্যাসিনো ট্যাব থেকে ব্যানার ছবি/টাইটেল/লিংক বদলানো যায়।")}</p>
         </div>
       )}
 
       <div className={`${card} mt-4 space-y-3 p-5`}>
-        <p className="text-sm font-black">✏️ সাইটের তথ্য</p>
+        <p className="text-sm font-black">{L("✏️ Site information", "✏️ সাইটের তথ্য")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className={`text-[11px] ${sub}`}>সাইটের নাম</label>
+            <label className={`text-[11px] ${sub}`}>{L("Site name", "সাইটের নাম")}</label>
             <input value={name} onChange={(e) => setName(e.target.value)} className={`${input} mt-1`} />
           </div>
           <div>
-            <label className={`text-[11px] ${sub}`}>লোগো ইমোজি</label>
+            <label className={`text-[11px] ${sub}`}>{L("Logo emoji", "লোগো ইমোজি")}</label>
             <input value={logo} onChange={(e) => setLogo(e.target.value)} className={`${input} mt-1`} />
           </div>
         </div>
         <div>
-          <label className={`text-[11px] ${sub}`}>হিরো টাইটেল</label>
+          <label className={`text-[11px] ${sub}`}>{L("Hero title", "হিরো টাইটেল")}</label>
           <input value={heroT} onChange={(e) => setHeroT(e.target.value)} className={`${input} mt-1`} />
         </div>
         <div>
-          <label className={`text-[11px] ${sub}`}>হিরো সাবটাইটেল</label>
+          <label className={`text-[11px] ${sub}`}>{L("Hero subtitle", "হিরো সাবটাইটেল")}</label>
           <input value={heroS} onChange={(e) => setHeroS(e.target.value)} className={`${input} mt-1`} />
         </div>
         <div className="flex gap-2">
           <button onClick={save} className="btn-demo flex-1" style={{ background: def.accent }}>
-            {saved ? "✅ সেভ হয়েছে!" : "💾 সেভ করুন"}
+            {saved ? L("✅ Saved!", "✅ সেভ হয়েছে!") : L("💾 Save", "💾 সেভ করুন")}
           </button>
           <button
             onClick={() => { store.resetCustom(); setName(def.name); setLogo(def.logoEmoji); setHeroT(def.heroTitle); setHeroS(def.heroSub); }}
             className="btn-demo-ghost"
           >
-            ↺ রিসেট
+            {L("↺ Reset", "↺ রিসেট")}
           </button>
         </div>
       </div>
 
       <div className={`${card} mt-4 p-5`}>
-        <p className="text-sm font-black">📦 হ্যান্ডওভার</p>
-        <p className={`mt-1 text-xs ${sub}`}>কাস্টমারকে দেওয়ার সময় এই সেটিংসসহ পুরো সাইটের কনফিগ ডাউনলোড করুন</p>
+        <p className="text-sm font-black">{L("📦 Handover", "📦 হ্যান্ডওভার")}</p>
+        <p className={`mt-1 text-xs ${sub}`}>{L("When handing over to a customer, download the full site config with these settings", "কাস্টমারকে দেওয়ার সময় এই সেটিংসসহ পুরো সাইটের কনফিগ ডাউনলোড করুন")}</p>
         <button
           onClick={() => {
             const kit = {
@@ -204,12 +217,12 @@ export function DemoAdmin() {
           className="btn-demo mt-3 w-full"
           style={{ background: def.accent }}
         >
-          📥 হ্যান্ডওভার কিট ডাউনলোড
+          {L("📥 Download handover kit", "📥 হ্যান্ডওভার কিট ডাউনলোড")}
         </button>
       </div>
 
       <p className={`mt-4 text-center text-[11px] ${sub}`}>
-        ডেমো অ্যাডমিন — পরিবর্তন শুধু এই ব্রাউজারে দেখা যাবে
+        {L("Demo admin — changes are visible in this browser only", "ডেমো অ্যাডমিন — পরিবর্তন শুধু এই ব্রাউজারে দেখা যাবে")}
       </p>
     </Page>
   );

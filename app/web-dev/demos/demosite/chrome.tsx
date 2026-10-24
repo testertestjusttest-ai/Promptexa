@@ -141,31 +141,57 @@ function navLinks(layout: string, lang?: string | DemoLang): { label: string; hr
         { label: "📞 Contact", href: "/contact" },
       ];
     case "casino":
-      return [
-        { label: "🏠 হোম", href: "" },
-        { label: "⚽ স্পোর্টস", href: "/sports" },
-        { label: "🔴 লাইভ", href: "/live" },
-        { label: "🎰 ক্যাসিনো", href: "/casino" },
-        { label: "💰 জ্যাকপট", href: "/casino/jackpots" },
-        { label: "🎁 প্রোমোশন", href: "/promotions" },
-        { label: "👑 ভিআইপি", href: "/vip" },
-        { label: "🧾 আমার বাজি", href: "/my-bets" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
-      ];
+      return enNav
+        ? [
+            { label: "🏠 Home", href: "" },
+            { label: "⚽ Sports", href: "/sports" },
+            { label: "🔴 Live", href: "/live" },
+            { label: "🎰 Casino", href: "/casino" },
+            { label: "💰 Jackpot", href: "/casino/jackpots" },
+            { label: "🎁 Promotions", href: "/promotions" },
+            { label: "👑 VIP", href: "/vip" },
+            { label: "🧾 My Bets", href: "/my-bets" },
+            { label: "ℹ️ About", href: "/about" },
+            { label: "📞 Contact", href: "/contact" },
+          ]
+        : [
+            { label: "🏠 হোম", href: "" },
+            { label: "⚽ স্পোর্টস", href: "/sports" },
+            { label: "🔴 লাইভ", href: "/live" },
+            { label: "🎰 ক্যাসিনো", href: "/casino" },
+            { label: "💰 জ্যাকপট", href: "/casino/jackpots" },
+            { label: "🎁 প্রোমোশন", href: "/promotions" },
+            { label: "👑 ভিআইপি", href: "/vip" },
+            { label: "🧾 আমার বাজি", href: "/my-bets" },
+            { label: "ℹ️ সম্পর্কে", href: "/about" },
+            { label: "📞 যোগাযোগ", href: "/contact" },
+          ];
     case "crypto-exchange":
-      return [
-        { label: "🏠 হোম", href: "" },
-        { label: "📊 মার্কেটস", href: "/markets" },
-        { label: "📈 স্পট ট্রেড", href: "/trade/BTCUSDT" },
-        { label: "⚡ ফিউচার্স", href: "/futures" },
-        { label: "🤝 P2P", href: "/p2p" },
-        { label: "🔄 কনভার্ট", href: "/convert" },
-        { label: "🌱 আর্ন", href: "/earn" },
-        { label: "👛 Wallet", href: "/wallet" },
-        { label: "🎓 অ্যাকাডেমি", href: "/academy" },
-        { label: "🎧 সাপোর্ট", href: "/support" },
-      ];
+      return enNav
+        ? [
+            { label: "🏠 Home", href: "" },
+            { label: "📊 Markets", href: "/markets" },
+            { label: "📈 Spot Trade", href: "/trade/BTCUSDT" },
+            { label: "⚡ Futures", href: "/futures" },
+            { label: "🤝 P2P", href: "/p2p" },
+            { label: "🔄 Convert", href: "/convert" },
+            { label: "🌱 Earn", href: "/earn" },
+            { label: "👛 Wallet", href: "/wallet" },
+            { label: "🎓 Academy", href: "/academy" },
+            { label: "🎧 Support", href: "/support" },
+          ]
+        : [
+            { label: "🏠 হোম", href: "" },
+            { label: "📊 মার্কেটস", href: "/markets" },
+            { label: "📈 স্পট ট্রেড", href: "/trade/BTCUSDT" },
+            { label: "⚡ ফিউচার্স", href: "/futures" },
+            { label: "🤝 P2P", href: "/p2p" },
+            { label: "🔄 কনভার্ট", href: "/convert" },
+            { label: "🌱 আর্ন", href: "/earn" },
+            { label: "👛 Wallet", href: "/wallet" },
+            { label: "🎓 অ্যাকাডেমি", href: "/academy" },
+            { label: "🎧 সাপোর্ট", href: "/support" },
+          ];
     default:
       return [
         { label: "🏠 হোম", href: "" },
@@ -301,7 +327,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : "🔍 খুঁজুন..."}
+              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : dl && dl.lang !== "bn" ? "🔍 Search..." : "🔍 খুঁজুন..."}
               className={`w-full rounded-full border px-4 py-2 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-100"}`}
             />
           </form>
@@ -335,7 +361,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                   <span>
                     <span className="block text-base font-black leading-tight">{siteName}</span>
                     <span className="block text-[10px] font-bold uppercase tracking-widest opacity-50">
-                      {isBh ? bh.tx("গার্মেন্টস বায়িং হাউস", "Garments Buying House") : def.layout === "shop" ? "অনলাইন শপ" : def.layout === "service" ? "সার্ভিস" : def.layout === "booking" ? "বুকিং" : def.layout === "news" ? "নিউজ পোর্টাল" : "ওয়েবসাইট"}
+                      {isBh ? bh.tx("গার্মেন্টস বায়িং হাউস", "Garments Buying House") : def.layout === "shop" ? L("অনলাইন শপ", "Online Shop") : def.layout === "service" ? L("সার্ভিস", "Services") : def.layout === "booking" ? L("বুকিং", "Booking") : def.layout === "news" ? L("নিউজ পোর্টাল", "News Portal") : L("ওয়েবসাইট", "Website")}
                     </span>
                   </span>
                 </span>
@@ -372,7 +398,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : "🔍 খুঁজুন..."}
+                placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : dl && dl.lang !== "bn" ? "🔍 Search..." : "🔍 খুঁজুন..."}
                 className={`w-full ${dt.search} border px-4 py-2.5 text-sm outline-none ${dark ? "border-white/15 bg-white/5 text-white" : "border-slate-200 bg-slate-50"}`}
               />
             </form>
@@ -404,7 +430,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             )}
             {(def.layout === "shop" || def.layout === "jewelry" || def.layout === "gallery" || def.layout === "news") && def.cats.length > 1 && (
               <>
-                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">ক্যাটাগরি</p>
+                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{L("ক্যাটাগরি", "Categories")}</p>
                 <div className="flex flex-wrap gap-2">
                   {def.cats.filter((c) => c !== "সব" && c !== "All").map((c) => (
                     <Link
@@ -423,11 +449,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {store.user ? (
                 <>
-                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📦 আমার অর্ডার</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>{L("📦 আমার অর্ডার", "📦 My Orders")}</span><span className="opacity-30">›</span></Link>}
                   {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💳 Wallet</span><span className="opacity-30">›</span></Link>}
-                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📅 আমার বুকিং</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>{L("📅 আমার বুকিং", "📅 My Bookings")}</span><span className="opacity-30">›</span></Link>}
                   {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💼 My investments</span><span className="opacity-30">›</span></Link>}
-                  {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📍 এক্সচেঞ্জ ট্র্যাক</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>{L("📍 এক্সচেঞ্জ ট্র্যাক", "📍 Exchange Track")}</span><span className="opacity-30">›</span></Link>}
                   {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>👛 My wallet</span><span className="opacity-30">›</span></Link>}
                 </>
               ) : (
@@ -441,7 +467,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               <p className="font-bold">{isBh ? bh.dg(def.contact) : def.contact}</p>
               <p className="mt-1 text-xs opacity-60">{isBh ? bh.tx(def.hours, EN_HOURS) : def.hours}</p>
               <Link href={`${base}/admin`} onClick={() => setDrawer(false)} className="mt-2 inline-block text-xs font-bold opacity-50 hover:opacity-100">
-                ⚙️ {isBh ? bh.tx(clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন", clientSlug ? "Admin Panel" : "Demo Admin") : clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন"}
+                ⚙️ {isBh ? bh.tx(clientSlug ? "অ্যাডমিন প্যানেল" : "ডেমো অ্যাডমিন", clientSlug ? "Admin Panel" : "Demo Admin") : clientSlug ? L("অ্যাডমিন প্যানেল", "Admin Panel") : L("ডেমো অ্যাডমিন", "Demo Admin")}
               </Link>
             </div>
           </aside>
@@ -459,23 +485,23 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
           <div className="mx-auto flex max-w-lg items-end justify-around px-2">
             <Link href={base} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
               <span className="text-xl">🔥</span>
-              <span className="text-[10px] font-bold">জনপ্রিয়</span>
+              <span className="text-[10px] font-bold">{L("জনপ্রিয়", "Popular")}</span>
             </Link>
             <Link href={`${base}/games`} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
               <span className="text-xl">⭐</span>
-              <span className="text-[10px] font-bold">ফেভারিট</span>
+              <span className="text-[10px] font-bold">{L("ফেভারিট", "Favourites")}</span>
             </Link>
             <Link href={`${base}/betslip`} className="relative -top-3 flex flex-col items-center transition active:scale-95">
               <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-b from-red-500 to-red-700 text-xl shadow-lg shadow-red-900/50 ring-4 ring-[#0d1322]">🧾</span>
-              <span className="mt-0.5 text-[10px] font-bold text-slate-200">বেট স্লিপ</span>
+              <span className="mt-0.5 text-[10px] font-bold text-slate-200">{L("বেট স্লিপ", "Bet Slip")}</span>
             </Link>
             <Link href={`${base}/bet-history`} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
               <span className="text-xl">🕘</span>
-              <span className="text-[10px] font-bold">ইতিহাস</span>
+              <span className="text-[10px] font-bold">{L("ইতিহাস", "History")}</span>
             </Link>
             <button onClick={() => setDrawer(true)} className="flex flex-col items-center gap-0.5 py-2 text-slate-300 transition active:scale-95">
               <span className="text-xl">▦</span>
-              <span className="text-[10px] font-bold">মেনু</span>
+              <span className="text-[10px] font-bold">{L("মেনু", "Menu")}</span>
             </button>
           </div>
         </nav>
@@ -502,7 +528,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               {store.user ? (
                 <>
                   <Link href={`${base}/account`} className="block hover:underline">{L("👤 আমার অ্যাকাউন্ট", "👤 My Account")}</Link>
-                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} className="block hover:underline">📦 আমার অর্ডার</Link>}
+                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} className="block hover:underline">{L("📦 আমার অর্ডার", "📦 My Orders")}</Link>}
                   {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} className="block hover:underline">💳 Wallet</Link>}
                 </>
               ) : (
@@ -511,7 +537,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                   <Link href={`${base}/signup`} className="block hover:underline">{L("📝 সাইন আপ", "📝 Sign Up")}</Link>
                 </>
               )}
-              {def.layout === "shop" && <Link href={`${base}/track`} className="block hover:underline">📍 অর্ডার ট্র্যাক</Link>}
+              {def.layout === "shop" && <Link href={`${base}/track`} className="block hover:underline">{L("📍 অর্ডার ট্র্যাক", "📍 Track Order")}</Link>}
             </div>
           </div>
           <div>
@@ -520,10 +546,10 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               <Link href={`${base}/faq`} className="block hover:underline">{L("❓ সচরাচর জিজ্ঞাসা", "❓ FAQ")}</Link>
               {def.layout === "shop" && (
                 <>
-                  <Link href={`${base}/shipping`} className="block hover:underline">🚚 ডেলিভারি নীতি</Link>
-                  <Link href={`${base}/returns`} className="block hover:underline">↩️ রিটার্ন নীতি</Link>
-                  <Link href={`${base}/privacy`} className="block hover:underline">🔒 প্রাইভেসি</Link>
-                  <Link href={`${base}/terms`} className="block hover:underline">📜 শর্তাবলী</Link>
+                  <Link href={`${base}/shipping`} className="block hover:underline">{L("🚚 ডেলিভারি নীতি", "🚚 Delivery Policy")}</Link>
+                  <Link href={`${base}/returns`} className="block hover:underline">{L("↩️ রিটার্ন নীতি", "↩️ Return Policy")}</Link>
+                  <Link href={`${base}/privacy`} className="block hover:underline">{L("🔒 প্রাইভেসি", "🔒 Privacy")}</Link>
+                  <Link href={`${base}/terms`} className="block hover:underline">{L("📜 শর্তাবলী", "📜 Terms")}</Link>
                 </>
               )}
             </div>

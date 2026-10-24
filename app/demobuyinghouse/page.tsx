@@ -11,9 +11,15 @@ export const dynamic = "force-dynamic";
 export function generateMetadata(): Metadata {
   const def = getDemoDef("buyinghouse");
   if (!def) return {};
+  // English by default (mirrors EN_NAME / EN_HERO_TITLE in demosite/bh-lang.tsx).
+  // Written literally here rather than imported: bh-lang.tsx is a "use client"
+  // module, so its exports cannot be imported into this server metadata
+  // function. The in-page chrome already switches to Bangla via BhLangProvider
+  // when the visitor picks Bangla; server metadata cannot read that
+  // browser-local choice, so the default (English) title is served.
   return {
-    title: `${def.name} — ${def.type} | ডেমো ওয়েবসাইট`,
-    description: `${def.name}: ${def.heroTitle}। এটি DigiPlyra-এর একটি ইন্টারঅ্যাক্টিভ ডেমো ওয়েবসাইট — ঘেঁটে দেখুন!`,
+    title: "TexBridge Sourcing — Garments Buying House | Demo Website by DigiPlyra",
+    description: "TexBridge Sourcing: World-Class Garment Sourcing from Bangladesh. A DigiPlyra interactive demo website — explore it!",
   };
 }
 

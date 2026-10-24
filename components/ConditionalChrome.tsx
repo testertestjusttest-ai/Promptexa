@@ -25,8 +25,10 @@ export default function ConditionalChrome({
 }) {
   const path = usePathname();
   const isClient = path?.startsWith("/c/") || path === "/c";
-  // /demobakery, /demopharmacy, ... but NOT the /demos gallery itself.
-  const isDemo = !!path && /^\/demo(?!s)/.test(path);
+  // /demobakery, /demopharmacy, /demosalon, ... but NOT the /demos gallery
+  // itself. NOTE: the old regex /^\/demo(?!s)/ excluded every demo slug
+  // starting with "s" (salon, sweets, sports, ...) — do not regress it.
+  const isDemo = !!path && path.startsWith("/demo") && path !== "/demos" && !path.startsWith("/demos/");
 
   if (isClient || isDemo) {
     // Pure white-label / demo-only: only the site itself, nothing else.

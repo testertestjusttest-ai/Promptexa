@@ -7,6 +7,13 @@ import { useEffect, useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import type { DemoProduct, DemoTheme } from "./types";
 import { useDemo } from "./store";
+import { useDemoLangOpt } from "./demo-lang";
+
+/** True only for Bangla view on a reworked demo; legacy demos (no provider)
+ * keep their previous Bangla rendering. */
+function useIsBn(): boolean {
+  return useDemoLangOpt()?.lang === "bn";
+}
 
 /** Resolve the demo's visual theme (defaults to aurora). */
 export function themeOf(def: { theme?: DemoTheme }): DemoTheme {
@@ -14,10 +21,11 @@ export function themeOf(def: { theme?: DemoTheme }): DemoTheme {
 }
 
 export function Price({ v, accent, big, note }: { v: number; accent?: string; big?: boolean; note?: string }) {
+  const bn = useIsBn();
   return (
     <span>
       <span className={big ? "text-2xl font-black" : "font-black"} style={accent ? { color: accent } : undefined}>
-        {toBnDigits(v.toLocaleString("en-IN"))} টাকা
+        {bn ? `${toBnDigits(v.toLocaleString("en-IN"))} টাকা` : `${v.toLocaleString("en-US")} Tk`}
       </span>
       {note && <span className="text-xs opacity-60"> {note}</span>}
     </span>
@@ -25,7 +33,11 @@ export function Price({ v, accent, big, note }: { v: number; accent?: string; bi
 }
 
 export function Stars({ rating, reviews, en = false }: { rating: number; reviews?: number; en?: boolean }) {
-  const fmt = (v: string) => (en ? v : toBnDigits(v));
+  const dl = useDemoLangOpt();
+  // Latin digits when explicitly requested, or on a reworked demo in a
+  // non-Bangla view; legacy demos (no provider) keep Bangla digits.
+  const latin = en || (dl !== null && dl.lang !== "bn");
+  const fmt = (v: string) => (latin ? v : toBnDigits(v));
   return (
     <span className="text-xs">
       <span className="text-amber-400">{"★".repeat(Math.round(rating))}{"☆".repeat(5 - Math.round(rating))}</span>
@@ -76,10 +88,15 @@ export function Btn({ children, onClick, accent, ghost, small }: {
 
 export function SectionTitle({ t, sub, link, linkLabel }: { t: string; sub?: string; link?: string; linkLabel?: string }) {
   const { def } = useDemo();
+  const dl = useDemoLangOpt();
+  // Reworked demos (provider mounted) follow the visitor's language;
+  // legacy demos (no provider) keep the previous Bangla defaults.
+  const defLinkLabel = dl ? (dl.lang === "bn" ? "সব দেখুন →" : "View All →") : "সব দেখুন →";
+  const defSub = dl ? (dl.lang === "bn" ? "সংগ্রহ" : "Collection") : "সংগ্রহ";
   const theme = themeOf(def);
   const linkEl = link && (
     <Link href={link} className="text-xs font-bold opacity-70 hover:opacity-100">
-      {linkLabel ?? "সব দেখুন →"}
+      {linkLabel ?? defLinkLabel}
     </Link>
   );
   if (theme === "split")
@@ -95,7 +112,7 @@ export function SectionTitle({ t, sub, link, linkLabel }: { t: string; sub?: str
   if (theme === "minimal")
     return (
       <div className="mb-4 text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.25em] opacity-50">{sub ?? "সংগ্রহ"}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.25em] opacity-50">{sub ?? defSub}</p>
         <h2 className="mt-1 text-xl font-light">{t}</h2>
         <div className="mx-auto mt-2 h-px w-12 bg-current opacity-30" />
         {linkEl && <div className="mt-1">{linkEl}</div>}
@@ -152,6 +169,7 @@ export function Empty({ emoji, text }: { emoji: string; text: string }) {
 /** Product card → links to product page. Styled per demo theme. */
 export function ProductCard({ p }: { p: DemoProduct }) {
   const { def, base } = useDemo();
+  const bn = useIsBn();
   const theme = themeOf(def);
   const off = p.oldPrice ? Math.round((1 - p.p / p.oldPrice) * 100) : 0;
   const imgBlock = (h: string) => (
@@ -163,7 +181,7 @@ export function ProductCard({ p }: { p: DemoProduct }) {
       )}
       {off > 0 && (
         <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-black text-white">
-          −{toBnDigits(off)}%
+          −{bn ? toBnDigits(off) : off}%
         </span>
       )}
     </div>
@@ -175,7 +193,7 @@ export function ProductCard({ p }: { p: DemoProduct }) {
       <div className="mt-1 flex items-center gap-2">
         <Price v={p.p} accent={def.accent} note={p.priceNote ?? def.priceNote} />
         {p.oldPrice && (
-          <span className="text-xs opacity-50 line-through">{toBnDigits(p.oldPrice.toLocaleString("en-IN"))} টাকা</span>
+          <span className="text-xs opacity-50 line-through">{bn ? `${toBnDigits(p.oldPrice.toLocaleString("en-IN"))} টাকা` : `${p.oldPrice.toLocaleString("en-US")} Tk`}</span>
         )}
       </div>
     </div>
@@ -202,9 +220,11 @@ export function ProductCard({ p }: { p: DemoProduct }) {
 
 /** Breadcrumb-ish back link. */
 export function Back({ href, label }: { href: string; label?: string }) {
+  const dl = useDemoLangOpt();
+  const defLabel = dl ? (dl.lang === "bn" ? "ফিরে যান" : "Go back") : "ফিরে যান";
   return (
     <Link href={href} className="mb-3 inline-block text-xs font-bold opacity-60 hover:opacity-100">
-      ← {label ?? "ফিরে যান"}
+      ← {label ?? defLabel}
     </Link>
   );
 }
@@ -217,9 +237,11 @@ export function Page({ children, narrow }: { children: React.ReactNode; narrow?:
 /** Auth guard hint — prompts login but doesn't block. */
 export function LoginHint() {
   const { base, def } = useDemo();
+  const dl = useDemoLangOpt();
+  const bn = dl === null || dl.lang === "bn";
   return (
     <div className={`rounded-2xl p-4 text-center text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-      💡 <Link href={`${base}/login`} className="font-bold underline">লগইন</Link> করলে অর্ডার হিস্ট্রি ও ওয়ালেট সুবিধা পাবেন
+      {bn ? (<>💡 <Link href={`${base}/login`} className="font-bold underline">লগইন</Link> করলে অর্ডার হিস্ট্রি ও ওয়ালেট সুবিধা পাবেন</>) : (<>💡 <Link href={`${base}/login`} className="font-bold underline">Log in</Link> to get order history and wallet benefits</>)}
     </div>
   );
 }
@@ -283,13 +305,14 @@ function MinimalHero({ slides, accent }: { slides: HeroSlide[]; accent: string }
 function BoldHero({ slides, accent }: { slides: HeroSlide[]; accent: string }) {
   const s = slides[0];
   const { def } = useDemo();
+  const dl = useDemoLangOpt();
   return (
     <div className="relative overflow-hidden bg-black text-white">
       {s.img && <img src={s.img} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50" />}
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
       <div className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
         <p className="inline-block -rotate-2 px-3 py-1 text-sm font-black uppercase text-black" style={{ background: accent }}>
-          {s.emoji} হট
+          {s.emoji} {dl?.lang === "bn" ? "হট" : "Hot"}
         </p>
         <h1 className="mt-3 max-w-2xl text-4xl font-black uppercase leading-[1.05] tracking-tight sm:text-6xl">{s.title}</h1>
         <p className="mt-2 max-w-xl text-base text-white/75">{s.sub}</p>
@@ -367,6 +390,8 @@ export function bannerSlides(): HeroSlide[] {
 
 export function HeroSlider({ slides, accent }: { slides: HeroSlide[]; accent: string }) {
   const { base } = useDemo();
+  const dl = useDemoLangOpt();
+  const bn = dl === null || dl.lang === "bn";
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const n = slides.length;
@@ -417,14 +442,14 @@ export function HeroSlider({ slides, accent }: { slides: HeroSlide[]; accent: st
         <>
           <button
             onClick={() => setIdx((idx - 1 + n) % n)}
-            aria-label="আগের"
+            aria-label={bn ? "আগের" : "Previous"}
             className="absolute left-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-lg text-white backdrop-blur transition hover:bg-black/60"
           >
             ‹
           </button>
           <button
             onClick={() => setIdx((idx + 1) % n)}
-            aria-label="পরের"
+            aria-label={bn ? "পরের" : "Next"}
             className="absolute right-2 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-lg text-white backdrop-blur transition hover:bg-black/60"
           >
             ›
@@ -434,7 +459,7 @@ export function HeroSlider({ slides, accent }: { slides: HeroSlide[]; accent: st
               <button
                 key={i}
                 onClick={() => setIdx(i)}
-                aria-label={`স্লাইড ${i + 1}`}
+                aria-label={bn ? `স্লাইড ${i + 1}` : `Slide ${i + 1}`}
                 className={`h-2 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-2 bg-white/40 hover:bg-white/70"}`}
               />
             ))}

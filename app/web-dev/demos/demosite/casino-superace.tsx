@@ -102,7 +102,7 @@ function SACardView({ c, win, delay }: { c: SACard; win: boolean; delay: number 
 export function SuperAceGame() {
   const { store, base } = useSkin();
   const cfg = useCasinoConfig();
-  const finish = useGameRound("সুপার এস");
+  const finish = useGameRound("Super Ace");
   const keyRef = useRef({ n: 1 });
   const [bet, setBet] = useState(10);
   const [grid, setGrid] = useState<SACard[]>(() => saDealGrid(keyRef.current));
@@ -151,8 +151,8 @@ export function SuperAceGame() {
     setSpinning(true);
     const betAmt = betRef.current;
     if (!isFree) {
-      if (!store.payWithWallet(betAmt, "🂡 সুপার এস")) {
-        setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); setAutoLeft(0);
+      if (!store.payWithWallet(betAmt, "🂡 Super Ace")) {
+        setMsg("Low balance — deposit to continue"); setAutoLeft(0);
         spinningRef.current = false; setSpinning(false); return;
       }
     }
@@ -208,20 +208,20 @@ export function SuperAceGame() {
       if (isFree) { freeWonRef.current += total; setFreeWon(freeWonRef.current); }
       const ratio = total / betAmt;
       setTier(ratio >= 25 ? "mega" : ratio >= 10 ? "big" : "win");
-      setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : "🎉 জিতেছেন!");
-    } else if (!isFree) setMsg("আবার চেষ্টা করুন — ভাগ্য ঘুরবেই!");
+      setMsg(ratio >= 25 ? "🌟 MEGA WIN!" : ratio >= 10 ? "🎉 BIG WIN!" : "🎉 You won!");
+    } else if (!isFree) setMsg("Try again — your luck will turn!");
     if (!isFree && sc >= 3) {
       freeMultRef.current = lvl; setFreeMult(lvl);
       freeWonRef.current = 0; setFreeWon(0);
       setFreeLeft(10);
-      setMsg(`⭐ ${bn(10)}টি ফ্রি স্পিন! মাল্টিপ্লায়ার ধরে থাকবে`);
+      setMsg(`⭐ 10 free spins! The multiplier stays`);
     }
     if (isFree) {
       const left = freeLeft - 1;
       setFreeLeft(left);
       if (left <= 0) {
         const w = freeWonRef.current;
-        setTimeout(() => setMsg(`🎁 ফ্রি স্পিন শেষ! মোট জিতেছেন ${money(w)}`), 700);
+        setTimeout(() => setMsg(`🎁 Free spins over! You won ${money(w)} in total`), 700);
       }
     }
     spinningRef.current = false;
@@ -243,17 +243,17 @@ export function SuperAceGame() {
 
   const buyBonus = () => {
     if (spinningRef.current || freeLeft > 0) return;
-    if (!store.payWithWallet(betRef.current * 100, "🂡 সুপার এস বোনাস")) { setMsg("ব্যালেন্স কম — ডিপোজিট করুন"); return; }
+    if (!store.payWithWallet(betRef.current * 100, "🂡 Super Ace bonus")) { setMsg("Low balance — deposit to continue"); return; }
     freeMultRef.current = 0; setFreeMult(0);
     freeWonRef.current = 0; setFreeWon(0);
-    setMsg("🎁 বোনাস কেনা হয়েছে!");
+    setMsg("🎁 Bonus purchased!");
     setFreeLeft(10);
   };
 
   return (
     <Page narrow>
       <style>{`@keyframes dp-safall { 0% { transform: translateY(-46px) scale(.92); opacity: 0 } 60% { transform: translateY(6px) scale(1.02); opacity: 1 } 100% { transform: translateY(0) scale(1); opacity: 1 } } .dp-safall { animation: dp-safall .38s cubic-bezier(.2,.9,.3,1.2) both } @keyframes dp-samarquee { 0% { transform: translateX(100%) } 100% { transform: translateX(-100%) } } .dp-samarquee { animation: dp-samarquee 14s linear infinite }`}</style>
-      <Back href={`${base}/games`} label="গেম লবি" />
+      <Back href={`${base}/games`} label="Game lobby" />
 
       {/* top bar */}
       <div className="flex items-center justify-between">
@@ -280,13 +280,13 @@ export function SuperAceGame() {
           ))}
         </div>
         <div className="mx-auto mt-1.5 max-w-[420px] overflow-hidden whitespace-nowrap rounded-full bg-black/40 py-1">
-          <p className="dp-samarquee inline-block text-[11px] font-bold text-amber-200/90">✨ Get a Golden Card and have a chance to win BIG • ৩+ ⭐ = ১০ ফ্রি স্পিন • গোল্ডেন কার্ড = ওয়াইল্ড ✨</p>
+          <p className="dp-samarquee inline-block text-[11px] font-bold text-amber-200/90">✨ Get a Golden Card and have a chance to win BIG • 3+ ⭐ = 10 free spins • Golden Card = Wild ✨</p>
         </div>
       </div>
 
       {freeLeft > 0 && (
         <div className="mx-auto mt-2 w-fit rounded-full bg-gradient-to-r from-fuchsia-600 to-purple-600 px-4 py-1.5 text-xs font-black text-white shadow-lg">
-          🎁 ফ্রি স্পিন বাকি: {bn(freeLeft)} • মাল্টিপ্লায়ার ×{SA_MULT[freeMult]} • জমেছে {money(freeWon)}
+          🎁 Free spins left: {bn(freeLeft)} • Multiplier ×{SA_MULT[freeMult]} • Collected {money(freeWon)}
         </div>
       )}
 
@@ -306,7 +306,7 @@ export function SuperAceGame() {
       <div className="mt-2 text-center">
         <p className="text-xs font-black tracking-[0.25em] text-[#f5c518]">{tier === "mega" ? "MEGA WIN" : tier === "big" ? "BIG WIN" : "WIN"}</p>
         <p className={`text-3xl font-black tabular-nums ${spinWin > 0 ? "text-white" : "text-white/40"}`}>{money(spinWin)}</p>
-        <p className="text-[11px] text-slate-400">মোট জয়: <b className="text-emerald-300">{money(dispTotal)}</b></p>
+        <p className="text-[11px] text-slate-400">Total win: <b className="text-emerald-300">{money(dispTotal)}</b></p>
         {msg && <p className="mt-1 text-sm font-bold text-amber-200">{msg}</p>}
       </div>
 
@@ -314,28 +314,28 @@ export function SuperAceGame() {
       <div className="mx-auto mt-2 grid max-w-[480px] grid-cols-[52px_1fr_84px_52px] items-center gap-2">
         <button onClick={() => setTurbo((t) => !t)} className={`grid h-12 w-12 place-items-center rounded-full border text-xl transition active:scale-90 ${turbo ? "border-amber-300 bg-amber-400/25" : "border-white/15 bg-white/5"}`}>⚡</button>
         <button onClick={() => !spinning && freeLeft === 0 && setBetOpen(true)} className="rounded-2xl bg-white/5 py-2 text-center ring-1 ring-white/10">
-          <p className="text-[10px] font-bold text-slate-400">বাজি</p>
+          <p className="text-[10px] font-bold text-slate-400">Bet</p>
           <p className="text-lg font-black text-white">{money(bet)}</p>
         </button>
         <button onClick={() => !spinningRef.current && doSpin(false)}
           className="grid h-20 w-20 place-items-center justify-self-center rounded-full bg-gradient-to-b from-yellow-200 via-amber-400 to-amber-700 text-3xl shadow-[0_0_30px_rgba(245,197,24,0.55)] ring-4 ring-yellow-200/50 transition active:scale-90 disabled:opacity-50"
-          disabled={spinning || freeLeft > 0} aria-label="স্পিন">🔄</button>
+          disabled={spinning || freeLeft > 0} aria-label="Spin">🔄</button>
         <div className="flex flex-col items-center gap-1">
           <button onClick={() => setAutoLeft(autoLeft > 0 ? 0 : 30)} className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-white/5 text-lg transition active:scale-90">▶</button>
-          <span className="text-[9px] font-bold text-white/60">{autoLeft > 0 ? bn(autoLeft) : "অটো"}</span>
+          <span className="text-[9px] font-bold text-white/60">{autoLeft > 0 ? bn(autoLeft) : "Auto"}</span>
         </div>
       </div>
 
       <div className="mx-auto mt-2 flex max-w-[480px] items-center justify-between rounded-2xl bg-black/40 px-4 py-2 ring-1 ring-white/10">
         <span className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-black text-white">LV 1</span>
-        <span className="text-sm font-black text-[#f5c518]">ব্যালেন্স {money(store.wallet)}</span>
+        <span className="text-sm font-black text-[#f5c518]">Balance {money(store.wallet)}</span>
       </div>
 
       {/* bet selector popup */}
       {betOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6" onClick={() => setBetOpen(false)}>
           <div className="w-full max-w-[320px] rounded-3xl border border-amber-400/40 bg-[#141126] p-4" onClick={(e) => e.stopPropagation()}>
-            <p className="mb-3 text-center text-sm font-black text-[#f5c518]">💰 বাজি বাছুন</p>
+            <p className="mb-3 text-center text-sm font-black text-[#f5c518]">💰 Choose your bet</p>
             <div className="grid grid-cols-3 gap-2">
               {SA_BETS.map((b) => (
                 <button key={b} onClick={() => { setBet(b); setBetOpen(false); }}
@@ -350,16 +350,16 @@ export function SuperAceGame() {
 
       {/* paytable */}
       <div className="mx-auto mt-4 max-w-[480px] rounded-2xl bg-black/40 p-4 ring-1 ring-white/10">
-        <p className="mb-2 text-sm font-black text-[#f5c518]">💰 পে-টেবিল (ওয়েজ × বাজি/২০)</p>
+        <p className="mb-2 text-sm font-black text-[#f5c518]">💰 Paytable (ways × bet/20)</p>
         <div className="grid grid-cols-5 gap-1 text-center text-[11px]">
-          <span className="font-black text-slate-400">কার্ড</span><span className="font-black text-slate-400">৩টি</span><span className="font-black text-slate-400">৪টি</span><span className="font-black text-slate-400">৫টি</span><span className="font-black text-slate-400">নোট</span>
-          {[["A ♠️", "২x", "১০x", "৫০x"], ["K 🤴", "১.৫x", "৮x", "৩০x"], ["Q 👸", "১x", "৫x", "২০x"], ["J 🤵", "০.৫x", "৩x", "১২x"]].map(([r, a, b2, c2]) => (
+          <span className="font-black text-slate-400">Card</span><span className="font-black text-slate-400">3</span><span className="font-black text-slate-400">4</span><span className="font-black text-slate-400">5</span><span className="font-black text-slate-400">Note</span>
+          {[["A ♠️", "2x", "10x", "50x"], ["K 🤴", "1.5x", "8x", "30x"], ["Q 👸", "1x", "5x", "20x"], ["J 🤵", "0.5x", "3x", "12x"]].map(([r, a, b2, c2]) => (
             <Fragment key={r}>
               <span className="font-bold text-white">{r}</span><span className="text-slate-300">{a}</span><span className="text-slate-300">{b2}</span><span className="text-amber-300">{c2}</span><span className="text-slate-500">—</span>
             </Fragment>
           ))}
         </div>
-        <p className="mt-2 text-[11px] leading-relaxed text-slate-400">🃏 WILD সব কার্ডের বদলে বসে • <b className="text-amber-300">গোল্ডেন কার্ড</b> = ওয়াইল্ড • প্রতি ক্যাসকেডে মাল্টিপ্লায়ার বাড়ে ×1→×2→×3→×5 • ⭐ ৩+ = ১০ ফ্রি স্পিন</p>
+        <p className="mt-2 text-[11px] leading-relaxed text-slate-400">🃏 WILD substitutes for all cards • <b className="text-amber-300">Golden Card</b> = Wild • The multiplier grows with each cascade ×1→×2→×3→×5 • ⭐ 3+ = 10 free spins</p>
       </div>
     </Page>
   );

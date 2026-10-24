@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
+import { useDemoLangOpt } from "./demo-lang";
 import type { DemoProduct } from "./types";
 import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero, bannerSlides } from "./ui";
 
@@ -64,6 +65,25 @@ function useSkin() {
   };
 }
 
+
+/** Phase 8: English by default via the demo-lang provider; Bangla only when
+ *  the visitor switched to Bangla. No provider (legacy demo) keeps the
+ *  original Bangla strings — same convention as chrome.tsx.
+ *  dig() renders Latin digits in English/Hindi view, Bangla digits otherwise. */
+function useDL() {
+  const dl = useDemoLangOpt();
+  const lang = dl?.lang ?? "bn";
+  return {
+    lang,
+    L: (en: string, bn: string) => (dl ? dl.L(en, bn) : bn),
+    dig: (v: string | number) => {
+      const str = String(v);
+      return lang === "bn" ? toBnDigits(str) : str;
+    },
+    cur: lang === "bn" ? "টাকা" : "Tk",
+  };
+}
+
 function DField(props: React.InputHTMLAttributes<HTMLInputElement>) {
   const { def } = useDemo();
   const cls = def.dark
@@ -90,7 +110,8 @@ function StatusBadge({ s }: { s: string }) {
 
 function Timeline({ active = 0 }: { active?: number }) {
   const { def } = useDemo();
-  const steps = ["✅ কনফার্মড", "📦 প্যাকিং", "🚚 শিপড", "🏠 ডেলিভার্ড"];
+  const { L } = useDL();
+  const steps = [L("✅ Confirmed", "✅ কনফার্মড"), L("📦 Packing", "📦 প্যাকিং"), L("🚚 Shipped", "🚚 শিপড"), L("🏠 Delivered", "🏠 ডেলিভার্ড")];
   return (
     <div className="flex items-start">
       {steps.map((st, i) => (
@@ -114,9 +135,9 @@ function Timeline({ active = 0 }: { active?: number }) {
 }
 
 const SAMPLE_REVIEWS = [
-  { n: "রহিম U.", t: "পণ্যটা একদম ছবির মতোই পেয়েছি। ডেলিভারিও দ্রুত ছিল।", r: 5 },
-  { n: "সুমাইয়া A.", t: "দাম অনুযায়ী মান বেশ ভালো। প্যাকেজিংও সুন্দর ছিল।", r: 4 },
-  { n: "তানভীর H.", t: "মোটামুটি ভালো লেগেছে। কাস্টমার সার্ভিস বন্ধুসুলভ।", r: 4 },
+  { nEn: "Rahim U.", nBn: "রহিম U.", tEn: "Got exactly what the photos showed. Delivery was fast too.", tBn: "পণ্যটা একদম ছবির মতোই পেয়েছি। ডেলিভারিও দ্রুত ছিল।", r: 5 },
+  { nEn: "Sumaiya A.", nBn: "সুমাইয়া A.", tEn: "Good value for the price. Packaging was nice too.", tBn: "দাম অনুযায়ী মান বেশ ভালো। প্যাকেজিংও সুন্দর ছিল।", r: 4 },
+  { nEn: "Tanvir H.", nBn: "তানভীর H.", tEn: "Quite liked it. Customer service was friendly.", tBn: "মোটামুটি ভালো লেগেছে। কাস্টমার সার্ভিস বন্ধুসুলভ।", r: 4 },
 ];
 
 /* ================= HOME ================= */
@@ -126,6 +147,7 @@ export function ShopHome() {
   const banners = bannerSlides();
   const products = useProducts();
   const { card, sub, chip } = useSkin();
+  const { L } = useDL();
   const deals = products.filter((p) => p.oldPrice).slice(0, 4);
   const featured = products.slice(0, 8);
 
@@ -146,9 +168,9 @@ export function ShopHome() {
   }, [clientSlug]);
 
   const defaultSlides = [
-    { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛍️ কেনাকাটা শুরু করুন", href: "/shop", grad: def.grad },
-    { emoji: "🎁", title: "সীমিত সময়ের অফার", sub: "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!", cta: "🎁 অফার দেখুন", href: "/offers", grad: def.grad },
-    { emoji: "🚚", title: "সারাদেশে হোম ডেলিভারি", sub: "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি", cta: "🛍️ শপ করুন", href: "/shop", grad: def.grad },
+    { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: L("🛍️ Start shopping", "🛍️ কেনাকাটা শুরু করুন"), href: "/shop", grad: def.grad },
+    { emoji: "🎁", title: L("Limited-time offer", "সীমিত সময়ের অফার"), sub: L("Attractive discounts on your favourite products — before stock runs out!", "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!"), cta: L("🎁 See offers", "🎁 অফার দেখুন"), href: "/offers", grad: def.grad },
+    { emoji: "🚚", title: L("Home delivery across the country", "সারাদেশে হোম ডেলিভারি"), sub: L("Free delivery on orders over 1,000 Tk", "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি"), cta: L("🛍️ Shop now", "🛍️ শপ করুন"), href: "/shop", grad: def.grad },
   ];
   const baseSlides = customSlides && customSlides.length > 0
     ? customSlides.map((sl: any) => ({
@@ -156,7 +178,7 @@ export function ShopHome() {
         emoji: sl.img ? "" : "🎉",
         title: sl.title || def.heroTitle,
         sub: sl.sub || def.heroSub,
-        cta: "🛍️ কেনাকাটা করুন",
+        cta: L("🛍️ Shop now", "🛍️ কেনাকাটা করুন"),
         href: "/shop",
         grad: def.grad,
       }))
@@ -178,7 +200,7 @@ export function ShopHome() {
         </div>
         {deals.length > 0 && (
           <>
-            <SectionTitle t="🎁 ছাড়ের পণ্য" sub="সীমিত সময়ের অফার" link={`${base}/offers`} />
+            <SectionTitle t={L("🎁 Discounted products", "🎁 ছাড়ের পণ্য")} sub={L("Limited-time offers", "সীমিত সময়ের অফার")} link={`${base}/offers`} />
             <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {deals.map((p) => (
                 <ProductCard key={p.id} p={p} />
@@ -186,7 +208,7 @@ export function ShopHome() {
             </div>
           </>
         )}
-        <SectionTitle t="🔥 জনপ্রিয় পণ্য" link={`${base}/shop`} />
+        <SectionTitle t={L("🔥 Popular products", "🔥 জনপ্রিয় পণ্য")} link={`${base}/shop`} />
         <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {featured.map((p) => (
             <ProductCard key={p.id} p={p} />
@@ -194,9 +216,9 @@ export function ShopHome() {
         </div>
         <div className={`grid grid-cols-3 gap-2 p-4 text-center ${card}`}>
           {[
-            ["🚚", "দ্রুত ডেলিভারি"],
-            ["💵", "ক্যাশ অন ডেলিভারি"],
-            ["🔄", "সহজ রিটার্ন"],
+            ["🚚", L("Fast delivery", "দ্রুত ডেলিভারি")],
+            ["💵", L("Cash on delivery", "ক্যাশ অন ডেলিভারি")],
+            ["🔄", L("Easy returns", "সহজ রিটার্ন")],
           ].map(([e, t]) => (
             <div key={t}>
               <p className="text-2xl">{e}</p>
@@ -215,10 +237,11 @@ export function ShopAll() {
   const { def, base } = useDemo();
   const products = useProducts();
   const { chip } = useSkin();
+  const { L } = useDL();
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="🛍️ সব পণ্য" sub={`${bn(products.length)}টি পণ্য`} />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("🛍️ All products", "🛍️ সব পণ্য")} sub={L(`${bn(products.length)} products`, `${bn(products.length)}টি পণ্য`)} />
       <div className="mb-5 flex flex-wrap gap-2">
         {def.cats.slice(1).map((c) => (
           <Link key={c} href={`${base}/c/${encodeURIComponent(c)}`} className={chip}>
@@ -237,14 +260,15 @@ export function ShopAll() {
 
 export function ShopCategory({ cat }: { cat: string }) {
   const { def, base } = useDemo();
+  const { L } = useDL();
   const products = useProducts();
   const list = products.filter((p) => p.c === cat);
   return (
     <Page>
-      <Back href={`${base}/shop`} label="সব পণ্য" />
-      <SectionTitle t={cat} sub={`${bn(list.length)}টি পণ্য`} />
+      <Back href={`${base}/shop`} label={L("All products", "সব পণ্য")} />
+      <SectionTitle t={cat} sub={L(`${bn(list.length)} products`, `${bn(list.length)}টি পণ্য`)} />
       {list.length === 0 ? (
-        <Empty emoji="📭" text="এই ক্যাটাগরিতে এখনো পণ্য নেই" />
+        <Empty emoji="📭" text={L("No products in this category yet", "এই ক্যাটাগরিতে এখনো পণ্য নেই")} />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {list.map((p) => (
@@ -263,16 +287,17 @@ export function ShopProduct({ id }: { id: string }) {
   const products = useProducts();
   const router = useRouter();
   const { accent, card, sub } = useSkin();
+  const { L, cur, lang } = useDL();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const p = products.find((x) => x.id === id);
   if (!p) {
     return (
       <Page narrow>
-        <Empty emoji="🔍" text="পণ্যটি পাওয়া যায়নি" />
+        <Empty emoji="🔍" text={L("Product not found", "পণ্যটি পাওয়া যায়নি")} />
         <div className="text-center">
           <Link href={`${base}/shop`} className="btn-demo" style={{ background: accent }}>
-            🛍️ শপে ফিরুন
+            {L("🛍️ Back to shop", "🛍️ শপে ফিরুন")}
           </Link>
         </div>
       </Page>
@@ -289,7 +314,7 @@ export function ShopProduct({ id }: { id: string }) {
   };
   return (
     <Page>
-      <Back href={`${base}/shop`} label="শপ" />
+      <Back href={`${base}/shop`} label={L("Shop", "শপ")} />
       <div className={`grid gap-6 overflow-hidden p-5 sm:grid-cols-2 ${card}`}>
         <div className="relative min-h-64 overflow-hidden rounded-2xl bg-gradient-to-br from-white/10 to-transparent">
           {p.img ? (
@@ -299,7 +324,7 @@ export function ShopProduct({ id }: { id: string }) {
           )}
           {off > 0 && (
             <span className="absolute left-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-black text-white">
-              −{bn(off)}% ছাড়
+              −{bn(off)}% {L("off", "ছাড়")}
             </span>
           )}
         </div>
@@ -307,13 +332,13 @@ export function ShopProduct({ id }: { id: string }) {
           <p className={`text-xs font-bold ${sub}`}>{p.c}</p>
           <h1 className="mt-1 text-2xl font-black">{p.n}</h1>
           <div className="mt-1">
-            <Stars rating={p.rating} reviews={p.reviews} />
+            <Stars rating={p.rating} reviews={p.reviews} en={lang !== "bn"} />
           </div>
           <div className="mt-3 flex items-center gap-3">
             <Price v={p.p} accent={accent} big note={p.priceNote ?? def.priceNote} />
-            {p.oldPrice && <span className={`text-sm line-through ${sub}`}>{bn(p.oldPrice)} টাকা</span>}
+            {p.oldPrice && <span className={`text-sm line-through ${sub}`}>{bn(p.oldPrice)} {cur}</span>}
           </div>
-          {p.stock < 10 && <p className="mt-2 text-sm font-black text-red-500">⚡ মাত্র {bn(p.stock)}টি বাকি!</p>}
+          {p.stock < 10 && <p className="mt-2 text-sm font-black text-red-500">{L(`⚡ Only ${bn(p.stock)} left!`, `⚡ মাত্র ${bn(p.stock)}টি বাকি!`)}</p>}
           <p className={`mt-3 text-sm leading-relaxed ${sub}`}>{p.desc}</p>
           <div className="mt-4 flex items-center gap-3">
             <div className="flex items-center gap-3 rounded-2xl border border-white/10 px-3 py-2">
@@ -328,7 +353,7 @@ export function ShopProduct({ id }: { id: string }) {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Btn accent={accent} onClick={add}>
-              {added ? "✅ কার্টে যোগ হয়েছে!" : "🛒 কার্টে যোগ করুন"}
+              {added ? L("✅ Added to cart!", "✅ কার্টে যোগ হয়েছে!") : L("🛒 Add to cart", "🛒 কার্টে যোগ করুন")}
             </Btn>
             <Btn
               accent={accent}
@@ -338,15 +363,15 @@ export function ShopProduct({ id }: { id: string }) {
                 router.push(`${base}/cart`);
               }}
             >
-              ⚡ এখনই কিনুন
+              {L("⚡ Buy now", "⚡ এখনই কিনুন")}
             </Btn>
           </div>
-          <p className={`mt-3 text-[11px] ${sub}`}>🚚 {bn(FREE_DELIVERY_AT)}+ টাকার অর্ডারে ডেলিভারি ফ্রি • 💵 ক্যাশ অন ডেলিভারি</p>
+          <p className={`mt-3 text-[11px] ${sub}`}>{L(`🚚 Free delivery on ${bn(FREE_DELIVERY_AT)}+ Tk orders • 💵 Cash on delivery`, `🚚 ${bn(FREE_DELIVERY_AT)}+ টাকার অর্ডারে ডেলিভারি ফ্রি • 💵 ক্যাশ অন ডেলিভারি`)}</p>
         </div>
       </div>
       {related.length > 0 && (
         <div className="mt-8">
-          <SectionTitle t="🔗 রিলেটেড পণ্য" />
+          <SectionTitle t={L("🔗 Related products", "🔗 রিলেটেড পণ্য")} />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {related.map((r) => (
               <ProductCard key={r.id} p={r} />
@@ -355,19 +380,19 @@ export function ShopProduct({ id }: { id: string }) {
         </div>
       )}
       <div className="mt-8">
-        <SectionTitle t="⭐ কাস্টমার রিভিউ" sub={`${bn(p.reviews)}টি রিভিউ`} />
+        <SectionTitle t={L("⭐ Customer reviews", "⭐ কাস্টমার রিভিউ")} sub={L(`${bn(p.reviews)} reviews`, `${bn(p.reviews)}টি রিভিউ`)} />
         <div className="space-y-2">
           {SAMPLE_REVIEWS.map((r) => (
-            <div key={r.n} className={`p-4 ${card}`}>
+            <div key={r.nEn} className={`p-4 ${card}`}>
               <div className="flex items-center justify-between">
-                <p className="text-sm font-bold">{r.n}</p>
-                <Stars rating={r.r} />
+                <p className="text-sm font-bold">{L(r.nEn, r.nBn)}</p>
+                <Stars rating={r.r} en={lang !== "bn"} />
               </div>
-              <p className={`mt-1 text-sm ${sub}`}>{r.t}</p>
+              <p className={`mt-1 text-sm ${sub}`}>{L(r.tEn, r.tBn)}</p>
             </div>
           ))}
         </div>
-        <p className={`mt-2 text-[11px] ${sub}`}>💡 ডেমো রিভিউ — আসল সাইটে এখানে যাচাইকৃত ক্রেতাদের রিভিউ থাকবে।</p>
+        <p className={`mt-2 text-[11px] ${sub}`}>{L("💡 Demo reviews — verified buyer reviews will appear here on the real site.", "💡 ডেমো রিভিউ — আসল সাইটে এখানে যাচাইকৃত ক্রেতাদের রিভিউ থাকবে।")}</p>
       </div>
     </Page>
   );
@@ -706,6 +731,7 @@ export function ShopTrack() {
 
 export function ShopSearch() {
   const { def, base } = useDemo();
+  const { L } = useDL();
   const products = useProducts();
   const router = useRouter();
   const sp = useSearchParams();
@@ -714,7 +740,7 @@ export function ShopSearch() {
   const res = products.filter((p) => !q || (p.n + " " + p.c).includes(q));
   return (
     <Page>
-      <Back href={base} label="হোম" />
+      <Back href={base} label={L("Home", "হোম")} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -722,16 +748,16 @@ export function ShopSearch() {
         }}
         className="mb-5 flex gap-2"
       >
-        <DField value={val} onChange={(e) => setVal(e.target.value)} placeholder="🔍 পণ্য খুঁজুন..." />
+        <DField value={val} onChange={(e) => setVal(e.target.value)} placeholder={L("🔍 Search products...", "🔍 পণ্য খুঁজুন...")} />
         <button type="submit" className="btn-demo shrink-0" style={{ background: def.accent }}>
-          খুঁজুন
+          {L("Search", "খুঁজুন")}
         </button>
       </form>
       {q ? (
         <>
-          <SectionTitle t={`"${q}" — ${bn(res.length)}টি ফলাফল`} />
+          <SectionTitle t={L(`"${q}" — ${bn(res.length)} results`, `"${q}" — ${bn(res.length)}টি ফলাফল`)} />
           {res.length === 0 ? (
-            <Empty emoji="🔍" text="কিছু পাওয়া যায়নি — অন্য নামে খুঁজুন" />
+            <Empty emoji="🔍" text={L("Nothing found — try another name", "কিছু পাওয়া যায়নি — অন্য নামে খুঁজুন")} />
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {res.map((p) => (
@@ -741,7 +767,7 @@ export function ShopSearch() {
           )}
         </>
       ) : (
-        <Empty emoji="🔍" text="খুঁজতে চান এমন পণ্যের নাম লিখুন" />
+        <Empty emoji="🔍" text={L("Type a product name to search", "খুঁজতে চান এমন পণ্যের নাম লিখুন")} />
       )}
     </Page>
   );
@@ -753,11 +779,12 @@ export function ShopOffers() {
   const { def, base } = useDemo();
   const products = useProducts();
   const { accent, card, sub } = useSkin();
+  const { L } = useDL();
   const [copied, setCopied] = useState("");
   const deals = products.filter((p) => p.oldPrice);
   const coupons = [
-    { code: "WELCOME10", d: "প্রথম অর্ডারে ১০% ছাড়" },
-    { code: "SAVE20", d: `${bn(2000)}+ টাকার অর্ডারে ২০% ছাড়` },
+    { code: "WELCOME10", d: L("10% off your first order", "প্রথম অর্ডারে ১০% ছাড়") },
+    { code: "SAVE20", d: L(`20% off orders over ${bn(2000)}+ Tk`, `${bn(2000)}+ টাকার অর্ডারে ২০% ছাড়`) },
   ];
   function copy(code: string) {
     try {
@@ -776,8 +803,8 @@ export function ShopOffers() {
   }
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="🎁 অফার ও কুপন" sub="সীমিত সময়ের ছাড়" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("🎁 Offers & coupons", "🎁 অফার ও কুপন")} sub={L("Limited-time discounts", "সীমিত সময়ের ছাড়")} />
       <div className="mb-6 grid gap-2 sm:grid-cols-2">
         {coupons.map((c) => (
           <button key={c.code} onClick={() => copy(c.code)} className={`flex items-center justify-between p-4 text-left transition hover:-translate-y-0.5 ${card}`}>
@@ -788,14 +815,14 @@ export function ShopOffers() {
               <p className={`text-xs ${sub}`}>{c.d}</p>
             </div>
             <span className="rounded-xl px-3 py-2 text-xs font-black text-white" style={{ background: accent }}>
-              {copied === c.code ? "✅ কপি!" : "📋 কপি"}
+              {copied === c.code ? L("✅ Copied!", "✅ কপি!") : L("📋 Copy", "📋 কপি")}
             </span>
           </button>
         ))}
       </div>
-      <SectionTitle t="🔥 ছাড়ের পণ্য" />
+      <SectionTitle t={L("🔥 Discounted products", "🔥 ছাড়ের পণ্য")} />
       {deals.length === 0 ? (
-        <Empty emoji="🎁" text="এই মুহূর্তে কোনো ছাড় নেই" />
+        <Empty emoji="🎁" text={L("No discounts right now", "এই মুহূর্তে কোনো ছাড় নেই")} />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {deals.map((p) => (
@@ -1074,14 +1101,15 @@ export function ShopOrderDetail({ id }: { id: string }) {
 export function ShopWallet() {
   const { base, store } = useDemo();
   const { accent, card, sub } = useSkin();
+  const { L, cur, lang } = useDL();
   return (
     <Page narrow>
-      <Back href={`${base}/account`} label="অ্যাকাউন্ট" />
-      <SectionTitle t="👛 ওয়ালেট" />
+      <Back href={`${base}/account`} label={L("Account", "অ্যাকাউন্ট")} />
+      <SectionTitle t={L("👛 Wallet", "👛 ওয়ালেট")} />
       <div className={`p-6 text-center ${card}`} style={{ background: `linear-gradient(135deg, ${accent}22, transparent)` }}>
-        <p className={`text-xs ${sub}`}>বর্তমান ব্যালেন্স</p>
+        <p className={`text-xs ${sub}`}>{L("Current balance", "বর্তমান ব্যালেন্স")}</p>
         <p className="mt-1 text-4xl font-black" style={{ color: accent }}>
-          {bn(store.wallet)} টাকা
+          {bn(store.wallet)} {cur}
         </p>
         <div className="mt-4 flex justify-center gap-2">
           {[1000, 2000, 5000].map((a) => (
@@ -1090,22 +1118,22 @@ export function ShopWallet() {
             </Btn>
           ))}
         </div>
-        <p className={`mt-2 text-[11px] ${sub}`}>💡 ডেমো টপ-আপ — কোনো আসল টাকা যোগ হবে না</p>
+        <p className={`mt-2 text-[11px] ${sub}`}>{L("💡 Demo top-up — no real money will be added", "💡 ডেমো টপ-আপ — কোনো আসল টাকা যোগ হবে না")}</p>
       </div>
-      <p className="mb-2 mt-5 text-sm font-bold">🧾 লেনদেন হিস্ট্রি</p>
+      <p className="mb-2 mt-5 text-sm font-bold">{L("🧾 Transaction history", "🧾 লেনদেন হিস্ট্রি")}</p>
       {store.txs.length === 0 ? (
-        <Empty emoji="🧾" text="এখনো কোনো লেনদেন হয়নি" />
+        <Empty emoji="🧾" text={L("No transactions yet", "এখনো কোনো লেনদেন হয়নি")} />
       ) : (
         <div className="space-y-2">
           {store.txs.map((t, i) => (
             <div key={i} className={`flex items-center justify-between p-3.5 ${card}`}>
               <div>
                 <p className="text-sm font-bold">{t.label}</p>
-                <p className={`text-[11px] ${sub}`}>{new Date(t.date).toLocaleDateString("bn-BD")}</p>
+                <p className={`text-[11px] ${sub}`}>{new Date(t.date).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US")}</p>
               </div>
               <p className={`text-sm font-black ${t.amount >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {t.amount >= 0 ? "+" : "−"}
-                {bn(Math.abs(t.amount))} টাকা
+                {bn(Math.abs(t.amount))} {cur}
               </p>
             </div>
           ))}
@@ -1121,10 +1149,11 @@ export function ShopAbout() {
   const { def, base } = useDemo();
   const products = useProducts();
   const { accent, card, sub } = useSkin();
+  const { L, dig } = useDL();
   const avg = products.length ? products.reduce((s, p) => s + p.rating, 0) / products.length : 0;
   return (
     <Page>
-      <Back href={base} label="হোম" />
+      <Back href={base} label={L("Home", "হোম")} />
       <div className="py-6 text-center">
         <p className="text-6xl">{def.logoEmoji}</p>
         <h1 className="mt-2 text-2xl font-black">{def.name}</h1>
@@ -1134,9 +1163,9 @@ export function ShopAbout() {
       </div>
       <div className={`mt-3 grid grid-cols-3 gap-2 p-4 text-center ${card}`}>
         {[
-          [bn(products.length), "পণ্য"],
-          [bn(def.cats.length - 1 > 0 ? def.cats.length - 1 : def.cats.length), "ক্যাটাগরি"],
-          [`${toBnDigits(avg.toFixed(1))}★`, "গড় রেটিং"],
+          [bn(products.length), L("Products", "পণ্য")],
+          [bn(def.cats.length - 1 > 0 ? def.cats.length - 1 : def.cats.length), L("Categories", "ক্যাটাগরি")],
+          [`${dig(avg.toFixed(1))}★`, L("Avg rating", "গড় রেটিং")],
         ].map(([v, t]) => (
           <div key={t}>
             <p className="text-2xl font-black" style={{ color: accent }}>
@@ -1152,7 +1181,7 @@ export function ShopAbout() {
         <p>🕒 {def.hours}</p>
       </div>
       <Link href={`${base}/contact`} className="btn-demo mt-4 block w-full text-center" style={{ background: accent }}>
-        💬 যোগাযোগ করুন
+        {L("💬 Contact us", "💬 যোগাযোগ করুন")}
       </Link>
     </Page>
   );
@@ -1161,19 +1190,20 @@ export function ShopAbout() {
 export function ShopContact() {
   const { def, base } = useDemo();
   const { accent, card } = useSkin();
+  const { L } = useDL();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState("");
   const [sent, setSent] = useState(false);
   const infos = [
-    { e: "📞", t: "যোগাযোগ", v: def.contact },
-    { e: "📍", t: "ঠিকানা", v: def.address },
-    { e: "🕒", t: "খোলার সময়", v: def.hours },
+    { e: "📞", t: L("Contact", "যোগাযোগ"), v: def.contact },
+    { e: "📍", t: L("Address", "ঠিকানা"), v: def.address },
+    { e: "🕒", t: L("Opening hours", "খোলার সময়"), v: def.hours },
   ];
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="💬 যোগাযোগ" sub="যেকোনো প্রশ্নে মেসেজ করুন" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("💬 Contact us", "💬 যোগাযোগ")} sub={L("Message us with any question", "যেকোনো প্রশ্নে মেসেজ করুন")} />
       <div className="grid gap-2 sm:grid-cols-3">
         {infos.map((x) => (
           <div key={x.t} className={`p-4 text-center ${card}`}>
@@ -1185,16 +1215,16 @@ export function ShopContact() {
       </div>
       {sent ? (
         <p className={`mt-4 rounded-2xl p-5 text-center text-sm font-bold text-emerald-400 ${card}`}>
-          ✅ মেসেজ পাঠানো হয়েছে! (ডেমো)
+          {L("✅ Message sent! (Demo)", "✅ মেসেজ পাঠানো হয়েছে! (ডেমো)")}
           <button onClick={() => setSent(false)} className="mt-2 block w-full text-xs font-bold underline opacity-70">
-            আরেকটি মেসেজ পাঠান
+            {L("Send another message", "আরেকটি মেসেজ পাঠান")}
           </button>
         </p>
       ) : (
         <div className="mt-4 space-y-3">
-          <DField value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-          <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর *" inputMode="numeric" />
-          <DArea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="আপনার মেসেজ লিখুন... *" rows={4} />
+          <DField value={name} onChange={(e) => setName(e.target.value)} placeholder={L("Your name *", "আপনার নাম *")} />
+          <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={L("Mobile number *", "মোবাইল নম্বর *")} inputMode="numeric" />
+          <DArea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={L("Write your message... *", "আপনার মেসেজ লিখুন... *")} rows={4} />
           <button
             onClick={() => {
               if (name.trim().length >= 3 && msg.trim().length >= 5) setSent(true);
@@ -1202,7 +1232,7 @@ export function ShopContact() {
             className="btn-demo w-full !py-3.5"
             style={{ background: accent }}
           >
-            📨 মেসেজ পাঠান
+            {L("📨 Send message", "📨 মেসেজ পাঠান")}
           </button>
         </div>
       )}
@@ -1215,6 +1245,7 @@ export function ShopContact() {
 export function ShopWishlist() {
   const { base } = useDemo();
   const { accent } = useSkin();
+  const { L } = useDL();
   const products = useProducts();
   // Wishlist stored in localStorage via store
   const { store } = useDemo();
@@ -1224,10 +1255,10 @@ export function ShopWishlist() {
   const items = products.filter((p) => wishlist.includes(p.id));
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="❤️ উইশলিস্ট" sub={`${bn(items.length)}টি পণ্য`} />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("❤️ Wishlist", "❤️ উইশলিস্ট")} sub={L(`${bn(items.length)} products`, `${bn(items.length)}টি পণ্য`)} />
       {items.length === 0 ? (
-        <Empty emoji="💔" text="উইশলিস্ট খালি — পছন্দের পণ্যে হার্ট চাপুন" />
+        <Empty emoji="💔" text={L("Wishlist is empty — tap the heart on a product you like", "উইশলিস্ট খালি — পছন্দের পণ্যে হার্ট চাপুন")} />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {items.map((p) => <ProductCard key={p.id} p={p} />)}
@@ -1240,25 +1271,26 @@ export function ShopWishlist() {
 export function ShopFaq() {
   const { base, def } = useDemo();
   const { card } = useSkin();
+  const { L } = useDL();
   const [open, setOpen] = useState<number | null>(0);
-  const faqs = [
-    ["🛒 অর্ডার কীভাবে করবো?", "পছন্দের পণ্য কার্টে যোগ করুন → চেকআউটে নাম, মোবাইল, ঠিকানা দিন → অর্ডার কনফার্ম করুন।"],
-    ["🚚 ডেলিভারি কতদিনে?", "ঢাকায় ২৪-৪৮ ঘণ্টা, ঢাকার বাইরে ৩-৫ দিন। ১,০০০ টাকার বেশি অর্ডারে ডেলিভারি ফ্রি।"],
-    ["💵 পেমেন্ট মাধ্যম কী কী?", "ক্যাশ অন ডেলিভারি, বিকাশ, নগদ, রকেট — সব সাপোর্ট করে।"],
-    ["↩️ রিটার্ন পলিসি কী?", "৭ দিনের মধ্যে যেকোনো ত্রুটিপূর্ণ পণ্য রিটার্ন/এক্সচেঞ্জ করা যায়।"],
-    ["📞 যোগাযোগ কীভাবে?", `সরাসরি কল করুন: ${def.contact} (${def.hours})`],
+  const faqs: [string, string, string, string][] = [
+    ["🛒 How do I order?", "🛒 অর্ডার কীভাবে করবো?", "Add a product to cart → enter name, mobile, address at checkout → confirm the order.", "পছন্দের পণ্য কার্টে যোগ করুন → চেকআউটে নাম, মোবাইল, ঠিকানা দিন → অর্ডার কনফার্ম করুন।"],
+    ["🚚 How long does delivery take?", "🚚 ডেলিভারি কতদিনে?", "24–48 hours in Dhaka, 3–5 days outside Dhaka. Free delivery over 1,000 Tk.", "ঢাকায় ২৪-৪৮ ঘণ্টা, ঢাকার বাইরে ৩-৫ দিন। ১,০০০ টাকার বেশি অর্ডারে ডেলিভারি ফ্রি।"],
+    ["💵 What payment methods are there?", "💵 পেমেন্ট মাধ্যম কী কী?", "Cash on delivery, bKash, Nagad, Rocket — all supported.", "ক্যাশ অন ডেলিভারি, বিকাশ, নগদ, রকেট — সব সাপোর্ট করে।"],
+    ["↩️ What is the return policy?", "↩️ রিটার্ন পলিসি কী?", "Any defective product can be returned/exchanged within 7 days.", "৭ দিনের মধ্যে যেকোনো ত্রুটিপূর্ণ পণ্য রিটার্ন/এক্সচেঞ্জ করা যায়।"],
+    ["📞 How do I contact?", "📞 যোগাযোগ কীভাবে?", `Call directly: ${def.contact} (${def.hours})`, `সরাসরি কল করুন: ${def.contact} (${def.hours})`],
   ];
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="❓ সচরাচর জিজ্ঞাসা" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("❓ Frequently asked questions", "❓ সচরাচর জিজ্ঞাসা")} />
       <div className="space-y-2">
-        {faqs.map(([q, a], i) => (
+        {faqs.map(([qEn, qBn, aEn, aBn], i) => (
           <div key={i} className={card}>
             <button onClick={() => setOpen(open === i ? null : i)} className="flex w-full items-center justify-between p-4 text-left text-sm font-bold">
-              {q}<span>{open === i ? "−" : "+"}</span>
+              {L(qEn, qBn)}<span>{open === i ? "−" : "+"}</span>
             </button>
-            {open === i && <p className="px-4 pb-4 text-sm opacity-70">{a}</p>}
+            {open === i && <p className="px-4 pb-4 text-sm opacity-70">{L(aEn, aBn)}</p>}
           </div>
         ))}
       </div>
@@ -1269,33 +1301,36 @@ export function ShopFaq() {
 export function ShopPolicy({ kind }: { kind: "shipping" | "returns" | "privacy" | "terms" }) {
   const { base, def } = useDemo();
   const { card } = useSkin();
-  const content: Record<string, [string, string[]]> = {
-    shipping: ["🚚 ডেলিভারি নীতি", [
-      "ঢাকার ভিতরে ২৪-৪৮ ঘণ্টায় ডেলিভারি।",
-      "ঢাকার বাইরে ৩-৫ কর্মদিবস।",
-      "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি চার্জ ফ্রি।",
-      "অর্ডার ট্র্যাক করতে 'ট্র্যাক অর্ডার' পেজে ফোন নম্বর দিন।",
+  const { L } = useDL();
+  const content: Record<string, [[string, string], [string, string][]]> = {
+    shipping: [["🚚 Delivery policy", "🚚 ডেলিভারি নীতি"], [
+      ["Delivery within 24–48 hours inside Dhaka.", "ঢাকার ভিতরে ২৪-৪৮ ঘণ্টায় ডেলিভারি।"],
+      ["3–5 working days outside Dhaka.", "ঢাকার বাইরে ৩-৫ কর্মদিবস।"],
+      ["Free delivery charge on orders over 1,000 Tk.", "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি চার্জ ফ্রি।"],
+      ["To track an order, enter your phone number on the 'Track order' page.", "অর্ডার ট্র্যাক করতে 'ট্র্যাক অর্ডার' পেজে ফোন নম্বর দিন।"],
     ]],
-    returns: ["↩️ রিটার্ন ও রিফান্ড", [
-      "৭ দিনের মধ্যে ত্রুটিপূর্ণ পণ্য রিটার্ন করা যায়।",
-      "পণ্য অবশ্যই অব্যবহৃত ও প্যাকেজিংসহ থাকতে হবে।",
-      "রিফান্ড ৩-৫ কর্মদিবসে বিকাশ/নগদে পাঠানো হয়।",
+    returns: [["↩️ Returns & refunds", "↩️ রিটার্ন ও রিফান্ড"], [
+      ["Defective products can be returned within 7 days.", "৭ দিনের মধ্যে ত্রুটিপূর্ণ পণ্য রিটার্ন করা যায়।"],
+      ["The product must be unused and in its packaging.", "পণ্য অবশ্যই অব্যবহৃত ও প্যাকেজিংসহ থাকতে হবে।"],
+      ["Refunds are sent to bKash/Nagad within 3–5 working days.", "রিফান্ড ৩-৫ কর্মদিবসে বিকাশ/নগদে পাঠানো হয়।"],
     ]],
-    privacy: ["🔒 প্রাইভেসি পলিসি", [
-      "আপনার তথ্য শুধু অর্ডার প্রসেসিংয়ে ব্যবহার হয়।",
-      "তৃতীয় পক্ষের সাথে তথ্য শেয়ার করা হয় না।",
-      "যেকোনো সময় তথ্য মুছতে যোগাযোগ করুন।",
+    privacy: [["🔒 Privacy policy", "🔒 প্রাইভেসি পলিসি"], [
+      ["Your information is used only for order processing.", "আপনার তথ্য শুধু অর্ডার প্রসেসিংয়ে ব্যবহার হয়।"],
+      ["Information is not shared with third parties.", "তৃতীয় পক্ষের সাথে তথ্য শেয়ার করা হয় না।"],
+      ["Contact us any time to delete your information.", "যেকোনো সময় তথ্য মুছতে যোগাযোগ করুন।"],
     ]],
-    terms: ["📜 শর্তাবলী", [
-      `${def.name} থেকে কেনাকাটায় নিচের শর্ত প্রযোজ্য।`,
-      "দাম ও স্টক পরিবর্তনশীল — অর্ডারের সময় কনফার্ম হয়।",
-      "ভুল তথ্য দিলে অর্ডার বাতিল হতে পারে।",
+    terms: [["📜 Terms & conditions", "📜 শর্তাবলী"], [
+      [`The following terms apply to purchases from ${def.name}.`, `${def.name} থেকে কেনাকাটায় নিচের শর্ত প্রযোজ্য।`],
+      ["Prices and stock may change — confirmed at order time.", "দাম ও স্টক পরিবর্তনশীল — অর্ডারের সময় কনফার্ম হয়।"],
+      ["Orders may be cancelled if wrong information is given.", "ভুল তথ্য দিলে অর্ডার বাতিল হতে পারে।"],
     ]],
   };
-  const [title, points] = content[kind];
+  const [[titleEn, titleBn], pointPairs] = content[kind];
+  const title = L(titleEn, titleBn);
+  const points = pointPairs.map(([en, bn]) => L(en, bn));
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
+      <Back href={base} label={L("Home", "হোম")} />
       <SectionTitle t={title} />
       <div className={`space-y-2.5 p-5 ${card}`}>
         {points.map((pt, i) => <p key={i} className="text-sm leading-relaxed">• {pt}</p>)}
@@ -1306,28 +1341,30 @@ export function ShopPolicy({ kind }: { kind: "shipping" | "returns" | "privacy" 
 
 export function ShopDeals() {
   const { base } = useDemo();
+  const { L } = useDL();
   const products = useProducts();
   const deals = products.filter((p) => p.oldPrice);
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="⚡ আজকের ডিল" sub="সীমিত স্টক!" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("⚡ Today's deals", "⚡ আজকের ডিল")} sub={L("Limited stock!", "সীমিত স্টক!")} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {deals.map((p) => <ProductCard key={p.id} p={p} />)}
       </div>
-      {deals.length === 0 && <Empty emoji="🏷️" text="এখন কোনো ডিল নেই" />}
+      {deals.length === 0 && <Empty emoji="🏷️" text={L("No deals right now", "এখন কোনো ডিল নেই")} />}
     </Page>
   );
 }
 
 export function ShopNew() {
   const { base } = useDemo();
+  const { L } = useDL();
   const products = useProducts();
   const items = [...products].reverse().slice(0, 12);
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="🆕 নতুন পণ্য" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("🆕 New products", "🆕 নতুন পণ্য")} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((p) => <ProductCard key={p.id} p={p} />)}
       </div>
@@ -1337,12 +1374,13 @@ export function ShopNew() {
 
 export function ShopBestsellers() {
   const { base } = useDemo();
+  const { L } = useDL();
   const products = useProducts();
   const items = [...products].sort((a, b) => b.reviews - a.reviews).slice(0, 12);
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="🏆 বেস্টসেলার" sub="সবচেয়ে বেশি বিক্রিত" />
+      <Back href={base} label={L("Home", "হোম")} />
+      <SectionTitle t={L("🏆 Bestsellers", "🏆 বেস্টসেলার")} sub={L("Best selling", "সবচেয়ে বেশি বিক্রিত")} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((p) => <ProductCard key={p.id} p={p} />)}
       </div>

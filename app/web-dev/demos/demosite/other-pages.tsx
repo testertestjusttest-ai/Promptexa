@@ -13,6 +13,7 @@ import { useDemo, type DemoStore } from "./store";
 import type { DemoSiteDef, DemoServiceItem, DemoGalleryItem, DemoNewsItem } from "./types";
 import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero, bannerSlides } from "./ui";
 import { ShopLogin, ShopSignup, ShopAccount } from "./shop-pages";
+import { useDemoLangOpt } from "./demo-lang";
 
 /* ================= auth aliases (reuse shop auth — no duplicates) ================= */
 export const SvcLogin = ShopLogin;
@@ -27,6 +28,25 @@ export const BookAccount = ShopAccount;
 export const NewsLogin = ShopLogin;
 export const NewsSignup = ShopSignup;
 export const NewsAccount = ShopAccount;
+
+
+/** Phase 8: English by default via the demo-lang provider; Bangla only when
+ *  the visitor switched to Bangla. No provider (legacy demo) keeps the
+ *  original Bangla strings — same convention as chrome.tsx.
+ *  dig() renders Latin digits in English/Hindi view, Bangla digits otherwise. */
+function useDL() {
+  const dl = useDemoLangOpt();
+  const lang = dl?.lang ?? "bn";
+  return {
+    lang,
+    L: (en: string, bn: string) => (dl ? dl.L(en, bn) : bn),
+    dig: (v: string | number) => {
+      const str = String(v);
+      return lang === "bn" ? toBnDigits(str) : str;
+    },
+    cur: lang === "bn" ? "টাকা" : "Tk",
+  };
+}
 
 /* ================= shared helpers ================= */
 
@@ -110,23 +130,26 @@ function Sel({ dark, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> &
 }
 
 const BN_DAYS = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহস্পতি", "শুক্র", "শনি"];
+const EN_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function nextDays(n: number) {
+function nextDays(n: number, lang: string = "bn") {
   const out: { d: Date; label: string; day: string }[] = [];
   for (let i = 0; i < n; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
     out.push({
       d,
-      label: d.toLocaleDateString("bn-BD", { day: "numeric", month: "short" }),
-      day: i === 0 ? "আজ" : i === 1 ? "আগামীকাল" : BN_DAYS[d.getDay()],
+      label: d.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", { day: "numeric", month: "short" }),
+      day: lang === "bn"
+        ? (i === 0 ? "আজ" : i === 1 ? "আগামীকাল" : BN_DAYS[d.getDay()])
+        : (i === 0 ? "Today" : i === 1 ? "Tomorrow" : EN_DAYS[d.getDay()]),
     });
   }
   return out;
 }
 
-function bnLong(d: Date) {
-  return d.toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" });
+function bnLong(d: Date, lang: string = "bn") {
+  return d.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function myBookings(store: DemoStore) {
@@ -143,6 +166,7 @@ function StatusBadge({ s }: { s: string }) {
 }
 
 function BookingRow({ b, dark }: { b: DemoStore["bookings"][number]; dark: boolean }) {
+  const { dig, cur } = useDL();
   return (
     <div className={cardCls({ dark } as DemoSiteDef)}>
       <div className="flex items-center justify-between gap-2">
@@ -156,7 +180,7 @@ function BookingRow({ b, dark }: { b: DemoStore["bookings"][number]; dark: boole
         📅 {b.date}
         {b.slot ? ` • ⏰ ${b.slot}` : ""} • 👤 {b.name} • 📞 {b.phone}
       </p>
-      <p className="mt-1 text-sm font-black">{toBnDigits(b.total.toLocaleString("en-IN"))} টাকা</p>
+      <p className="mt-1 text-sm font-black">{dig(b.total.toLocaleString("en-IN"))} {cur}</p>
     </div>
   );
 }
@@ -279,6 +303,7 @@ function ContactBody() {
 
 function ServiceCard({ s }: { s: DemoServiceItem }) {
   const { def, base } = useDemo();
+  const { L, lang } = useDL();
   return (
     <Link href={`${base}/s/${s.id}`} className={`${cardCls(def)} group block transition hover:-translate-y-1 hover:shadow-xl`}>
       <div className="flex items-start gap-3">
@@ -287,7 +312,7 @@ function ServiceCard({ s }: { s: DemoServiceItem }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-bold">{s.n}</p>
-          <Stars rating={s.rating} />
+          <Stars rating={s.rating} en={lang !== "bn"} />
           <p className={`mt-0.5 text-xs ${subCls(def)}`}>⏱️ {s.duration}</p>
         </div>
       </div>
@@ -295,7 +320,7 @@ function ServiceCard({ s }: { s: DemoServiceItem }) {
       {s.c && <p className="mt-2"><span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ background: `${def.accent}18`, color: def.accent }}>{s.c}</span></p>}
       <div className="mt-2 flex items-center justify-between">
         <Price v={s.p} accent={def.accent} />
-        <span className="text-xs font-bold opacity-70 group-hover:opacity-100">বিস্তারিত →</span>
+        <span className="text-xs font-bold opacity-70 group-hover:opacity-100">{L("Details →", "বিস্তারিত →")}</span>
       </div>
     </Link>
   );
@@ -303,31 +328,32 @@ function ServiceCard({ s }: { s: DemoServiceItem }) {
 
 export function SvcHome() {
   const { def, base, store } = useDemo();
+  const { L } = useDL();
   const banners = bannerSlides();
   const steps: [string, string, string][] = [
-    ["1️⃣", "সার্ভিস বেছে নিন", "পছন্দের সার্ভিসে ক্লিক করে বিস্তারিত দেখুন"],
-    ["2️⃣", "তারিখ ও সময় দিন", "সুবিধামতো দিন ও স্লট সিলেক্ট করুন"],
-    ["3️⃣", "বুকিং কনফার্ম", "নাম-মোবাইল দিয়ে বুকিং সম্পন্ন করুন"],
+    ["1️⃣", L("Choose a service", "সার্ভিস বেছে নিন"), L("Click a service to see details", "পছন্দের সার্ভিসে ক্লিক করে বিস্তারিত দেখুন")],
+    ["2️⃣", L("Pick date & time", "তারিখ ও সময় দিন"), L("Choose a convenient day and slot", "সুবিধামতো দিন ও স্লট সিলেক্ট করুন")],
+    ["3️⃣", L("Confirm booking", "বুকিং কনফার্ম"), L("Complete booking with name and mobile", "নাম-মোবাইল দিয়ে বুকিং সম্পন্ন করুন")],
   ];
   return (
     <>
       <Hero
         accent={def.accent}
         slides={[
-          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛠️ সার্ভিস দেখুন", href: "/services", grad: def.grad },
-          { emoji: "📅", title: "অনলাইনে বুকিং করুন", sub: "পছন্দের তারিখ ও সময় বেছে নিন — কনফার্মেশন সাথে সাথে", cta: "📅 বুক করুন", href: "/services", grad: def.grad },
-          { emoji: "⭐", title: "সন্তুষ্ট গ্রাহকদের পছন্দ", sub: "রিভিউ পড়ে নিশ্চিন্তে সার্ভিস নিন", cta: "⭐ রিভিউ দেখুন", href: "/reviews", grad: def.grad },
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: L("🛠️ View services", "🛠️ সার্ভিস দেখুন"), href: "/services", grad: def.grad },
+          { emoji: "📅", title: L("Book online", "অনলাইনে বুকিং করুন"), sub: L("Pick your preferred date and time — confirmation right away", "পছন্দের তারিখ ও সময় বেছে নিন — কনফার্মেশন সাথে সাথে"), cta: L("📅 Book now", "📅 বুক করুন"), href: "/services", grad: def.grad },
+          { emoji: "⭐", title: L("Loved by happy customers", "সন্তুষ্ট গ্রাহকদের পছন্দ"), sub: L("Read reviews and book with confidence", "রিভিউ পড়ে নিশ্চিন্তে সার্ভিস নিন"), cta: L("⭐ See reviews", "⭐ রিভিউ দেখুন"), href: "/reviews", grad: def.grad },
           ...banners,
         ]}
       />
       <Page>
-        <SectionTitle t="🔥 জনপ্রিয় সার্ভিস" link={`${base}/services`} />
+        <SectionTitle t={L("🔥 Popular services", "🔥 জনপ্রিয় সার্ভিস")} link={`${base}/services`} />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {def.services.slice(0, 4).map((s) => <ServiceCard key={s.id} s={s} />)}
         </div>
 
         <div className="mt-10">
-          <SectionTitle t="⚙️ কীভাবে কাজ করে" />
+          <SectionTitle t={L("⚙️ How it works", "⚙️ কীভাবে কাজ করে")} />
           <div className="grid gap-3 sm:grid-cols-3">
             {steps.map(([e, t, d]) => (
               <div key={t} className={`${cardCls(def)} text-center`}>
@@ -341,17 +367,17 @@ export function SvcHome() {
 
         <div className={`${cardCls(def)} mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row`}>
           <div>
-            <p className="text-lg font-black">⭐ গ্রাহকরা যা বলছেন</p>
-            <p className={`mt-1 text-sm ${subCls(def)}`}>শত শত সন্তুষ্ট গ্রাহকের রিভিউ পড়ুন</p>
+            <p className="text-lg font-black">{L("⭐ What customers say", "⭐ গ্রাহকরা যা বলছেন")}</p>
+            <p className={`mt-1 text-sm ${subCls(def)}`}>{L("Read reviews from hundreds of happy customers", "শত শত সন্তুষ্ট গ্রাহকের রিভিউ পড়ুন")}</p>
           </div>
-          <Cta href={`${base}/reviews`} accent={def.accent} small>রিভিউ দেখুন →</Cta>
+          <Cta href={`${base}/reviews`} accent={def.accent} small>{L("See reviews →", "রিভিউ দেখুন →")}</Cta>
         </div>
 
         <div className="mt-10 rounded-3xl bg-gradient-to-br from-black/60 to-black/30 p-8 text-center text-white" style={{ background: `linear-gradient(135deg, ${def.accent}55, transparent)` }}>
-          <p className="text-2xl font-black">আজই সার্ভিস বুক করুন</p>
-          <p className="mt-1 text-sm opacity-80">দ্রুত, নির্ভরযোগ্য ও প্রফেশনাল</p>
+          <p className="text-2xl font-black">{L("Book a service today", "আজই সার্ভিস বুক করুন")}</p>
+          <p className="mt-1 text-sm opacity-80">{L("Fast, reliable & professional", "দ্রুত, নির্ভরযোগ্য ও প্রফেশনাল")}</p>
           <div className="mt-4 flex justify-center">
-            <Cta href={`${base}/services`} accent={def.accent}>🚀 শুরু করুন</Cta>
+            <Cta href={`${base}/services`} accent={def.accent}>{L("🚀 Get started", "🚀 শুরু করুন")}</Cta>
           </div>
         </div>
       </Page>
@@ -361,6 +387,7 @@ export function SvcHome() {
 
 export function SvcList() {
   const { def, base } = useDemo();
+  const { L, dig } = useDL();
   const [cat, setCat] = useState("All");
   // Phase 4: filter by service category. Categories come from the services
   // themselves (their `c` field); demos whose services carry no category
@@ -369,9 +396,9 @@ export function SvcList() {
   const shown = cat === "All" ? def.services : def.services.filter((s) => s.c === cat);
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">🛠️ সব সার্ভিস</h1>
-      <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(def.services.length)}টি সার্ভিস রয়েছে</p>
+      <Back href={base} label={L("Home", "হোম")} />
+      <h1 className="text-2xl font-black">{L("🛠️ All services", "🛠️ সব সার্ভিস")}</h1>
+      <p className={`mt-1 text-sm ${subCls(def)}`}>{dig(def.services.length)} {L("services available", "টি সার্ভিস রয়েছে")}</p>
       {cats.length > 1 && (
         <div className="mt-4 flex flex-wrap gap-2">
           {cats.map((c) => (
@@ -394,39 +421,40 @@ export function SvcList() {
 
 export function SvcDetail({ id }: { id: string }) {
   const { def, base } = useDemo();
+  const { L, lang } = useDL();
   const s = def.services.find((x) => x.id === id);
-  if (!s) return <Page><Empty emoji="😅" text="সার্ভিস পাওয়া যায়নি" /></Page>;
+  if (!s) return <Page><Empty emoji="😅" text={L("Service not found", "সার্ভিস পাওয়া যায়নি")} /></Page>;
   const feats = [
-    `✅ ${s.n} — প্রশিক্ষিত প্রফেশনাল টিম`,
-    `✅ সময়কাল: ${s.duration}`,
-    "✅ স্বচ্ছ মূল্য — কোনো লুকানো চার্জ নেই",
-    "✅ কাজ শেষে ফ্রি ফলো-আপ সাপোর্ট",
+    L(`✅ ${s.n} — trained professional team`, `✅ ${s.n} — প্রশিক্ষিত প্রফেশনাল টিম`),
+    L(`✅ Duration: ${s.duration}`, `✅ সময়কাল: ${s.duration}`),
+    L("✅ Transparent pricing — no hidden charges", "✅ স্বচ্ছ মূল্য — কোনো লুকানো চার্জ নেই"),
+    L("✅ Free follow-up support after the work is done", "✅ কাজ শেষে ফ্রি ফলো-আপ সাপোর্ট"),
   ];
   const related = def.services.filter((x) => x.id !== s.id).slice(0, 3);
   return (
     <Page narrow>
-      <Back href={`${base}/services`} label="সার্ভিস" />
+      <Back href={`${base}/services`} label={L("Services", "সার্ভিস")} />
       <div className="grid place-items-center rounded-3xl p-10 text-8xl" style={{ background: `${def.accent}15` }}>
         {s.e}
       </div>
       <h1 className="mt-4 text-2xl font-black">{s.n}</h1>
       <div className="mt-1 flex items-center gap-3">
-        <Stars rating={s.rating} />
+        <Stars rating={s.rating} en={lang !== "bn"} />
         <span className={`text-xs ${subCls(def)}`}>⏱️ {s.duration}</span>
       </div>
       <div className="mt-2"><Price v={s.p} accent={def.accent} big /></div>
       <p className={`mt-3 text-sm leading-relaxed ${subCls(def)}`}>{s.desc}</p>
       <div className={`${cardCls(def)} mt-4`}>
-        <p className="mb-2 font-bold">✨ যা যা পাবেন</p>
+        <p className="mb-2 font-bold">{L("✨ What you get", "✨ যা যা পাবেন")}</p>
         <ul className="space-y-1.5 text-sm">{feats.map((f) => <li key={f}>{f}</li>)}</ul>
       </div>
       <div className="mt-5 grid grid-cols-2 gap-2">
-        <Cta href={`${base}/book/${s.id}`} accent={def.accent}>📅 বুক করুন</Cta>
-        <Cta href={`${base}/contact`} accent={def.accent} ghost>💬 জিজ্ঞাসা করুন</Cta>
+        <Cta href={`${base}/book/${s.id}`} accent={def.accent}>{L("📅 Book now", "📅 বুক করুন")}</Cta>
+        <Cta href={`${base}/contact`} accent={def.accent} ghost>{L("💬 Ask a question", "💬 জিজ্ঞাসা করুন")}</Cta>
       </div>
       {related.length > 0 && (
         <div className="mt-8">
-          <SectionTitle t="🔗 অন্যান্য সার্ভিস" />
+          <SectionTitle t={L("🔗 Other services", "🔗 অন্যান্য সার্ভিস")} />
           <div className="grid gap-3 sm:grid-cols-3">
             {related.map((r) => <ServiceCard key={r.id} s={r} />)}
           </div>
@@ -436,12 +464,15 @@ export function SvcDetail({ id }: { id: string }) {
   );
 }
 
-const SLOTS = ["সকাল ৯টা", "সকাল ১১টা", "দুপুর ২টা", "বিকাল ৪টা", "সন্ধ্যা ৬টা"];
+/* Phase 8: time slots are built inside SvcBook via L() so the stored slot
+ *  matches the language the visitor booked in. */
 
 export function SvcBook({ id }: { id: string }) {
   const { def, base, store } = useDemo();
+  const { L, lang } = useDL();
   const s = def.services.find((x) => x.id === id);
-  const days = nextDays(7);
+  const days = nextDays(7, lang);
+  const SLOTS = [L("9:00 AM", "সকাল ৯টা"), L("11:00 AM", "সকাল ১১টা"), L("2:00 PM", "দুপুর ২টা"), L("4:00 PM", "বিকাল ৪টা"), L("6:00 PM", "সন্ধ্যা ৬টা")];
   const [day, setDay] = useState(0);
   const [slot, setSlot] = useState(SLOTS[0]);
   const [name, setName] = useState(store.user?.name ?? "");
@@ -460,7 +491,7 @@ export function SvcBook({ id }: { id: string }) {
     const rec = store.placeBooking({
       itemName: s!.n,
       itemEmoji: s!.e,
-      date: bnLong(days[day].d),
+      date: bnLong(days[day].d, lang),
       slot,
       name: name.trim(),
       phone: phone.trim(),
@@ -480,7 +511,7 @@ export function SvcBook({ id }: { id: string }) {
             <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
             <p className="mt-2 text-sm">{s.e} {s.n}</p>
-            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d)} • ⏰ {slot}</p>
+            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d, lang)} • ⏰ {slot}</p>
             <p className="mt-1 font-black">{s.p.toLocaleString("en-IN")} Tk</p>
           </div>
           <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 Demo booking — on the real site an SMS confirmation will be sent</p>
@@ -661,15 +692,16 @@ function GalCard({ g }: { g: DemoGalleryItem }) {
 
 export function GalHome() {
   const { def, base, store } = useDemo();
+  const { L, dig, cur } = useDL();
   const banners = bannerSlides();
   return (
     <>
       <Hero
         accent={def.accent}
         slides={[
-          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🖼️ গ্যালারি দেখুন", href: "/gallery", grad: def.grad },
-          { emoji: "💰", title: "স্বচ্ছ প্রাইসিং", sub: "প্যাকেজ দেখে বাজেট অনুযায়ী বেছে নিন", cta: "💰 প্রাইসিং", href: "/pricing", grad: def.grad },
-          { emoji: "📸", title: "আপনার ইভেন্টের জন্য বুক করুন", sub: "তারিখ কনফার্ম করুন মিনিটেই", cta: "📸 বুক করুন", href: "/book", grad: def.grad },
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: L("🖼️ View gallery", "🖼️ গ্যালারি দেখুন"), href: "/gallery", grad: def.grad },
+          { emoji: "💰", title: L("Transparent pricing", "স্বচ্ছ প্রাইসিং"), sub: L("Pick a package that fits your budget", "প্যাকেজ দেখে বাজেট অনুযায়ী বেছে নিন"), cta: L("💰 Pricing", "💰 প্রাইসিং"), href: "/pricing", grad: def.grad },
+          { emoji: "📸", title: L("Book for your event", "আপনার ইভেন্টের জন্য বুক করুন"), sub: L("Confirm your date in minutes", "তারিখ কনফার্ম করুন মিনিটেই"), cta: L("📸 Book now", "📸 বুক করুন"), href: "/book", grad: def.grad },
           ...banners,
         ]}
       />
@@ -690,16 +722,16 @@ export function GalHome() {
         </div>
         <div className={`${cardCls(def)} mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row`}>
           <div>
-            <p className="text-lg font-black">💰 প্যাকেজ ও মূল্য</p>
-            <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(5000)} টাকা থেকে শুরু</p>
+            <p className="text-lg font-black">{L("💰 Packages & pricing", "💰 প্যাকেজ ও মূল্য")}</p>
+            <p className={`mt-1 text-sm ${subCls(def)}`}>{L(`Starting from ${dig("5,000")} ${cur}`, `${dig("5,000")} টাকা থেকে শুরু`)}</p>
           </div>
-          <Cta href={`${base}/pricing`} accent={def.accent} small>প্যাকেজ দেখুন →</Cta>
+          <Cta href={`${base}/pricing`} accent={def.accent} small>{L("See packages →", "প্যাকেজ দেখুন →")}</Cta>
         </div>
         <div className="mt-8 rounded-3xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg, ${def.accent}66, transparent)` }}>
-          <p className="text-2xl font-black">📸 আপনার মুহূর্ত, আমাদের লেন্সে</p>
-          <p className="mt-1 text-sm opacity-80">আজই সেশন বুক করুন</p>
+          <p className="text-2xl font-black">{L("📸 Your moments, through our lens", "📸 আপনার মুহূর্ত, আমাদের লেন্সে")}</p>
+          <p className="mt-1 text-sm opacity-80">{L("Book a session today", "আজই সেশন বুক করুন")}</p>
           <div className="mt-4 flex justify-center">
-            <Cta href={`${base}/book`} accent={def.accent}>বুক করুন</Cta>
+            <Cta href={`${base}/book`} accent={def.accent}>{L("Book now", "বুক করুন")}</Cta>
           </div>
         </div>
       </Page>
@@ -709,14 +741,15 @@ export function GalHome() {
 
 function GalGridInner() {
   const { def, base } = useDemo();
+  const { L } = useDL();
   const sp = useSearchParams();
   const cat = sp.get("cat") ?? "সব";
   const cats = ["সব", ...def.cats];
   const items = cat === "সব" ? def.gallery : def.gallery.filter((g) => g.c === cat);
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">🖼️ গ্যালারি</h1>
+      <Back href={base} label={L("Home", "হোম")} />
+      <h1 className="text-2xl font-black">{L("🖼️ Gallery", "🖼️ গ্যালারি")}</h1>
       <div className="mb-4 mt-3 flex flex-wrap gap-2">
         {cats.map((c) => (
           <Link
@@ -730,7 +763,7 @@ function GalGridInner() {
         ))}
       </div>
       {items.length === 0 ? (
-        <Empty emoji="🖼️" text="এই ক্যাটাগরিতে ছবি নেই" />
+        <Empty emoji="🖼️" text={L("No photos in this category", "এই ক্যাটাগরিতে ছবি নেই")} />
       ) : (
         <div className="columns-2 gap-3 space-y-3 sm:columns-3">
           {items.map((g) => <GalCard key={g.id} g={g} />)}
@@ -741,8 +774,9 @@ function GalGridInner() {
 }
 
 export function GalGrid() {
+  const { L } = useDL();
   return (
-    <Suspense fallback={<Page><p className="py-10 text-center text-sm opacity-60">লোড হচ্ছে…</p></Page>}>
+    <Suspense fallback={<Page><p className="py-10 text-center text-sm opacity-60">{L("Loading…", "লোড হচ্ছে…")}</p></Page>}>
       <GalGridInner />
     </Suspense>
   );
@@ -750,12 +784,13 @@ export function GalGrid() {
 
 export function GalDetail({ id }: { id: string }) {
   const { def, base } = useDemo();
+  const { L } = useDL();
   const g = def.gallery.find((x) => x.id === id);
-  if (!g) return <Page><Empty emoji="😅" text="ছবি পাওয়া যায়নি" /></Page>;
+  if (!g) return <Page><Empty emoji="😅" text={L("Photo not found", "ছবি পাওয়া যায়নি")} /></Page>;
   const related = def.gallery.filter((x) => x.id !== g.id && x.c === g.c).slice(0, 3);
   return (
     <Page narrow>
-      <Back href={`${base}/gallery`} label="গ্যালারি" />
+      <Back href={`${base}/gallery`} label={L("Gallery", "গ্যালারি")} />
       <div className={`relative grid place-items-center overflow-hidden rounded-3xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
         {def.heroImg && <img src={def.heroImg} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />}
         <div className="relative p-16 text-9xl drop-shadow-lg">{g.e}</div>
@@ -763,15 +798,15 @@ export function GalDetail({ id }: { id: string }) {
       <h1 className="mt-4 text-2xl font-black">{g.t}</h1>
       <p className={`mt-1 text-sm ${subCls(def)}`}>🏷️ {g.c}</p>
       <p className={`mt-3 text-sm leading-relaxed ${subCls(def)}`}>
-        এই ধরনের শুটের জন্য আমাদের টিম প্রস্তুত। প্যাকেজ দেখে পছন্দমতো সেশন বুক করুন — প্রফেশনাল এডিটিংসহ ডেলিভারি।
+        {L("Our team is ready for this kind of shoot. Pick a package and book your preferred session — delivery with professional editing.", "এই ধরনের শুটের জন্য আমাদের টিম প্রস্তুত। প্যাকেজ দেখে পছন্দমতো সেশন বুক করুন — প্রফেশনাল এডিটিংসহ ডেলিভারি।")}
       </p>
       <div className="mt-5 grid grid-cols-2 gap-2">
-        <Cta href={`${base}/book`} accent={def.accent}>📸 বুকিং করুন</Cta>
-        <Cta href={`${base}/pricing`} accent={def.accent} ghost>💰 প্যাকেজ</Cta>
+        <Cta href={`${base}/book`} accent={def.accent}>{L("📸 Book now", "📸 বুকিং করুন")}</Cta>
+        <Cta href={`${base}/pricing`} accent={def.accent} ghost>{L("💰 Packages", "💰 প্যাকেজ")}</Cta>
       </div>
       {related.length > 0 && (
         <div className="mt-8">
-          <SectionTitle t="🔗 একই ক্যাটাগরি" />
+          <SectionTitle t={L("🔗 Same category", "🔗 একই ক্যাটাগরি")} />
           <div className="columns-2 gap-3 space-y-3">
             {related.map((r) => <GalCard key={r.id} g={r} />)}
           </div>
@@ -781,19 +816,20 @@ export function GalDetail({ id }: { id: string }) {
   );
 }
 
-const GAL_PKGS = [
-  { id: "basic", n: "বেসিক", p: 5000, f: ["২ ঘণ্টা ফটোশুট", "২০টি এডিটেড ছবি", "অনলাইন গ্যালারি"] },
-  { id: "standard", n: "স্ট্যান্ডার্ড", p: 12000, f: ["৫ ঘণ্টা ফটোশুট", "৬০টি এডিটেড ছবি", "প্রিমিয়াম অ্যালবাম", "অনলাইন গ্যালারি"], hot: true },
-  { id: "premium", n: "প্রিমিয়াম", p: 25000, f: ["সারাদিন শুট", "২০০+ এডিটেড ছবি", "প্রিমিয়াম অ্যালবাম", "ভিডিও হাইলাইট", "ড্রোন শট"] },
+const GAL_PKGS: { id: string; n: [string, string]; p: number; f: [string, string][]; hot?: boolean }[] = [
+  { id: "basic", n: ["Basic", "বেসিক"], p: 5000, f: [["2 hours photoshoot", "২ ঘণ্টা ফটোশুট"], ["20 edited photos", "২০টি এডিটেড ছবি"], ["Online gallery", "অনলাইন গ্যালারি"]] },
+  { id: "standard", n: ["Standard", "স্ট্যান্ডার্ড"], p: 12000, f: [["5 hours photoshoot", "৫ ঘণ্টা ফটোশুট"], ["60 edited photos", "৬০টি এডিটেড ছবি"], ["Premium album", "প্রিমিয়াম অ্যালবাম"], ["Online gallery", "অনলাইন গ্যালারি"]], hot: true },
+  { id: "premium", n: ["Premium", "প্রিমিয়াম"], p: 25000, f: [["Full-day shoot", "সারাদিন শুট"], ["200+ edited photos", "২০০+ এডিটেড ছবি"], ["Premium album", "প্রিমিয়াম অ্যালবাম"], ["Video highlight", "ভিডিও হাইলাইট"], ["Drone shot", "ড্রোন শট"]] },
 ];
 
 export function GalPricing() {
   const { def, base } = useDemo();
+  const { L } = useDL();
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">💰 প্যাকেজ ও মূল্য</h1>
-      <p className={`mt-1 text-sm ${subCls(def)}`}>পছন্দের প্যাকেজ বেছে নিয়ে বুক করুন</p>
+      <Back href={base} label={L("Home", "হোম")} />
+      <h1 className="text-2xl font-black">{L("💰 Packages & pricing", "💰 প্যাকেজ ও মূল্য")}</h1>
+      <p className={`mt-1 text-sm ${subCls(def)}`}>{L("Pick your favourite package and book", "পছন্দের প্যাকেজ বেছে নিয়ে বুক করুন")}</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {GAL_PKGS.map((p) => (
           <div
@@ -803,16 +839,16 @@ export function GalPricing() {
           >
             {p.hot && (
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-black text-white" style={{ background: def.accent }}>
-                🔥 জনপ্রিয়
+                {L("🔥 Popular", "🔥 জনপ্রিয়")}
               </span>
             )}
-            <p className="text-lg font-black">{p.n}</p>
+            <p className="text-lg font-black">{L(p.n[0], p.n[1])}</p>
             <p className="mt-1"><Price v={p.p} accent={def.accent} big /></p>
             <ul className="mt-3 space-y-1.5 text-xs">
-              {p.f.map((f) => <li key={f}>✓ {f}</li>)}
+              {p.f.map(([en, bn]) => <li key={en}>✓ {L(en, bn)}</li>)}
             </ul>
             <div className="mt-4">
-              <Cta href={`${base}/book?pkg=${p.id}`} accent={def.accent} small>📸 বুক করুন</Cta>
+              <Cta href={`${base}/book?pkg=${p.id}`} accent={def.accent} small>{L("📸 Book now", "📸 বুক করুন")}</Cta>
             </div>
           </div>
         ))}
@@ -823,9 +859,10 @@ export function GalPricing() {
 
 function GalBookInner() {
   const { def, base, store } = useDemo();
+  const { L, lang } = useDL();
   const sp = useSearchParams();
   const pkg = GAL_PKGS.find((p) => p.id === sp.get("pkg")) ?? GAL_PKGS[1];
-  const days = nextDays(14);
+  const days = nextDays(14, lang);
   const [etype, setEtype] = useState("Wedding");
   const [day, setDay] = useState(3);
   const [name, setName] = useState(store.user?.name ?? "");
@@ -838,9 +875,9 @@ function GalBookInner() {
     if (name.trim().length < 3) return setErr("Enter your name");
     if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("Enter a valid 11-digit mobile number");
     const rec = store.placeBooking({
-      itemName: `${pkg.n} Package — ${etype}`,
+      itemName: `${L(pkg.n[0], pkg.n[1])} Package — ${etype}`,
       itemEmoji: "📸",
-      date: bnLong(days[day].d),
+      date: bnLong(days[day].d, lang),
       slot: etype,
       name: name.trim(),
       phone: phone.trim(),
@@ -858,8 +895,8 @@ function GalBookInner() {
           <div className={`mx-auto mt-4 max-w-xs rounded-2xl p-4 text-left ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
-            <p className="mt-2 text-sm">📸 {pkg.n} Package — {etype}</p>
-            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d)}</p>
+            <p className="mt-2 text-sm">📸 {L(pkg.n[0], pkg.n[1])} Package — {etype}</p>
+            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d, lang)}</p>
             <p className="mt-1 font-black">{pkg.p.toLocaleString("en-IN")} Tk</p>
           </div>
           <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 Demo booking — on the real site we will call to confirm</p>
@@ -877,7 +914,7 @@ function GalBookInner() {
       <Back href={`${base}/pricing`} label="Package" />
       <h1 className="text-2xl font-black">📸 Book a session</h1>
       <div className={`${cardCls(def)} mt-4 flex items-center justify-between`}>
-        <span className="font-bold">{pkg.n} Package</span>
+        <span className="font-bold">{L(pkg.n[0], pkg.n[1])} Package</span>
         <Price v={pkg.p} accent={def.accent} />
       </div>
       <div className="mt-4 space-y-3">
@@ -890,7 +927,7 @@ function GalBookInner() {
         <div>
           <p className="mb-1.5 text-sm font-bold">📆 Date</p>
           <Sel dark={def.dark} value={day} onChange={(e) => setDay(Number(e.target.value))}>
-            {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
+            {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d, lang)}</option>)}
           </Sel>
         </div>
         <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
@@ -906,8 +943,9 @@ function GalBookInner() {
 }
 
 export function GalBook() {
+  const { L } = useDL();
   return (
-    <Suspense fallback={<Page><p className="py-10 text-center text-sm opacity-60">লোড হচ্ছে…</p></Page>}>
+    <Suspense fallback={<Page><p className="py-10 text-center text-sm opacity-60">{L("Loading…", "লোড হচ্ছে…")}</p></Page>}>
       <GalBookInner />
     </Suspense>
   );
@@ -924,10 +962,11 @@ export function GalContact() {
    BOOKING layout (hotel / tour stays — products reused as listings)
 ================================================================ */
 
-const AMENITIES = ["📶 ফ্রি WiFi", "🅿️ ফ্রি পার্কিং", "🍳 কমপ্লিমেন্টারি ব্রেকফাস্ট", "🏊 সুইমিং পুল", "❄️ এসি রুম", "📺 স্মার্ট টিভি"];
+const AMENITIES: [string, string][] = [["📶 Free WiFi", "📶 ফ্রি WiFi"], ["🅿️ Free parking", "🅿️ ফ্রি পার্কিং"], ["🍳 Complimentary breakfast", "🍳 কমপ্লিমেন্টারি ব্রেকফাস্ট"], ["🏊 Swimming pool", "🏊 সুইমিং পুল"], ["❄️ AC room", "❄️ এসি রুম"], ["📺 Smart TV", "📺 স্মার্ট টিভি"]];
 
 export function BookHome() {
   const { def, base, store } = useDemo();
+  const { L, dig } = useDL();
   const banners = bannerSlides();
   const [loc, setLoc] = useState("");
   const [guests, setGuests] = useState(2);
@@ -937,20 +976,20 @@ export function BookHome() {
       <Hero
         accent={def.accent}
         slides={[
-          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🏨 লিস্টিং দেখুন", href: "/stays", grad: def.grad },
-          { emoji: "💳", title: "সহজ বুকিং, নিরাপদ পেমেন্ট", sub: "অনলাইনে বুক করে নিশ্চিন্তে ঘুরুন", cta: "📅 বুক করুন", href: "/stays", grad: def.grad },
+          { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: L("🏨 View listings", "🏨 লিস্টিং দেখুন"), href: "/stays", grad: def.grad },
+          { emoji: "💳", title: L("Easy booking, secure payment", "সহজ বুকিং, নিরাপদ পেমেন্ট"), sub: L("Book online and travel with peace of mind", "অনলাইনে বুক করে নিশ্চিন্তে ঘুরুন"), cta: L("📅 Book now", "📅 বুক করুন"), href: "/stays", grad: def.grad },
           ...banners,
         ]}
       />
       <div className="px-4">
         <div className="mx-auto -mt-2 max-w-4xl text-center">
           <div className={`mx-auto mt-6 max-w-2xl rounded-3xl p-4 text-left ${def.dark ? "bg-black/40" : "bg-white/90 shadow-xl"}`}>
-            <F dark={def.dark} value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="📍 কোথায় যেতে চান? (যেমন: কক্সবাজার)" />
+            <F dark={def.dark} value={loc} onChange={(e) => setLoc(e.target.value)} placeholder={L("📍 Where do you want to go? (e.g. Cox's Bazar)", "📍 কোথায় যেতে চান? (যেমন: কক্সবাজার)")} />
             <div className="mt-3 flex items-center justify-between rounded-2xl px-1">
-              <span className={`text-sm font-bold ${def.dark ? "text-white" : "text-slate-700"}`}>👥 অতিথি</span>
+              <span className={`text-sm font-bold ${def.dark ? "text-white" : "text-slate-700"}`}>{L("👥 Guests", "👥 অতিথি")}</span>
               <div className="flex items-center gap-3">
                 <button onClick={() => setGuests((g) => Math.max(1, g - 1))} className="grid h-9 w-9 place-items-center rounded-full bg-black/20 text-lg font-black text-white">−</button>
-                <span className={`text-lg font-black ${def.dark ? "text-white" : "text-slate-800"}`}>{toBnDigits(guests)}</span>
+                <span className={`text-lg font-black ${def.dark ? "text-white" : "text-slate-800"}`}>{dig(guests)}</span>
                 <button onClick={() => setGuests((g) => Math.min(10, g + 1))} className="grid h-9 w-9 place-items-center rounded-full bg-black/20 text-lg font-black text-white">+</button>
               </div>
             </div>
@@ -959,18 +998,18 @@ export function BookHome() {
               className="btn-demo mt-3 block w-full !py-3.5 text-center text-base"
               style={{ background: def.accent }}
             >
-              🔍 খুঁজুন
+              {L("🔍 Search", "🔍 খুঁজুন")}
             </Link>
           </div>
         </div>
       </div>
       <Page>
-        <SectionTitle t="⭐ ফিচার্ড স্টে" sub="সবচেয়ে জনপ্রিয়" link={`${base}/stays`} />
+        <SectionTitle t={L("⭐ Featured stays", "⭐ ফিচার্ড স্টে")} sub={L("Most popular", "সবচেয়ে জনপ্রিয়")} link={`${base}/stays`} />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {feat.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          {[["💳", "সহজ পেমেন্ট", "বিকাশ/কার্ড/ক্যাশ"], ["🛡️", "নিরাপদ বুকিং", "কনফার্মেশন গ্যারান্টি"], ["🎧", "২৪/৭ সাপোর্ট", "যেকোনো সময় কল করুন"]].map(([e, t, d]) => (
+          {[["💳", L("Easy payment", "সহজ পেমেন্ট"), L("bKash/card/cash", "বিকাশ/কার্ড/ক্যাশ")], ["🛡️", L("Secure booking", "নিরাপদ বুকিং"), L("Confirmation guaranteed", "কনফার্মেশন গ্যারান্টি")], ["🎧", L("24/7 support", "২৪/৭ সাপোর্ট"), L("Call any time", "যেকোনো সময় কল করুন")]].map(([e, t, d]) => (
             <div key={t} className={`${cardCls(def)} text-center`}>
               <p className="text-3xl">{e}</p>
               <p className="mt-1 font-bold">{t}</p>
@@ -979,8 +1018,8 @@ export function BookHome() {
           ))}
         </div>
         <div className="mt-8 flex justify-center gap-2">
-          <Cta href={`${base}/stays`} accent={def.accent}>🏨 সব স্টে দেখুন</Cta>
-          <Cta href={`${base}/my`} accent={def.accent} ghost>📋 আমার বুকিং</Cta>
+          <Cta href={`${base}/stays`} accent={def.accent}>{L("🏨 View all stays", "🏨 সব স্টে দেখুন")}</Cta>
+          <Cta href={`${base}/my`} accent={def.accent} ghost>{L("📋 My bookings", "📋 আমার বুকিং")}</Cta>
         </div>
       </Page>
     </>
@@ -989,11 +1028,12 @@ export function BookHome() {
 
 export function BookStays() {
   const { def, base } = useDemo();
+  const { L, dig } = useDL();
   return (
     <Page>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">🏨 সব স্টে</h1>
-      <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(def.products.length)}টি অপশন</p>
+      <Back href={base} label={L("Home", "হোম")} />
+      <h1 className="text-2xl font-black">{L("🏨 All stays", "🏨 সব স্টে")}</h1>
+      <p className={`mt-1 text-sm ${subCls(def)}`}>{dig(def.products.length)} {L("options", "টি অপশন")}</p>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {def.products.map((p) => <ProductCard key={p.id} p={p} />)}
       </div>
@@ -1003,35 +1043,36 @@ export function BookStays() {
 
 export function BookDetail({ id }: { id: string }) {
   const { def, base } = useDemo();
+  const { L, lang } = useDL();
   const p = def.products.find((x) => x.id === id);
-  if (!p) return <Page><Empty emoji="😅" text="পাওয়া যায়নি" /></Page>;
+  if (!p) return <Page><Empty emoji="😅" text={L("Not found", "পাওয়া যায়নি")} /></Page>;
   const amen = AMENITIES.slice(0, 4);
   const related = def.products.filter((x) => x.id !== p.id).slice(0, 4);
   return (
     <Page narrow>
-      <Back href={`${base}/stays`} label="স্টে" />
+      <Back href={`${base}/stays`} label={L("Stays", "স্টে")} />
       <div className={`grid place-items-center rounded-3xl p-14 text-8xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
         {p.e}
       </div>
       <h1 className="mt-4 text-2xl font-black">{p.n}</h1>
-      <div className="mt-1"><Stars rating={p.rating} reviews={p.reviews} /></div>
+      <div className="mt-1"><Stars rating={p.rating} reviews={p.reviews} en={lang !== "bn"} /></div>
       <div className="mt-2"><Price v={p.p} accent={def.accent} big note={p.priceNote ?? def.priceNote} /></div>
       <p className={`mt-3 text-sm leading-relaxed ${subCls(def)}`}>{p.desc}</p>
       <div className={`${cardCls(def)} mt-4`}>
-        <p className="mb-2 font-bold">✨ সুবিধাসমূহ</p>
+        <p className="mb-2 font-bold">{L("✨ Amenities", "✨ সুবিধাসমূহ")}</p>
         <div className="grid grid-cols-2 gap-2">
           {amen.map((a) => (
-            <p key={a} className="rounded-xl bg-black/10 px-3 py-2 text-xs font-bold">{a}</p>
+            <p key={a[0]} className="rounded-xl bg-black/10 px-3 py-2 text-xs font-bold">{L(a[0], a[1])}</p>
           ))}
         </div>
       </div>
       <div className="mt-5 grid grid-cols-2 gap-2">
-        <Cta href={`${base}/book/${p.id}`} accent={def.accent}>📅 বুক করুন</Cta>
-        <Cta href={`${base}/contact`} accent={def.accent} ghost>💬 জিজ্ঞাসা</Cta>
+        <Cta href={`${base}/book/${p.id}`} accent={def.accent}>{L("📅 Book now", "📅 বুক করুন")}</Cta>
+        <Cta href={`${base}/contact`} accent={def.accent} ghost>{L("💬 Ask", "💬 জিজ্ঞাসা")}</Cta>
       </div>
       {related.length > 0 && (
         <div className="mt-8">
-          <SectionTitle t="🔗 আরও দেখুন" />
+          <SectionTitle t={L("🔗 See more", "🔗 আরও দেখুন")} />
           <div className="grid grid-cols-2 gap-3">
             {related.map((r) => <ProductCard key={r.id} p={r} />)}
           </div>
@@ -1043,8 +1084,9 @@ export function BookDetail({ id }: { id: string }) {
 
 export function BookFlow({ id }: { id: string }) {
   const { def, base, store } = useDemo();
+  const { lang } = useDL();
   const p = def.products.find((x) => x.id === id);
-  const days = nextDays(14);
+  const days = nextDays(14, lang);
   const [ci, setCi] = useState(0);
   const [co, setCo] = useState(2);
   const [guests, setGuests] = useState(2);
@@ -1066,7 +1108,7 @@ export function BookFlow({ id }: { id: string }) {
     const rec = store.placeBooking({
       itemName: p!.n,
       itemEmoji: p!.e,
-      date: `${bnLong(days[ci].d)} → ${bnLong(days[coFixed].d)}`,
+      date: `${bnLong(days[ci].d, lang)} → ${bnLong(days[coFixed].d, lang)}`,
       slot: `${guests} guests • ${nights} nights`,
       name: name.trim(),
       phone: phone.trim(),
@@ -1085,7 +1127,7 @@ export function BookFlow({ id }: { id: string }) {
             <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
             <p className="mt-2 text-sm">{p.e} {p.n}</p>
-            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[ci].d)} → {bnLong(days[coFixed].d)}</p>
+            <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[ci].d, lang)} → {bnLong(days[coFixed].d, lang)}</p>
             <p className={`text-xs ${subCls(def)}`}>👥 {guests} guests • 🌙 {nights} nights</p>
             <p className="mt-1 font-black">{total.toLocaleString("en-IN")} Tk</p>
           </div>
@@ -1109,13 +1151,13 @@ export function BookFlow({ id }: { id: string }) {
         <div>
           <p className="mb-1.5 text-sm font-bold">🛬 Check-in</p>
           <Sel dark={def.dark} value={ci} onChange={(e) => { const v = Number(e.target.value); setCi(v); if (coFixed <= v) setCo(v + 1); }}>
-            {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
+            {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d, lang)}</option>)}
           </Sel>
         </div>
         <div>
           <p className="mb-1.5 text-sm font-bold">🛫 Check-out</p>
           <Sel dark={def.dark} value={coFixed} onChange={(e) => setCo(Number(e.target.value))}>
-            {days.map((x, i) => i > ci && <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
+            {days.map((x, i) => i > ci && <option key={i} value={i}>{x.day} — {bnLong(x.d, lang)}</option>)}
           </Sel>
         </div>
       </div>
@@ -1174,18 +1216,19 @@ export function BookMy() {
 
 export function BookWallet() {
   const { def, base, store } = useDemo();
+  const { L, dig, cur, lang } = useDL();
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">💳 ওয়ালেট</h1>
+      <Back href={base} label={L("Home", "হোম")} />
+      <h1 className="text-2xl font-black">{L("💳 Wallet", "💳 ওয়ালেট")}</h1>
       <div className={`${cardCls(def)} mt-4 text-center !p-6`}>
-        <p className={`text-xs ${subCls(def)}`}>বর্তমান ব্যালেন্স</p>
+        <p className={`text-xs ${subCls(def)}`}>{L("Current balance", "বর্তমান ব্যালেন্স")}</p>
         <p className="mt-1 text-4xl font-black" style={{ color: def.accent }}>
-          {toBnDigits(store.wallet.toLocaleString("en-IN"))} টাকা
+          {dig(store.wallet.toLocaleString("en-IN"))} {cur}
         </p>
-        <p className={`mt-1 text-[11px] ${subCls(def)}`}>ডেমো ওয়ালেট — বুকিংয়ে ব্যবহার করা যাবে</p>
+        <p className={`mt-1 text-[11px] ${subCls(def)}`}>{L("Demo wallet — can be used for bookings", "ডেমো ওয়ালেট — বুকিংয়ে ব্যবহার করা যাবে")}</p>
       </div>
-      <p className="mb-2 mt-5 text-sm font-bold">💰 টপ-আপ করুন (ডেমো)</p>
+      <p className="mb-2 mt-5 text-sm font-bold">{L("💰 Top up (demo)", "💰 টপ-আপ করুন (ডেমো)")}</p>
       <div className="grid grid-cols-3 gap-2">
         {[1000, 2000, 5000].map((a) => (
           <button
@@ -1194,23 +1237,23 @@ export function BookWallet() {
             className="btn-demo !py-3 !text-sm"
             style={{ background: def.accent }}
           >
-            +{toBnDigits(a.toLocaleString("en-IN"))}
+            +{dig(a.toLocaleString("en-IN"))}
           </button>
         ))}
       </div>
-      <p className="mb-2 mt-6 text-sm font-bold">🧾 লেনদেন হিস্ট্রি</p>
+      <p className="mb-2 mt-6 text-sm font-bold">{L("🧾 Transaction history", "🧾 লেনদেন হিস্ট্রি")}</p>
       {store.txs.length === 0 ? (
-        <Empty emoji="🧾" text="এখনো কোনো লেনদেন হয়নি" />
+        <Empty emoji="🧾" text={L("No transactions yet", "এখনো কোনো লেনদেন হয়নি")} />
       ) : (
         <div className="space-y-2">
           {store.txs.map((t, i) => (
             <div key={i} className={`${cardCls(def)} flex items-center justify-between !p-3`}>
               <div>
                 <p className="text-sm font-bold">{t.label}</p>
-                <p className={`text-[11px] ${subCls(def)}`}>{new Date(t.date).toLocaleDateString("bn-BD")}</p>
+                <p className={`text-[11px] ${subCls(def)}`}>{new Date(t.date).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US")}</p>
               </div>
               <p className={`font-black ${t.amount >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                {t.amount >= 0 ? "+" : "−"}{toBnDigits(Math.abs(t.amount).toLocaleString("en-IN"))}
+                {t.amount >= 0 ? "+" : "−"}{dig(Math.abs(t.amount).toLocaleString("en-IN"))}
               </p>
             </div>
           ))}
