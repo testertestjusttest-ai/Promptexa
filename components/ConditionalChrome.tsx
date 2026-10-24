@@ -1,8 +1,12 @@
 "use client";
 
 /**
- * Conditional site chrome — hides ALL DigiPlyra branding on client routes (/c/*).
- * Client sites are 100% white-label: no navbar, footer, cart drawer, WhatsApp, or ads.
+ * Conditional site chrome — Phase 2.
+ * - Client routes (/c/*): 100% white-label, no DigiPlyra chrome at all.
+ * - Demo routes (/demo* except the /demos gallery): demo-only chrome — the
+ *   demo's own DemoShell bar is the chrome, so no main navbar, footer, cart
+ *   drawer, WhatsApp float, or ads wrap the demo. This is what makes a demo
+ *   feel like a standalone, original website instead of a page inside the store.
  */
 
 import { usePathname } from "next/navigation";
@@ -21,9 +25,11 @@ export default function ConditionalChrome({
 }) {
   const path = usePathname();
   const isClient = path?.startsWith("/c/") || path === "/c";
+  // /demobakery, /demopharmacy, ... but NOT the /demos gallery itself.
+  const isDemo = !!path && /^\/demo(?!s)/.test(path);
 
-  if (isClient) {
-    // Pure white-label: only the client's site, nothing else.
+  if (isClient || isDemo) {
+    // Pure white-label / demo-only: only the site itself, nothing else.
     return <>{children}</>;
   }
 

@@ -7,7 +7,7 @@ import { useCart } from "@/lib/cart";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
-import { useLang, LangToggle } from "@/lib/i18n";
+import { useLang, SiteLangSwitcher } from "@/lib/i18n";
 
 export default function Navbar() {
   const { count, openCart } = useCart();
@@ -75,12 +75,11 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <LangToggle />
           {user && <NotificationBell />}
           <button
             onClick={openCart}
             className="relative grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-lg transition hover:border-[#d7ff3f]/50"
-            aria-label="কার্ট"
+            aria-label="Cart"
           >
             🛒
             {count > 0 && (
@@ -120,7 +119,7 @@ export default function Navbar() {
           <button
             className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-lg"
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="মেনু"
+            aria-label="Menu"
           >
             ☰
           </button>
@@ -128,6 +127,9 @@ export default function Navbar() {
       </div>
       {menuOpen && (
         <nav className="border-t border-white/5 px-4 py-3">
+          <div className="mb-3 border-b border-white/5 pb-3">
+            <SiteLangSwitcher />
+          </div>
           {menuLinks.map((l) => (
             <Link
               key={l.href}

@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type Lang = "bn" | "en";
+/** Phase 2: site-wide default is English; Bangla/Hindi only via drawer/Settings. */
+export type Lang = "bn" | "en" | "hi";
 
 const STR = {
   bn: {
@@ -125,27 +126,87 @@ const STR = {
     d_boost_b: "⭐ Boost for 30 BDT",
     d_boosting: "Boosting...",
   },
+  hi: {
+    nav_home: "🏠 होम",
+    nav_shop: "🛍️ शॉप",
+    nav_earn: "💰 कमाएँ",
+    nav_movies: "🎬 मूवी",
+    nav_topup: "💎 टॉप-अप",
+    nav_market: "🎮 आईडी मार्केट",
+    nav_webdev: "🌐 वेबसाइट बनवाएँ",
+    nav_dashboard: "📦 मेरे ऑर्डर",
+    nav_login: "लॉगिन",
+    nav_signup: "साइन अप",
+    nav_logout: "लॉगआउट",
+    nav_dashboard_btn: "डैशबोर्ड",
+    nav_faq: "❓ अक्सर पूछे जाने वाले प्रश्न",
+    nav_demos: "🖥️ डेमो",
+    nav_chat: "💬 चैट",
+    ft_tagline: "बांग्लादेश का विश्वसनीय डिजिटल प्रोडक्ट स्टोर। ओरिजिनल प्रीमियम सब्सक्रिप्शन — तेज़ डिलीवरी, सुरक्षित भुगतान, 24/7 सपोर्ट।",
+    ft_quick: "क्विक लिंक",
+    ft_all_products: "सभी प्रोडक्ट",
+    ft_my_orders: "मेरे ऑर्डर",
+    ft_login: "लॉगिन / रजिस्टर",
+    ft_help: "सहायता",
+    ft_delivery: "डिलीवरी: भुगतान के 5–30 मिनट के भीतर",
+    ft_support: "सपोर्ट: हर दिन सुबह 9 बजे – रात 11 बजे",
+    ft_payment: "भुगतान: 100% सुरक्षित",
+    ft_rights: "सर्वाधिकार सुरक्षित।",
+    nb_title: "🔔 नोटिफिकेशन",
+    nb_empty: "कोई नोटिफिकेशन नहीं",
+    c_loading: "लोड हो रहा है...",
+    c_featured: "⭐ फ़ीचर्ड",
+    c_views: "बार देखा गया",
+    c_call: "कॉल करें",
+    m_badge: "🔥 बांग्लादेश का सबसे सुरक्षित आईडी मार्केट",
+    m_title_a: "Free Fire",
+    m_title_b: "आईडी मार्केट",
+    m_sub: "100% सुरक्षित आईडी खरीद-बिक्री — पैसा पहले एडमिन के पास रहता है, आईडी मिलने की पुष्टि के बाद ही विक्रेता को भुगतान मिलता है।",
+    m_sell: "📢 मेरी आईडी बेचें",
+    m_browse: "🎮 आईडी देखें",
+    m_listings: "बिक्री के लिए आईडी",
+    m_empty_t: "अभी बिक्री के लिए कोई आईडी नहीं है",
+    m_empty_s: "पहले विक्रेता बनें!",
+    s_title: "📢 अपनी आईडी बिक्री के लिए पोस्ट करें",
+    s_sub: "एडमिन जाँच करके पोस्ट लाइव करेगा। पैसा सीधे आपके पास नहीं आएगा — खरीदार एडमिन को देगा, आईडी मिलने पर आपको भुगतान मिलेगा।",
+    s_form_title: "टाइटल *",
+    s_price: "कीमत (BDT) *",
+    s_uid: "Free Fire UID",
+    s_phone: "📞 आपका मोबाइल नंबर *",
+    s_phone_hint: "खरीदार इस नंबर पर कॉल करके बात कर सकता है।",
+    s_desc: "विवरण *",
+    s_shots: "स्क्रीनशॉट * (अधिकतम 6)",
+    s_submit: "📨 समीक्षा के लिए भेजें",
+    s_sending: "भेजा जा रहा है...",
+    s_fee_note: "ℹ️ एडमिन शुल्क 2% — बिक्री पूरी होने पर कीमत का 2% काटकर बाकी आपको दिया जाएगा।",
+    d_escrow_title: "🛡️ सुरक्षित एस्क्रो सिस्टम",
+    d_safety: "🛡️ सुरक्षित लेन-देन के नियम: विक्रेता से फ़ोन पर बात करके आईडी जाँचें, लेकिन पैसा सीधे विक्रेता को कभी न दें — हमेशा DigiPlyra एस्क्रो के माध्यम से भुगतान करें।",
+    d_boost_t: "⭐ पोस्ट बूस्ट करें",
+    d_boost_d: "30 BDT (वॉलेट से) — 3 दिन तक सबसे ऊपर ⭐ फ़ीचर्ड बैज के साथ दिखेगा।",
+    d_boost_b: "⭐ 30 BDT में बूस्ट करें",
+    d_boosting: "बूस्ट हो रहा है...",
+  },
 } as const;
 
 export type TKey = keyof (typeof STR)["bn"];
 
 const LangCtx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: (k: TKey) => string }>({
-  lang: "bn",
+  lang: "en",
   setLang: () => {},
-  t: (k) => STR.bn[k] ?? k,
+  t: (k) => STR.en[k] ?? k,
 });
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("bn");
+  const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("dp-lang");
-      if (saved === "bn" || saved === "en") {
+      if (saved === "bn" || saved === "en" || saved === "hi") {
         setLangState(saved);
       } else {
-        const nav = (navigator.language || "bn").toLowerCase();
-        setLangState(nav.startsWith("bn") ? "bn" : "en");
+        const nav = (navigator.language || "en").toLowerCase();
+        setLangState(nav.startsWith("bn") ? "bn" : nav.startsWith("hi") ? "hi" : "en");
       }
     } catch {}
   }, []);
@@ -163,7 +224,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
     } catch {}
   }
 
-  const t = (k: TKey): string => (STR[lang] as Record<string, string>)[k] ?? STR.bn[k] ?? k;
+  const t = (k: TKey): string => (STR[lang] as Record<string, string>)[k] ?? STR.en[k] ?? k;
 
   return <LangCtx.Provider value={{ lang, setLang, t }}>{children}</LangCtx.Provider>;
 }
@@ -172,17 +233,46 @@ export function useLang() {
   return useContext(LangCtx);
 }
 
-/** Small BN/EN toggle button for the navbar. */
+/** Language switcher for the hamburger drawer / Settings — the ONLY site-wide
+ *  switch location in Phase 2. Never render a header pill. */
+export function SiteLangSwitcher() {
+  const { lang, setLang } = useLang();
+  const opts: { id: Lang; label: string }[] = [
+    { id: "en", label: "English" },
+    { id: "bn", label: "বাংলা" },
+    { id: "hi", label: "हिन्दी" },
+  ];
+  return (
+    <div>
+      <p className="mb-2 text-xs font-black uppercase tracking-wide text-slate-400">Language</p>
+      <div className="flex gap-2">
+        {opts.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => setLang(o.id)}
+            className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${lang === o.id ? "bg-[#d7ff3f] text-black" : "bg-white/10 text-slate-200 hover:bg-white/15"}`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Deprecated header pill — kept only so old imports do not break. Phase 2
+ *  Navbar does not render it; use SiteLangSwitcher in the drawer instead. */
 export function LangToggle() {
   const { lang, setLang } = useLang();
+  const next: Lang = lang === "en" ? "bn" : lang === "bn" ? "hi" : "en";
   return (
     <button
-      onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+      onClick={() => setLang(next)}
       className="grid h-10 min-w-10 place-items-center rounded-xl border border-white/10 bg-white/5 px-2 text-sm font-bold text-slate-200 transition hover:border-[#d7ff3f]/50"
-      aria-label="ভাষা / Language"
-      title="বাংলা / English"
+      aria-label="Language"
+      title="English / বাংলা / हिन्दी"
     >
-      {lang === "bn" ? "EN" : "বাং"}
+      {lang === "en" ? "বাং" : lang === "bn" ? "हिन्दी" : "EN"}
     </button>
   );
 }

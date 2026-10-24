@@ -24,15 +24,15 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL("https://promptexa.vercel.app"),
   title: {
-    default: "DigiPlyra — অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন ও Free Fire ID বাজার",
+    default: "DigiPlyra — Original premium subscriptions & website agency",
     template: "%s — DigiPlyra",
   },
   description:
-    "CapCut Pro, Canva Pro, YouTube Premium সহ সব জনপ্রিয় অ্যাপের অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন — সবচেয়ে কম দামে, দ্রুত ডেলিভারি। নিরাপদ এসক্রোতে Free Fire ID কিনুন-বেচুন।",
+    "Original premium subscriptions (CapCut Pro, Canva Pro, YouTube Premium and more) at the lowest price with fast delivery — plus a website agency that builds professional websites in 7–14 days. Secure escrow for Free Fire ID trading.",
   keywords: [
     "DigiPlyra", "CapCut Pro", "Canva Pro", "YouTube Premium", "Netflix Bangladesh",
-    "প্রিমিয়াম সাবস্ক্রিপশন", "Free Fire ID", "ফ্রি ফায়ার আইডি কেনা", "FF ID বাজার",
-    "digital products Bangladesh", "bKash payment", "ওয়েবসাইট বানানো",
+    "premium subscription", "Free Fire ID", "buy Free Fire ID", "FF ID market",
+    "digital products Bangladesh", "bKash payment", "build a website",
   ],
   authors: [{ name: "DigiPlyra" }],
   creator: "DigiPlyra",
@@ -48,18 +48,18 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "bn_BD",
-    alternateLocale: ["en_US"],
+    locale: "en_US",
+    alternateLocale: ["bn_BD", "hi_IN"],
     siteName: "DigiPlyra",
-    title: "DigiPlyra — অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন ও Free Fire ID বাজার",
+    title: "DigiPlyra — Original premium subscriptions & website agency",
     description:
-      "সবচেয়ে কম দামে অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন + নিরাপদ এসক্রোতে Free Fire ID বাজার।",
+      "Original premium subscriptions at the lowest price + secure escrow for Free Fire ID trading.",
     images: [{ url: "/logo.jpg", width: 512, height: 512, alt: "DigiPlyra" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DigiPlyra — অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন",
-    description: "সবচেয়ে কম দামে অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন ও নিরাপদ FF ID বাজার।",
+    title: "DigiPlyra — Original premium subscriptions",
+    description: "Original premium subscriptions at the lowest price + secure FF ID market.",
     images: ["/logo.jpg"],
   },
   robots: {
@@ -105,7 +105,7 @@ export default async function RootLayout({
     ],
   };
   return (
-    <html lang="bn">
+    <html lang="en">
       <body
         className={`${hindSiliguri.variable} ${spaceGrotesk.variable} vault-bg min-h-screen`}
       >

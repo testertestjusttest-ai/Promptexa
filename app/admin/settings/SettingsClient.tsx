@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import LanguageSettingsCard from "./LanguageSettingsCard";
+
 export default function SettingsClient() {
   const [numbers, setNumbers] = useState<Record<string, any>>({ bkash: "", nagad: "", rocket: "" });
   const [store, setStore] = useState({ name: "DigiPlyra", tagline: "", support_whatsapp: "", notice_bn: "" });
@@ -379,6 +381,8 @@ export default function SettingsClient() {
           প্রতিটি সফল ডিলে দামের {market.fee_percent}% অ্যাডমিন ফি হিসেবে কাটা হবে।
         </p>
       </div>
+
+      <LanguageSettingsCard />
 
       {msg && (
         <p className="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-xl bg-[#d7ff3f] px-5 py-2.5 text-sm font-bold text-[#060913] shadow-xl">

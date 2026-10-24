@@ -1,4 +1,3 @@
-import { toBnDigits } from "@/lib/format";
 
 /** 10 demo website mockups — each renders a convincing mini website. */
 
@@ -39,12 +38,13 @@ export type Demo = {
 };
 
 const HAND_GROUPS: Record<string, string> = {
-  restaurant: "🍔 খাবার", fashion: "🛍️ শপিং", portfolio: "🎨 পোর্টফোলিও",
-  news: "📰 মিডিয়া", realestate: "🏠 প্রপার্টি", gym: "💪 ফিটনেস",
-  travel: "✈️ বুকিং", saas: "☁️ সফটওয়্যার", salon: "💅 বিউটি", gadget: "🔌 টেক",
+  restaurant: "🍔 Food", fashion: "🛍️ Shopping", portfolio: "🎨 Portfolio",
+  news: "📰 মিডিয়া", realestate: "🏠 Property", gym: "💪 Fitness",
+  travel: "✈️ Booking", saas: "☁️ Software", salon: "💅 বিউটি", gadget: "🔌 Tech",
   investpro: "💰 ফিনটেক", agroinvest: "💰 ফিনটেক", swiftex: "💰 ফিনটেক",
   payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক", trustpay: "💰 ফিনটেক",
-  binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং", buyinghouse: "🏭 গার্মেন্টস",
+  binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং", buyinghouse: "🏭 Garments",
+  jewelry: "🛍️ Shopping",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -76,19 +76,19 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "buyinghouse",
-    name: "টেক্সব্রিজ সোর্সিং",
-    type: "গার্মেন্টস বায়িং হাউস",
-    desc: "আন্তর্জাতিক বায়ারদের জন্য সোর্সিং, QC, RFQ সিস্টেম ও প্রফেশনাল অ্যাডমিনসহ পূর্ণাঙ্গ বায়িং হাউস ওয়েবসাইট।",
-    price: "১২,৯৯৯ টাকা থেকে",
+    name: "TexBridge Sourcing",
+    type: "Garments Buying House",
+    desc: "Complete buying-house website for international buyers — sourcing, QC, RFQ system and a professional admin panel.",
+    price: "From 12,999 Tk",
     render: () => (
       <Frame>
-        <Nav logo="🧵 টেক্সব্রিজ" links={["সার্ভিস", "প্রোডাক্ট"]} cta="RFQ পাঠান" />
+        <Nav logo="🧵 TexBridge" links={["Services", "Products"]} cta="Send RFQ" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bh-img/hero.webp" alt="টেক্সব্রিজ শোরুম" className="h-24 w-full object-cover" />
+        <img src="/bh-img/hero.webp" alt="TexBridge showroom" className="h-24 w-full object-cover" />
         <div className="bg-white px-4 py-3">
-          <p className="text-sm font-black leading-snug text-slate-900">বাংলাদেশ থেকে বিশ্বমানের গার্মেন্টস সোর্সিং</p>
+          <p className="text-sm font-black leading-snug text-slate-900">World-class garment sourcing from Bangladesh</p>
           <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
-            {[["১২০+", "ফ্যাক্টরি"], ["৪০+", "দেশে রপ্তানি"], ["৯৮%", "অন-টাইম"]].map(([v, t]) => (
+            {[["Global", "Sourcing"], ["AQL", "QC Reports"], ["RFQ", "System"]].map(([v, t]) => (
               <div key={t} className="rounded-xl bg-sky-50 px-2 py-1.5 ring-1 ring-sky-100">
                 <p className="text-[11px] font-black text-sky-700">{v}</p>
                 <p className="text-[9px] font-bold text-slate-500">{t}</p>
@@ -96,64 +96,94 @@ const HAND_DEMOS: Demo[] = [
             ))}
           </div>
           <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-            <span className="rounded-xl bg-sky-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📩 ফ্রি কোটেশন</span>
-            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">👕 প্রোডাক্ট</span>
+            <span className="rounded-xl bg-sky-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📩 Free Quote</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">👕 Products</span>
           </div>
         </div>
-        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">RFQ সিস্টেম • AQL QC রিপোর্ট • অপারেশনস অ্যাডমিন</p>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">RFQ system • AQL QC reports • Operations admin</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "jewelry",
+    name: "AURELIA",
+    type: "Luxury Jewelry Shop",
+    desc: "London fine jewelry atelier — handcrafted rings, necklaces, bespoke commissions, cart and checkout in a luxury e-commerce website.",
+    price: "From 12,999 Tk",
+    render: () => (
+      <Frame dark>
+        <Nav logo="💎 AURELIA" links={["Collection", "Atelier"]} cta="Shop Now" light />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/jw-img/hero.webp" alt="AURELIA solitaire ring" className="h-24 w-full object-cover" />
+        <div className="bg-[#0b0b0f] px-4 py-3">
+          <p className="text-sm font-black leading-snug text-[#f5efe4]">Jewelry that outlives the moment it marks</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Handcrafted", "Design"], ["Certified", "Stones"], ["Bespoke", "Commissions"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-white/5 px-2 py-1.5 ring-1 ring-[#c9a24b]/30">
+                <p className="text-[11px] font-black text-[#e8cf8f]">{v}</p>
+                <p className="text-[9px] font-bold text-slate-400">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-[#c9a24b] px-3 py-1.5 text-center text-[11px] font-black text-[#0b0b0f]">💎 View Collection</span>
+            <span className="rounded-xl bg-white/10 px-3 py-1.5 text-center text-[11px] font-black text-[#f5efe4] ring-1 ring-white/15">✦ Bespoke Commission</span>
+          </div>
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">Cart • Checkout • Concierge contact • Atelier admin</p>
       </Frame>
     ),
   },
   {
     slug: "restaurant",
-    name: "স্বাদের ঠিকানা",
-    type: "রেস্টুরেন্ট ওয়েবসাইট",
-    desc: "মেনু, অনলাইন অর্ডার, টেবিল বুকিংসহ সম্পূর্ণ রেস্টুরেন্ট সাইট।",
-    price: "৪,৯৯৯ টাকা থেকে",
+    name: "Taste Address",
+    type: "Restaurant Website",
+    desc: "Complete restaurant site with menu, online ordering and table booking.",
+    price: "From 4,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="🍔 স্বাদের ঠিকানা" links={["মেনু", "অফার", "রিভিউ"]} cta="অর্ডার করুন" light />
+        <Nav logo="🍔 Taste Address" links={["Menu", "Offers", "Reviews"]} cta="Order Now" light />
         <div className="bg-gradient-to-br from-orange-600 via-red-600 to-amber-700 px-4 py-8 text-white">
-          <p className="text-[10px] tracking-widest opacity-80">🔥 স্পেশাল অফার</p>
-          <p className="mt-1 text-xl font-black">ঘরেই পান রেস্টুরেন্টের স্বাদ</p>
-          <p className="mt-1 text-[11px] opacity-80">৩০ মিনিটে হোম ডেলিভারি</p>
-          <span className="mt-3 inline-block rounded-full bg-white px-4 py-1.5 text-[11px] font-bold text-red-600">মেনু দেখুন</span>
+          <p className="text-[10px] tracking-widest opacity-80">🔥 Special Offer</p>
+          <p className="mt-1 text-xl font-black">Restaurant taste, at your home</p>
+          <p className="mt-1 text-[11px] opacity-80">Home delivery</p>
+          <span className="mt-3 inline-block rounded-full bg-white px-4 py-1.5 text-[11px] font-bold text-red-600">View Menu</span>
         </div>
         <div className="grid grid-cols-3 gap-2 p-3">
-          {["🍕 পিজ্জা", "🍗 চিকেন", "🍰 ডেজার্ট"].map((f) => (
+          {["🍕 Pizza", "🍗 Chicken", "🍰 Dessert"].map((f) => (
             <div key={f} className="rounded-xl bg-white/5 p-2 text-center text-[11px] text-white">
               <div className="text-xl">{f.split(" ")[0]}</div><p className="mt-1 opacity-80">{f.split(" ")[1]}</p>
-              <p className="font-bold text-amber-300">২৫০ টাকা</p>
+              <p className="font-bold text-amber-300">250 Tk</p>
             </div>
           ))}
         </div>
-        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">© স্বাদের ঠিকানা</p>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">© Taste Address</p>
       </Frame>
     ),
   },
   {
     slug: "fashion",
-    name: "স্টাইল হাব",
-    type: "ফ্যাশন ই-কমার্স",
-    desc: "কার্ট, বিকাশ পেমেন্ট, অর্ডার ট্র্যাকিংসহ ফ্যাশন শপ।",
-    price: "১২,৯৯৯ টাকা থেকে",
+    name: "Style Hub",
+    type: "Fashion E-commerce",
+    desc: "Fashion shop with cart, mobile payments and order tracking.",
+    price: "From 12,999 Tk",
     render: () => (
       <Frame>
-        <Nav logo="👗 স্টাইল হাব" links={["শাড়ি", "পাঞ্জাবি", "অফার"]} cta="কার্ট (২)" />
+        <Nav logo="👗 Style Hub" links={["Sarees", "Panjabis", "Offers"]} cta="Cart (2)" />
         <div className="bg-gradient-to-r from-pink-500 to-fuchsia-600 px-4 py-7 text-white">
-          <p className="text-xl font-black">ঈদ কালেকশন ২০২৬</p>
-          <p className="text-[11px] opacity-90">৫০% পর্যন্ত ছাড়!</p>
+          <p className="text-xl font-black">Festive Collection 2026</p>
+          <p className="text-[11px] opacity-90">Up to 50% off!</p>
         </div>
         <div className="grid grid-cols-4 gap-2 p-3">
           {["👚", "👔", "👠", "👜"].map((e, i) => (
             <div key={i} className="rounded-xl bg-slate-100 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-slate-700">{toBnDigits(((i + 1) * 499).toLocaleString("en-IN"))} টাকা</p>
+              <p className="mt-1 text-[10px] font-bold text-slate-700">{((i + 1) * 499).toLocaleString("en-US")} Tk</p>
             </div>
           ))}
         </div>
         <div className="flex items-center justify-between bg-pink-50 px-4 py-2 text-[10px] text-pink-700">
-          <span>🚚 সারাদেশে ডেলিভারি</span><span>💳 বিকাশ/নগদ</span>
+          <span>🚚 Nationwide delivery</span><span>💳 bKash/Nagad</span>
         </div>
       </Frame>
     ),
@@ -328,23 +358,23 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "portfolio",
-    name: "লেন্স ও আলো",
-    type: "ফটোগ্রাফার পোর্টফোলিও",
-    desc: "গ্যালারি, বুকিং ফর্মসহ মিনিমাল পোর্টফোলিও সাইট।",
-    price: "৪,৯৯৯ টাকা থেকে",
+    name: "Lens & Light",
+    type: "Photographer Portfolio",
+    desc: "Minimal portfolio site with gallery and booking form.",
+    price: "From 4,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="📸 লেন্স ও আলো" links={["গ্যালারি", "সার্ভিস", "যোগাযোগ"]} cta="বুক করুন" light />
+        <Nav logo="📸 Lens & Light" links={["Gallery", "Services", "Contact"]} cta="Book Now" light />
         <div className="px-4 py-8 text-center text-white">
           <p className="text-[10px] tracking-[0.3em] text-slate-400">WEDDING • PORTRAIT • EVENT</p>
-          <p className="mt-2 text-2xl font-black">মুহূর্তগুলো ধরে রাখি<br />চিরদিনের জন্য</p>
+          <p className="mt-2 text-2xl font-black">Capturing moments<br />for a lifetime</p>
         </div>
         <div className="grid grid-cols-3 gap-1 p-2">
           {["🌅", "👰", "🎭", "🏙️", "🌊", "🎪"].map((e, i) => (
             <div key={i} className="grid h-16 place-items-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 text-2xl">{e}</div>
           ))}
         </div>
-        <p className="px-4 py-3 text-center text-[10px] text-slate-500">৫০০+ ইভেন্ট কভারেজ ⭐ ৪.৯ রেটিং</p>
+        <p className="px-4 py-3 text-center text-[10px] text-slate-500">Wedding • Portrait • Event coverage</p>
       </Frame>
     ),
   },
@@ -382,28 +412,28 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "realestate",
-    name: "স্বপ্ন নিবাস",
-    type: "রিয়েল এস্টেট",
-    desc: "প্রপার্টি লিস্টিং, ফিল্টার, ভিজিট বুকিংসহ হাউজিং সাইট।",
-    price: "১২,৯৯৯ টাকা থেকে",
+    name: "Dream Home",
+    type: "Real Estate",
+    desc: "Housing site with property listings, filters and visit booking.",
+    price: "From 12,999 Tk",
     render: () => (
       <Frame>
-        <Nav logo="🏠 স্বপ্ন নিবাস" links={["ফ্ল্যাট", "প্লট", "বাণিজ্যিক"]} cta="যোগাযোগ" />
+        <Nav logo="🏠 Dream Home" links={["Flats", "Plots", "Commercial"]} cta="Contact" />
         <div className="bg-gradient-to-br from-blue-700 to-indigo-900 px-4 py-7 text-white">
-          <p className="text-xl font-black">আপনার স্বপ্নের ঠিকানা</p>
-          <p className="text-[11px] opacity-80">ঢাকা • চট্টগ্রাম • সিলেট</p>
+          <p className="text-xl font-black">Your dream address</p>
+          <p className="text-[11px] opacity-80">Dhaka • Chattogram • Sylhet</p>
           <div className="mt-3 flex gap-2">
-            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-[10px]">📍 লোকেশন</span>
-            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-[10px]">💰 বাজেট</span>
-            <span className="rounded-lg bg-amber-400 px-3 py-1.5 text-[10px] font-bold text-black">🔍 খুঁজুন</span>
+            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-[10px]">📍 Location</span>
+            <span className="rounded-lg bg-white/20 px-3 py-1.5 text-[10px]">💰 Budget</span>
+            <span className="rounded-lg bg-amber-400 px-3 py-1.5 text-[10px] font-bold text-black">🔍 Search</span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 p-3">
-          {["🏢 গুলশান ফ্ল্যাট", "🏡 উত্তরা ডুপ্লেক্স"].map((t, i) => (
+          {["🏢 Gulshan Flat", "🏡 Uttara Duplex"].map((t, i) => (
             <div key={i} className="overflow-hidden rounded-xl border border-slate-200">
               <div className="grid h-16 place-items-center bg-gradient-to-br from-blue-100 to-indigo-200 text-3xl">{i === 0 ? "🏢" : "🏡"}</div>
               <p className="p-2 text-[11px] font-bold text-slate-800">{t}</p>
-              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">{toBnDigits((i + 1) * 85)} লাখ টাকা</p>
+              <p className="px-2 pb-2 text-[10px] font-bold text-blue-700">{(i + 1) * 85} lakh Tk</p>
             </div>
           ))}
         </div>
@@ -412,20 +442,20 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "gym",
-    name: "পাওয়ার জিম",
-    type: "জিম ও ফিটনেস",
-    desc: "মেম্বারশিপ প্ল্যান, ট্রেইনার, শিডিউলসহ ফিটনেস সাইট।",
-    price: "৪,৯৯৯ টাকা থেকে",
+    name: "Power Gym",
+    type: "Gym & Fitness",
+    desc: "Fitness site with membership plans, trainers and schedules.",
+    price: "From 4,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="💪 পাওয়ার জিম" links={["প্ল্যান", "ট্রেইনার", "গ্যালারি"]} cta="জয়েন করুন" light />
+        <Nav logo="💪 Power Gym" links={["Plans", "Trainers", "Gallery"]} cta="Join Now" light />
         <div className="bg-gradient-to-br from-red-700 via-black to-red-900 px-4 py-8 text-white">
           <p className="text-[10px] tracking-widest text-red-300">NO PAIN • NO GAIN</p>
-          <p className="mt-1 text-2xl font-black">শরীর গড়ুন<br />আত্মবিশ্বাস বাড়ান</p>
-          <span className="mt-3 inline-block rounded-full bg-red-600 px-4 py-1.5 text-[11px] font-bold">ফ্রি ট্রায়াল নিন</span>
+          <p className="mt-1 text-2xl font-black">Build your body<br />Grow your confidence</p>
+          <span className="mt-3 inline-block rounded-full bg-red-600 px-4 py-1.5 text-[11px] font-bold">Try Free</span>
         </div>
         <div className="grid grid-cols-3 gap-2 p-3 text-center">
-          {["মাসিক ১,৫০০ টাকা", "৬ মাস ৭,০০০ টাকা", "বাৎসরিক ১২,০০০ টাকা"].map((p, i) => (
+          {["Monthly 1,500 Tk", "6 months 7,000 Tk", "Yearly 12,000 Tk"].map((p, i) => (
             <div key={i} className={`rounded-xl p-2 text-[10px] ${i === 1 ? "bg-red-600 text-white" : "bg-white/5 text-slate-300"}`}>
               <p className="font-bold">{p}</p>
             </div>
@@ -436,27 +466,27 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "travel",
-    name: "ঘুরে আসি",
-    type: "ট্রাভেল এজেন্সি",
-    desc: "ট্যুর প্যাকেজ, বুকিং, রিভিউসহ ট্রাভেল সাইট।",
-    price: "৯,৯৯৯ টাকা থেকে",
+    name: "Let's Travel",
+    type: "Travel Agency",
+    desc: "Travel site with tour packages, booking and reviews.",
+    price: "From 9,999 Tk",
     render: () => (
       <Frame>
-        <Nav logo="✈️ ঘুরে আসি" links={["দেশি", "বিদেশি", "হোটেল"]} cta="বুক করুন" />
+        <Nav logo="✈️ Let's Travel" links={["Local", "International", "Hotels"]} cta="Book Now" />
         <div className="bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 px-4 py-8 text-white">
-          <p className="text-xl font-black">পৃথিবী ঘুরে দেখুন</p>
-          <p className="text-[11px] opacity-90">কক্সবাজার থেকে মালদ্বীপ!</p>
+          <p className="text-xl font-black">Explore the world</p>
+          <p className="text-[11px] opacity-90">From Cox's Bazar to Maldives!</p>
           <div className="mt-3 flex gap-2 text-[10px]">
-            <span className="rounded-lg bg-white/25 px-3 py-1.5">📅 তারিখ</span>
-            <span className="rounded-lg bg-white/25 px-3 py-1.5">👥 গেস্ট</span>
+            <span className="rounded-lg bg-white/25 px-3 py-1.5">📅 Date</span>
+            <span className="rounded-lg bg-white/25 px-3 py-1.5">👥 Guests</span>
           </div>
         </div>
         <div className="grid grid-cols-3 gap-2 p-3">
-          {["🏖️ কক্সবাজার", "🏔️ সাজেক", "🕌 ইস্তাম্বুল"].map((t, i) => (
+          {[["🏖️", "Cox's Bazar"], ["🏔️", "Sajek"], ["🕌", "Istanbul"]].map(([e, t], i) => (
             <div key={i} className="rounded-xl bg-teal-50 p-2 text-center">
-              <div className="text-2xl">{t.split(" ")[0]}</div>
-              <p className="text-[10px] font-bold text-teal-800">{t.split(" ")[1]}</p>
-              <p className="text-[10px] text-teal-600">{toBnDigits(((i + 2) * 4500).toLocaleString("en-IN"))} টাকা</p>
+              <div className="text-2xl">{e}</div>
+              <p className="text-[10px] font-bold text-teal-800">{t}</p>
+              <p className="text-[10px] text-teal-600">{((i + 2) * 4500).toLocaleString("en-US")} Tk</p>
             </div>
           ))}
         </div>
@@ -465,20 +495,20 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "saas",
-    name: "ক্লাউড সেবা",
-    type: "টেক স্টার্টআপ (SaaS)",
-    desc: "ল্যান্ডিং পেজ, প্রাইসিং, সাইনআপসহ SaaS সাইট।",
-    price: "১২,৯৯৯ টাকা থেকে",
+    name: "CloudServe",
+    type: "Tech Startup (SaaS)",
+    desc: "SaaS site with landing page, pricing and signup.",
+    price: "From 12,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="☁️ ক্লাউড সেবা" links={["ফিচার", "প্রাইসিং", "ডকস"]} cta="ফ্রি ট্রায়াল" light />
+        <Nav logo="☁️ CloudServe" links={["Features", "Pricing", "Docs"]} cta="Free Trial" light />
         <div className="px-4 py-8 text-center text-white">
-          <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] text-indigo-300 ring-1 ring-indigo-400/40">🚀 নতুন v2.0 লাইভ</span>
-          <p className="mt-3 text-2xl font-black">ব্যবসা চালান<br /><span className="bg-gradient-to-r from-indigo-400 to-cyan-300 bg-clip-text text-transparent">অটোপাইলটে</span></p>
-          <p className="mt-2 text-[11px] text-slate-400">১০,০০০+ কোম্পানির বিশ্বস্ত প্ল্যাটফর্ম</p>
+          <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] text-indigo-300 ring-1 ring-indigo-400/40">🚀 New v2.0 live</span>
+          <p className="mt-3 text-2xl font-black">Run your business<br /><span className="bg-gradient-to-r from-indigo-400 to-cyan-300 bg-clip-text text-transparent">on autopilot</span></p>
+          <p className="mt-2 text-[11px] text-slate-400">A platform teams rely on</p>
         </div>
         <div className="mx-4 mb-3 grid grid-cols-3 gap-2 text-center">
-          {["বেসিক ৯৯০ টাকা", "প্রো ২,৯৯০ টাকা", "এন্টারপ্রাইজ"].map((p, i) => (
+          {["Basic 990 Tk", "Pro 2,990 Tk", "Enterprise"].map((p, i) => (
             <div key={i} className={`rounded-xl p-2 text-[10px] ${i === 1 ? "bg-indigo-600 text-white" : "bg-white/5 text-slate-300"}`}>
               <p className="font-bold">{p}</p>
             </div>
@@ -512,26 +542,26 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "gadget",
-    name: "টেক জোন",
-    type: "ইলেকট্রনিক্স শপ",
-    desc: "প্রোডাক্ট ক্যাটালগ, EMI, ওয়ারেন্টিসহ গ্যাজেট শপ।",
-    price: "১২,৯৯৯ টাকা থেকে",
+    name: "Tech Zone",
+    type: "Electronics Shop",
+    desc: "Gadget shop with product catalogue, EMI and warranty.",
+    price: "From 12,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="🔌 টেক জোন" links={["মোবাইল", "ল্যাপটপ", "অ্যাক্সেসরিজ"]} cta="কার্ট" light />
+        <Nav logo="🔌 Tech Zone" links={["Mobiles", "Laptops", "Accessories"]} cta="Cart" light />
         <div className="bg-gradient-to-r from-cyan-600 to-blue-700 px-4 py-6 text-white">
-          <p className="text-lg font-black">⚡ মেগা টেক ফেস্ট</p>
-          <p className="text-[11px] opacity-90">EMI সুবিধা • অফিসিয়াল ওয়ারেন্টি</p>
+          <p className="text-lg font-black">⚡ Mega Tech Fest</p>
+          <p className="text-[11px] opacity-90">EMI available • Official warranty</p>
         </div>
         <div className="grid grid-cols-4 gap-2 p-3">
           {["📱", "💻", "🎧", "⌚"].map((e, i) => (
             <div key={i} className="rounded-xl bg-white/5 p-2 text-center">
               <div className="text-2xl">{e}</div>
-              <p className="mt-1 text-[10px] font-bold text-cyan-300">{toBnDigits(((i + 1) * 8990).toLocaleString("en-IN"))} টাকা</p>
+              <p className="mt-1 text-[10px] font-bold text-cyan-300">{((i + 1) * 8990).toLocaleString("en-US")} Tk</p>
             </div>
           ))}
         </div>
-        <p className="bg-cyan-500/10 px-4 py-2 text-center text-[10px] text-cyan-300">🚚 ঢাকায় ২৪ ঘণ্টায় ডেলিভারি</p>
+        <p className="bg-cyan-500/10 px-4 py-2 text-center text-[10px] text-cyan-300">🚚 24-hour delivery in Dhaka</p>
       </Frame>
     ),
   },

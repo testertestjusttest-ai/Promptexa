@@ -15,9 +15,9 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
     {quote && <QuoteModal demoName={name} slug={slug} onClose={() => setQuote(false)} />}
     <div className="bg-[#0b1120]">
       {/* slim browser chrome — feels like entering the real website */}
-      <div className="sticky top-16 z-40 border-y border-white/10 bg-[#060913]/95 backdrop-blur-xl">
+      <div className="sticky top-0 z-40 border-y border-white/10 bg-[#060913]/95 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
-          <Link href="/#demos" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20" aria-label="পেছনে">
+          <Link href="/#demos" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sm text-white transition hover:bg-white/20" aria-label="Back">
             ←
           </Link>
           <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg bg-white/[0.07] px-3 py-1.5">
@@ -29,10 +29,10 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
             <span className="truncate font-mono text-[11px] text-slate-400">demo.digiplyra.com/{slug}</span>
           </div>
           <span className="hidden shrink-0 rounded-full bg-[#d7ff3f]/15 px-2.5 py-1 text-[10px] font-black text-[#d7ff3f] sm:inline">
-            ⓘ ডেমো
+            ⓘ Demo
           </span>
           <button onClick={() => setQuote(true)} className="shrink-0 rounded-lg bg-[#d7ff3f] px-3 py-1.5 text-[11px] font-black text-black transition hover:brightness-110">
-            📝 এরকম সাইট চাই
+            📝 I need this website
           </button>
         </div>
       </div>
@@ -43,20 +43,20 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
       {/* Why build with DigiPlyra — persuasive pitch inside the demo */}
       <div className="border-t border-[#d7ff3f]/20 bg-gradient-to-br from-[#0d1424] to-[#060913] px-4 py-8">
         <p className="text-center text-xl font-black text-white">
-          🚀 কেন <span className="text-[#d7ff3f]">DigiPlyra</span> দিয়েই ওয়েবসাইট বানাবেন?
+          🚀 Why build your website with <span className="text-[#d7ff3f]">DigiPlyra</span>?
         </p>
         <p className="mx-auto mt-2 max-w-xl text-center text-xs leading-relaxed text-slate-400">
-          উপরের ডেমোটা ঘেঁটে দেখলেন তো? আপনার ব্যবসার জন্য এরকমই — বরং এর চেয়েও ভালো —
-          প্রফেশনাল ওয়েবসাইট আমরা বানিয়ে দেবো, <b className="text-slate-200">আপনার চাহিদা মতো ১০০% কাস্টমাইজড</b>।
+          Explored the demo above? We will build one like it — or even better —
+          a professional website for your business, <b className="text-slate-200">100% customised to your needs</b>.
         </p>
         <div className="mx-auto mt-5 grid max-w-3xl grid-cols-2 gap-2.5 sm:grid-cols-3">
           {[
-            ["🎨", "পছন্দমতো ডিজাইন", "আপনার ব্র্যান্ডের রঙ, লোগো ও স্টাইলে"],
-            ["📱", "মোবাইল রেসপন্সিভ", "ফোন-ট্যাব-ল্যাপটপ সবখানে পারফেক্ট"],
-            ["⚡", "৭–১৪ দিনে ডেলিভারি", "দ্রুত কাজ, নিয়মিত আপডেট"],
-            ["🛠️", "ফ্রি টেকনিক্যাল সাপোর্ট", "সমস্যা হলে আমরাই ঠিক করে দেবো"],
-            ["💰", "স্বল্প খরচে প্রিমিয়াম", "বাজেট অনুযায়ী প্যাকেজ"],
-            ["🔒", "নিরাপদ ও নির্ভরযোগ্য", "আপনার ডেটা সুরক্ষিত থাকবে"],
+            ["🎨", "Design you choose", "Your brand colours, logo and style"],
+            ["📱", "Mobile responsive", "Perfect on phone, tablet and laptop"],
+            ["⚡", "Delivery in 7–14 days", "Fast work, regular updates"],
+            ["🛠️", "Free technical support", "We fix problems for you"],
+            ["💰", "Premium at a low cost", "Packages to suit your budget"],
+            ["🔒", "Safe & reliable", "Your data stays protected"],
           ].map(([e, t, d]) => (
             <div key={t} className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
               <p className="text-2xl">{e}</p>
@@ -66,18 +66,18 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
           ))}
         </div>
         <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/5 p-4">
-          <p className="text-center text-xs font-black text-[#d7ff3f]">💬 আমরা যা যা সাপোর্ট দিই</p>
+          <p className="text-center text-xs font-black text-[#d7ff3f]">💬 What we support</p>
           <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-            {["ডোমেইন সেটআপ", "হোস্টিং", "বিকাশ/নগদ পেমেন্ট", "অনলাইন অর্ডার সিস্টেম", "গুগল SEO", "ফেসবুক পিক্সেল", "বাংলায় ট্রেনিং", "আজীবন পরামর্শ"].map((s) => (
+            {["Domain setup", "Hosting", "bKash/Nagad payment", "Online order system", "Google SEO", "Facebook pixel", "Training", "Lifetime advice"].map((s) => (
               <span key={s} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-slate-200">✓ {s}</span>
             ))}
           </div>
         </div>
         <div className="mt-5 text-center">
           <button onClick={() => setQuote(true)} className="btn-vault inline-flex !px-10 !py-3.5 text-base font-black">
-            📝 ফ্রি কোট নিন — আজই শুরু করুন
+            📝 Get a free quote — start today
           </button>
-          <p className="mt-2 text-[11px] text-slate-500">💡 এটি শুধু একটি ডেমো — অর্ডার করলে আপনার নাম, ছবি ও কনটেন্ট দিয়ে বানিয়ে দেওয়া হবে।</p>
+          <p className="mt-2 text-[11px] text-slate-500">💡 This is only a demo — when you order, it is built with your name, photos and content.</p>
         </div>
       </div>
     </div>
