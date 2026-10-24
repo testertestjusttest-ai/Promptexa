@@ -4,6 +4,7 @@ import { getDemoDef } from "../../web-dev/demos/demosite/defs";
 import { DemositeProvider } from "../../web-dev/demos/demosite/store";
 import DemoSite from "../../web-dev/demos/demosite/DemoSite";
 import { DemoShell } from "../../web-dev/demos/full-demos";
+import { AgencyDemoBar } from "../../web-dev/demos/demosite/agency-demo-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function Page({ params }: { params: Promise<{ page?: string
   return (
     <DemositeProvider slug={def.slug} def={def}>
       <DemoShell name={def.name} type={def.type} slug={def.slug}>
+          <AgencyDemoBar slug={def.slug} name={def.name} />
         <DemoSite page={page ?? []} />
       </DemoShell>
     </DemositeProvider>
