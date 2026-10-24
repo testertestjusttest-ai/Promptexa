@@ -358,6 +358,13 @@ export interface HeroSlide {
   grad?: string;
 }
 
+/** Phase 4: admin-managed banner slides (extra hero slides, no CTA).
+ *  Read from the demo store's customBanners; empty when the admin added none. */
+export function bannerSlides(): HeroSlide[] {
+  const { def, store } = useDemo();
+  return (store.custom.customBanners ?? []).map((b) => ({ emoji: b.emoji, title: b.title, sub: b.sub, grad: def.grad }));
+}
+
 export function HeroSlider({ slides, accent }: { slides: HeroSlide[]; accent: string }) {
   const { base } = useDemo();
   const [idx, setIdx] = useState(0);

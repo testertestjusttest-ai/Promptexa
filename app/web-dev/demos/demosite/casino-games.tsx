@@ -8,11 +8,13 @@ import { Back, Empty, Field, Page, SectionTitle } from "./ui";
 import { bn, money, GOLD, useSkin, useBetSlip, SLOT_GAMES, LIVE_GAMES, ALL_GAMES, TOURNAMENTS, fmtTime, gameHref, GameCard, GameShell, BetChips, useGameRound, rankVal, drawCard, CardView, catalogGame, GAME_CATALOG, catalogHref, PROVIDERS, useCasinoConfig, type CatalogGame, type SportId, type CasiMatch } from "./casino-data";
 
 export function CasinoLobby() {
-  const { base } = useSkin();
+  const { base, store } = useSkin();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("all");
-  const cats = [["all", "🎮 সব"], ["slots", "🎰 স্লটস"], ["table", "🃏 টেবিল"], ["desi", "🪔 দেশি"], ["crash", "📈 ক্র্যাশ"], ["live", "🎥 লাইভ"]] as const;
-  const list = ALL_GAMES.filter((g) => (cat === "all" || g.cat === cat) && (!q || g.n.includes(q)));
+  // Phase 6: admin category toggles hide categories from the lobby.
+  const disabledCats = store.custom.customDisabledGameCats ?? [];
+  const cats = [["all", "🎮 সব"], ["slots", "🎰 স্লটস"], ["table", "🃏 টেবিল"], ["desi", "🪔 দেশি"], ["crash", "📈 ক্র্যাশ"], ["live", "🎥 লাইভ"]].filter(([id]) => id === "all" || !disabledCats.includes(id));
+  const list = ALL_GAMES.filter((g) => !disabledCats.includes(g.cat) && (cat === "all" || g.cat === cat) && (!q || g.n.includes(q)));
   return (
     <Page>
       <Back href={base} label="হোম" />

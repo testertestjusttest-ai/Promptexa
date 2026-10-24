@@ -145,7 +145,7 @@ function LobbyStats() {
 }
 
 export function CatalogLobby() {
-  const { base, sub } = useSkin();
+  const { base, sub, store } = useSkin();
   const [tab, setTab] = useState<"games" | "new" | "bonus" | "cashback" | "fav">("games");
   const [cat, setCat] = useState("all");
   const [provider, setProvider] = useState(() => {
@@ -158,12 +158,18 @@ export function CatalogLobby() {
   const [q, setQ] = useState("");
   const [shown, setShown] = useState(48);
   const { favs, toggle } = useFavGames();
+  // Phase 6: admin category toggles hide categories from this lobby too.
+  // Catalogue cats crash/dice/wheel/mines/plinko/hilo all belong to the
+  // admin's single "Crash Games" toggle; other cats map to themselves.
+  const disabledCats = store.custom.customDisabledGameCats ?? [];
+  const catalogCatGroup = (c: string) => ["crash", "dice", "wheel", "mines", "plinko", "hilo"].includes(c) ? "crash" : c;
   const filtered = useMemo(() => GAME_CATALOG.filter((g) =>
+    !disabledCats.includes(catalogCatGroup(g.cat)) &&
     (cat === "all" || g.cat === cat) &&
     (provider === "সব প্রোভাইডার" || g.provider === provider) &&
     (!q || g.n.includes(q) || g.provider.includes(q)) &&
     (tab === "games" || (tab === "new" && g.isNew) || (tab === "fav" && favs.includes(g.id)))
-  ), [cat, provider, q, tab, favs]);
+  ), [cat, provider, q, tab, favs, disabledCats]);
   return (
     <Page>
       <SectionTitle t="🎮 গেম লবি" sub={`মোট ${bn(GAME_CATALOG.length)}+ গেম • সব নিজস্ব ইঞ্জিনে চলে`} />

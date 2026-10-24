@@ -10,73 +10,103 @@ import { useState } from "react";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { useBh, BhLogo, EN_NAME, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
+import { useDemoLangOpt, DemoLangSwitcher, type DemoLang } from "./demo-lang";
 import { AdSlot, AnnouncementBar } from "./client-ads";
 
-function navLinks(layout: string, lang?: string): { label: string; href: string }[] {
+function navLinks(layout: string, lang?: string | DemoLang): { label: string; href: string }[] {
+  // Reworked demos (demo-lang provider mounted): English nav in "en", and
+  // English fallback in "hi" until Hindi strings land (Phase 2). Legacy
+  // demos pass undefined and keep the existing Bangla labels untouched.
+  const enNav = lang === "en" || lang === "hi";
   switch (layout) {
     case "shop":
-      return [
-        { label: "🏠 হোম", href: "" },
-        { label: "🛍️ শপ", href: "/shop" },
-        { label: "🎁 অফার", href: "/offers" },
-        { label: "📍 ট্র্যাক অর্ডার", href: "/track" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
-      ];
+      return enNav
+        ? [
+            { label: "🏠 Home", href: "" },
+            { label: "🛍️ Shop", href: "/shop" },
+            { label: "🎁 Offers", href: "/offers" },
+            { label: "📍 Track Order", href: "/track" },
+            { label: "ℹ️ About", href: "/about" },
+            { label: "📞 Contact", href: "/contact" },
+          ]
+        : [
+            { label: "🏠 হোম", href: "" },
+            { label: "🛍️ শপ", href: "/shop" },
+            { label: "🎁 অফার", href: "/offers" },
+            { label: "📍 ট্র্যাক অর্ডার", href: "/track" },
+            { label: "ℹ️ সম্পর্কে", href: "/about" },
+            { label: "📞 যোগাযোগ", href: "/contact" },
+          ];
     case "service":
-      return [
-        { label: "🏠 হোম", href: "" },
-        { label: "🛠️ সার্ভিসেস", href: "/services" },
-        { label: "⭐ রিভিউ", href: "/reviews" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
-      ];
+      return enNav
+        ? [
+            { label: "🏠 Home", href: "" },
+            { label: "🛠️ Services", href: "/services" },
+            { label: "⭐ Reviews", href: "/reviews" },
+            { label: "ℹ️ About", href: "/about" },
+            { label: "📞 Contact", href: "/contact" },
+          ]
+        : [
+            { label: "🏠 হোম", href: "" },
+            { label: "🛠️ সার্ভিসেস", href: "/services" },
+            { label: "⭐ রিভিউ", href: "/reviews" },
+            { label: "ℹ️ সম্পর্কে", href: "/about" },
+            { label: "📞 যোগাযোগ", href: "/contact" },
+          ];
     case "gallery":
       return [
-        { label: "🏠 হোম", href: "" },
-        { label: "🖼️ গ্যালারি", href: "/gallery" },
-        { label: "💰 প্রাইসিং", href: "/pricing" },
-        { label: "📅 বুকিং", href: "/book" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
+        { label: "🏠 Home", href: "" },
+        { label: "🖼️ Gallery", href: "/gallery" },
+        { label: "💰 Pricing", href: "/pricing" },
+        { label: "📅 Booking", href: "/book" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
       ];
     case "booking":
       return [
-        { label: "🏠 হোম", href: "" },
-        { label: "🏨 লিস্টিং", href: "/stays" },
-        { label: "📅 আমার বুকিং", href: "/my-bookings" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
+        { label: "🏠 Home", href: "" },
+        { label: "🏨 Listings", href: "/stays" },
+        { label: "📅 My bookings", href: "/my-bookings" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
       ];
     case "invest":
       return [
-        { label: "🏠 হোম", href: "" },
-        { label: "📈 প্ল্যানসমূহ", href: "/plans" },
-        { label: "💰 ডিপোজিট", href: "/deposit" },
-        { label: "💼 আমার বিনিয়োগ", href: "/dashboard" },
-        { label: "❓ কিভাবে কাজ করে", href: "/how" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
+        { label: "🏠 Home", href: "" },
+        { label: "📈 Plans", href: "/plans" },
+        { label: "💰 Deposit", href: "/deposit" },
+        { label: "💼 My investments", href: "/dashboard" },
+        { label: "❓ How it works", href: "/how" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
       ];
     case "exchange":
       return [
-        { label: "🏠 হোম", href: "" },
-        { label: "💱 এক্সচেঞ্জ", href: "/exchange" },
-        { label: "💰 ডিপোজিট", href: "/deposit" },
-        { label: "📊 লাইভ রেট", href: "/rates" },
-        { label: "📍 ট্র্যাক", href: "/track" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
+        { label: "🏠 Home", href: "" },
+        { label: "💱 Exchange", href: "/exchange" },
+        { label: "💰 Deposit", href: "/deposit" },
+        { label: "📊 Live rates", href: "/rates" },
+        { label: "📍 Track", href: "/track" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
       ];
     case "wallet":
       return [
-        { label: "🏠 হোম", href: "" },
-        { label: "👛 ওয়ালেট", href: "/wallet" },
-        { label: "💰 ডিপোজিট", href: "/deposit" },
-        { label: "📤 সেন্ড", href: "/send" },
-        { label: "📥 রিসিভ", href: "/receive" },
-        { label: "ℹ️ সম্পর্কে", href: "/about" },
-        { label: "📞 যোগাযোগ", href: "/contact" },
+        { label: "🏠 Home", href: "" },
+        { label: "👛 Wallet", href: "/wallet" },
+        { label: "💰 Deposit", href: "/deposit" },
+        { label: "📤 Send", href: "/send" },
+        { label: "📥 Receive", href: "/receive" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
+      ];
+    case "news":
+      return [
+        { label: "🏠 Home", href: "" },
+        { label: "📰 Latest", href: "/cat/National" },
+        { label: "🔍 Search", href: "/search" },
+        { label: "ℹ️ About", href: "/about" },
+        { label: "📞 Contact", href: "/contact" },
       ];
     case "buyinghouse":
       return lang === "en"
@@ -97,11 +127,19 @@ function navLinks(layout: string, lang?: string): { label: string; href: string 
             { label: "👕 প্রোডাক্ট", href: "/products" },
             { label: "🔍 কোয়ালিটি", href: "/quality" },
             { label: "🏭 ফ্যাক্টরি", href: "/factories" },
-            { label: "🖼️ গ্যালারি", href: "/gallery" },
+            { label: "🖼️ Gallery", href: "/gallery" },
             { label: "📰 ব্লগ", href: "/blog" },
             { label: "📩 RFQ", href: "/rfq" },
             { label: "📞 যোগাযোগ", href: "/contact" },
           ];
+    case "jewelry":
+      return [
+        { label: "🏠 Home", href: "" },
+        { label: "💎 Collection", href: "/shop" },
+        { label: "🏛️ Atelier", href: "/about" },
+        { label: "❓ FAQ", href: "/faq" },
+        { label: "📞 Contact", href: "/contact" },
+      ];
     case "casino":
       return [
         { label: "🏠 হোম", href: "" },
@@ -124,7 +162,7 @@ function navLinks(layout: string, lang?: string): { label: string; href: string 
         { label: "🤝 P2P", href: "/p2p" },
         { label: "🔄 কনভার্ট", href: "/convert" },
         { label: "🌱 আর্ন", href: "/earn" },
-        { label: "👛 ওয়ালেট", href: "/wallet" },
+        { label: "👛 Wallet", href: "/wallet" },
         { label: "🎓 অ্যাকাডেমি", href: "/academy" },
         { label: "🎧 সাপোর্ট", href: "/support" },
       ];
@@ -158,16 +196,23 @@ function drawerTheme(theme: string | undefined, dark: boolean) {
 export default function Chrome({ children }: { children: React.ReactNode }) {
   const { def, base, store, clientSlug } = useDemo();
   const bh = useBh();
+  const dl = useDemoLangOpt();
   const isBh = def.layout === "buyinghouse";
-  const L = (bn: string, en: string) => (isBh ? bh.tx(bn, en) : bn);
-  const siteName = isBh && bh.lang === "en" ? EN_NAME : def.name;
+  // Phase 4: reworked demos mount the demo-lang provider, so their chrome
+  // (drawer, footer, aria labels) follows it — English by default, Bangla
+  // only when the visitor switched to Bangla. Legacy demos (no provider)
+  // keep the previous Bangla strings untouched.
+  const L = (bn: string, en: string) => (isBh ? bh.tx(bn, en) : dl ? (dl.lang === "bn" ? bn : en) : bn);
+  const siteName = isBh && bh.lang !== "bn" ? EN_NAME : def.name;
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
   const [q, setQ] = useState("");
   const [mSearch, setMSearch] = useState(false);
-  const links = navLinks(def.layout, bh.lang);
+  // Reworked demos use the demo-lang provider; buying-house keeps its own
+  // bh-lang; every other demo passes undefined and keeps legacy strings.
+  const links = navLinks(def.layout, dl ? dl.lang : isBh ? bh.lang : undefined);
   const dark = def.dark;
-  const showCart = def.layout === "shop";
+  const showCart = def.layout === "shop" || def.layout === "jewelry";
   const dt = drawerTheme(def.theme, dark);
 
   const goSearch = (e: React.FormEvent) => {
@@ -182,6 +227,11 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={`min-h-screen ${dark ? "bg-[#0a0a12] text-white" : "bg-slate-50 text-slate-800"}`}>
+      {def.agencyReworked && store.custom.customAnnouncement ? (
+        <div className="px-4 py-2 text-center text-xs font-bold text-white" style={{ background: def.accent }}>
+          📢 {store.custom.customAnnouncement}
+        </div>
+      ) : null}
       {clientSlug && <AnnouncementBar />}
       {/* ===== top navbar ===== */}
       <header className={`sticky top-0 z-[60] backdrop-blur-md ${dark ? "bg-[#0a0a12]/90 border-b border-white/10" : "bg-white/90 border-b border-slate-200"}`}>
@@ -208,7 +258,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : `🔍 ${def.layout === "news" ? "খবর" : def.layout === "shop" ? "পণ্য" : "খুঁজুন"}...`}
+              placeholder={isBh ? bh.tx("🔍 খুঁজুন...", "🔍 Search...") : dl && dl.lang !== "bn" ? `🔍 ${def.layout === "news" ? "news" : def.layout === "shop" ? "products" : "Search"}...` : `🔍 ${def.layout === "news" ? "খবর" : def.layout === "shop" ? "পণ্য" : "খুঁজুন"}...`}
               className={`w-full rounded-full border px-4 py-2 text-sm outline-none ${
                 dark ? "border-white/15 bg-white/5 text-white placeholder:text-slate-500" : "border-slate-200 bg-slate-100 placeholder:text-slate-400"
               }`}
@@ -238,7 +288,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
                 🛒
                 {store.cartCount > 0 && (
                   <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-black text-white" style={{ background: def.accent }}>
-                    {toBnDigits(store.cartCount)}
+                    {dl && dl.lang !== "bn" ? store.cartCount : toBnDigits(store.cartCount)}
                   </span>
                 )}
               </Link>
@@ -338,18 +388,25 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             </nav>
             {isBh && (
               <>
-                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{bh.tx("ভাষা", "Language")}</p>
+                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">{bh.tx("ভাষা", "Language", "भाषा")}</p>
                 <div className="flex gap-2">
                   <button onClick={() => bh.setLang("en")} className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${bh.lang === "en" ? "text-white shadow-lg" : dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`} style={bh.lang === "en" ? { background: def.accent } : undefined}>English</button>
                   <button onClick={() => bh.setLang("bn")} className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${bh.lang === "bn" ? "text-white shadow-lg" : dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`} style={bh.lang === "bn" ? { background: def.accent } : undefined}>বাংলা</button>
+                  <button onClick={() => bh.setLang("hi")} className={`flex-1 rounded-xl py-2.5 text-sm font-black transition ${bh.lang === "hi" ? "text-white shadow-lg" : dark ? "bg-white/10 hover:bg-white/20" : "bg-slate-100 hover:bg-slate-200"}`} style={bh.lang === "hi" ? { background: def.accent } : undefined}>हिन्दी</button>
                 </div>
               </>
             )}
-            {(def.layout === "shop" || def.layout === "gallery" || def.layout === "news") && def.cats.length > 1 && (
+            {dl && (
+              <>
+                <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">Language</p>
+                <DemoLangSwitcher accent={def.accent} />
+              </>
+            )}
+            {(def.layout === "shop" || def.layout === "jewelry" || def.layout === "gallery" || def.layout === "news") && def.cats.length > 1 && (
               <>
                 <p className="mb-1 mt-5 text-[11px] font-bold uppercase tracking-wider opacity-50">ক্যাটাগরি</p>
                 <div className="flex flex-wrap gap-2">
-                  {def.cats.filter((c) => c !== "সব").map((c) => (
+                  {def.cats.filter((c) => c !== "সব" && c !== "All").map((c) => (
                     <Link
                       key={c}
                       href={def.layout === "news" ? `${base}/cat/${encodeURIComponent(c)}` : def.layout === "gallery" ? `${base}/gallery?cat=${encodeURIComponent(c)}` : `${base}/c/${encodeURIComponent(c)}`}
@@ -366,12 +423,12 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
             <nav className="space-y-1">
               {store.user ? (
                 <>
-                  {def.layout === "shop" && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📦 আমার অর্ডার</span><span className="opacity-30">›</span></Link>}
-                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💳 ওয়ালেট</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📦 আমার অর্ডার</span><span className="opacity-30">›</span></Link>}
+                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💳 Wallet</span><span className="opacity-30">›</span></Link>}
                   {(def.layout === "service" || def.layout === "gallery" || def.layout === "booking") && <Link href={`${base}/my-bookings`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📅 আমার বুকিং</span><span className="opacity-30">›</span></Link>}
-                  {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💼 আমার বিনিয়োগ</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "invest" && <Link href={`${base}/dashboard`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>💼 My investments</span><span className="opacity-30">›</span></Link>}
                   {def.layout === "exchange" && <Link href={`${base}/track`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>📍 এক্সচেঞ্জ ট্র্যাক</span><span className="opacity-30">›</span></Link>}
-                  {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>👛 আমার ওয়ালেট</span><span className="opacity-30">›</span></Link>}
+                  {def.layout === "wallet" && <Link href={`${base}/wallet`} onClick={() => setDrawer(false)} className={`flex items-center justify-between ${dt.item} px-4 py-3 font-bold ${dark ? "hover:bg-white/10" : "hover:bg-slate-100"}`}><span>👛 My wallet</span><span className="opacity-30">›</span></Link>}
                 </>
               ) : (
                 <p className={`px-4 py-2 text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>
@@ -445,8 +502,8 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
               {store.user ? (
                 <>
                   <Link href={`${base}/account`} className="block hover:underline">{L("👤 আমার অ্যাকাউন্ট", "👤 My Account")}</Link>
-                  {def.layout === "shop" && <Link href={`${base}/orders`} className="block hover:underline">📦 আমার অর্ডার</Link>}
-                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} className="block hover:underline">💳 ওয়ালেট</Link>}
+                  {(def.layout === "shop" || def.layout === "jewelry") && <Link href={`${base}/orders`} className="block hover:underline">📦 আমার অর্ডার</Link>}
+                  {(def.layout === "shop" || def.layout === "booking") && <Link href={`${base}/wallet`} className="block hover:underline">💳 Wallet</Link>}
                 </>
               ) : (
                 <>
@@ -481,7 +538,7 @@ export default function Chrome({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className={`border-t py-4 text-center text-xs opacity-50 ${dark ? "border-white/10" : "border-slate-200"}`}>
-          © {isBh && bh.lang === "en" ? new Date().getFullYear() : toBnDigits(new Date().getFullYear())} {siteName}{clientSlug ? "" : isBh ? bh.tx(" • ডেমো ওয়েবসাইট", " • Demo Website") : " • ডেমো ওয়েবসাইট"}
+          © {isBh && bh.lang === "en" ? new Date().getFullYear() : dl && dl.lang !== "bn" ? new Date().getFullYear() : toBnDigits(new Date().getFullYear())} {siteName}{clientSlug ? "" : isBh ? bh.tx(" • ডেমো ওয়েবসাইট", " • Demo Website") : dl && dl.lang !== "bn" ? " • Demo Website" : " • ডেমো ওয়েবসাইট"}
         </div>
       </footer>
     </div>

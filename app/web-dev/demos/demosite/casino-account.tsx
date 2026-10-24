@@ -497,7 +497,7 @@ export function CasinoAccount() {
   const totalRounds = store.gameHistory.length;
   const gameWins = store.gameHistory.filter((g) => g.win > g.bet).length;
   const gamePL = store.gameHistory.reduce((a, g) => a + (g.win - g.bet), 0);
-  const betWins = store.bets.filter((b) => b.status === "জিতেছেন").length;
+  const betWins = store.bets.filter((b) => b.status === "Won").length;
   const xp = totalRounds * 120 + store.bets.length * 350 + gameWins * 200;
   const levels = [
     { n: "ব্রোঞ্জ", e: "🥉", at: 0, cash: "২%" },

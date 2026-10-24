@@ -5,20 +5,21 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { fmtUSD, fmtPct, priceSeries, ChangeBadge, Spark, CoinIcon, CoinRow, TickerTape, TradeChart, OrderBook, useCexBalances, balTotalUSD, bn, USD_BDT, CEX_COINS, coinOf, seeded, P2P_ADS, useSkin, useLocal, PageHead, CexOrder } from "./cex-shared";
+import { fmtUSD, fmtPct, priceSeries, ChangeBadge, Spark, CoinIcon, CoinRow, TickerTape, TradeChart, OrderBook, useCexBalances, balTotalUSD, bn, USD_BDT, useCexCoins, coinOf, seeded, P2P_ADS, useSkin, useLocal, PageHead, CexOrder } from "./cex-shared";
 
 export function CexHome() {
+  const coins = useCexCoins();
   const { def, base } = useDemo();
   const { card, sub } = useSkin();
-  const gainers = [...CEX_COINS].sort((a, b) => b.change - a.change).slice(0, 4);
-  const losers = [...CEX_COINS].sort((a, b) => a.change - b.change).slice(0, 4);
+  const gainers = [...coins].sort((a, b) => b.change - a.change).slice(0, 4);
+  const losers = [...coins].sort((a, b) => a.change - b.change).slice(0, 4);
   return (
     <div>
       {/* hero */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1f2e] via-[#0d1117] to-[#0d1117] px-4 py-12 sm:py-16">
         <div className="pointer-events-none absolute -right-10 -top-10 text-[180px] opacity-10">₿</div>
         <div className="relative mx-auto max-w-6xl">
-          <p className="inline-block rounded-full bg-[#f0b90b]/15 px-3 py-1 text-[11px] font-black text-[#f0b90b]">🚀 বাংলাদেশের #১ ক্রিপ্টো এক্সচেঞ্জ (ডেমো)</p>
+          <p className="inline-block rounded-full bg-[#f0b90b]/15 px-3 py-1 text-[11px] font-black text-[#f0b90b]">🚀 Demo crypto exchange — no real trading</p>
           <h1 className="mt-3 max-w-xl text-3xl font-black leading-tight text-white sm:text-5xl">
             {def.heroTitle || "ক্রিপ্টো ট্রেডিং এখন হাতের মুঠোয়"}
           </h1>
@@ -28,7 +29,7 @@ export function CexHome() {
             <Link href={`${base}/trade/BTCUSDT`} className="rounded-xl border border-white/20 px-8 py-3 text-sm font-bold text-white transition hover:bg-white/10">📈 ট্রেড শুরু করুন</Link>
           </div>
           <div className="mt-6 grid max-w-lg grid-cols-3 gap-2 text-center">
-            {[["৩৫০+", "কয়েন"], ["১২০M+", "ইউজার"], ["০.১%", "ট্রেডিং ফি"]].map(([v, t]) => (
+            {[["9", "Demo coins"], ["Spot • Futures • P2P", "Demo trading"], ["Virtual", "Balances only"]].map(([v, t]) => (
               <div key={t} className="rounded-xl bg-white/5 p-3"><p className="text-lg font-black text-[#f0b90b]">{v}</p><p className="text-[11px] text-slate-400">{t}</p></div>
             ))}
           </div>
@@ -72,7 +73,7 @@ export function CexHome() {
         <div className="mt-8">
           <SectionTitle t="📋 জনপ্রিয় পেয়ার" link={`${base}/markets`} linkLabel="সব দেখুন →" />
           <div className={`${card} overflow-hidden`}>
-            {CEX_COINS.slice(0, 6).map((c) => (
+            {coins.slice(0, 6).map((c) => (
               <Link key={c.code} href={`${base}/trade/${c.code}USDT`} className="flex items-center gap-3 border-b border-white/5 p-3 transition last:border-0 hover:bg-white/5">
                 <CoinIcon code={c.code} size={34} />
                 <div className="flex-1"><p className="text-sm font-black">{c.code}/USDT</p><p className="text-[11px] opacity-50">ভলিউম {c.vol}</p></div>
@@ -96,17 +97,20 @@ export function CexHome() {
 /* ================= MARKETS ================= */
 
 export function CexMarkets() {
-  const { base } = useDemo();
+  const coins = useCexCoins();
+  const { base, store } = useDemo();
   const { card, sub, input } = useSkin();
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"vol" | "gain" | "price">("vol");
   const [tab, setTab] = useState<"spot" | "futures">("spot");
+  // Phase 6: admin pair toggles hide pairs from this markets list only.
+  const disabledPairs = store.custom.customDisabledCexPairs ?? [];
   const list = useMemo(() => {
-    let l = CEX_COINS.filter((c) => !q || (c.code + c.bn + c.name).toLowerCase().includes(q.toLowerCase()));
+    let l = coins.filter((c) => !disabledPairs.includes(c.code) && (!q || (c.code + c.bn + c.name).toLowerCase().includes(q.toLowerCase())));
     if (sort === "gain") l = [...l].sort((a, b) => b.change - a.change);
     else if (sort === "price") l = [...l].sort((a, b) => b.price - a.price);
     return l;
-  }, [q, sort]);
+  }, [q, sort, disabledPairs]);
   return (
     <div>
       <TickerTape />
@@ -150,10 +154,11 @@ export function CexMarkets() {
 /* ================= SPOT TRADING ================= */
 
 export function CexSpot({ pair }: { pair?: string }) {
+  const coins = useCexCoins();
   const { base } = useDemo();
   const { card, sub, input } = useSkin();
   const code = (pair || "BTCUSDT").replace("USDT", "");
-  const c = coinOf(code);
+  const c = coinOf(code, coins);
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [otype, setOtype] = useState("লিমিট");
   const [price, setPrice] = useState(String(c.price));
@@ -288,10 +293,11 @@ export function CexSpot({ pair }: { pair?: string }) {
 /* ================= FUTURES ================= */
 
 export function CexFutures({ pair }: { pair?: string }) {
+  const coins = useCexCoins();
   const { base } = useDemo();
   const { card, sub, input } = useSkin();
   const code = (pair || "BTCUSDT").replace("USDT", "");
-  const c = coinOf(code);
+  const c = coinOf(code, coins);
   const [side, setSide] = useState<"long" | "short">("long");
   const [lev, setLev] = useState(10);
   const [qty, setQty] = useState("");
@@ -502,13 +508,14 @@ export function CexP2PDetail({ id }: { id: string }) {
 /* ================= CONVERT ================= */
 
 export function CexConvert() {
+  const coins = useCexCoins();
   const { card, sub, input } = useSkin();
   const [from, setFrom] = useState("USDT");
   const [to, setTo] = useState("BTC");
   const [amount, setAmount] = useState("");
   const [done, setDone] = useState(false);
   const [bal, setBal] = useCexBalances();
-  const rate = coinOf(from).price / coinOf(to).price;
+  const rate = coinOf(from, coins).price / coinOf(to, coins).price;
   const out = (parseFloat(amount) || 0) * rate;
 
   function swap() {
@@ -528,7 +535,7 @@ export function CexConvert() {
     <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2">
       <CoinIcon code={v} size={30} />
       <select value={v} onChange={(e) => set(e.target.value)} className="bg-transparent text-sm font-black text-white outline-none [&>option]:text-black">
-        {CEX_COINS.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+        {coins.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
       </select>
     </div>
   );
@@ -564,6 +571,7 @@ export function CexConvert() {
 /* ================= DEPOSIT / WITHDRAW ================= */
 
 export function CexDepositCrypto() {
+  const coins = useCexCoins();
   const { card, sub, input } = useSkin();
   const [coin, setCoin] = useState("USDT");
   const [net, setNet] = useState("TRC20");
@@ -581,7 +589,7 @@ export function CexDepositCrypto() {
         <div className="grid grid-cols-2 gap-2">
           <div><label className={`text-xs ${sub}`}>কয়েন</label>
             <select value={coin} onChange={(e) => setCoin(e.target.value)} className={`${input} mt-1 [&>option]:text-black`}>
-              {CEX_COINS.map((c) => <option key={c.code} value={c.code}>{c.code} — {c.bn}</option>)}
+              {coins.map((c) => <option key={c.code} value={c.code}>{c.code} — {c.bn}</option>)}
             </select></div>
           <div><label className={`text-xs ${sub}`}>নেটওয়ার্ক</label>
             <select value={net} onChange={(e) => setNet(e.target.value)} className={`${input} mt-1 [&>option]:text-black`}>
@@ -655,6 +663,7 @@ export function CexDepositFiat() {
 }
 
 export function CexWithdraw() {
+  const coins = useCexCoins();
   const { card, sub, input } = useSkin();
   const [coin, setCoin] = useState("USDT");
   const [addr, setAddr] = useState("");
@@ -669,7 +678,7 @@ export function CexWithdraw() {
       <div className={`${card} p-5`}>
         <label className={`text-xs ${sub}`}>কয়েন</label>
         <select value={coin} onChange={(e) => setCoin(e.target.value)} className={`${input} mt-1 [&>option]:text-black`}>
-          {CEX_COINS.map((c) => <option key={c.code} value={c.code}>{c.code} — {c.bn}</option>)}
+          {coins.map((c) => <option key={c.code} value={c.code}>{c.code} — {c.bn}</option>)}
         </select>
         <label className={`mt-3 block text-xs ${sub}`}>প্রাপকের অ্যাড্রেস</label>
         <input value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="0x... বা T..." className={`${input} mt-1 font-mono !text-xs`} />

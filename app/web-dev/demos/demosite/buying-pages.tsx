@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useBh, BhLogo, CAT_EN, RFQ_STATUS_EN, EN_NAME, EN_HERO_TITLE, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
+import { useBh, BhLogo, CAT_EN, RFQ_STATUS_EN, RFQ_STATUS_HI, EN_NAME, EN_HERO_TITLE, EN_ADDRESS, EN_HOURS, EN_ABOUT } from "./bh-lang";
 import { useDemo } from "./store";
 import { Page, SectionTitle, Back, Btn, Field, Area, Empty, Stars } from "./ui";
 
@@ -249,22 +249,41 @@ const SEED_RFQS: Rfq[] = [
   { id: "RFQ-1038", company: "Tokyo Fashion KK", name: "Yuki Tanaka", country: "জাপান", product: "ফরমাল শার্ট", qty: "২৫,০০০ পিস", price: "$3.40/pc", status: "শিপড", date: "৫ দিন আগে" },
 ];
 
+const SEED_RFQ_IDS = new Set(SEED_RFQS.map((r) => r.id));
+
+/** Persist a full RFQ list: visitor items in full + status overrides for seeds
+ * (seeds themselves are never duplicated into storage). */
+function persistRfqs(list: Rfq[]) {
+  try {
+    const items = list.filter((r) => !SEED_RFQ_IDS.has(r.id));
+    const overrides: Record<string, string> = {};
+    for (const r of list) {
+      if (SEED_RFQ_IDS.has(r.id)) {
+        const seed = SEED_RFQS.find((x) => x.id === r.id);
+        if (seed && seed.status !== r.status) overrides[r.id] = r.status;
+      }
+    }
+    localStorage.setItem("texbridge_rfqs", JSON.stringify({ items, overrides }));
+  } catch { /* ignore */ }
+}
+
 export function loadRfqs(): Rfq[] {
   try {
     const raw = localStorage.getItem("texbridge_rfqs");
-    const mine: Rfq[] = raw ? JSON.parse(raw) : [];
-    return [...mine, ...SEED_RFQS];
+    if (!raw) return SEED_RFQS;
+    const parsed = JSON.parse(raw);
+    // Legacy format: a plain array of visitor RFQs.
+    if (Array.isArray(parsed)) return [...(parsed as Rfq[]), ...SEED_RFQS];
+    const mine: Rfq[] = parsed.items ?? [];
+    const overrides: Record<string, string> = parsed.overrides ?? {};
+    return [...mine, ...SEED_RFQS.map((r) => (overrides[r.id] ? { ...r, status: overrides[r.id] } : r))];
   } catch {
     return SEED_RFQS;
   }
 }
 
 function saveRfq(r: Rfq) {
-  try {
-    const raw = localStorage.getItem("texbridge_rfqs");
-    const mine: Rfq[] = raw ? JSON.parse(raw) : [];
-    localStorage.setItem("texbridge_rfqs", JSON.stringify([r, ...mine]));
-  } catch { /* ignore */ }
+  try { persistRfqs([r, ...loadRfqs()]); } catch { /* ignore */ }
 }
 
 /* ---------------- HOME ---------------- */
@@ -272,7 +291,7 @@ function saveRfq(r: Rfq) {
 export function BhHome() {
   const { def, base } = useDemo();
   const bh = useBh();
-  const stats: [number, string, string][] = bh.lang === "en"
+  const stats: [number, string, string][] = bh.lang !== "bn"
     ? [[120, "+", "Verified Factories"], [40, "+", "Export Countries"], [1500, "+", "Orders Completed"], [98, "%", "On-Time Shipment"]]
     : [[120, "+", "যাচাইকৃত ফ্যাক্টরি"], [40, "+", "দেশে রপ্তানি"], [1500, "+", "অর্ডার সম্পন্ন"], [98, "%", "অন-টাইম শিপমেন্ট"]];
   return (
@@ -347,7 +366,7 @@ export function BhHome() {
       <div className="border-y border-slate-100 bg-white py-3">
         <div className="overflow-hidden" aria-hidden>
           <div className="bh-marquee flex w-max gap-10">
-            {(bh.lang === "en" ? [...COUNTRIES_EN, ...COUNTRIES_EN] : [...COUNTRIES, ...COUNTRIES]).map((c, i) => (
+            {(bh.lang !== "bn" ? [...COUNTRIES_EN, ...COUNTRIES_EN] : [...COUNTRIES, ...COUNTRIES]).map((c, i) => (
               <span key={i} className="whitespace-nowrap text-sm font-bold text-slate-500">{c}</span>
             ))}
           </div>
@@ -437,7 +456,7 @@ export function BhHome() {
             <div className={`${card} h-full`}>
               <p className={`text-lg font-black ${htx}`}>{bh.tx("🏆 কেন টেক্সব্রিজ?", "🏆 Why TexBridge?")}</p>
               <ul className="mt-3 space-y-3.5">
-                {(bh.lang === "en" ? [
+                {(bh.lang !== "bn" ? [
                   ["🏭", "Verified Factory Network", "Every factory is audit-passed and compliance-checked."],
                   ["👤", "Dedicated Merchandiser", "A named merchandiser for every buyer — direct communication."],
                   ["🔍", "Transparent QC Reports", "Inline and final inspection reports with photos and videos on every order."],
@@ -463,7 +482,7 @@ export function BhHome() {
           <SectionTitle t={bh.tx("🏭 আমাদের প্রোডাকশন", "🏭 Our Production")} sub={bh.tx("প্রোডাকশনের ভেতরের চিত্র", "Inside Our Production")} link={`${base}/factories`} linkLabel={bh.tx("সব দেখুন →", "View All →")} />
         </Reveal>
         <div className="grid gap-3 sm:grid-cols-3">
-          {(bh.lang === "en" ? [["factory-1.webp", "Sewing Section", "Skilled Workforce"], ["factory-2.webp", "Quality Inspection", "100% Checked"], ["factory-3.webp", "Packing & Shipment", "Ready for the Global Market"]] : [["factory-1.webp", "সুইং সেকশন", "দক্ষ ওয়ার্কফোর্স"], ["factory-2.webp", "কোয়ালিটি ইন্সপেকশন", "১০০% চেকড"], ["factory-3.webp", "প্যাকিং ও শিপমেন্ট", "গ্লোবাল মার্কেটের জন্য প্রস্তুত"]]).map(([img, t, d], i) => (
+          {(bh.lang !== "bn" ? [["factory-1.webp", "Sewing Section", "Skilled Workforce"], ["factory-2.webp", "Quality Inspection", "100% Checked"], ["factory-3.webp", "Packing & Shipment", "Ready for the Global Market"]] : [["factory-1.webp", "সুইং সেকশন", "দক্ষ ওয়ার্কফোর্স"], ["factory-2.webp", "কোয়ালিটি ইন্সপেকশন", "১০০% চেকড"], ["factory-3.webp", "প্যাকিং ও শিপমেন্ট", "গ্লোবাল মার্কেটের জন্য প্রস্তুত"]]).map(([img, t, d], i) => (
             <Reveal key={t} delay={i * 70}>
               <div className="group relative h-52 overflow-hidden rounded-3xl shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -493,10 +512,10 @@ export function BhHome() {
           <SectionTitle t={bh.tx("⭐ ক্লায়েন্টরা যা বলছেন", "⭐ What Our Clients Say")} sub={bh.tx("বায়ারদের অভিজ্ঞতা", "Client Testimonials")} link={`${base}/clients`} linkLabel={bh.tx("সব দেখুন →", "View All →")} />
         </Reveal>
         <div className="grid gap-4 md:grid-cols-3">
-          {(bh.lang === "en" ? TESTIMONIALS_EN : TESTIMONIALS).map((x, i) => (
+          {(bh.lang !== "bn" ? TESTIMONIALS_EN : TESTIMONIALS).map((x, i) => (
             <Reveal key={x.n} delay={i * 80}>
               <div className={`${card} h-full`}>
-                <Stars rating={x.r} en={bh.lang === "en"} />
+                <Stars rating={x.r} en={bh.lang !== "bn"} />
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">“{x.t}”</p>
                 <div className="mt-4 flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-sm font-black text-white">{x.n.split(" ").map((w) => w[0]).join("")}</span>
@@ -587,7 +606,7 @@ export function BhServiceDetail({ id }: { id: string }) {
         <div className={card}>
           <p className={`font-black ${htx}`}>{bh.tx("✅ যা যা পাচ্ছেন", "✅ What's Included")}</p>
           <ul className="mt-3 space-y-2.5">
-            {((bh.lang === "en" ? SVC_POINTS_EN : pointsBn)[s.id] ?? (bh.lang === "en" ? SVC_POINTS_EN : pointsBn).s0).map((pt) => (
+            {((bh.lang !== "bn" ? SVC_POINTS_EN : pointsBn)[s.id] ?? (bh.lang !== "bn" ? SVC_POINTS_EN : pointsBn).s0).map((pt) => (
               <li key={pt} className="flex items-start gap-2 text-sm text-slate-600"><span className="text-emerald-500">✓</span>{pt}</li>
             ))}
           </ul>
@@ -652,7 +671,7 @@ export function BhProductDetail({ id }: { id: string }) {
   const [form, setForm] = useState({ name: "", phone: "", qty: "" });
   const [sent, setSent] = useState(false);
   if (!p) return <Page><Empty emoji="🔍" text={bh.tx("প্রোডাক্টটি পাওয়া যায়নি", "Product not found")} /></Page>;
-  const specs: [string, string][] = bh.lang === "en"
+  const specs: [string, string][] = bh.lang !== "bn"
     ? [
         ["Fabric", p.c === "ডেনিম" ? "100% cotton denim, 12 oz" : p.c === "সোয়েটার" ? "Acrylic / wool blend" : "100% cotton, 160–180 GSM"],
         ["Size Range", "XS – XXL (per buyer's chart)"],
@@ -682,7 +701,7 @@ export function BhProductDetail({ id }: { id: string }) {
         <div className={card}>
           <p className="text-xs font-black uppercase tracking-widest text-sky-600">{bh.tx(p.c, CAT_EN[p.c] ?? p.c)}</p>
           <h1 className={`mt-1 text-2xl font-black ${htx}`}>{bh.tx(p.n, PROD_EN[p.id]?.n ?? p.n)}</h1>
-          <div className="mt-2"><Stars rating={p.rating} reviews={p.reviews} en={bh.lang === "en"} /></div>
+          <div className="mt-2"><Stars rating={p.rating} reviews={p.reviews} en={bh.lang !== "bn"} /></div>
           <p className={`mt-3 leading-relaxed ${sub}`}>{bh.tx(p.desc, PROD_EN[p.id]?.desc ?? p.desc)}</p>
           <p className="mt-4 text-3xl font-black text-sky-700">FOB {bh.num(p.p)} {bh.tx("টাকা", "BDT")}<span className="text-sm text-slate-400">{bh.tx(" / পিস থেকে", " / pc")}</span></p>
           <div className="mt-4 space-y-1.5">
@@ -719,7 +738,7 @@ export function BhProcess() {
       <Back href={base} label={bh.tx("হোম", "Home")} />
       <SectionTitle t={bh.tx("⚙️ আমাদের ওয়ার্ক প্রসেস", "⚙️ Our Work Process")} sub={bh.tx("প্রতিটি ধাপে স্বচ্ছতা ও আপডেট", "Transparency and updates at every step")} />
       <div className="space-y-3">
-        {(bh.lang === "en" ? PROCESS_EN : PROCESS).map(([e, t, d], i) => (
+        {(bh.lang !== "bn" ? PROCESS_EN : PROCESS).map(([e, t, d], i) => (
           <Reveal key={t} delay={i * 40}>
             <div className={`${card} flex gap-4`}>
               <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${def.grad} text-2xl text-white`}>{e}</div>
@@ -738,7 +757,7 @@ export function BhProcess() {
 export function BhQuality() {
   const { def, base } = useDemo();
   const bh = useBh();
-  const aql: [string, string, string][] = bh.lang === "en"
+  const aql: [string, string, string][] = bh.lang !== "bn"
     ? [
         ["1,000 – 3,000 pcs", "50 pcs", "Up to 2"],
         ["3,001 – 10,000 pcs", "80 pcs", "Up to 3"],
@@ -766,7 +785,7 @@ export function BhQuality() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {(bh.lang === "en" ? [
+        {(bh.lang !== "bn" ? [
           ["🧵", "Pre-Production", "Fabric and trims check, PP sample approval"],
           ["✂️", "During Production", "Inline checks at the 20% and 80% stages"],
           ["🔍", "Final Inspection", "AQL 2.5 random sampling — measurement, stitching, shade"],
@@ -803,7 +822,7 @@ export function BhQuality() {
         <div className={card}>
           <p className={`font-black ${htx}`}>{bh.tx("🧪 ল্যাব টেস্ট সমন্বয়", "🧪 Lab Test Coordination")}</p>
           <ul className="mt-3 space-y-2">
-            {(bh.lang === "en" ? ["Colour fastness (wash / rubbing)", "Shrinkage & dimensional stability", "GSM & fabric composition", "Pilling & tear strength", "Nickel / AZO free — EU standard", "SGS / Bureau Veritas / Intertek reports"] : ["কালার ফাস্টনেস (ওয়াশ / রাবিং)", "শ্রিংকেজ ও ডাইমেনশন স্ট্যাবিলিটি", "GSM ও ফ্যাব্রিক কম্পোজিশন", "পিলিং ও টিয়ার স্ট্রেংথ", "নিকেল / AZO ফ্রি — EU স্ট্যান্ডার্ড", "SGS / Bureau Veritas / Intertek রিপোর্ট"]).map((x) => (
+            {(bh.lang !== "bn" ? ["Colour fastness (wash / rubbing)", "Shrinkage & dimensional stability", "GSM & fabric composition", "Pilling & tear strength", "Nickel / AZO free — EU standard", "SGS / Bureau Veritas / Intertek reports"] : ["কালার ফাস্টনেস (ওয়াশ / রাবিং)", "শ্রিংকেজ ও ডাইমেনশন স্ট্যাবিলিটি", "GSM ও ফ্যাব্রিক কম্পোজিশন", "পিলিং ও টিয়ার স্ট্রেংথ", "নিকেল / AZO ফ্রি — EU স্ট্যান্ডার্ড", "SGS / Bureau Veritas / Intertek রিপোর্ট"]).map((x) => (
               <li key={x} className="flex items-start gap-2 text-sm text-slate-600"><span className="text-emerald-500">✓</span>{x}</li>
             ))}
           </ul>
@@ -824,7 +843,7 @@ export function BhFactories() {
       <Back href={base} label={bh.tx("হোম", "Home")} />
       <SectionTitle t={bh.tx("🏭 পার্টনার ফ্যাক্টরি", "🏭 Partner Factories")} sub={bh.tx("সব ফ্যাক্টরি অডিট-যাচাই করা ও কমপ্লায়েন্স-সার্টিফাইড", "All factories are audit-verified and compliance-certified")} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {(bh.lang === "en" ? FACTORIES_EN : FACTORIES).map((f, i) => (
+        {(bh.lang !== "bn" ? FACTORIES_EN : FACTORIES).map((f, i) => (
           <Reveal key={f.n} delay={i * 60}>
             <div className="h-full overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_2px_18px_rgba(15,23,42,0.05)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -868,9 +887,9 @@ export function BhClients() {
         </div>
       </div>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        {(bh.lang === "en" ? TESTIMONIALS_EN : TESTIMONIALS).map((x) => (
+        {(bh.lang !== "bn" ? TESTIMONIALS_EN : TESTIMONIALS).map((x) => (
           <div key={x.n} className={`${card} h-full`}>
-            <Stars rating={x.r} en={bh.lang === "en"} />
+            <Stars rating={x.r} en={bh.lang !== "bn"} />
             <p className="mt-2 text-sm leading-relaxed text-slate-600">“{x.t}”</p>
             <div className="mt-4 flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-sm font-black text-white">{x.n.split(" ").map((w) => w[0]).join("")}</span>
@@ -911,8 +930,8 @@ export function BhGallery() {
   const [cat, setCat] = useState("সব");
   const [sel, setSel] = useState<number | null>(null);
   const cats = ["সব", "শোরুম", "ফ্যাক্টরি", "প্রোডাক্ট"];
-  const ITEMS = bh.lang === "en" ? GALLERY_ITEMS_EN : GALLERY_ITEMS;
-  const list = ITEMS.map((g, i) => ({ g, i })).filter(({ g }) => cat === "সব" || g[1] === (bh.lang === "en" ? GAL_CAT_EN[cat] : cat));
+  const ITEMS = bh.lang !== "bn" ? GALLERY_ITEMS_EN : GALLERY_ITEMS;
+  const list = ITEMS.map((g, i) => ({ g, i })).filter(({ g }) => cat === "সব" || g[1] === (bh.lang !== "bn" ? GAL_CAT_EN[cat] : cat));
   return (
     <Page>
       <SectionTitle t={bh.tx("🖼️ গ্যালারি", "🖼️ Gallery")} sub={bh.tx("আমাদের গ্যালারি", "Our Gallery")} />
@@ -955,7 +974,7 @@ export function BhBlog() {
     <Page>
       <SectionTitle t={bh.tx("📰 নিউজ ও ইনসাইটস", "📰 News & Insights")} sub={bh.tx("শিল্পের সর্বশেষ খবর ও বিশ্লেষণ", "News & Insights")} />
       <div className="grid gap-4 md:grid-cols-3">
-        {(bh.lang === "en" ? BLOG_POSTS_EN : BLOG_POSTS).map((b) => (
+        {(bh.lang !== "bn" ? BLOG_POSTS_EN : BLOG_POSTS).map((b) => (
           <Link key={b.id} href={`${base}/blog/${b.id}`} className="group block overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_2px_18px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={IMG(b.img)} alt={b.t} className="h-44 w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -975,7 +994,7 @@ export function BhBlog() {
 export function BhBlogDetail({ id }: { id: string }) {
   const { base } = useDemo();
   const bh = useBh();
-  const b = (bh.lang === "en" ? BLOG_POSTS_EN : BLOG_POSTS).find((x) => x.id === id) ?? BLOG_POSTS.find((x) => x.id === id);
+  const b = (bh.lang !== "bn" ? BLOG_POSTS_EN : BLOG_POSTS).find((x) => x.id === id) ?? BLOG_POSTS.find((x) => x.id === id);
   if (!b) return <Page><Empty emoji="🔍" text={bh.tx("আর্টিকেলটি পাওয়া যায়নি", "Article not found")} /></Page>;
   return (
     <Page narrow>
@@ -1074,14 +1093,14 @@ export function BhAbout() {
             {bh.tx("৩৫ জনের মার্চেন্ডাইজার ও QC টিম, ১২০+ যাচাইকৃত ফ্যাক্টরি নেটওয়ার্ক আর সম্পূর্ণ ডিজিটাল রিপোর্টিং — প্রতিটি অর্ডার স্বচ্ছ ও নিয়ন্ত্রিত।", "A 35-member merchandiser and QC team, a network of 120+ verified factories and fully digital reporting — every order stays transparent and under control.")}
           </p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-            {(bh.lang === "en" ? [["10+", "Years of Experience"], ["35", "Team Members"], ["120+", "Factories"]] : [["১০+", "বছরের অভিজ্ঞতা"], ["৩৫", "জনের টিম"], ["১২০+", "ফ্যাক্টরি"]]).map(([v, t]) => (
+            {(bh.lang !== "bn" ? [["10+", "Years of Experience"], ["35", "Team Members"], ["120+", "Factories"]] : [["১০+", "বছরের অভিজ্ঞতা"], ["৩৫", "জনের টিম"], ["১২০+", "ফ্যাক্টরি"]]).map(([v, t]) => (
               <div key={t} className="rounded-2xl bg-sky-50 px-2 py-3 ring-1 ring-sky-100"><p className="text-xl font-black text-sky-700">{v}</p><p className={`text-[11px] font-bold ${sub}`}>{t}</p></div>
             ))}
           </div>
         </div>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          {(bh.lang === "en" ? [
+          {(bh.lang !== "bn" ? [
             ["🎯", "Our Mission", "To put Bangladeshi garments on every retail shelf in the world — at the right quality and the right price."],
             ["👁️", "Our Vision", "To be South Asia's most trusted sourcing partner."],
             ["💎", "Our Values", "Transparency, commitment to quality, punctuality — no compromise on these three."],
@@ -1116,7 +1135,7 @@ export function BhContact() {
       <SectionTitle t={bh.tx("📞 যোগাযোগ", "📞 Contact")} sub={bh.tx("যোগাযোগ করুন — ২৪ ঘণ্টায় উত্তর", "Get in Touch — reply within 24 hours")} />
       <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-3">
-          {(bh.lang === "en" ? [
+          {(bh.lang !== "bn" ? [
             ["📍", "Head Office", EN_ADDRESS],
             ["📞", "Phone / WhatsApp", def.contact],
             ["✉️", "Email", BH_EMAIL],
@@ -1263,7 +1282,7 @@ export function BhAccount() {
         <button onClick={() => { store.logout(); router.push(base); }} className="rounded-xl bg-white/15 px-4 py-2 text-xs font-black">{bh.tx("🚪 লগআউট", "🚪 Log Out")}</button>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-3">
-        {(bh.lang === "en" ? [["📩", bh.num(list.length), "Total RFQs"], ["⏳", bh.num(list.filter((r) => r.status === "নতুন").length), "New"], ["✅", bh.num(list.filter((r) => r.status === "কনফার্ম").length), "Confirmed Orders"]] : [["📩", bh.num(list.length), "মোট RFQ"], ["⏳", bh.num(list.filter((r) => r.status === "নতুন").length), "নতুন"], ["✅", bh.num(list.filter((r) => r.status === "কনফার্ম").length), "কনফার্ম অর্ডার"]]).map(([e, v, t]) => (
+        {(bh.lang !== "bn" ? [["📩", bh.num(list.length), "Total RFQs"], ["⏳", bh.num(list.filter((r) => r.status === "নতুন").length), "New"], ["✅", bh.num(list.filter((r) => r.status === "কনফার্ম").length), "Confirmed Orders"]] : [["📩", bh.num(list.length), "মোট RFQ"], ["⏳", bh.num(list.filter((r) => r.status === "নতুন").length), "নতুন"], ["✅", bh.num(list.filter((r) => r.status === "কনফার্ম").length), "কনফার্ম অর্ডার"]]).map(([e, v, t]) => (
           <div key={t} className={`${card} text-center`}><p className="text-xl">{e}</p><p className="mt-1 text-xl font-black text-sky-700">{v}</p><p className={`text-[11px] font-bold ${sub}`}>{t}</p></div>
         ))}
       </div>
@@ -1278,7 +1297,7 @@ export function BhAccount() {
               <b className="text-sky-700">{r.id}</b>
               <span className="text-sm font-bold text-slate-700">{bh.tx(r.product, PROD_NAME_EN[r.product] ?? CAT_EN[r.product] ?? r.product)}</span>
               <span className={`text-xs ${sub}`}>{bh.dg(r.qty)}</span>
-              <span className="ml-auto rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700 ring-1 ring-sky-100">{bh.tx(r.status, RFQ_STATUS_EN[r.status] ?? r.status)}</span>
+              <span className="ml-auto rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-black text-sky-700 ring-1 ring-sky-100">{bh.tx(r.status, RFQ_STATUS_EN[r.status] ?? r.status, RFQ_STATUS_HI[r.status])}</span>
             </div>
           ))}
         </div>
@@ -1326,6 +1345,7 @@ const ACTIVITY: [string, string, string][] = [
 ];
 
 const PO_STAGES_EN = ["Sample", "Production", "QC", "Shipment"];
+const PO_STAGES_HI = ["सैंपल", "उत्पादन", "गुणवत्ता जांच", "शिपमेंट"];
 
 const WORKERS_EN = [
   { n: "Rafikul Islam", sec: "Cutting", shift: "Morning", present: true, eff: 92 },
@@ -1377,15 +1397,15 @@ export function BuyingAdmin() {
     ["materials", "🧵", bh.tx("ম্যাটেরিয়াল", "Materials")],
     ["settings", "⚙️", bh.tx("সেটিংস", "Settings")],
   ];
-  const stages = bh.lang === "en" ? PO_STAGES_EN : PO_STAGES;
-  const rfqDate = (d: string) => bh.lang === "en" ? (RFQ_DATE_EN[d] ?? bh.dg(d).replace(" দিন আগে", " days ago")) : d;
+  const stages = bh.lang === "bn" ? PO_STAGES : bh.lang === "hi" ? PO_STAGES_HI : PO_STAGES_EN;
+  const rfqDate = (d: string) => bh.lang !== "bn" ? (RFQ_DATE_EN[d] ?? bh.dg(d).replace(" দিন আগে", " days ago")) : d;
 
   const rfStatusCls = (s: string) =>
     s === "নতুন" ? "bg-rose-50 text-rose-600 ring-rose-200" :
     s === "শিপড" ? "bg-emerald-50 text-emerald-700 ring-emerald-200" :
     s === "কনফার্ম" ? "bg-sky-50 text-sky-700 ring-sky-200" : "bg-amber-50 text-amber-700 ring-amber-200";
 
-  const dayBars: [string, number][] = (bh.lang === "en" ? [["Sat", 780], ["Sun", 920], ["Mon", 850], ["Tue", 970], ["Wed", 900], ["Thu", 880], ["Fri", 420]] : [["শনি", 780], ["রবি", 920], ["সোম", 850], ["মঙ্গল", 970], ["বুধ", 900], ["বৃহঃ", 880], ["শুক্র", 420]]);
+  const dayBars: [string, number][] = (bh.lang !== "bn" ? [["Sat", 780], ["Sun", 920], ["Mon", 850], ["Tue", 970], ["Wed", 900], ["Thu", 880], ["Fri", 420]] : [["শনি", 780], ["রবি", 920], ["সোম", 850], ["মঙ্গল", 970], ["বুধ", 900], ["বৃহঃ", 880], ["শুক্র", 420]]);
 
   return (
     <Page>
@@ -1457,7 +1477,7 @@ export function BuyingAdmin() {
               <div className="rounded-3xl border border-slate-200 bg-white p-4">
                 <div className="mb-3 flex items-center justify-between"><p className="font-black text-slate-900">{bh.tx("🔄 প্রোডাকশন ফ্লো", "🔄 Production Flow")}</p><span className="text-[11px] font-bold text-slate-400">{bh.tx("লাইভ আপডেট", "Live Updates")}</span></div>
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {(bh.lang === "en" ? [["✂️", "Cutting", "Running smoothly", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["🧵", "Sewing", "Delayed", "bg-rose-50 text-rose-600 ring-rose-200"], ["🔍", "QC", "Running smoothly", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["📦", "Packing", "Waiting for materials", "bg-amber-50 text-amber-600 ring-amber-200"]] : [["✂️", "কাটিং", "ঠিকঠাক চলছে", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["🧵", "সুইং", "বিলম্বিত", "bg-rose-50 text-rose-600 ring-rose-200"], ["🔍", "QC", "ঠিকঠাক চলছে", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["📦", "প্যাকেজিং", "ম্যাটেরিয়ালের অপেক্ষায়", "bg-amber-50 text-amber-600 ring-amber-200"]]).map(([e, t, s, cls]) => (
+                  {(bh.lang !== "bn" ? [["✂️", "Cutting", "Running smoothly", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["🧵", "Sewing", "Delayed", "bg-rose-50 text-rose-600 ring-rose-200"], ["🔍", "QC", "Running smoothly", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["📦", "Packing", "Waiting for materials", "bg-amber-50 text-amber-600 ring-amber-200"]] : [["✂️", "কাটিং", "ঠিকঠাক চলছে", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["🧵", "সুইং", "বিলম্বিত", "bg-rose-50 text-rose-600 ring-rose-200"], ["🔍", "QC", "ঠিকঠাক চলছে", "bg-emerald-50 text-emerald-600 ring-emerald-200"], ["📦", "প্যাকেজিং", "ম্যাটেরিয়ালের অপেক্ষায়", "bg-amber-50 text-amber-600 ring-amber-200"]]).map(([e, t, s, cls]) => (
                     <div key={t} className="rounded-2xl border border-dashed border-slate-200 p-3.5 text-center">
                       <p className="text-2xl">{e}</p>
                       <p className="mt-1 text-sm font-black text-slate-800">{t}</p>
@@ -1495,7 +1515,7 @@ export function BuyingAdmin() {
                   <div className="mt-4 border-t border-slate-100 pt-3">
                     <p className="mb-2 text-xs font-black text-slate-700">{bh.tx("⏱️ ওয়ার্কার এফিশিয়েন্সি", "⏱️ Worker Efficiency")}</p>
                     <div className="flex flex-wrap gap-5">
-                      {(bh.lang === "en" ? [["Cutting", 80, "#0ea5e9"], ["Sewing", 70, "#f59e0b"], ["Quality", 90, "#10b981"], ["Packing", 40, "#f43f5e"]] : [["কাটিং", 80, "#0ea5e9"], ["সুইং", 70, "#f59e0b"], ["কোয়ালিটি", 90, "#10b981"], ["প্যাকেজিং", 40, "#f43f5e"]]).map(([t, pct, c]) => (
+                      {(bh.lang !== "bn" ? [["Cutting", 80, "#0ea5e9"], ["Sewing", 70, "#f59e0b"], ["Quality", 90, "#10b981"], ["Packing", 40, "#f43f5e"]] : [["কাটিং", 80, "#0ea5e9"], ["সুইং", 70, "#f59e0b"], ["কোয়ালিটি", 90, "#10b981"], ["প্যাকেজিং", 40, "#f43f5e"]]).map(([t, pct, c]) => (
                         <div key={t as string} className="text-center">
                           <Ring pct={pct as number} size={64} stroke={7} color={c as string}>
                             <span className="text-[11px] font-black text-slate-800">{bh.num(pct as number)}%</span>
@@ -1511,7 +1531,7 @@ export function BuyingAdmin() {
                 <div className="rounded-3xl border border-slate-200 bg-white p-4">
                   <p className="font-black text-slate-900">{bh.tx("🕐 সাম্প্রতিক কার্যকলাপ", "🕐 Recent Activity")}</p>
                   <div className="mt-3 space-y-3">
-                    {(bh.lang === "en" ? ACTIVITY_EN : ACTIVITY).map(([time, txt, c]) => (
+                    {(bh.lang !== "bn" ? ACTIVITY_EN : ACTIVITY).map(([time, txt, c]) => (
                       <div key={txt} className="flex gap-2.5">
                         <span className={`h-fit shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black ring-1 ${c === "emerald" ? "bg-emerald-50 text-emerald-600 ring-emerald-100" : c === "sky" ? "bg-sky-50 text-sky-600 ring-sky-100" : c === "violet" ? "bg-violet-50 text-violet-600 ring-violet-100" : c === "amber" ? "bg-amber-50 text-amber-600 ring-amber-100" : "bg-rose-50 text-rose-600 ring-rose-100"}`}>{time}</span>
                         <p className="text-xs leading-relaxed text-slate-600">{txt}</p>
@@ -1521,7 +1541,7 @@ export function BuyingAdmin() {
                   <div className="mt-4 border-t border-slate-100 pt-3">
                     <p className="mb-2 text-xs font-black text-slate-700">{bh.tx("📩 সর্বশেষ RFQ", "📩 Latest RFQs")}</p>
                     {rfqs.slice(0, 2).map((r) => (
-                      <p key={r.id} className="mb-1.5 flex items-center gap-2 text-xs"><b className="text-sky-700">{r.id}</b><span className="truncate text-slate-600">{r.company} — {bh.tx(r.product, PROD_NAME_EN[r.product] ?? CAT_EN[r.product] ?? r.product)}</span><span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ring-1 ${rfStatusCls(r.status)}`}>{bh.tx(r.status, RFQ_STATUS_EN[r.status] ?? r.status)}</span></p>
+                      <p key={r.id} className="mb-1.5 flex items-center gap-2 text-xs"><b className="text-sky-700">{r.id}</b><span className="truncate text-slate-600">{r.company} — {bh.tx(r.product, PROD_NAME_EN[r.product] ?? CAT_EN[r.product] ?? r.product)}</span><span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ring-1 ${rfStatusCls(r.status)}`}>{bh.tx(r.status, RFQ_STATUS_EN[r.status] ?? r.status, RFQ_STATUS_HI[r.status])}</span></p>
                     ))}
                   </div>
                 </div>
@@ -1536,7 +1556,7 @@ export function BuyingAdmin() {
                 <span className="rounded-full bg-white px-3 py-1.5 text-xs font-black text-slate-600 ring-1 ring-slate-200">{bh.tx("মোট মূল্য", "Total Value")}: $436,000</span>
               </div>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {(bh.lang === "en" ? [["📂", bh.num(pos.length), "Total POs"], ["🔄", bh.num(pos.filter((p) => p.stage < 3).length), "In Progress"], ["🚢", bh.num(pos.filter((p) => p.stage >= 3).length), "At Shipment Stage"], ["📄", "44/56", "Documents Done"]] : [["📂", bh.num(pos.length), "মোট PO"], ["🔄", bh.num(pos.filter((p) => p.stage < 3).length), "চলমান"], ["🚢", bh.num(pos.filter((p) => p.stage >= 3).length), "শিপমেন্ট পর্যায়ে"], ["📄", "৪৪/৫৬", "ডকুমেন্ট সম্পন্ন"]]).map(([e, v, t]) => (
+                {(bh.lang !== "bn" ? [["📂", bh.num(pos.length), "Total POs"], ["🔄", bh.num(pos.filter((p) => p.stage < 3).length), "In Progress"], ["🚢", bh.num(pos.filter((p) => p.stage >= 3).length), "At Shipment Stage"], ["📄", "44/56", "Documents Done"]] : [["📂", bh.num(pos.length), "মোট PO"], ["🔄", bh.num(pos.filter((p) => p.stage < 3).length), "চলমান"], ["🚢", bh.num(pos.filter((p) => p.stage >= 3).length), "শিপমেন্ট পর্যায়ে"], ["📄", "৪৪/৫৬", "ডকুমেন্ট সম্পন্ন"]]).map(([e, v, t]) => (
                   <div key={t} className="rounded-3xl border border-slate-200 bg-white p-4 text-center"><p className="text-xl">{e}</p><p className="mt-1 text-lg font-black text-slate-900">{v}</p><p className="text-[11px] font-bold text-slate-400">{t}</p></div>
                 ))}
               </div>
@@ -1596,8 +1616,8 @@ export function BuyingAdmin() {
                         <td className="px-4 py-3 text-slate-600">{bh.dg(r.qty)}</td>
                         <td className="px-4 py-3 font-bold text-slate-800">{bh.dg(r.price)}</td>
                         <td className="px-4 py-3">
-                          <select value={r.status} onChange={(e) => setRfqs(rfqs.map((x) => x.id === r.id ? { ...x, status: e.target.value } : x))} className={`rounded-full px-2 py-1 text-[11px] font-black ring-1 ${rfStatusCls(r.status)}`}>
-                            {["নতুন", "কোটেশন পাঠানো হয়েছে", "স্যাম্পল চলছে", "কনফার্ম", "শিপড", "বাতিল"].map((st) => <option key={st} value={st}>{bh.tx(st, RFQ_STATUS_EN[st] ?? st)}</option>)}
+                          <select value={r.status} onChange={(e) => { const next = rfqs.map((x) => x.id === r.id ? { ...x, status: e.target.value } : x); setRfqs(next); persistRfqs(next); }} className={`rounded-full px-2 py-1 text-[11px] font-black ring-1 ${rfStatusCls(r.status)}`}>
+                            {["নতুন", "কোটেশন পাঠানো হয়েছে", "স্যাম্পল চলছে", "কনফার্ম", "শিপড", "বাতিল"].map((st) => <option key={st} value={st}>{bh.tx(st, RFQ_STATUS_EN[st] ?? st, RFQ_STATUS_HI[st])}</option>)}
                           </select>
                         </td>
                       </tr>
@@ -1646,7 +1666,7 @@ export function BuyingAdmin() {
             <div className="space-y-4">
               <h2 className="text-xl font-black text-slate-900">{bh.tx("👷 ওয়ার্কার ম্যানেজমেন্ট", "👷 Worker Management")}</h2>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                {(bh.lang === "en" ? [["👥", "150", "Total Workers"], ["✅", "120", "Present Today"], ["❌", "25", "Absent"], ["🌴", "5", "On Leave"]] : [["👥", "১৫০", "মোট ওয়ার্কার"], ["✅", "১২০", "আজ উপস্থিত"], ["❌", "২৫", "অনুপস্থিত"], ["🌴", "৫", "ছুটিতে"]]).map(([e, v, t]) => (
+                {(bh.lang !== "bn" ? [["👥", "150", "Total Workers"], ["✅", "120", "Present Today"], ["❌", "25", "Absent"], ["🌴", "5", "On Leave"]] : [["👥", "১৫০", "মোট ওয়ার্কার"], ["✅", "১২০", "আজ উপস্থিত"], ["❌", "২৫", "অনুপস্থিত"], ["🌴", "৫", "ছুটিতে"]]).map(([e, v, t]) => (
                   <div key={t} className="rounded-3xl border border-slate-200 bg-white p-4 text-center"><p className="text-xl">{e}</p><p className="mt-1 text-lg font-black text-slate-900">{v}</p><p className="text-[11px] font-bold text-slate-400">{t}</p></div>
                 ))}
               </div>
@@ -1654,7 +1674,7 @@ export function BuyingAdmin() {
                 <table className="w-full min-w-[620px] text-left text-sm">
                   <thead><tr className="border-b border-slate-100 text-xs text-slate-400"><th className="px-4 py-3">{bh.tx("ওয়ার্কার", "Worker")}</th><th className="px-4 py-3">{bh.tx("সেকশন", "Section")}</th><th className="px-4 py-3">{bh.tx("শিফট", "Shift")}</th><th className="px-4 py-3">{bh.tx("উপস্থিতি", "Attendance")}</th><th className="px-4 py-3">{bh.tx("এফিশিয়েন্সি", "Efficiency")}</th></tr></thead>
                   <tbody>
-                    {(bh.lang === "en" ? WORKERS_EN : WORKERS).map((w) => (
+                    {(bh.lang !== "bn" ? WORKERS_EN : WORKERS).map((w) => (
                       <tr key={w.n} className="border-b border-slate-50">
                         <td className="px-4 py-3"><span className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-[11px] font-black text-sky-700">{w.n.charAt(0)}</span><b className="text-slate-800">{w.n}</b></td>
                         <td className="px-4 py-3 text-slate-600">{w.sec}</td>
@@ -1680,7 +1700,7 @@ export function BuyingAdmin() {
                 <table className="w-full min-w-[620px] text-left text-sm">
                   <thead><tr className="border-b border-slate-100 text-xs text-slate-400"><th className="px-4 py-3">{bh.tx("ম্যাটেরিয়াল", "Material")}</th><th className="px-4 py-3">{bh.tx("ধরন", "Type")}</th><th className="px-4 py-3">{bh.tx("স্টক", "Stock")}</th><th className="px-4 py-3">{bh.tx("স্ট্যাটাস", "Status")}</th><th className="px-4 py-3">{bh.tx("পেন্ডিং অর্ডার", "Pending Order")}</th></tr></thead>
                   <tbody>
-                    {(bh.lang === "en" ? MATERIALS_EN : MATERIALS).map((m) => (
+                    {(bh.lang !== "bn" ? MATERIALS_EN : MATERIALS).map((m) => (
                       <tr key={m.n} className="border-b border-slate-50">
                         <td className="px-4 py-3 font-bold text-slate-800">{m.n}</td>
                         <td className="px-4 py-3 text-slate-600">{m.t}</td>
@@ -1700,10 +1720,11 @@ export function BuyingAdmin() {
               <h2 className="text-xl font-black text-slate-900">{bh.tx("⚙️ সাইট সেটিংস", "⚙️ Site Settings")}</h2>
               <div className="max-w-xl rounded-3xl border border-slate-200 bg-white p-5">
                 <p className="font-black text-slate-800">🌐 {bh.tx("ওয়েবসাইটের ভাষা", "Website Language")}</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">{bh.tx("ডিফল্ট ভাষা ইংলিশ। বাংলা সিলেক্ট করলে পুরো ওয়েবসাইট ও অ্যাডমিন প্যানেল সম্পূর্ণ বাংলায় দেখাবে।", "English is the default language. Select Bangla to switch the entire website and admin panel to Bangla.")}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">{bh.tx("ডিফল্ট ভাষা ইংলিশ। বাংলা সিলেক্ট করলে পুরো ওয়েবসাইট ও অ্যাডমিন প্যানেল সম্পূর্ণ বাংলায় দেখাবে।", "English is the default language. Select Bangla or Hindi to switch the entire website and admin panel.", "अंग्रेज़ी डिफ़ॉल्ट भाषा है। पूरी वेबसाइट और एडमिन पैनल बदलने के लिए बांग्ला या हिन्दी चुनें।")}</p>
                 <div className="mt-3 flex gap-2">
-                  <button type="button" onClick={() => bh.setLang("en")} className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${bh.lang === "en" ? "bg-sky-600 text-white shadow" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"}`}>English</button>
+                  <button type="button" onClick={() => bh.setLang("en")} className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${bh.lang !== "bn" ? "bg-sky-600 text-white shadow" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"}`}>English</button>
                   <button type="button" onClick={() => bh.setLang("bn")} className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${bh.lang === "bn" ? "bg-sky-600 text-white shadow" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"}`}>বাংলা</button>
+                  <button type="button" onClick={() => bh.setLang("hi")} className={`rounded-xl px-5 py-2.5 text-sm font-black transition ${bh.lang === "hi" ? "bg-sky-600 text-white shadow" : "bg-slate-100 text-slate-600 ring-1 ring-slate-200"}`}>हिन्दी</button>
                 </div>
               </div>
               <form className="max-w-xl rounded-3xl border border-slate-200 bg-white p-5" onSubmit={(e) => { e.preventDefault(); store.saveCustom({ siteName: settings.siteName, heroTitle: settings.heroTitle, heroSub: settings.heroSub }); setSaved(true); setTimeout(() => setSaved(false), 2500); }}>

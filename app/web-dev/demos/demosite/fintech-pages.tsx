@@ -8,10 +8,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoInvestPlan, DemoRate, DemoCoin } from "./types";
-import { Price, SectionTitle, Empty, Back, Page, Hero, themeOf } from "./ui";
+import { Price, SectionTitle, Empty, Back, Page, Hero, themeOf, bannerSlides } from "./ui";
 import { ShopLogin, ShopSignup, ShopAccount, ShopAbout, ShopContact } from "./shop-pages";
 
 export const InvestLogin = ShopLogin;
@@ -30,7 +29,7 @@ export const WalletAccount = ShopAccount;
 export const WalletAbout = ShopAbout;
 export const WalletContact = ShopContact;
 
-const bn = (n: number) => toBnDigits(Math.round(n).toLocaleString("en-IN"));
+const bn = (n: number) => Math.round(n).toLocaleString("en-IN");
 
 function useSkin() {
   const { def } = useDemo();
@@ -80,26 +79,27 @@ function PlanCard({ plan }: { plan: DemoInvestPlan }) {
       <p className="mt-3 text-lg font-black">{plan.n}</p>
       <div className="mt-2 flex items-end justify-between">
         <div>
-          <p className="text-4xl font-black" style={{ color: def.accent }}>{toBnDigits(plan.dailyRoi.toFixed(2))}<span className="text-lg">%</span></p>
-          <p className="text-xs opacity-60">দৈনিক মুনাফা</p>
+          <p className="text-4xl font-black" style={{ color: def.accent }}>{plan.dailyRoi.toFixed(2)}<span className="text-lg">%</span></p>
+          <p className="text-xs opacity-60">Daily profit</p>
         </div>
         <div className="text-right">
           <p className="text-xl font-black">{bn(plan.roi)}%</p>
-          <p className="text-xs opacity-60">মোট / {plan.duration}</p>
+          <p className="text-xs opacity-60">Total / {plan.duration}</p>
         </div>
       </div>
       <div className="mt-3 space-y-1 text-xs opacity-70">
-        <p>💰 সর্বনিম্ন: {bn(plan.min)} টাকা</p>
-        <p>💰 সর্বোচ্চ: {bn(plan.max)} টাকা</p>
-        <p>⏱️ মেয়াদ: {plan.duration}</p>
+        <p>💰 Minimum: {bn(plan.min)} Tk</p>
+        <p>💰 Maximum: {bn(plan.max)} Tk</p>
+        <p>⏱️ Duration: {plan.duration}</p>
       </div>
-      <span className="btn-demo mt-4 block text-center" style={{ background: def.accent }}>বিনিয়োগ করুন</span>
+      <span className="btn-demo mt-4 block text-center" style={{ background: def.accent }}>Invest now</span>
     </Link>
   );
 }
 
 export function InvestHome() {
   const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   const { card, sub } = useSkin();
   const plans = def.investPlans ?? [];
   const totalInvested = store.investments.reduce((s, x) => s + x.amount, 0);
@@ -107,14 +107,14 @@ export function InvestHome() {
     <div>
       <Hero
         accent={def.accent}
-        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "📈 বিনিয়োগ শুরু করুন", href: "/plans", grad: def.grad }]}
+        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "📈 Start investing", href: "/plans", grad: def.grad }, ...banners]}
       />
       <Page>
         <div className="grid grid-cols-3 gap-2 text-center">
           {[
-            ["👥", "৫০,০০০+", "বিনিয়োগকারী"],
-            ["💸", "১২ কোটি+", "বিতরণকৃত মুনাফা"],
-            ["🛡️", "১০০%", "নিরাপদ"],
+            ["📊", "Tiered plans", "Starter to Premium"],
+            ["⏱️", "Flexible terms", "15–120 days"],
+            ["🛡️", "Demo only", "No real money"],
           ].map(([e, v, t]) => (
             <div key={t} className={`${card} p-4`}>
               <p className="text-2xl">{e}</p>
@@ -124,19 +124,19 @@ export function InvestHome() {
           ))}
         </div>
         <div className="mt-8">
-          <SectionTitle t="📈 বিনিয়োগ প্ল্যান" sub="আপনার বাজেট অনুযায়ী বেছে নিন" link={`${base}/plans`} />
+          <SectionTitle t="📈 Investment plans" sub="Choose by your budget" link={`${base}/plans`} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {plans.slice(0, 3).map((p) => <PlanCard key={p.id} plan={p} />)}
           </div>
         </div>
         <div className={`mt-8 ${card} p-5`}>
-          <SectionTitle t="❓ কিভাবে কাজ করে" />
+          <SectionTitle t="❓ How it works" />
           <div className="grid gap-3 sm:grid-cols-4">
             {[
-              ["1️⃣", "প্ল্যান বেছে নিন", "বাজেট অনুযায়ী প্ল্যান সিলেক্ট করুন"],
-              ["2️⃣", "টাকা জমা দিন", "বিকাশ/নগদে নিরাপদ পেমেন্ট"],
-              ["3️⃣", "মুনাফা পান", "মেয়াদ শেষে লাভসহ ফেরত"],
-              ["4️⃣", "উত্তোলন করুন", "যেকোনো সময় টাকা তুলুন"],
+              ["1️⃣", "Choose a plan", "Select a plan by budget"],
+              ["2️⃣", "Deposit money", "Secure payment via bKash/Nagad"],
+              ["3️⃣", "Earn profit", "Principal + profit back at term end"],
+              ["4️⃣", "Withdraw", "Withdraw money anytime"],
             ].map(([e, t, d]) => (
               <div key={t} className="text-center">
                 <p className="text-3xl">{e}</p>
@@ -148,9 +148,9 @@ export function InvestHome() {
         </div>
         {totalInvested > 0 && (
           <Link href={`${base}/dashboard`} className={`${card} mt-6 block p-5 text-center`}>
-            <p className={`text-xs ${sub}`}>আপনার মোট বিনিয়োগ</p>
-            <p className="mt-1 text-2xl font-black" style={{ color: def.accent }}>{bn(totalInvested)} টাকা</p>
-            <p className="mt-1 text-xs font-bold opacity-70">ড্যাশবোর্ড দেখুন →</p>
+            <p className={`text-xs ${sub}`}>Your total investment</p>
+            <p className="mt-1 text-2xl font-black" style={{ color: def.accent }}>{bn(totalInvested)} Tk</p>
+            <p className="mt-1 text-xs font-bold opacity-70">View dashboard →</p>
           </Link>
         )}
       </Page>
@@ -163,8 +163,8 @@ export function InvestPlans() {
   const plans = def.investPlans ?? [];
   return (
     <Page>
-      <Back href={def.layout ? `/demo${def.slug}` : "/"} label="হোম" />
-      <SectionTitle t="📈 সব বিনিয়োগ প্ল্যান" sub={`${bn(plans.length)}টি প্ল্যান`} />
+      <Back href={def.layout ? `/demo${def.slug}` : "/"} label="Home" />
+      <SectionTitle t="📈 All investment plans" sub={`${bn(plans.length)} plans`} />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((p) => <PlanCard key={p.id} plan={p} />)}
       </div>
@@ -179,55 +179,55 @@ export function InvestDetail({ id }: { id: string }) {
   const plan = (def.investPlans ?? []).find((p) => p.id === id);
   const [amount, setAmount] = useState("");
   const [err, setErr] = useState("");
-  if (!plan) return <Page narrow><Empty emoji="🔍" text="প্ল্যান পাওয়া যায়নি" /></Page>;
+  if (!plan) return <Page narrow><Empty emoji="🔍" text="Plan not found" /></Page>;
   const amt = parseInt(amount.replace(/[^0-9]/g, ""), 10) || 0;
   const profit = Math.round((amt * plan.roi) / 100);
   const go = () => {
-    if (amt < plan.min) { setErr(`সর্বনিম্ন ${bn(plan.min)} টাকা বিনিয়োগ করতে হবে`); return; }
-    if (amt > plan.max) { setErr(`সর্বোচ্চ ${bn(plan.max)} টাকা বিনিয়োগ করা যাবে`); return; }
+    if (amt < plan.min) { setErr(`You must invest at least ${bn(plan.min)} Tk`); return; }
+    if (amt > plan.max) { setErr(`You can invest at most ${bn(plan.max)} Tk`); return; }
     const rec = store.placeInvestment({ planId: plan.id, planName: plan.n, amount: amt, roi: plan.roi, duration: plan.duration });
     router.push(`${base}/success/${rec.id}`);
   };
   return (
     <Page narrow>
-      <Back href={`${base}/plans`} label="প্ল্যানসমূহ" />
+      <Back href={`${base}/plans`} label="Plans" />
       <div className={`${card} p-6 text-center`}>
         <span className="grid h-20 w-20 mx-auto place-items-center rounded-3xl text-5xl" style={{ background: `${def.accent}1a` }}>{plan.e}</span>
         <h1 className="mt-3 text-2xl font-black">{plan.n}</h1>
         <p className={`mt-1 text-sm ${sub}`}>{plan.desc}</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className="text-3xl font-black" style={{ color: def.accent }}>{toBnDigits(plan.dailyRoi.toFixed(2))}%</p>
-            <p className={`text-[11px] ${sub}`}>দৈনিক মুনাফা</p>
+            <p className="text-3xl font-black" style={{ color: def.accent }}>{plan.dailyRoi.toFixed(2)}%</p>
+            <p className={`text-[11px] ${sub}`}>Daily profit</p>
           </div>
           <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p className="text-3xl font-black">{bn(plan.roi)}%</p>
-            <p className={`text-[11px] ${sub}`}>মোট / {plan.duration}</p>
+            <p className={`text-[11px] ${sub}`}>Total / {plan.duration}</p>
           </div>
         </div>
         <div className={`mt-4 grid grid-cols-2 gap-2 text-sm`}>
           <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className={`text-[11px] ${sub}`}>সর্বনিম্ন</p><p className="font-black">{bn(plan.min)} টাকা</p>
+            <p className={`text-[11px] ${sub}`}>Minimum</p><p className="font-black">{bn(plan.min)} Tk</p>
           </div>
           <div className={`rounded-xl p-3 ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className={`text-[11px] ${sub}`}>সর্বোচ্চ</p><p className="font-black">{bn(plan.max)} টাকা</p>
+            <p className={`text-[11px] ${sub}`}>Maximum</p><p className="font-black">{bn(plan.max)} Tk</p>
           </div>
         </div>
       </div>
       <div className={`${card} mt-4 p-5`}>
-        <p className="text-sm font-black">💰 বিনিয়োগের পরিমাণ</p>
-        <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} placeholder={`${bn(plan.min)} – ${bn(plan.max)} টাকা`} inputMode="numeric" className="mt-2" />
+        <p className="text-sm font-black">💰 Investment amount</p>
+        <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} placeholder={`${bn(plan.min)} – ${bn(plan.max)} Tk`} inputMode="numeric" className="mt-2" />
         {amt > 0 && (
           <div className={`mt-3 rounded-xl p-3 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p>বিনিয়োগ: <b>{bn(amt)} টাকা</b></p>
-            <p>দৈনিক আয়: <b style={{ color: def.accent }}>+{bn(Math.round(amt * plan.dailyRoi / 100))} টাকা/দিন</b></p>
-            <p>মোট মুনাফা: <b className="text-emerald-500">+{bn(profit)} টাকা</b> ({plan.duration})</p>
-            <p>মোট ফেরত: <b>{bn(amt + profit)} টাকা</b></p>
+            <p>Investment: <b>{bn(amt)} Tk</b></p>
+            <p>Daily earnings: <b style={{ color: def.accent }}>+{bn(Math.round(amt * plan.dailyRoi / 100))} Tk/Enter</b></p>
+            <p>Total profit: <b className="text-emerald-500">+{bn(profit)} Tk</b> ({plan.duration})</p>
+            <p>Total return: <b>{bn(amt + profit)} Tk</b></p>
           </div>
         )}
         {err && <p className="mt-2 text-xs font-bold text-red-500">{err}</p>}
-        <button onClick={go} className="btn-demo mt-4 w-full" style={{ background: def.accent }}>✅ বিনিয়োগ কনফার্ম করুন</button>
-        <p className={`mt-2 text-center text-[11px] ${sub}`}>ডেমো সাইট — আসল টাকা লেনদেন হয় না</p>
+        <button onClick={go} className="btn-demo mt-4 w-full" style={{ background: def.accent }}>✅ Confirm investment</button>
+        <p className={`mt-2 text-center text-[11px] ${sub}`}>Demo site — no real money is transacted</p>
       </div>
     </Page>
   );
@@ -237,20 +237,20 @@ export function InvestSuccess({ id }: { id: string }) {
   const { def, base, store } = useDemo();
   const { card } = useSkin();
   const inv = store.investments.find((x) => x.id === id);
-  if (!inv) return <Page narrow><Empty emoji="🔍" text="রেকর্ড পাওয়া যায়নি" /></Page>;
+  if (!inv) return <Page narrow><Empty emoji="🔍" text="Record not found" /></Page>;
   return (
     <Page narrow>
       <div className={`${card} p-8 text-center`}>
         <p className="text-6xl">🎉</p>
-        <h1 className="mt-3 text-2xl font-black">বিনিয়োগ সফল!</h1>
-        <p className="mt-2 text-sm opacity-70">আপনার {bn(inv.amount)} টাকা {inv.planName}-এ বিনিয়োগ হয়েছে</p>
+        <h1 className="mt-3 text-2xl font-black">Investment successful!</h1>
+        <p className="mt-2 text-sm opacity-70">Your {bn(inv.amount)} Tk has been invested in {inv.planName}</p>
         <div className={`mt-4 rounded-xl p-4 text-left text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-          <p>🆔 আইডি: <b>{inv.id}</b></p>
-          <p>📈 প্রত্যাশিত মুনাফা: <b style={{ color: def.accent }}>+{bn(Math.round(inv.amount * inv.roi / 100))} টাকা</b></p>
-          <p>⏱️ মেয়াদ: {inv.duration}</p>
-          <p>📌 স্ট্যাটাস: {inv.status}</p>
+          <p>🆔 ID: <b>{inv.id}</b></p>
+          <p>📈 Expected profit: <b style={{ color: def.accent }}>+{bn(Math.round(inv.amount * inv.roi / 100))} Tk</b></p>
+          <p>⏱️ Duration: {inv.duration}</p>
+          <p>📌 Status: {inv.status}</p>
         </div>
-        <Link href={`${base}/dashboard`} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>ড্যাশবোর্ড দেখুন</Link>
+        <Link href={`${base}/dashboard`} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>View dashboard</Link>
       </div>
     </Page>
   );
@@ -264,34 +264,34 @@ export function InvestDashboard() {
   const earnings = invs.reduce((s, x) => s + Math.round(x.amount * x.roi / 100), 0);
   return (
     <Page>
-      <SectionTitle t="💼 আমার বিনিয়োগ" sub={store.user ? `${store.user.name}` : "ডেমো ড্যাশবোর্ড"} />
+      <SectionTitle t="💼 My investments" sub={store.user ? `${store.user.name}` : "Demo dashboard"} />
       <div className="grid grid-cols-2 gap-2">
         <div className={`${card} p-4 text-center`}>
-          <p className={`text-[11px] ${sub}`}>মোট বিনিয়োগ</p>
-          <p className="mt-1 text-xl font-black" style={{ color: def.accent }}>{bn(total)} টাকা</p>
+          <p className={`text-[11px] ${sub}`}>Total investment</p>
+          <p className="mt-1 text-xl font-black" style={{ color: def.accent }}>{bn(total)} Tk</p>
         </div>
         <div className={`${card} p-4 text-center`}>
-          <p className={`text-[11px] ${sub}`}>প্রত্যাশিত মুনাফা</p>
-          <p className="mt-1 text-xl font-black text-emerald-500">+{bn(earnings)} টাকা</p>
+          <p className={`text-[11px] ${sub}`}>Expected profit</p>
+          <p className="mt-1 text-xl font-black text-emerald-500">+{bn(earnings)} Tk</p>
         </div>
       </div>
       <div className="mt-4 space-y-2">
-        {invs.length === 0 && <Empty emoji="📭" text="এখনো কোনো বিনিয়োগ নেই" />}
+        {invs.length === 0 && <Empty emoji="📭" text="No investments yet" />}
         {invs.map((v) => (
           <div key={v.id} className={`${card} p-4`}>
             <div className="flex items-center justify-between">
               <p className="font-black">{v.planName}</p>
               <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-black text-emerald-500">{v.status}</span>
             </div>
-            <p className={`mt-1 text-xs ${sub}`}>{v.id} • {new Date(v.date).toLocaleDateString("bn-BD")}</p>
+            <p className={`mt-1 text-xs ${sub}`}>{v.id} • {new Date(v.date).toLocaleDateString("en-GB")}</p>
             <div className="mt-2 flex items-center justify-between text-sm">
-              <span>বিনিয়োগ: <b>{bn(v.amount)} টাকা</b></span>
-              <span>লাভ: <b className="text-emerald-500">+{bn(Math.round(v.amount * v.roi / 100))}</b></span>
+              <span>Investment: <b>{bn(v.amount)} Tk</b></span>
+              <span>Profit: <b className="text-emerald-500">+{bn(Math.round(v.amount * v.roi / 100))}</b></span>
             </div>
           </div>
         ))}
       </div>
-      <Link href={`${base}/plans`} className="btn-demo mt-5 block text-center" style={{ background: def.accent }}>+ নতুন বিনিয়োগ</Link>
+      <Link href={`${base}/plans`} className="btn-demo mt-5 block text-center" style={{ background: def.accent }}>+ New investment</Link>
     </Page>
   );
 }
@@ -301,13 +301,13 @@ export function InvestHow() {
   const { card, sub } = useSkin();
   return (
     <Page narrow>
-      <SectionTitle t="❓ কিভাবে কাজ করে" />
+      <SectionTitle t="❓ How it works" />
       <div className="space-y-3">
         {[
-          ["📝", "অ্যাকাউন্ট খুলুন", "মোবাইল নম্বর দিয়ে ফ্রি রেজিস্ট্রেশন করুন।"],
-          ["📈", "প্ল্যান বেছে নিন", "আপনার বাজেট ও লক্ষ্য অনুযায়ী প্ল্যান সিলেক্ট করুন।"],
-          ["💳", "পেমেন্ট করুন", "বিকাশ, নগদ, রকেট বা কার্ডে নিরাপদে পেমেন্ট।"],
-          ["💰", "মুনাফা উপভোগ করুন", "মেয়াদ শেষে আসল + মুনাফা সরাসরি আপনার অ্যাকাউন্টে।"],
+          ["📝", "Open an account", "Register free with your mobile number."],
+          ["📈", "Choose a plan", "Select a plan by your budget and goal."],
+          ["💳", "Pay", "Pay securely via bKash, Nagad, Rocket or card."],
+          ["💰", "Enjoy your profit", "Principal + profit goes straight to your account at term end."],
         ].map(([e, t, d]) => (
           <div key={t} className={`${card} flex gap-3 p-4`}>
             <span className="text-3xl">{e}</span>
@@ -316,7 +316,7 @@ export function InvestHow() {
         ))}
       </div>
       <p className={`mt-4 rounded-xl p-3 text-center text-[11px] ${sub} ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-        ⚠️ এটি একটি ডেমো ওয়েবসাইট — এখানে আসল টাকা বিনিয়োগ করবেন না।
+        ⚠️ This is a demo website — do not invest real money here.
       </p>
     </Page>
   );
@@ -361,20 +361,20 @@ function Converter({ compact }: { compact?: boolean }) {
   };
   return (
     <div className={`${card} p-5`}>
-      <p className="text-sm font-black">💱 কারেন্সি কনভার্টার</p>
+      <p className="text-sm font-black">💱 Currency converter</p>
       <div className={`mt-3 grid ${compact ? "grid-cols-1" : "grid-cols-2"} gap-3`}>
         <div>
-          <label className={`text-[11px] ${sub}`}>পাঠাবেন</label>
+          <label className={`text-[11px] ${sub}`}>You send</label>
           <div className="flex gap-2">
             <FSelect dark={def.dark} value={from} onChange={(e) => setFrom(e.target.value)} className="!w-28">
               {rates.map((r) => <option key={r.code} value={r.code}>{r.e} {r.code}</option>)}
               <option value="BDT">🇧🇩 BDT</option>
             </FSelect>
-            <FInput dark={def.dark} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="পরিমাণ" />
+            <FInput dark={def.dark} value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="Amount" />
           </div>
         </div>
         <div>
-          <label className={`text-[11px] ${sub}`}>পাবেন</label>
+          <label className={`text-[11px] ${sub}`}>You receive</label>
           <div className="flex gap-2">
             <FSelect dark={def.dark} value={to} onChange={(e) => setTo(e.target.value)} className="!w-28">
               <option value="BDT">🇧🇩 BDT</option>
@@ -387,27 +387,28 @@ function Converter({ compact }: { compact?: boolean }) {
         </div>
       </div>
       <button onClick={go} disabled={amt <= 0 || from === to} className="btn-demo mt-4 w-full disabled:opacity-40" style={{ background: def.accent }}>
-        এক্সচেঞ্জ করুন →
+        Exchange →
       </button>
     </div>
   );
 }
 
 export function ExchangeHome() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   const { card, sub } = useSkin();
   const rates = def.rates ?? [];
   return (
     <div>
       <Hero
         accent={def.accent}
-        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "💱 এখনই এক্সচেঞ্জ করুন", href: "/exchange", grad: def.grad }]}
+        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "💱 Exchange now", href: "/exchange", grad: def.grad }, ...banners]}
       />
       <Page>
         <RateTicker />
         <div className="mt-4"><Converter /></div>
         <div className="mt-6">
-          <SectionTitle t="📊 আজকের রেট" link={`${base}/rates`} />
+          <SectionTitle t="📊 Today's rates" link={`${base}/rates`} />
           <div className={`${card} divide-y ${def.dark ? "divide-white/10" : "divide-slate-100"}`}>
             {rates.slice(0, 5).map((r) => (
               <div key={r.code} className="flex items-center gap-3 p-3">
@@ -416,8 +417,8 @@ export function ExchangeHome() {
                   <p className="text-sm font-black">{r.code} <span className={`text-[11px] font-normal ${sub}`}>{r.name}</span></p>
                 </div>
                 <div className="text-right text-xs">
-                  <p>ক্রয়: <b style={{ color: def.accent }}>{bn(r.buy)}</b></p>
-                  <p className={sub}>বিক্রয়: {bn(r.sell)}</p>
+                  <p>Buy: <b style={{ color: def.accent }}>{bn(r.buy)}</b></p>
+                  <p className={sub}>Sell: {bn(r.sell)}</p>
                 </div>
                 <span className={`text-[11px] font-black ${r.change >= 0 ? "text-emerald-500" : "text-red-500"}`}>{r.change >= 0 ? "▲" : "▼"}{Math.abs(r.change)}%</span>
               </div>
@@ -425,7 +426,7 @@ export function ExchangeHome() {
           </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-          {[["⚡", "৫ মিনিটে", "ডেলিভারি"], ["🛡️", "১০০%", "নিরাপদ"], ["💬", "২৪/৭", "সাপোর্ট"]].map(([e, v, t]) => (
+          {[["⚡", "In 5 minutes", "Delivery"], ["🛡️", "100%", "Safe"], ["💬", "24/7", "Support"]].map(([e, v, t]) => (
             <div key={t} className={`${card} p-4`}>
               <p className="text-2xl">{e}</p>
               <p className="mt-1 text-sm font-black">{v}</p>
@@ -444,11 +445,11 @@ export function ExchangeRates() {
   const rates = def.rates ?? [];
   return (
     <Page>
-      <Back href={`/demo${def.slug}`} label="হোম" />
-      <SectionTitle t="📊 লাইভ এক্সচেঞ্জ রেট" sub="প্রতি মিনিটে আপডেট (ডেমো)" />
+      <Back href={`/demo${def.slug}`} label="Home" />
+      <SectionTitle t="📊 Live exchange rates" sub="Updated every minute (demo)" />
       <div className={`${card} divide-y overflow-hidden ${def.dark ? "divide-white/10" : "divide-slate-100"}`}>
         <div className={`grid grid-cols-4 gap-2 p-3 text-[11px] font-black uppercase ${sub}`}>
-          <span>কারেন্সি</span><span className="text-right">আমরা কিনি</span><span className="text-right">আমরা বেচি</span><span className="text-right">পরিবর্তন</span>
+          <span>Currency</span><span className="text-right">We buy</span><span className="text-right">We sell</span><span className="text-right">Change</span>
         </div>
         {rates.map((r) => (
           <div key={r.code} className="grid grid-cols-4 items-center gap-2 p-3 text-sm">
@@ -459,7 +460,7 @@ export function ExchangeRates() {
           </div>
         ))}
       </div>
-      <p className={`mt-3 text-center text-[11px] ${sub}`}>ডেমো রেট — আসল লেনদেনের আগে সাপোর্টে যাচাই করুন</p>
+      <p className={`mt-3 text-center text-[11px] ${sub}`}>Demo rates — verify with support before any real transaction</p>
     </Page>
   );
 }
@@ -483,33 +484,33 @@ export function ExchangeFlow() {
   const inBdt = from === "BDT" ? amt : amt * (rFrom?.buy ?? 0);
   const result = to === "BDT" ? inBdt : inBdt / (rTo?.sell ?? 1);
   const next = () => {
-    if (amt <= 0) { setErr("সঠিক পরিমাণ দিন"); return; }
-    if (from === to) { setErr("দুটি আলাদা কারেন্সি বেছে নিন"); return; }
+    if (amt <= 0) { setErr("Enter a valid amount"); return; }
+    if (from === to) { setErr("Choose two different currencies"); return; }
     setErr(""); setStep(1);
   };
   const confirm = () => {
-    if (name.trim().length < 3) { setErr("আপনার নাম দিন"); return; }
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) { setErr("সঠিক মোবাইল নম্বর দিন"); return; }
-    if (!account.trim()) { setErr("গ্রহীতার অ্যাকাউন্ট/ওয়ালেট ঠিকানা দিন"); return; }
+    if (name.trim().length < 3) { setErr("Enter your name"); return; }
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) { setErr("Enter a valid mobile number"); return; }
+    if (!account.trim()) { setErr("Enter the recipient's account/wallet address"); return; }
     const rec = store.placeExchange({ from, to, amount: amt, result: Math.round(result * 100) / 100, name: name.trim(), phone: phone.trim() });
     router.push(`${base}/success/${rec.id}`);
   };
   return (
     <Page narrow>
-      <Back href={`/demo${def.slug}`} label="হোম" />
-      <SectionTitle t="💱 এক্সচেঞ্জ অর্ডার" sub={step === 0 ? "ধাপ ১: পরিমাণ" : "ধাপ ২: তথ্য ও কনফার্ম"} />
+      <Back href={`/demo${def.slug}`} label="Home" />
+      <SectionTitle t="💱 Exchange order" sub={step === 0 ? "Step 1: Amount" : "Step 2: Details & confirm"} />
       {step === 0 && (
         <div className={`${card} space-y-3 p-5`}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={`text-[11px] ${sub}`}>দিবেন</label>
+              <label className={`text-[11px] ${sub}`}>You give</label>
               <FSelect dark={def.dark} value={from} onChange={(e) => setFrom(e.target.value)}>
                 {rates.map((r) => <option key={r.code} value={r.code}>{r.e} {r.code}</option>)}
                 <option value="BDT">🇧🇩 BDT</option>
               </FSelect>
             </div>
             <div>
-              <label className={`text-[11px] ${sub}`}>নিবেন</label>
+              <label className={`text-[11px] ${sub}`}>You take</label>
               <FSelect dark={def.dark} value={to} onChange={(e) => setTo(e.target.value)}>
                 <option value="BDT">🇧🇩 BDT</option>
                 {rates.map((r) => <option key={r.code} value={r.code}>{r.e} {r.code}</option>)}
@@ -517,18 +518,18 @@ export function ExchangeFlow() {
             </div>
           </div>
           <div>
-            <label className={`text-[11px] ${sub}`}>পরিমাণ ({from})</label>
+            <label className={`text-[11px] ${sub}`}>Amount ({from})</label>
             <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} inputMode="decimal" placeholder="0.00" />
           </div>
           {amt > 0 && from !== to && (
             <div className={`rounded-xl p-4 text-center ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-              <p className={`text-[11px] ${sub}`}>আপনি পাবেন</p>
+              <p className={`text-[11px] ${sub}`}>You will receive</p>
               <p className="text-3xl font-black" style={{ color: def.accent }}>{result.toLocaleString("en-IN", { maximumFractionDigits: 2 })} {to}</p>
-              <p className={`mt-1 text-[11px] ${sub}`}>রেট: ১ {from} = {(from === "BDT" ? 1 / (rTo?.sell ?? 1) : (rFrom?.buy ?? 0) / (to === "BDT" ? 1 : rTo?.sell ?? 1)).toFixed(4)} {to}</p>
+              <p className={`mt-1 text-[11px] ${sub}`}>Rate: 1 {from} = {(from === "BDT" ? 1 / (rTo?.sell ?? 1) : (rFrom?.buy ?? 0) / (to === "BDT" ? 1 : rTo?.sell ?? 1)).toFixed(4)} {to}</p>
             </div>
           )}
           {err && <p className="text-xs font-bold text-red-500">{err}</p>}
-          <button onClick={next} className="btn-demo w-full" style={{ background: def.accent }}>পরবর্তী →</button>
+          <button onClick={next} className="btn-demo w-full" style={{ background: def.accent }}>Next →</button>
         </div>
       )}
       {step === 1 && (
@@ -536,15 +537,15 @@ export function ExchangeFlow() {
           <div className={`rounded-xl p-3 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p><b>{amt} {from}</b> → <b style={{ color: def.accent }}>{result.toLocaleString("en-IN", { maximumFractionDigits: 2 })} {to}</b></p>
           </div>
-          <FInput dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম" />
-          <FInput dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর (01XXXXXXXXX)" inputMode="tel" />
-          <FInput dark={def.dark} value={account} onChange={(e) => setAccount(e.target.value)} placeholder={to === "BDT" ? "বিকাশ/নগদ নম্বর" : `${to} ওয়ালেট ঠিকানা`} />
+          <FInput dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+          <FInput dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number (01XXXXXXXXX)" inputMode="tel" />
+          <FInput dark={def.dark} value={account} onChange={(e) => setAccount(e.target.value)} placeholder={to === "BDT" ? "bKash/Nagad number" : `${to} wallet address`} />
           {err && <p className="text-xs font-bold text-red-500">{err}</p>}
           <div className="flex gap-2">
-            <button onClick={() => setStep(0)} className="btn-demo-ghost flex-1">← ফিরে যান</button>
-            <button onClick={confirm} className="btn-demo flex-1" style={{ background: def.accent }}>✅ কনফার্ম করুন</button>
+            <button onClick={() => setStep(0)} className="btn-demo-ghost flex-1">← Go back</button>
+            <button onClick={confirm} className="btn-demo flex-1" style={{ background: def.accent }}>✅ Confirm</button>
           </div>
-          <p className={`text-center text-[11px] ${sub}`}>ডেমো সাইট — আসল টাকা লেনদেন হয় না</p>
+          <p className={`text-center text-[11px] ${sub}`}>Demo site — no real money is transacted</p>
         </div>
       )}
     </Page>
@@ -555,19 +556,19 @@ export function ExchangeSuccess({ id }: { id: string }) {
   const { def, base, store } = useDemo();
   const { card } = useSkin();
   const ex = store.exchanges.find((x) => x.id === id);
-  if (!ex) return <Page narrow><Empty emoji="🔍" text="রেকর্ড পাওয়া যায়নি" /></Page>;
+  if (!ex) return <Page narrow><Empty emoji="🔍" text="Record not found" /></Page>;
   return (
     <Page narrow>
       <div className={`${card} p-8 text-center`}>
         <p className="text-6xl">✅</p>
-        <h1 className="mt-3 text-2xl font-black">অর্ডার গৃহীত!</h1>
+        <h1 className="mt-3 text-2xl font-black">Order received!</h1>
         <p className="mt-2 text-sm opacity-70">{ex.amount} {ex.from} → {ex.result} {ex.to}</p>
         <div className={`mt-4 rounded-xl p-4 text-left text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-          <p>🆔 ট্র্যাকিং: <b>{ex.id}</b></p>
-          <p>📌 স্ট্যাটাস: {ex.status}</p>
-          <p>⏱️ ৫–৩০ মিনিটের মধ্যে সম্পন্ন হবে (ডেমো)</p>
+          <p>🆔 Tracking: <b>{ex.id}</b></p>
+          <p>📌 Status: {ex.status}</p>
+          <p>⏱️ Completed within 5–30 minutes (demo)</p>
         </div>
-        <Link href={`${base}/track?id=${ex.id}`} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>ট্র্যাক করুন</Link>
+        <Link href={`${base}/track?id=${ex.id}`} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>Track</Link>
       </div>
     </Page>
   );
@@ -584,26 +585,26 @@ export function ExchangeTrack() {
   };
   return (
     <Page narrow>
-      <Back href={`/demo${def.slug}`} label="হোম" />
-      <SectionTitle t="📍 এক্সচেঞ্জ ট্র্যাক" />
+      <Back href={`/demo${def.slug}`} label="Home" />
+      <SectionTitle t="📍 Track exchange" />
       <div className={`${card} p-5`}>
         <div className="flex gap-2">
-          <FInput dark={def.dark} value={q} onChange={(e) => setQ(e.target.value)} placeholder="ট্র্যাকিং আইডি (যেমন EX-...)" />
-          <button onClick={search} className="btn-demo shrink-0" style={{ background: def.accent }}>খুঁজুন</button>
+          <FInput dark={def.dark} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tracking ID (e.g. EX-...)" />
+          <button onClick={search} className="btn-demo shrink-0" style={{ background: def.accent }}>Search</button>
         </div>
-        {found === null && <p className="mt-3 text-center text-sm font-bold text-red-500">রেকর্ড পাওয়া যায়নি</p>}
+        {found === null && <p className="mt-3 text-center text-sm font-bold text-red-500">Record not found</p>}
         {found && (
           <div className={`mt-4 rounded-xl p-4 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
             <p>🆔 {found.id}</p>
             <p className="mt-1"><b>{found.amount} {found.from}</b> → <b style={{ color: def.accent }}>{found.result} {found.to}</b></p>
-            <p className="mt-1">📌 স্ট্যাটাস: {found.status}</p>
-            <p className={`text-xs ${sub}`}>{new Date(found.date).toLocaleString("bn-BD")}</p>
+            <p className="mt-1">📌 Status: {found.status}</p>
+            <p className={`text-xs ${sub}`}>{new Date(found.date).toLocaleString("en-GB")}</p>
           </div>
         )}
       </div>
       {store.exchanges.length > 0 && (
         <div className="mt-4">
-          <SectionTitle t="🕘 সাম্প্রতিক অর্ডার" />
+          <SectionTitle t="🕘 Recent orders" />
           <div className="space-y-2">
             {store.exchanges.slice(0, 5).map((x) => (
               <Link key={x.id} href={`${base}/track`} className={`${card} block p-3 text-sm`}>
@@ -642,7 +643,8 @@ function CoinRow({ coin }: { coin: DemoCoin }) {
 }
 
 export function WalletHome() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   const { card, sub } = useSkin();
   const coins = def.coins ?? [];
   const portfolio = coins.reduce((s, c) => s + (DEMO_BALANCES[c.code] ?? 0) * c.price, 0);
@@ -650,22 +652,22 @@ export function WalletHome() {
     <div>
       <Hero
         accent={def.accent}
-        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "👛 ওয়ালেট খুলুন", href: "/wallet", grad: def.grad }]}
+        slides={[{ img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "👛 Open wallet", href: "/wallet", grad: def.grad }, ...banners]}
       />
       <Page>
         <div className={`${card} p-5 text-center`}>
-          <p className={`text-[11px] ${sub}`}>মোট পোর্টফোলিও (ডেমো)</p>
+          <p className={`text-[11px] ${sub}`}>Total portfolio (demo)</p>
           <p className="mt-1 text-3xl font-black" style={{ color: def.accent }}>${bn(portfolio)}</p>
-          <Link href={`${base}/wallet`} className="btn-demo mt-3 inline-block" style={{ background: def.accent }}>ড্যাশবোর্ড →</Link>
+          <Link href={`${base}/wallet`} className="btn-demo mt-3 inline-block" style={{ background: def.accent }}>Dashboard →</Link>
         </div>
         <div className="mt-6">
-          <SectionTitle t="🪙 সাপোর্টেড কয়েন" />
+          <SectionTitle t="🪙 Supported coins" />
           <div className="space-y-2">
             {coins.map((c) => <CoinRow key={c.code} coin={c} />)}
           </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-2 text-center">
-          {[["🔐", "সিকিউর", "২-স্তর নিরাপত্তা"], ["⚡", "দ্রুত", "সেকেন্ডে ট্রান্সফার"], ["🌍", "গ্লোবাল", "১৫০+ দেশ"]].map(([e, v, t]) => (
+          {[["🔐", "Secure", "2-layer security"], ["⚡", "Fast", "Transfer in seconds"], ["🌍", "Global", "150+ countries"]].map(([e, v, t]) => (
             <div key={t} className={`${card} p-4`}>
               <p className="text-2xl">{e}</p>
               <p className="mt-1 text-sm font-black">{v}</p>
@@ -685,21 +687,21 @@ export function WalletDash() {
   const portfolio = coins.reduce((s, c) => s + (DEMO_BALANCES[c.code] ?? 0) * c.price, 0);
   return (
     <Page>
-      <SectionTitle t="👛 আমার ওয়ালেট" sub={store.user ? store.user.name : "ডেমো ওয়ালেট"} />
+      <SectionTitle t="👛 My wallet" sub={store.user ? store.user.name : "Demo wallet"} />
       <div className={`${card} p-6 text-center`} style={{ background: `linear-gradient(135deg, ${def.accent}22, transparent)` }}>
-        <p className={`text-[11px] ${sub}`}>মোট ব্যালেন্স</p>
+        <p className={`text-[11px] ${sub}`}>Total balance</p>
         <p className="mt-1 text-4xl font-black">${bn(portfolio)}</p>
         <div className="mt-4 flex gap-2">
-          <Link href={`${base}/send`} className="btn-demo flex-1" style={{ background: def.accent }}>📤 সেন্ড</Link>
-          <Link href={`${base}/receive`} className="btn-demo-ghost flex-1">📥 রিসিভ</Link>
+          <Link href={`${base}/send`} className="btn-demo flex-1" style={{ background: def.accent }}>📤 Send</Link>
+          <Link href={`${base}/receive`} className="btn-demo-ghost flex-1">📥 Receive</Link>
         </div>
       </div>
       <div className="mt-4 space-y-2">
         {coins.map((c) => <CoinRow key={c.code} coin={c} />)}
       </div>
       <div className="mt-6">
-        <SectionTitle t="🕘 লেনদেন হিস্ট্রি" />
-        {store.coinTxs.length === 0 && <Empty emoji="📭" text="এখনো কোনো লেনদেন নেই" />}
+        <SectionTitle t="🕘 Transaction history" />
+        {store.coinTxs.length === 0 && <Empty emoji="📭" text="No transactions yet" />}
         <div className="space-y-2">
           {store.coinTxs.map((t) => (
             <div key={t.id} className={`${card} flex items-center gap-3 p-3`}>
@@ -707,8 +709,8 @@ export function WalletDash() {
                 {t.kind === "send" ? "📤" : "📥"}
               </span>
               <div className="flex-1 text-sm">
-                <p className="font-bold">{t.kind === "send" ? "পাঠানো" : "গৃহীত"} — {t.amount} {t.coin}</p>
-                <p className={`text-[11px] ${sub}`}>{t.addr.slice(0, 18)}... • {new Date(t.date).toLocaleString("bn-BD")}</p>
+                <p className="font-bold">{t.kind === "send" ? "Sent" : "Received"} — {t.amount} {t.coin}</p>
+                <p className={`text-[11px] ${sub}`}>{t.addr.slice(0, 18)}... • {new Date(t.date).toLocaleString("en-GB")}</p>
               </div>
             </div>
           ))}
@@ -730,34 +732,34 @@ export function WalletSend() {
   const bal = DEMO_BALANCES[coin] ?? 0;
   const amt = parseFloat(amount) || 0;
   const send = () => {
-    if (addr.trim().length < 10) { setErr("সঠিক ওয়ালেট ঠিকানা দিন"); return; }
-    if (amt <= 0) { setErr("সঠিক পরিমাণ দিন"); return; }
-    if (amt > bal) { setErr(`অপর্যাপ্ত ব্যালেন্স (আছে ${bal} ${coin})`); return; }
+    if (addr.trim().length < 10) { setErr("Enter a valid wallet address"); return; }
+    if (amt <= 0) { setErr("Enter a valid amount"); return; }
+    if (amt > bal) { setErr(`Insufficient balance (have ${bal} ${coin})`); return; }
     const rec = store.placeCoinTx({ kind: "send", coin, amount: amt, addr: addr.trim() });
     router.push(`${base}/wallet`);
   };
   return (
     <Page narrow>
-      <Back href={`${base}/wallet`} label="ওয়ালেট" />
-      <SectionTitle t="📤 কয়েন পাঠান" />
+      <Back href={`${base}/wallet`} label="Wallet" />
+      <SectionTitle t="📤 Send coins" />
       <div className={`${card} space-y-3 p-5`}>
         <div>
-          <label className={`text-[11px] ${sub}`}>কয়েন</label>
+          <label className={`text-[11px] ${sub}`}>Coin</label>
           <FSelect dark={def.dark} value={coin} onChange={(e) => setCoin(e.target.value)}>
-            {coins.map((c) => <option key={c.code} value={c.code}>{c.e} {c.code} — ব্যালেন্স {DEMO_BALANCES[c.code] ?? 0}</option>)}
+            {coins.map((c) => <option key={c.code} value={c.code}>{c.e} {c.code} — Balance {DEMO_BALANCES[c.code] ?? 0}</option>)}
           </FSelect>
         </div>
         <div>
-          <label className={`text-[11px] ${sub}`}>গ্রহীতার ঠিকানা</label>
-          <FInput dark={def.dark} value={addr} onChange={(e) => { setAddr(e.target.value); setErr(""); }} placeholder="0x... বা bc1..." />
+          <label className={`text-[11px] ${sub}`}>Recipient address</label>
+          <FInput dark={def.dark} value={addr} onChange={(e) => { setAddr(e.target.value); setErr(""); }} placeholder="0x... or bc1..." />
         </div>
         <div>
-          <label className={`text-[11px] ${sub}`}>পরিমাণ</label>
+          <label className={`text-[11px] ${sub}`}>Amount</label>
           <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} inputMode="decimal" placeholder="0.00" />
         </div>
         {err && <p className="text-xs font-bold text-red-500">{err}</p>}
-        <button onClick={send} className="btn-demo w-full" style={{ background: def.accent }}>📤 পাঠান</button>
-        <p className={`text-center text-[11px] ${sub}`}>ডেমো ওয়ালেট — আসল ক্রিপ্টো পাঠানো হয় না</p>
+        <button onClick={send} className="btn-demo w-full" style={{ background: def.accent }}>📤 Send</button>
+        <p className={`text-center text-[11px] ${sub}`}>Demo wallet — no real crypto is sent</p>
       </div>
     </Page>
   );
@@ -785,8 +787,8 @@ export function WalletReceive() {
   };
   return (
     <Page narrow>
-      <Back href={`${base}/wallet`} label="ওয়ালেট" />
-      <SectionTitle t="📥 কয়েন গ্রহণ করুন" />
+      <Back href={`${base}/wallet`} label="Wallet" />
+      <SectionTitle t="📥 Receive coins" />
       <div className={`${card} p-6 text-center`}>
         <FSelect dark={def.dark} value={coin} onChange={(e) => setCoin(e.target.value)} className="mb-4">
           {coins.map((c) => <option key={c.code} value={c.code}>{c.e} {c.code}</option>)}
@@ -799,9 +801,9 @@ export function WalletReceive() {
           </div>
         </div>
         <p className={`mt-4 break-all rounded-xl p-3 font-mono text-xs ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>{addr}</p>
-        <button onClick={copy} className="btn-demo mt-3 w-full" style={{ background: def.accent }}>{copied ? "✅ কপি হয়েছে!" : "📋 ঠিকানা কপি করুন"}</button>
-        <button onClick={simulate} className="btn-demo-ghost mt-2 w-full">🎁 ডেমো: ০.০১ {coin} গ্রহণ করুন</button>
-        <p className={`mt-2 text-[11px] ${sub}`}>শুধুমাত্র {coin} পাঠাবেন — অন্য কয়েন হারিয়ে যাবে (ডেমো)</p>
+        <button onClick={copy} className="btn-demo mt-3 w-full" style={{ background: def.accent }}>{copied ? "✅ Copied!" : "📋 Copy address"}</button>
+        <button onClick={simulate} className="btn-demo-ghost mt-2 w-full">🎁 Demo: 0.01 {coin} Receive</button>
+        <p className={`mt-2 text-[11px] ${sub}`}>Send only {coin} — other coins will be lost (demo)</p>
       </div>
     </Page>
   );
@@ -810,10 +812,10 @@ export function WalletReceive() {
 /* ================= Shared DEPOSIT flow (invest / exchange / wallet) ================= */
 
 const DEPOSIT_METHODS = [
-  { id: "bkash", n: "বিকাশ", e: "🩷", num: "01XXX-XXXXXX" },
-  { id: "nagad", n: "নগদ", e: "🧡", num: "01XXX-XXXXXX" },
-  { id: "rocket", n: "রকেট", e: "💜", num: "01XXX-XXXXXX" },
-  { id: "card", n: "কার্ড", e: "💳", num: "অনলাইন পেমেন্ট" },
+  { id: "bkash", n: "bKash", e: "🩷", num: "01XXX-XXXXXX" },
+  { id: "nagad", n: "Nagad", e: "🧡", num: "01XXX-XXXXXX" },
+  { id: "rocket", n: "Rocket", e: "💜", num: "01XXX-XXXXXX" },
+  { id: "card", n: "Card", e: "💳", num: "Online payment" },
 ];
 
 export function FinDeposit() {
@@ -828,8 +830,8 @@ export function FinDeposit() {
   const m = DEPOSIT_METHODS.find((x) => x.id === method)!;
 
   const submit = () => {
-    if (amt < 100) { setErr("সর্বনিম্ন ১০০ টাকা ডিপোজিট করুন"); return; }
-    if (method !== "card" && trxId.trim().length < 6) { setErr("পেমেন্টের TrxID দিন"); return; }
+    if (amt < 100) { setErr("Deposit at least 100 Tk"); return; }
+    if (method !== "card" && trxId.trim().length < 6) { setErr("Enter the payment TrxID"); return; }
     const rec = store.placeDeposit({ amount: amt, method: m.n, trxId: trxId.trim() || "CARD" });
     setDone(rec.id);
   };
@@ -840,14 +842,14 @@ export function FinDeposit() {
       <Page narrow>
         <div className={`${card} p-8 text-center`}>
           <p className="text-6xl">⏳</p>
-          <h1 className="mt-3 text-2xl font-black">ডিপোজিট রিকোয়েস্ট গৃহীত!</h1>
-          <p className="mt-2 text-sm opacity-70">{bn(amt)} টাকা — {m.n}</p>
+          <h1 className="mt-3 text-2xl font-black">Deposit request received!</h1>
+          <p className="mt-2 text-sm opacity-70">{bn(amt)} Tk — {m.n}</p>
           <div className={`mt-4 rounded-xl p-4 text-left text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p>🆔 আইডি: <b>{done}</b></p>
-            <p>📌 স্ট্যাটাস: <b className="text-amber-500">{rec?.status ?? "পেন্ডিং"}</b></p>
-            <p className={`mt-1 text-xs ${sub}`}>যাচাইয়ের পর ব্যালেন্সে যোগ হবে (ডেমো)</p>
+            <p>🆔 ID: <b>{done}</b></p>
+            <p>📌 Status: <b className="text-amber-500">{rec?.status ?? "Pending"}</b></p>
+            <p className={`mt-1 text-xs ${sub}`}>Added to balance after verification (demo)</p>
           </div>
-          <Link href={base} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>হোমে ফিরুন</Link>
+          <Link href={base} className="btn-demo mt-5 inline-block w-full" style={{ background: def.accent }}>Back to home</Link>
         </div>
       </Page>
     );
@@ -855,12 +857,12 @@ export function FinDeposit() {
 
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="💰 ডিপোজিট করুন" sub="ব্যালেন্সে টাকা যোগ করুন" />
+      <Back href={base} label="Home" />
+      <SectionTitle t="💰 Deposit" sub="Add money to your balance" />
       <div className={`${card} p-5`}>
-        <p className="text-sm font-black">💵 পরিমাণ</p>
-        <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} inputMode="numeric" placeholder="যেমন: ৫০০০" className="mt-2" />
-        <p className="mt-4 text-sm font-black">📲 পেমেন্ট মাধ্যম</p>
+        <p className="text-sm font-black">💵 Amount</p>
+        <FInput dark={def.dark} value={amount} onChange={(e) => { setAmount(e.target.value); setErr(""); }} inputMode="numeric" placeholder="e.g. 5000" className="mt-2" />
+        <p className="mt-4 text-sm font-black">📲 Payment method</p>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {DEPOSIT_METHODS.map((x) => (
             <button
@@ -875,29 +877,29 @@ export function FinDeposit() {
           ))}
         </div>
         <div className={`mt-3 rounded-xl p-3 text-sm ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-          <p>📞 {m.n} নম্বর: <b>{def.contact}</b></p>
-          <p className={`mt-1 text-xs ${sub}`}>উপরের নম্বরে {amt > 0 ? bn(amt) : "___"} টাকা পাঠিয়ে TrxID দিন</p>
+          <p>📞 {m.n} number: <b>{def.contact}</b></p>
+          <p className={`mt-1 text-xs ${sub}`}>To the number above, send {amt > 0 ? bn(amt) : "___"} Tk and enter the TrxID</p>
         </div>
         {method !== "card" && (
           <div className="mt-3">
             <p className="text-sm font-black">🔑 TrxID</p>
-            <FInput dark={def.dark} value={trxId} onChange={(e) => { setTrxId(e.target.value); setErr(""); }} placeholder="যেমন: 9HX7K2LMN1" className="mt-2" />
+            <FInput dark={def.dark} value={trxId} onChange={(e) => { setTrxId(e.target.value); setErr(""); }} placeholder="e.g. 9HX7K2LMN1" className="mt-2" />
           </div>
         )}
         {err && <p className="mt-2 text-xs font-bold text-red-500">{err}</p>}
         <button onClick={submit} className="btn-demo mt-4 w-full" style={{ background: def.accent }}>
-          ✅ {amt > 0 ? `${bn(amt)} টাকা ` : ""}ডিপোজিট কনফার্ম
+          ✅ {amt > 0 ? `${bn(amt)} Tk ` : ""}Deposit Confirm
         </button>
-        <p className={`mt-2 text-center text-[11px] ${sub}`}>ডেমো সাইট — আসল টাকা লেনদেন হয় না</p>
+        <p className={`mt-2 text-center text-[11px] ${sub}`}>Demo site — no real money is transacted</p>
       </div>
       {store.deposits.length > 0 && (
         <div className="mt-4">
-          <SectionTitle t="🕘 ডিপোজিট হিস্ট্রি" />
+          <SectionTitle t="🕘 Deposit history" />
           <div className="space-y-2">
             {store.deposits.slice(0, 5).map((d) => (
               <div key={d.id} className={`${card} flex items-center justify-between p-3 text-sm`}>
                 <div>
-                  <p className="font-bold">{bn(d.amount)} টাকা <span className={`font-normal ${sub}`}>• {d.method}</span></p>
+                  <p className="font-bold">{bn(d.amount)} Tk <span className={`font-normal ${sub}`}>• {d.method}</span></p>
                   <p className={`text-[11px] ${sub}`}>{d.id}</p>
                 </div>
                 <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-black text-amber-500">{d.status}</span>

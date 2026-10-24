@@ -55,16 +55,21 @@ import {
 } from "./crypto-exchange";
 import { Empty, Page } from "./ui";
 import { DemoAdmin } from "./demo-admin";
+import { AgencyDemoAdmin } from "./agency-admin";
 import { ClientAdmin } from "./client-admin";
 import {
   BhHome, BhServices, BhServiceDetail, BhProducts, BhProductDetail, BhProcess, BhQuality,
   BhFactories, BhClients, BhGallery, BhBlog, BhBlogDetail, BhRfq, BhAbout, BhContact, BhLogin, BhSignup, BhAccount, BuyingAdmin,
 } from "./buying-pages";
+import {
+  JwHome, JwShop, JwProduct, JwAbout, JwContact, JwCart, JwCheckout, JwSuccess,
+  JwOrders, JwSearch, JwFaq, JwLogin, JwSignup, JwAccount, JwAdmin,
+} from "./jewelry-pages";
 
 function NotFound() {
   return (
     <Page narrow>
-      <Empty emoji="🔍" text="পেজটি পাওয়া যায়নি" />
+      <Empty emoji="🔍" text="Page not found" />
     </Page>
   );
 }
@@ -82,7 +87,24 @@ export default function DemoSite({ page }: { page: string[] }) {
   let body: React.ReactNode = <NotFound />;
 
   // Per-demo admin panel (all layouts) — full business admin in client mode
-  if (p0 === "admin") body = clientSlug ? <ClientAdmin /> : def.layout === "buyinghouse" ? <BuyingAdmin /> : <DemoAdmin />;
+  if (p0 === "admin") body = clientSlug ? <ClientAdmin /> : def.layout === "buyinghouse" ? <BuyingAdmin /> : def.layout === "jewelry" ? <JwAdmin /> : def.agencyReworked ? <AgencyDemoAdmin /> : <DemoAdmin />;
+  else if (def.layout === "jewelry") {
+    if (!p0) body = <JwHome />;
+    else if (p0 === "shop") body = <JwShop />;
+    else if (p0 === "c" && p1) body = <JwShop cat={p1} />;
+    else if (p0 === "p" && p1) body = <JwProduct id={p1} />;
+    else if (p0 === "about") body = <JwAbout />;
+    else if (p0 === "contact") body = <JwContact />;
+    else if (p0 === "cart") body = <JwCart />;
+    else if (p0 === "checkout") body = <JwCheckout />;
+    else if (p0 === "success" && p1) body = <JwSuccess id={p1} />;
+    else if (p0 === "orders") body = <JwOrders />;
+    else if (p0 === "search") body = <JwSearch />;
+    else if (p0 === "faq") body = <JwFaq />;
+    else if (p0 === "login") body = <JwLogin />;
+    else if (p0 === "signup") body = <JwSignup />;
+    else if (p0 === "account") body = <JwAccount />;
+  }
   else if (def.layout === "buyinghouse") {
     if (!p0) body = <BhHome />;
     else if (p0 === "services") body = <BhServices />;

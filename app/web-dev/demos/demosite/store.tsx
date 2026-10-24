@@ -7,7 +7,7 @@
  */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import type { DemoSiteDef } from "./types";
+import type { DemoProduct, DemoServiceItem, DemoGalleryItem, DemoSiteDef, DemoInvestPlan, DemoRate, DemoCoin, DemoNewsItem } from "./types";
 
 export interface DemoUser {
   name: string;
@@ -121,7 +121,9 @@ export interface DemoBetRec {
   stake: number;
   potential: number;
   date: number;
-  status: "পেন্ডিং" | "জিতেছেন" | "হেরেছেন";
+  /** Phase 6: English bet statuses. Older browser-saved bets in Bangla
+   * are migrated to these values on load (see the bets read effect). */
+  status: "Pending" | "Won" | "Lost";
   userPhone: string;
 }
 
@@ -157,6 +159,11 @@ function orderId(prefix: string) {
 
 const K = (slug: string, rest: string) => `dmsite:${slug}:${rest}`;
 
+/** Phase 2 canonical order/booking statuses (English). Older demo orders stored
+ *  with Bangla status strings keep displaying until an admin updates them. */
+export const ORDER_STATUSES = ["Processing", "Preparing", "Ready", "Delivered", "Cancelled"] as const;
+export const BOOKING_STATUSES = ["Confirmed", "Completed", "Cancelled"] as const;
+
 export interface DemoStore {
   user: DemoUser | null;
   signup: (name: string, phone: string, pass: string) => string | null;
@@ -176,8 +183,11 @@ export interface DemoStore {
   payWithWallet: (amount: number, label: string) => boolean;
   orders: DemoOrderRec[];
   placeOrder: (o: Omit<DemoOrderRec, "id" | "date" | "status" | "userPhone">) => DemoOrderRec;
+  /** Phase 2: admin status management — persists to the same localStorage keys. */
+  updateOrderStatus: (id: string, status: string) => void;
   bookings: DemoBookingRec[];
   placeBooking: (b: Omit<DemoBookingRec, "id" | "createdAt" | "status" | "userPhone">) => DemoBookingRec;
+  updateBookingStatus: (id: string, status: string) => void;
   investments: DemoInvestmentRec[];
   placeInvestment: (p: Omit<DemoInvestmentRec, "id" | "date" | "status" | "userPhone">) => DemoInvestmentRec;
   exchanges: DemoExchangeRec[];
@@ -216,6 +226,36 @@ export interface DemoCustom {
   casinoMinBet?: number;
   casinoMaxBet?: number;
   casinoBanners?: unknown;
+  /** Agency admin catalogue overrides (Phase 1): when set, these replace
+   *  the def's products/services on the live demo. Undefined = originals. */
+  customProducts?: DemoProduct[];
+  customServices?: DemoServiceItem[];
+  customGallery?: DemoGalleryItem[];
+  /** Phase 3: team + testimonials, browser-local, managed from AgencyDemoAdmin.
+   *  Both start empty — no fake staff or reviews are seeded. Testimonials only
+   *  appear on the demo's About page once the admin approves them. */
+  customTeam?: { id: string; name: string; role: string; note: string }[];
+  customTestimonials?: { id: string; name: string; text: string; approved: boolean }[];
+  /** Phase 4: banners/sliders + pages manager + fintech catalogues.
+   *  Banners append as extra hero slides on the demo home; the announcement
+   *  shows as a strip above the demo chrome; customAbout replaces the About
+   *  page text. All start empty and are browser-local only. */
+  customBanners?: { id: string; title: string; sub: string; emoji: string }[];
+  customAnnouncement?: string;
+  customAbout?: string;
+  customInvestPlans?: DemoInvestPlan[];
+  customRates?: DemoRate[];
+  customCoins?: DemoCoin[];
+  customNews?: DemoNewsItem[];
+  /** Phase 6: casino lobby category toggles + exchange pair toggles.
+   * Disabled categories are hidden from the casino lobby pages (games
+   * stay in the catalogue and can be switched back on); disabled pairs
+   * are hidden from the exchange markets list only (direct trade links
+   * still open in demo). Both start empty = everything shown. */
+  customDisabledGameCats?: string[];
+  customDisabledCexPairs?: string[];
+  /** PlyraTrade engine price overrides, per coin code (admin-editable, demo only). */
+  customCexPrices?: Partial<Record<string, { price?: number; change?: number; high?: number; low?: number }>>;
 }
 
 function readCustomKey(key: string): DemoCustom {
@@ -271,6 +311,14 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
     heroTitle: custom.heroTitle ?? def.heroTitle,
     heroSub: custom.heroSub ?? def.heroSub,
     dark: custom.dark ?? def.dark,
+    products: custom.customProducts ?? def.products,
+    services: custom.customServices ?? def.services,
+    gallery: custom.customGallery ?? def.gallery,
+    about: custom.customAbout ?? def.about,
+    investPlans: custom.customInvestPlans ?? def.investPlans,
+    rates: custom.customRates ?? def.rates,
+    coins: custom.customCoins ?? def.coins,
+    news: custom.customNews ?? def.news,
   }), [def, custom]);
 
   const loadIdentity = useCallback(() => {
@@ -291,7 +339,11 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
     setExchanges(read(KK("exchanges"), []));
     setCoinTxs(read(KK("cointxs"), []));
     setDeposits(read(KK("deposits"), []));
-    setBets(read(KK("bets"), []));
+    // Phase 6 migration: pre-Phase-6 bets were saved with Bangla statuses.
+    setBets((read(KK("bets"), []) as DemoBetRec[]).map((b) => {
+      const s = b.status as unknown as string;
+      return { ...b, status: s === "জিতেছেন" ? "Won" : s === "হেরেছেন" ? "Lost" : "Pending" };
+    }));
     setGameHistory(read(KK("gamehistory"), []));
     setCustom({ ...(initialCustom ?? {}), ...readCustomKey(KK("custom")) });
     loadIdentity();
@@ -323,7 +375,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
         write(KK("cart:guest"), []);
         // signup bonus
         write(KK(`wallet:${phone}`), 5000);
-        write(KK(`txs:${phone}`), [{ date: Date.now(), label: "🎁 সাইনআপ বোনাস", amount: 5000 }]);
+        write(KK(`txs:${phone}`), [{ date: Date.now(), label: "🎁 Signup bonus", amount: 5000 }]);
         loadIdentity();
         return null;
       },
@@ -389,7 +441,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       topUp: (amount) => {
         const id = me();
         const w = wallet + amount;
-        const t = [{ date: Date.now(), label: "💳 ওয়ালেট টপ-আপ (ডেমো)", amount }, ...txs].slice(0, 30);
+        const t = [{ date: Date.now(), label: "💳 Wallet top-up (demo)", amount }, ...txs].slice(0, 30);
         setWallet(w);
         setTxs(t);
         write(KK(`wallet:${id}`), w);
@@ -408,24 +460,34 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
       orders,
       placeOrder: (o) => {
-        const rec: DemoOrderRec = { ...o, id: orderId("DM"), date: Date.now(), status: "প্রসেসিং", userPhone: me() };
+        const rec: DemoOrderRec = { ...o, id: orderId("DM"), date: Date.now(), status: "Processing", userPhone: me() };
         const all = [rec, ...orders].slice(0, 50);
         setOrders(all);
         write(KK("orders"), all);
         persistCart([]);
         return rec;
       },
+      updateOrderStatus: (id, status) => {
+        const all = orders.map((o) => (o.id === id ? { ...o, status } : o));
+        setOrders(all);
+        write(KK("orders"), all);
+      },
       bookings,
       placeBooking: (b) => {
-        const rec: DemoBookingRec = { ...b, id: orderId("BK"), createdAt: Date.now(), status: "কনফার্মড", userPhone: me() };
+        const rec: DemoBookingRec = { ...b, id: orderId("BK"), createdAt: Date.now(), status: "Confirmed", userPhone: me() };
         const all = [rec, ...bookings].slice(0, 50);
         setBookings(all);
         write(KK("bookings"), all);
         return rec;
       },
+      updateBookingStatus: (id, status) => {
+        const all = bookings.map((b) => (b.id === id ? { ...b, status } : b));
+        setBookings(all);
+        write(KK("bookings"), all);
+      },
       investments,
       placeInvestment: (p) => {
-        const rec: DemoInvestmentRec = { ...p, id: orderId("INV"), date: Date.now(), status: "সক্রিয়", userPhone: me() };
+        const rec: DemoInvestmentRec = { ...p, id: orderId("INV"), date: Date.now(), status: "Active", userPhone: me() };
         const all = [rec, ...investments].slice(0, 50);
         setInvestments(all);
         write(KK("investments"), all);
@@ -433,7 +495,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
       exchanges,
       placeExchange: (e) => {
-        const rec: DemoExchangeRec = { ...e, id: orderId("EX"), date: Date.now(), status: "প্রসেসিং", userPhone: me() };
+        const rec: DemoExchangeRec = { ...e, id: orderId("EX"), date: Date.now(), status: "Processing", userPhone: me() };
         const all = [rec, ...exchanges].slice(0, 50);
         setExchanges(all);
         write(KK("exchanges"), all);
@@ -449,7 +511,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
       deposits,
       placeDeposit: (d) => {
-        const rec: DemoDepositRec = { ...d, id: orderId("DP"), date: Date.now(), status: "পেন্ডিং", userPhone: me() };
+        const rec: DemoDepositRec = { ...d, id: orderId("DP"), date: Date.now(), status: "Pending", userPhone: me() };
         const all = [rec, ...deposits].slice(0, 50);
         setDeposits(all);
         write(KK("deposits"), all);
@@ -457,7 +519,7 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
       bets,
       placeBet: (b) => {
-        const rec: DemoBetRec = { ...b, id: orderId("BET"), date: Date.now(), status: "পেন্ডিং", userPhone: me() };
+        const rec: DemoBetRec = { ...b, id: orderId("BET"), date: Date.now(), status: "Pending", userPhone: me() };
         const all = [rec, ...bets].slice(0, 100);
         setBets(all);
         write(KK("bets"), all);
@@ -465,8 +527,8 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
       },
       settleBet: (id, won) => {
         const all = bets.map((b) => {
-          if (b.id !== id || b.status !== "পেন্ডিং") return b;
-          return { ...b, status: (won ? "জিতেছেন" : "হেরেছেন") as DemoBetRec["status"] };
+          if (b.id !== id || b.status !== "Pending") return b;
+          return { ...b, status: (won ? "Won" : "Lost") as DemoBetRec["status"] };
         });
         setBets(all);
         write(KK("bets"), all);

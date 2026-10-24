@@ -961,7 +961,7 @@ export function BetSlip() {
 export function MyBets() {
   const { base, store, card, sub } = useSkin();
   const [settled, setSettled] = useState(false);
-  const open = store.bets.filter((b) => b.status === "পেন্ডিং");
+  const open = store.bets.filter((b) => b.status === "Pending");
 
   function simulateSettle() {
     // Demo: randomly settle pending bets so the demo feels alive
@@ -1009,8 +1009,8 @@ export function MyBets() {
 
 export function BetHistory() {
   const { base, store, card, sub } = useSkin();
-  const done = store.bets.filter((b) => b.status !== "পেন্ডিং");
-  const won = done.filter((b) => b.status === "জিতেছেন").length;
+  const done = store.bets.filter((b) => b.status !== "Pending");
+  const won = done.filter((b) => b.status === "Won").length;
   return (
     <Page>
       <Back href={`${base}/my-bets`} label="আমার বাজি" />
@@ -1021,10 +1021,10 @@ export function BetHistory() {
             <div key={b.id} className={`${card} p-3`}>
               <div className="flex justify-between text-sm">
                 <b>{b.match}</b>
-                <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${b.status === "জিতেছেন" ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"}`}>{b.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${b.status === "Won" ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"}`}>{b.status}</span>
               </div>
               <p className={`mt-1 text-xs ${sub}`}>{b.selection} @ {bn(b.odds.toFixed(2))} • স্টেক {money(b.stake)}</p>
-              {b.status === "জিতেছেন" && <p className="mt-1 text-xs font-bold text-emerald-300">＋ {money(b.potential)} যোগ হয়েছে</p>}
+              {b.status === "Won" && <p className="mt-1 text-xs font-bold text-emerald-300">＋ {money(b.potential)} যোগ হয়েছে</p>}
             </div>
           ))}
         </div>

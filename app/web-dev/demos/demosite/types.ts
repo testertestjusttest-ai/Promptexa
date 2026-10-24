@@ -4,7 +4,7 @@
  * Nothing here touches the real DigiPlyra database or admin panel.
  */
 
-export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news" | "invest" | "exchange" | "wallet" | "casino" | "crypto-exchange" | "buyinghouse";
+export type DemoLayout = "shop" | "service" | "gallery" | "booking" | "news" | "invest" | "exchange" | "wallet" | "casino" | "crypto-exchange" | "buyinghouse" | "jewelry";
 
 /** Visual theme — each demo gets one so no two demos look alike. */
 export type DemoTheme = "aurora" | "split" | "minimal" | "bold" | "elegant" | "playful";
@@ -32,6 +32,9 @@ export interface DemoServiceItem {
   desc: string;
   duration: string;
   rating: number;
+  /** Phase 4: service category for the services-list filter. Optional so
+   *  older services without a category keep working (they show under All). */
+  c?: string;
 }
 
 export interface DemoGalleryItem {
@@ -107,6 +110,10 @@ export interface DemoSiteDef {
   address: string;
   hours: string;
   priceNote?: string;
+  /** Agency rework flag (Phase 1): true for demos rebuilt end-to-end with
+   *  English-first content + the extended admin. DemoSite renders
+   *  AgencyDemoAdmin for these instead of the basic DemoAdmin. */
+  agencyReworked?: boolean;
   theme?: DemoTheme;
   investPlans?: DemoInvestPlan[];
   rates?: DemoRate[];

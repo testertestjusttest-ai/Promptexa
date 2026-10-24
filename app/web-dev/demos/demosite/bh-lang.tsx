@@ -9,13 +9,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { toBnDigits } from "@/lib/format";
 
-export type BhLang = "en" | "bn";
+export type BhLang = "en" | "bn" | "hi";
 
 export interface BhCtx {
   lang: BhLang;
   setLang: (l: BhLang) => void;
-  /** pick a string by language */
-  tx: (bn: string, en: string) => string;
+  /** pick a string by language — tx(bn, en, hi?) falls back to English for Hindi when hi is omitted */
+  tx: (bn: string, en: string, hi?: string) => string;
   /** number formatting: Bangla digits in bn, Latin in en */
   num: (v: number | string) => string;
   /** convert embedded Bangla digits in a string to Latin when lang=en */
@@ -26,11 +26,11 @@ const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
 export const toEnDigits = (s: string) => s.replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
 
 const Ctx = createContext<BhCtx>({
-  lang: "bn",
+  lang: "en",
   setLang: () => {},
-  tx: (bn) => bn,
-  num: (v) => toBnDigits(v as number),
-  dg: (s) => s,
+  tx: (_bn, en) => en,
+  num: (v) => String(v),
+  dg: (s) => toEnDigits(s),
 });
 
 export function BhLangProvider({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,7 @@ export function BhLangProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const v = localStorage.getItem("texbridge_lang");
-      if (v === "bn" || v === "en") setLangState(v);
+      if (v === "bn" || v === "en" || v === "hi") setLangState(v);
     } catch { /* ignore */ }
   }, []);
   const setLang = (l: BhLang) => {
@@ -48,9 +48,9 @@ export function BhLangProvider({ children }: { children: React.ReactNode }) {
   const value: BhCtx = {
     lang,
     setLang,
-    tx: (bn, en) => (lang === "en" ? en : bn),
-    num: (v) => (lang === "en" ? String(v) : toBnDigits(v as number)),
-    dg: (s) => (lang === "en" ? toEnDigits(s) : s),
+    tx: (bn, en, hi) => (lang === "en" ? en : lang === "hi" ? (hi ?? en) : bn),
+    num: (v) => (lang === "en" || lang === "hi" ? String(v) : toBnDigits(v as number)),
+    dg: (s) => (lang === "en" || lang === "hi" ? toEnDigits(s) : s),
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -94,6 +94,23 @@ export const CAT_EN: Record<string, string> = {
   "ওভেন": "Woven",
   "ডেনিম": "Denim",
   "সোয়েটার": "Sweater",
+};
+
+export const RFQ_STATUS_HI: Record<string, string> = {
+  "নতুন": "नया",
+  "কোটেশন পাঠানো হয়েছে": "कोटेशन भेजा गया",
+  "স্যাম্পল চলছে": "सैंपलिंग जारी है",
+  "কনফার্ম": "पुष्टि हो गई",
+  "শিপড": "भेज दिया गया",
+  "বাতিল": "रद्द किया गया",
+};
+
+export const CAT_HI: Record<string, string> = {
+  "সব": "सभी",
+  "নিট": "निट",
+  "ওভেন": "वोवेन",
+  "ডেনিম": "डेनिम",
+  "সোয়েটার": "स्वेटर",
 };
 
 export const RFQ_STATUS_EN: Record<string, string> = {

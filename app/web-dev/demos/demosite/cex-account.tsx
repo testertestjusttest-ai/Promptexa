@@ -5,13 +5,14 @@ import Link from "next/link";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import { Back, Empty, Field, Page, SectionTitle } from "./ui";
-import { fmtUSD, fmtPct, priceSeries, ChangeBadge, Spark, CoinIcon, CoinRow, TickerTape, TradeChart, OrderBook, useCexBalances, balTotalUSD, bn, fmtBDT, CEX_COINS, coinOf, LAUNCHPADS, EARN_PRODUCTS, NFTS, ANNOUNCEMENTS, FAQS, BLOGS, ACADEMY, useSkin, useLocal, Stat, PageHead, CexOrder, WalletShell } from "./cex-shared";
+import { fmtUSD, fmtPct, priceSeries, ChangeBadge, Spark, CoinIcon, CoinRow, TickerTape, TradeChart, OrderBook, useCexBalances, balTotalUSD, bn, fmtBDT, useCexCoins, coinOf, LAUNCHPADS, EARN_PRODUCTS, NFTS, ANNOUNCEMENTS, FAQS, BLOGS, ACADEMY, useSkin, useLocal, Stat, PageHead, CexOrder, WalletShell } from "./cex-shared";
 
 export function CexWallet() {
+  const coins = useCexCoins();
   const { base } = useDemo();
   const { card, sub } = useSkin();
   const [bal] = useCexBalances();
-  const total = balTotalUSD(bal);
+  const total = balTotalUSD(bal, coins);
   const wallets = [
     ["📊", "স্পট ওয়ালেট", total * 0.6, "/wallet/spot", "ট্রেডিং ব্যালেন্স"],
     ["⚡", "ফিউচার্স ওয়ালেট", total * 0.25, "/wallet/futures", "মার্জিন ব্যালেন্স"],
@@ -43,13 +44,14 @@ export function CexWallet() {
 }
 
 function CoinBalances({ filter }: { filter?: (code: string) => boolean }) {
+  const coins = useCexCoins();
   const { card, sub } = useSkin();
   const [bal] = useCexBalances();
   const rows = Object.entries(bal).filter(([c]) => !filter || filter(c));
   return (
     <div className={`${card} overflow-hidden`}>
       {rows.map(([code, q]) => {
-        const c = coinOf(code);
+        const c = coinOf(code, coins);
         const v = q * c.price;
         return (
           <div key={code} className="flex items-center gap-3 border-b border-white/5 p-3 last:border-0">
@@ -951,6 +953,7 @@ export function CexAcademyDetail({ id }: { id: string }) {
 /* ================= ALERTS / WATCHLIST / PORTFOLIO / TAX / NOTIFS ================= */
 
 export function CexAlerts() {
+  const coins = useCexCoins();
   const { card, sub, input } = useSkin();
   const [alerts, setAlerts] = useLocal<{ id: string; coin: string; cond: string; price: number }[]>("alerts", []);
   const [coin, setCoin] = useState("BTC");
@@ -968,14 +971,14 @@ export function CexAlerts() {
       <div className={`${card} p-4`}>
         <p className="text-sm font-black">＋ নতুন অ্যালার্ট</p>
         <div className="mt-2 grid grid-cols-3 gap-2">
-          <select value={coin} onChange={(e) => setCoin(e.target.value)} className={`${input} [&>option]:text-black`}>{CEX_COINS.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}</select>
+          <select value={coin} onChange={(e) => setCoin(e.target.value)} className={`${input} [&>option]:text-black`}>{coins.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}</select>
           <select value={cond} onChange={(e) => setCond(e.target.value as any)} className={`${input} [&>option]:text-black`}>
             <option value="above">⬆️ উপরে গেলে</option>
             <option value="below">⬇️ নিচে নামলে</option>
           </select>
           <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" placeholder="দাম ($)" className={input} />
         </div>
-        <p className={`mt-1 text-[11px] ${sub}`}>বর্তমান: ${fmtUSD(coinOf(coin).price)}</p>
+        <p className={`mt-1 text-[11px] ${sub}`}>বর্তমান: ${fmtUSD(coinOf(coin, coins).price)}</p>
         <button onClick={add} className="mt-2 w-full rounded-xl bg-[#f0b90b] py-2.5 text-sm font-black text-black">🔔 অ্যালার্ট সেট করুন</button>
       </div>
       <div className="mt-3 space-y-2">
@@ -993,10 +996,11 @@ export function CexAlerts() {
 }
 
 export function CexWatchlist() {
+  const coins = useCexCoins();
   const { card, sub } = useSkin();
   const [list, setList] = useLocal<string[]>("watchlist", ["BTC", "ETH", "SOL"]);
   const [adding, setAdding] = useState(false);
-  const rest = CEX_COINS.filter((c) => !list.includes(c.code));
+  const rest = coins.filter((c) => !list.includes(c.code));
   return (
     <Page>
       <PageHead t="⭐ ওয়াচলিস্ট" sub="পছন্দের কয়েন ট্র্যাক করুন" />
@@ -1022,9 +1026,10 @@ export function CexWatchlist() {
 }
 
 export function CexPortfolio() {
+  const coins = useCexCoins();
   const { card, sub } = useSkin();
   const [bal] = useCexBalances();
-  const rows = Object.entries(bal).map(([code, q]) => ({ code, q, v: q * coinOf(code).price })).filter((r) => r.v > 0.01).sort((a, b) => b.v - a.v);
+  const rows = Object.entries(bal).map(([code, q]) => ({ code, q, v: q * coinOf(code, coins).price })).filter((r) => r.v > 0.01).sort((a, b) => b.v - a.v);
   const total = rows.reduce((s, r) => s + r.v, 0);
   const R = 70, C = 2 * Math.PI * R;
   let acc = 0;
@@ -1127,9 +1132,10 @@ export function CexNotifs() {
 /* ================= COIN DETAIL ================= */
 
 export function CexCoinDetail({ code }: { code: string }) {
+  const coins = useCexCoins();
   const { base } = useDemo();
   const { card, sub } = useSkin();
-  const c = coinOf(code);
+  const c = coinOf(code, coins);
   const [wl, setWl] = useLocal<string[]>("watchlist", ["BTC", "ETH", "SOL"]);
   const inWl = wl.includes(c.code);
   return (

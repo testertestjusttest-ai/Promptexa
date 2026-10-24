@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo } from "./store";
 import type { DemoProduct } from "./types";
-import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero } from "./ui";
+import { Price, Stars, Btn, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero, bannerSlides } from "./ui";
 
 /**
  * Products hook — in client mode, loads real products from the database.
@@ -48,7 +48,7 @@ export function useProducts(): DemoProduct[] {
 
 const FREE_DELIVERY_AT = 1000;
 const DELIVERY_FEE = 60;
-const bn = (n: number) => toBnDigits(n.toLocaleString("en-IN"));
+const bn = (n: number) => n.toLocaleString("en-IN");
 const feeFor = (sub: number) => (sub >= FREE_DELIVERY_AT ? 0 : DELIVERY_FEE);
 
 function useSkin() {
@@ -122,7 +122,8 @@ const SAMPLE_REVIEWS = [
 /* ================= HOME ================= */
 
 export function ShopHome() {
-  const { def, base, clientSlug } = useDemo();
+  const { def, base, clientSlug, store } = useDemo();
+  const banners = bannerSlides();
   const products = useProducts();
   const { card, sub, chip } = useSkin();
   const deals = products.filter((p) => p.oldPrice).slice(0, 4);
@@ -149,7 +150,7 @@ export function ShopHome() {
     { emoji: "🎁", title: "সীমিত সময়ের অফার", sub: "পছন্দের পণ্যে আকর্ষণীয় ছাড় — স্টক শেষ হওয়ার আগেই!", cta: "🎁 অফার দেখুন", href: "/offers", grad: def.grad },
     { emoji: "🚚", title: "সারাদেশে হোম ডেলিভারি", sub: "১,০০০ টাকার বেশি অর্ডারে ডেলিভারি একদম ফ্রি", cta: "🛍️ শপ করুন", href: "/shop", grad: def.grad },
   ];
-  const slides = customSlides && customSlides.length > 0
+  const baseSlides = customSlides && customSlides.length > 0
     ? customSlides.map((sl: any) => ({
         img: sl.img || undefined,
         emoji: sl.img ? "" : "🎉",
@@ -160,6 +161,7 @@ export function ShopHome() {
         grad: def.grad,
       }))
     : defaultSlides;
+  const slides = [...baseSlides, ...banners];
   return (
     <div>
       <Hero
@@ -381,14 +383,14 @@ export function ShopCart() {
   const total = subtotal + fee;
   return (
     <Page narrow>
-      <Back href={`${base}/shop`} label="শপ" />
-      <SectionTitle t="🛒 কার্ট" sub={subtotal > 0 ? `${bn(store.cartCount)}টি পণ্য` : undefined} />
+      <Back href={`${base}/shop`} label="Shop" />
+      <SectionTitle t="🛒 Cart" sub={subtotal > 0 ? `${bn(store.cartCount)} Product` : undefined} />
       {store.cart.length === 0 ? (
         <>
-          <Empty emoji="🛒" text="কার্ট খালি — পছন্দের পণ্য যোগ করুন" />
+          <Empty emoji="🛒" text="Cart is empty — add products you like" />
           <div className="text-center">
             <Link href={`${base}/shop`} className="btn-demo" style={{ background: accent }}>
-              🛍️ কেনাকাটা করুন
+              🛍️ Shop now
             </Link>
           </div>
         </>
@@ -401,7 +403,7 @@ export function ShopCart() {
                 <div className="flex-1">
                   <p className="text-sm font-bold">{l.n}</p>
                   <p className="text-xs font-black" style={{ color: accent }}>
-                    {bn(l.p)} টাকা
+                    {bn(l.p)} Tk
                   </p>
                   <div className="mt-1.5 flex items-center gap-2">
                     <button onClick={() => store.setQty(l.id, l.qty - 1)} className="grid h-7 w-7 place-items-center rounded-full bg-white/10 font-black">
@@ -414,9 +416,9 @@ export function ShopCart() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black">{bn(l.p * l.qty)} টাকা</p>
+                  <p className="text-sm font-black">{bn(l.p * l.qty)} Tk</p>
                   <button onClick={() => store.removeLine(l.id)} className={`mt-1 text-xs font-bold ${sub} hover:text-red-400`}>
-                    🗑️ মুছুন
+                    🗑️ Remove
                   </button>
                 </div>
               </div>
@@ -424,23 +426,23 @@ export function ShopCart() {
           </div>
           <div className={`mt-4 space-y-1.5 p-4 text-sm ${card}`}>
             <div className="flex justify-between">
-              <span className={sub}>সাবটোটাল</span>
-              <b>{bn(subtotal)} টাকা</b>
+              <span className={sub}>Subtotal</span>
+              <b>{bn(subtotal)} Tk</b>
             </div>
             <div className="flex justify-between">
-              <span className={sub}>ডেলিভারি চার্জ</span>
-              <b>{fee === 0 ? "🎉 ফ্রি" : `${bn(fee)} টাকা`}</b>
+              <span className={sub}>Delivery fee</span>
+              <b>{fee === 0 ? "🎉 Free" : `${bn(fee)} Tk`}</b>
             </div>
-            {fee > 0 && <p className={`text-[11px] ${sub}`}>💡 আরও {bn(FREE_DELIVERY_AT - subtotal)} টাকার পণ্য নিলে ডেলিভারি ফ্রি!</p>}
+            {fee > 0 && <p className={`text-[11px] ${sub}`}>💡 Add {bn(FREE_DELIVERY_AT - subtotal)} Tk more products for free delivery!</p>}
             <div className="flex justify-between border-t border-white/10 pt-2 text-base">
-              <span className="font-bold">সর্বমোট</span>
+              <span className="font-bold">Total</span>
               <span className="font-black" style={{ color: accent }}>
-                {bn(total)} টাকা
+                {bn(total)} Tk
               </span>
             </div>
           </div>
           <Link href={`${base}/checkout`} className="btn-demo mt-4 block w-full !py-3.5 text-center text-base" style={{ background: accent }}>
-            ➡️ চেকআউট করুন
+            ➡️ Checkout
           </Link>
         </>
       )}
@@ -457,7 +459,7 @@ export function ShopCheckout() {
   const [name, setName] = useState(store.user?.name ?? "");
   const [phone, setPhone] = useState(store.user?.phone ?? "");
   const [address, setAddress] = useState(store.user?.address ?? "");
-  const [pay, setPay] = useState("ক্যাশ অন ডেলিভারি");
+  const [pay, setPay] = useState("Cash on delivery");
   const [error, setError] = useState("");
   const [placing, setPlacing] = useState(false);
   const subtotal = store.cartTotal;
@@ -468,29 +470,29 @@ export function ShopCheckout() {
   if (store.cart.length === 0) {
     return (
       <Page narrow>
-        <Empty emoji="🛒" text="কার্ট খালি — আগে পণ্য যোগ করুন" />
+        <Empty emoji="🛒" text="Cart is empty — add products first" />
         <div className="text-center">
           <Link href={`${base}/shop`} className="btn-demo" style={{ background: accent }}>
-            🛍️ শপে ফিরুন
+            🛍️ Back to shop
           </Link>
         </div>
       </Page>
     );
   }
 
-  const pays = ["ক্যাশ অন ডেলিভারি", "ওয়ালেট", "বিকাশ", "নগদ", "রকেট"];
-  const payIcon = (m: string) => (m === "ক্যাশ অন ডেলিভারি" ? "💵" : m === "ওয়ালেট" ? "👛" : m === "বিকাশ" ? "🩷" : m === "নগদ" ? "🧡" : "💜");
+  const pays = ["Cash on delivery", "Wallet", "bKash", "Nagad", "Rocket"];
+  const payIcon = (m: string) => (m === "Cash on delivery" ? "💵" : m === "Wallet" ? "👛" : m === "bKash" ? "🩷" : m === "Nagad" ? "🧡" : "💜");
 
   async function submit() {
     setError("");
     if (placing) return;
-    if (name.trim().length < 3) return setError("আপনার নাম লিখুন");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
-    if (address.trim().length < 8) return setError("সম্পূর্ণ ঠিকানা লিখুন");
+    if (name.trim().length < 3) return setError("Enter your name");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setError("Enter a valid 11-digit mobile number (01XXXXXXXXX)");
+    if (address.trim().length < 8) return setError("Enter your full address");
     const items = store.cart.map((l) => ({ id: l.id, n: l.n, p: l.p, e: l.e, qty: l.qty }));
-    if (pay === "ওয়ালেট") {
-      const ok = store.payWithWallet(total, `🛒 অর্ডার — ${bn(items.length)}টি পণ্য`);
-      if (!ok) return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — টপ-আপ করুন");
+    if (pay === "Wallet") {
+      const ok = store.payWithWallet(total, `🛒 Order — ${bn(items.length)} Product`);
+      if (!ok) return setError("Not enough wallet balance — top up");
     }
     // Real client site: save order to database
     if (clientSlug) {
@@ -505,15 +507,15 @@ export function ShopCheckout() {
             customer_address: address.trim(),
             items: items.map((it) => ({ name: it.n, price: it.p, qty: it.qty, emoji: it.e })),
             total_bdt: total,
-            payment_method: pay === "ক্যাশ অন ডেলিভারি" ? "cod" : pay === "ওয়ালেট" ? "wallet" : "mobile",
+            payment_method: pay === "Cash on delivery" ? "cod" : pay === "Wallet" ? "wallet" : "mobile",
           }),
         });
         const d = await res.json();
-        if (!res.ok || !d.ok) throw new Error(d.error || "ব্যর্থ");
+        if (!res.ok || !d.ok) throw new Error(d.error || "Failed");
         const rec = store.placeOrder({ items, total, name: name.trim(), phone: phone.trim(), address: address.trim(), pay });
         router.push(`${base}/success/${rec.id}?no=${encodeURIComponent(d.order_no)}`);
       } catch (e: any) {
-        setError(e.message || "অর্ডার হয়নি — আবার চেষ্টা করুন");
+        setError(e.message || "Order failed — try again");
       } finally {
         setPlacing(false);
       }
@@ -525,8 +527,8 @@ export function ShopCheckout() {
 
   return (
     <Page narrow>
-      <Back href={`${base}/cart`} label="কার্ট" />
-      <SectionTitle t="🧾 চেকআউট" />
+      <Back href={`${base}/cart`} label="Cart" />
+      <SectionTitle t="🧾 Checkout" />
       {!store.user && (
         <div className="mb-4">
           <LoginHint />
@@ -534,29 +536,29 @@ export function ShopCheckout() {
       )}
       <div className={`space-y-1.5 p-4 text-sm ${card}`}>
         <div className="flex justify-between">
-          <span className={sub}>সাবটোটাল</span>
-          <b>{bn(subtotal)} টাকা</b>
+          <span className={sub}>Subtotal</span>
+          <b>{bn(subtotal)} Tk</b>
         </div>
         <div className="flex justify-between">
-          <span className={sub}>ডেলিভারি</span>
-          <b>{fee === 0 ? "🎉 ফ্রি" : `${bn(fee)} টাকা`}</b>
+          <span className={sub}>Delivery</span>
+          <b>{fee === 0 ? "🎉 Free" : `${bn(fee)} Tk`}</b>
         </div>
         <div className="flex justify-between border-t border-white/10 pt-2 text-base">
-          <span className="font-bold">সর্বমোট</span>
+          <span className="font-bold">Total</span>
           <span className="font-black" style={{ color: accent }}>
-            {bn(total)} টাকা
+            {bn(total)} Tk
           </span>
         </div>
       </div>
       <div className="mt-4 space-y-3">
-        <DField value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
-        <DArea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="সম্পূর্ণ ঠিকানা * (বাসা, রোড, এলাকা, জেলা)" rows={2} />
+        <DField value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
+        <DArea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full address * (house, road, area, district)" rows={2} />
       </div>
-      <p className="mb-2 mt-5 text-sm font-bold">💳 পেমেন্ট মাধ্যম</p>
+      <p className="mb-2 mt-5 text-sm font-bold">💳 Payment method</p>
       <div className="grid grid-cols-2 gap-2">
         {pays.map((m) => {
-          const dis = m === "ওয়ালেট" && !walletOk;
+          const dis = m === "Wallet" && !walletOk;
           const sel = pay === m && !dis;
           return (
             <button
@@ -567,22 +569,22 @@ export function ShopCheckout() {
               style={sel ? { borderColor: accent, background: `${accent}18` } : undefined}
             >
               {payIcon(m)} {m}
-              {m === "ওয়ালেট" && <span className={`block text-[11px] font-normal ${sub}`}>ব্যালেন্স: {bn(store.wallet)} টাকা</span>}
+              {m === "Wallet" && <span className={`block text-[11px] font-normal ${sub}`}>Balance: {bn(store.wallet)} Tk</span>}
             </button>
           );
         })}
       </div>
-      {pay === "ওয়ালেট" && !walletOk && (
+      {pay === "Wallet" && !walletOk && (
         <p className={`mt-2 text-xs ${sub}`}>
-          ⚠️ ব্যালেন্স কম — <Link href={`${base}/wallet`} className="font-bold underline">ওয়ালেটে টপ-আপ করুন</Link>
+          ⚠️ Low balance — <Link href={`${base}/wallet`} className="font-bold underline">Top up wallet</Link>
         </p>
       )}
-      {(pay === "বিকাশ" || pay === "নগদ" || pay === "রকেট") && (
-        <p className={`mt-2 text-xs ${sub}`}>💡 ডেমো পেমেন্ট — কোনো আসল টাকা কাটা হবে না। আসল সাইটে এখানে {pay} পেমেন্ট গেটওয়ে যুক্ত থাকবে।</p>
+      {(pay === "bKash" || pay === "Nagad" || pay === "Rocket") && (
+        <p className={`mt-2 text-xs ${sub}`}>💡 Demo payment — no real money will be charged. On the real site, a {pay} payment gateway will be connected here.</p>
       )}
       {error && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {error}</p>}
       <button onClick={submit} disabled={placing} className="btn-demo mt-4 w-full !py-3.5 text-base disabled:opacity-50" style={{ background: accent }}>
-        {placing ? "⏳ অর্ডার হচ্ছে..." : `✅ অর্ডার কনফার্ম করুন — ${bn(total)} টাকা`}
+        {placing ? "⏳ Placing order..." : `✅ Confirm order — ${bn(total)} Tk`}
       </button>
     </Page>
   );
@@ -599,10 +601,10 @@ export function ShopSuccess({ id }: { id: string }) {
   if (!o) {
     return (
       <Page narrow>
-        <Empty emoji="🔍" text="অর্ডারটি পাওয়া যায়নি" />
+        <Empty emoji="🔍" text="Order not found" />
         <div className="text-center">
           <Link href={`${base}/shop`} className="btn-demo" style={{ background: accent }}>
-            🛍️ শপে ফিরুন
+            🛍️ Back to shop
           </Link>
         </div>
       </Page>
@@ -612,12 +614,12 @@ export function ShopSuccess({ id }: { id: string }) {
     <Page narrow>
       <div className="py-6 text-center">
         <p className="text-6xl">🎉</p>
-        <h1 className="mt-3 text-2xl font-black text-emerald-400">অর্ডার সফল!</h1>
-        <p className={`mt-1 text-sm ${sub}`}>ধন্যবাদ {o.name}! শীঘ্রই কল পাবেন।</p>
+        <h1 className="mt-3 text-2xl font-black text-emerald-400">Order successful!</h1>
+        <p className={`mt-1 text-sm ${sub}`}>Thank you {o.name}! You will get a call soon.</p>
       </div>
       <div className={`space-y-2 p-5 ${card}`}>
         <div>
-          <p className={`text-xs ${sub}`}>অর্ডার নম্বর</p>
+          <p className={`text-xs ${sub}`}>Order number</p>
           <p className="font-mono text-lg font-black" style={{ color: accent }}>
             {realNo || o.id}
           </p>
@@ -628,14 +630,14 @@ export function ShopSuccess({ id }: { id: string }) {
               <span>
                 {i.e} {i.n} <span className={sub}>× {bn(i.qty)}</span>
               </span>
-              <b>{bn(i.p * i.qty)} টাকা</b>
+              <b>{bn(i.p * i.qty)} Tk</b>
             </div>
           ))}
         </div>
         <div className="flex justify-between border-t border-white/10 pt-2">
-          <span className="font-bold">সর্বমোট</span>
+          <span className="font-bold">Total</span>
           <span className="font-black" style={{ color: accent }}>
-            {bn(o.total)} টাকা
+            {bn(o.total)} Tk
           </span>
         </div>
         <p className={`text-xs ${sub}`}>💰 {o.pay}</p>
@@ -646,13 +648,13 @@ export function ShopSuccess({ id }: { id: string }) {
       </div>
       <div className="mt-5 flex gap-2">
         <Link href={`${base}/track`} className="btn-demo-ghost flex-1 text-center">
-          📍 ট্র্যাক করুন
+          📍 Track
         </Link>
         <Link href={`${base}/shop`} className="btn-demo flex-1 text-center" style={{ background: accent }}>
-          🛍️ আরও কেনাকাটা
+          🛍️ Shop more
         </Link>
       </div>
-      <p className={`mt-3 text-center text-[11px] ${sub}`}>💡 ডেমো অর্ডার — আসল সাইটে SMS/ইমেইল কনফার্মেশন যাবে।</p>
+      <p className={`mt-3 text-center text-[11px] ${sub}`}>💡 Demo order — on the real site an SMS/email confirmation will be sent.</p>
     </Page>
   );
 }
@@ -667,12 +669,12 @@ export function ShopTrack() {
   const found = searched ? store.orders.find((o) => o.id.trim().toLowerCase() === searched.trim().toLowerCase()) : undefined;
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <SectionTitle t="📍 অর্ডার ট্র্যাকিং" sub="অর্ডার নম্বর দিয়ে খুঁজুন" />
+      <Back href={base} label="Home" />
+      <SectionTitle t="📍 Order tracking" sub="Search by order number" />
       <div className="flex gap-2">
-        <DField value={val} onChange={(e) => setVal(e.target.value)} placeholder="যেমন: DM-20261011-X7K2" className="font-mono" />
+        <DField value={val} onChange={(e) => setVal(e.target.value)} placeholder="e.g. DM-20261011-X7K2" className="font-mono" />
         <button onClick={() => setSearched(val)} className="btn-demo shrink-0" style={{ background: accent }}>
-          🔍 খুঁজুন
+          🔍 Search
         </button>
       </div>
       {searched !== null &&
@@ -687,14 +689,14 @@ export function ShopTrack() {
             <Timeline active={0} />
             <div className={`border-t border-white/10 pt-3 text-xs ${sub}`}>
               <p>
-                📦 {bn(found.items.reduce((s, i) => s + i.qty, 0))}টি পণ্য • <b>{bn(found.total)} টাকা</b>
+                📦 {bn(found.items.reduce((s, i) => s + i.qty, 0))} Product • <b>{bn(found.total)} Tk</b>
               </p>
               <p className="mt-1">📍 {found.address}</p>
-              <p className="mt-1">🗓️ {new Date(found.date).toLocaleDateString("bn-BD")}</p>
+              <p className="mt-1">🗓️ {new Date(found.date).toLocaleDateString("en-GB")}</p>
             </div>
           </div>
         ) : (
-          <p className={`mt-4 rounded-2xl p-4 text-center text-sm ${card}`}>❌ এই নম্বরে কোনো অর্ডার পাওয়া যায়নি</p>
+          <p className={`mt-4 rounded-2xl p-4 text-center text-sm ${card}`}>❌ No order found for this number</p>
         ))}
     </Page>
   );
@@ -821,23 +823,23 @@ export function ShopLogin() {
   }
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
+      <Back href={base} label="Home" />
       <div className="py-6 text-center">
         <p className="text-5xl">🔐</p>
-        <h1 className="mt-2 text-xl font-black">লগইন করুন</h1>
+        <h1 className="mt-2 text-xl font-black">Log in</h1>
       </div>
       <div className="space-y-3">
-        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর (01XXXXXXXXX)" inputMode="numeric" />
-        <DField value={pass} onChange={(e) => setPass(e.target.value)} placeholder="পাসওয়ার্ড" type="password" />
+        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number (01XXXXXXXXX)" inputMode="numeric" />
+        <DField value={pass} onChange={(e) => setPass(e.target.value)} placeholder="Password" type="password" />
       </div>
       {error && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {error}</p>}
       <button onClick={submit} className="btn-demo mt-4 w-full !py-3.5" style={{ background: accent }}>
-        ➡️ লগইন
+        ➡️ Log in
       </button>
       <p className="mt-3 text-center text-sm">
-        অ্যাকাউন্ট নেই?{" "}
+        No account?{" "}
         <Link href={`${base}/signup`} className="font-bold underline" style={{ color: accent }}>
-          সাইন আপ করুন
+          Sign up
         </Link>
       </p>
     </Page>
@@ -859,27 +861,27 @@ export function ShopSignup() {
   }
   return (
     <Page narrow>
-      <Back href={`${base}/login`} label="লগইন" />
+      <Back href={`${base}/login`} label="Log in" />
       <div className="py-6 text-center">
         <p className="text-5xl">✨</p>
-        <h1 className="mt-2 text-xl font-black">নতুন অ্যাকাউন্ট</h1>
+        <h1 className="mt-2 text-xl font-black">New account</h1>
         <p className={`mt-1 text-sm ${sub}`}>
-          🎁 সাইনআপে <b style={{ color: accent }}>{bn(5000)} টাকা</b> বোনাস!
+          🎁 On signup, a <b style={{ color: accent }}>{bn(5000)} Tk</b> bonus!
         </p>
       </div>
       <div className="space-y-3">
-        <DField value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
-        <DField value={pass} onChange={(e) => setPass(e.target.value)} placeholder="পাসওয়ার্ড * (কমপক্ষে ৪ অক্ষর)" type="password" />
+        <DField value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+        <DField value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
+        <DField value={pass} onChange={(e) => setPass(e.target.value)} placeholder="Password * (at least 4 characters)" type="password" />
       </div>
       {error && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {error}</p>}
       <button onClick={submit} className="btn-demo mt-4 w-full !py-3.5" style={{ background: accent }}>
-        🎉 সাইন আপ করুন
+        🎉 Sign up
       </button>
       <p className="mt-3 text-center text-sm">
-        ইতিমধ্যে অ্যাকাউন্ট আছে?{" "}
+        Already have an account?{" "}
         <Link href={`${base}/login`} className="font-bold underline" style={{ color: accent }}>
-          লগইন করুন
+          Log in
         </Link>
       </p>
     </Page>
@@ -896,15 +898,15 @@ export function ShopAccount() {
   if (!store.user) {
     return (
       <Page narrow>
-        <Back href={base} label="হোম" />
-        <SectionTitle t="👤 অ্যাকাউন্ট" />
+        <Back href={base} label="Home" />
+        <SectionTitle t="👤 Account" />
         <LoginHint />
         <div className="mt-4 flex gap-2">
           <Link href={`${base}/login`} className="btn-demo flex-1 text-center" style={{ background: accent }}>
-            🔐 লগইন
+            🔐 Log in
           </Link>
           <Link href={`${base}/signup`} className="btn-demo-ghost flex-1 text-center">
-            ✨ সাইন আপ
+            ✨ Sign up
           </Link>
         </div>
       </Page>
@@ -912,13 +914,13 @@ export function ShopAccount() {
   }
   const u = store.user;
   const links = [
-    { href: `${base}/orders`, e: "📦", t: "আমার অর্ডার", s: `${bn(store.orders.filter((o) => o.userPhone === u.phone || o.userPhone === "guest").length)}টি` },
-    { href: `${base}/wallet`, e: "👛", t: "ওয়ালেট", s: `${bn(store.wallet)} টাকা` },
+    { href: `${base}/orders`, e: "📦", t: "My orders", s: `${bn(store.orders.filter((o) => o.userPhone === u.phone || o.userPhone === "guest").length)}` },
+    { href: `${base}/wallet`, e: "👛", t: "Wallet", s: `${bn(store.wallet)} Tk` },
   ];
-  if (store.bookings.length > 0) links.push({ href: `${base}/bookings`, e: "📅", t: "আমার বুকিং", s: `${bn(store.bookings.length)}টি` });
+  if (store.bookings.length > 0) links.push({ href: `${base}/bookings`, e: "📅", t: "My bookings", s: `${bn(store.bookings.length)}` });
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
+      <Back href={base} label="Home" />
       <div className={`flex items-center gap-4 p-5 ${card}`}>
         <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full text-2xl font-black text-white" style={{ background: accent }}>
           {u.name.charAt(0)}
@@ -929,8 +931,8 @@ export function ShopAccount() {
         </div>
       </div>
       <div className={`mt-3 p-5 ${card}`}>
-        <p className="text-sm font-bold">📍 ডেলিভারি ঠিকানা</p>
-        <DArea value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="ঠিকানা লিখুন..." rows={2} className="mt-2" />
+        <p className="text-sm font-bold">📍 Delivery address</p>
+        <DArea value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="Enter address..." rows={2} className="mt-2" />
         <button
           onClick={() => {
             store.saveAddress(addr.trim());
@@ -940,7 +942,7 @@ export function ShopAccount() {
           className="btn-demo mt-2 !py-2 !text-[13px]"
           style={{ background: accent }}
         >
-          {saved ? "✅ সেভ হয়েছে!" : "💾 ঠিকানা সেভ করুন"}
+          {saved ? "✅ Saved!" : "💾 Save address"}
         </button>
       </div>
       <div className="mt-3 space-y-2">
@@ -959,7 +961,7 @@ export function ShopAccount() {
         onClick={() => store.logout()}
         className="mt-4 w-full rounded-2xl border border-red-500/40 py-3 text-sm font-black text-red-400 transition hover:bg-red-500/10"
       >
-        🚪 লগআউট
+        🚪 Log out
       </button>
     </Page>
   );
@@ -973,14 +975,14 @@ export function ShopOrders() {
   const list = store.orders.filter((o) => (store.user ? o.userPhone === store.user.phone || o.userPhone === "guest" : o.userPhone === "guest"));
   return (
     <Page narrow>
-      <Back href={`${base}/account`} label="অ্যাকাউন্ট" />
-      <SectionTitle t="📦 আমার অর্ডার" sub={list.length > 0 ? `${bn(list.length)}টি` : undefined} />
+      <Back href={`${base}/account`} label="Account" />
+      <SectionTitle t="📦 My orders" sub={list.length > 0 ? `${bn(list.length)}` : undefined} />
       {list.length === 0 ? (
         <>
-          <Empty emoji="📭" text="এখনো কোনো অর্ডার করেননি" />
+          <Empty emoji="📭" text="You have not placed any orders yet" />
           <div className="text-center">
             <Link href={`${base}/shop`} className="btn-demo" style={{ background: accent }}>
-              🛍️ কেনাকাটা শুরু করুন
+              🛍️ Start shopping
             </Link>
           </div>
         </>
@@ -995,9 +997,9 @@ export function ShopOrders() {
                 <StatusBadge s={o.status} />
               </div>
               <p className={`mt-1.5 text-xs ${sub}`}>
-                {new Date(o.date).toLocaleDateString("bn-BD")} • {bn(o.items.reduce((s, i) => s + i.qty, 0))}টি পণ্য • {o.pay}
+                {new Date(o.date).toLocaleDateString("en-GB")} • {bn(o.items.reduce((s, i) => s + i.qty, 0))} Product • {o.pay}
               </p>
-              <p className="mt-1 font-black">{bn(o.total)} টাকা</p>
+              <p className="mt-1 font-black">{bn(o.total)} Tk</p>
             </Link>
           ))}
         </div>
@@ -1013,10 +1015,10 @@ export function ShopOrderDetail({ id }: { id: string }) {
   if (!o) {
     return (
       <Page narrow>
-        <Empty emoji="🔍" text="অর্ডারটি পাওয়া যায়নি" />
+        <Empty emoji="🔍" text="Order not found" />
         <div className="text-center">
           <Link href={`${base}/orders`} className="btn-demo" style={{ background: accent }}>
-            📦 অর্ডার লিস্ট
+            📦 Order list
           </Link>
         </div>
       </Page>
@@ -1024,7 +1026,7 @@ export function ShopOrderDetail({ id }: { id: string }) {
   }
   return (
     <Page narrow>
-      <Back href={`${base}/orders`} label="অর্ডার লিস্ট" />
+      <Back href={`${base}/orders`} label="Order list" />
       <div className={`space-y-3 p-5 ${card}`}>
         <div className="flex items-center justify-between">
           <p className="font-mono text-sm font-black" style={{ color: accent }}>
@@ -1040,28 +1042,28 @@ export function ShopOrderDetail({ id }: { id: string }) {
               <div className="flex-1">
                 <p className="font-bold">{i.n}</p>
                 <p className={`text-xs ${sub}`}>
-                  {bn(i.p)} টাকা × {bn(i.qty)}
+                  {bn(i.p)} Tk × {bn(i.qty)}
                 </p>
               </div>
-              <b>{bn(i.p * i.qty)} টাকা</b>
+              <b>{bn(i.p * i.qty)} Tk</b>
             </div>
           ))}
         </div>
         <div className="flex justify-between border-t border-white/10 pt-3">
-          <span className="font-bold">সর্বমোট</span>
+          <span className="font-bold">Total</span>
           <span className="text-lg font-black" style={{ color: accent }}>
-            {bn(o.total)} টাকা
+            {bn(o.total)} Tk
           </span>
         </div>
         <div className={`space-y-1 border-t border-white/10 pt-3 text-xs ${sub}`}>
           <p>👤 {o.name} • 📱 {o.phone}</p>
           <p>📍 {o.address}</p>
           <p>💰 {o.pay}</p>
-          <p>🗓️ {new Date(o.date).toLocaleDateString("bn-BD")}</p>
+          <p>🗓️ {new Date(o.date).toLocaleDateString("en-GB")}</p>
         </div>
       </div>
       <Link href={`${base}/track`} className="btn-demo mt-4 block w-full text-center" style={{ background: accent }}>
-        📍 লাইভ ট্র্যাক করুন
+        📍 Track live
       </Link>
     </Page>
   );

@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { toBnDigits } from "@/lib/format";
 import { useDemo, type DemoStore } from "./store";
 import type { DemoSiteDef, DemoServiceItem, DemoGalleryItem, DemoNewsItem } from "./types";
-import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero } from "./ui";
+import { Price, Stars, SectionTitle, Empty, ProductCard, Back, Page, LoginHint , HeroSlider, Hero, bannerSlides } from "./ui";
 import { ShopLogin, ShopSignup, ShopAccount } from "./shop-pages";
 
 /* ================= auth aliases (reuse shop auth — no duplicates) ================= */
@@ -163,16 +163,18 @@ function BookingRow({ b, dark }: { b: DemoStore["bookings"][number]; dark: boole
 
 /** Generic about page body shared by all layouts. */
 function AboutBody() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const team = store.custom.customTeam ?? [];
+  const approvedReviews = (store.custom.customTestimonials ?? []).filter((r) => r.approved);
   const stats: [string, string][] = [
-    ["⭐", `${toBnDigits((def.services[0]?.rating ?? 4.8).toFixed(1))} গড় রেটিং`],
-    ["🛠️", `${toBnDigits(def.services.length)}টি সার্ভিস`],
-    ["🛍️", `${toBnDigits(def.products.length)}টি পণ্য`],
+    ["⭐", `${(def.services[0]?.rating ?? 4.8).toFixed(1)} avg rating`],
+    ["🛠️", `${def.services.length}services`],
+    ["🛍️", `${def.products.length} Product`],
   ];
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">ℹ️ আমাদের সম্পর্কে</h1>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">ℹ️ About us</h1>
       <p className={`mt-3 text-sm leading-relaxed ${subCls(def)}`}>{def.about}</p>
       <div className="mt-5 grid grid-cols-3 gap-2">
         {stats.map(([e, t]) => (
@@ -182,14 +184,41 @@ function AboutBody() {
           </div>
         ))}
       </div>
+      {team.length > 0 && (
+        <div className="mt-5">
+          <h2 className="text-lg font-black">👥 Our team</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {team.map((m) => (
+              <div key={m.id} className={cardCls(def)}>
+                <p className="font-bold">{m.name}</p>
+                {m.role && <p className={`text-sm ${subCls(def)}`}>{m.role}</p>}
+                {m.note && <p className={`mt-1 text-sm ${subCls(def)}`}>{m.note}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {approvedReviews.length > 0 && (
+        <div className="mt-5">
+          <h2 className="text-lg font-black">⭐ What customers say</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {approvedReviews.map((r) => (
+              <div key={r.id} className={cardCls(def)}>
+                <p className="text-sm leading-relaxed">“{r.text}”</p>
+                <p className={`mt-2 text-sm font-bold ${subCls(def)}`}>— {r.name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={`${cardCls(def)} mt-4`}>
-        <p className="font-bold">📞 যোগাযোগ</p>
+        <p className="font-bold">📞 Contact</p>
         <p className={`mt-1 text-sm ${subCls(def)}`}>{def.contact}</p>
         <p className={`text-sm ${subCls(def)}`}>📍 {def.address}</p>
         <p className={`text-sm ${subCls(def)}`}>🕐 {def.hours}</p>
       </div>
       <div className="mt-5">
-        <Cta href={`${base}/contact`} accent={def.accent}>✉️ মেসেজ পাঠান</Cta>
+        <Cta href={`${base}/contact`} accent={def.accent}>✉️ Send a message</Cta>
       </div>
     </Page>
   );
@@ -205,15 +234,15 @@ function ContactBody() {
   const [done, setDone] = useState(false);
   function send() {
     setErr("");
-    if (name.trim().length < 3) return setErr("আপনার নাম লিখুন");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন");
-    if (msg.trim().length < 5) return setErr("মেসেজ লিখুন");
+    if (name.trim().length < 3) return setErr("Enter your name");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("Enter a valid 11-digit mobile number");
+    if (msg.trim().length < 5) return setErr("Write a message");
     setDone(true);
   }
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">✉️ যোগাযোগ করুন</h1>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">✉️ Contact us</h1>
       <div className={`${cardCls(def)} mt-4 space-y-1.5 text-sm`}>
         <p className="font-bold">📞 {def.contact}</p>
         <p className={subCls(def)}>📍 {def.address}</p>
@@ -222,22 +251,22 @@ function ContactBody() {
       {done ? (
         <div className={`${cardCls(def)} mt-4 border-emerald-400/40 text-center`}>
           <p className="text-5xl">✅</p>
-          <p className="mt-2 font-black text-emerald-400">মেসেজ পাঠানো হয়েছে!</p>
-          <p className={`mt-1 text-xs ${subCls(def)}`}>ধন্যবাদ {name.trim()} — শীঘ্রই যোগাযোগ করবো। (ডেমো)</p>
+          <p className="mt-2 font-black text-emerald-400">Message sent!</p>
+          <p className={`mt-1 text-xs ${subCls(def)}`}>Thank you {name.trim()} — we will get back soon. (Demo)</p>
           <button onClick={() => setDone(false)} className={`mt-3 text-xs font-bold underline ${subCls(def)}`}>
-            আরেকটি মেসেজ
+            Another message
           </button>
         </div>
       ) : (
         <div className={`${cardCls(def)} mt-4 space-y-3`}>
-          <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-          <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
-          <TA dark={def.dark} value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="আপনার মেসেজ *" rows={4} />
+          <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+          <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
+          <TA dark={def.dark} value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Your message *" rows={4} />
           {err && <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {err}</p>}
           <button onClick={send} className="btn-demo w-full !py-3" style={{ background: def.accent }}>
-            📨 পাঠিয়ে দিন
+            📨 Send
           </button>
-          <p className={`text-center text-[11px] ${subCls(def)}`}>ডেমো ফর্ম — কোনো আসল মেসেজ যাবে না</p>
+          <p className={`text-center text-[11px] ${subCls(def)}`}>Demo form — no real message will be sent</p>
         </div>
       )}
     </Page>
@@ -263,6 +292,7 @@ function ServiceCard({ s }: { s: DemoServiceItem }) {
         </div>
       </div>
       <p className={`mt-2 line-clamp-2 text-xs ${subCls(def)}`}>{s.desc}</p>
+      {s.c && <p className="mt-2"><span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ background: `${def.accent}18`, color: def.accent }}>{s.c}</span></p>}
       <div className="mt-2 flex items-center justify-between">
         <Price v={s.p} accent={def.accent} />
         <span className="text-xs font-bold opacity-70 group-hover:opacity-100">বিস্তারিত →</span>
@@ -272,7 +302,8 @@ function ServiceCard({ s }: { s: DemoServiceItem }) {
 }
 
 export function SvcHome() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   const steps: [string, string, string][] = [
     ["1️⃣", "সার্ভিস বেছে নিন", "পছন্দের সার্ভিসে ক্লিক করে বিস্তারিত দেখুন"],
     ["2️⃣", "তারিখ ও সময় দিন", "সুবিধামতো দিন ও স্লট সিলেক্ট করুন"],
@@ -286,6 +317,7 @@ export function SvcHome() {
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🛠️ সার্ভিস দেখুন", href: "/services", grad: def.grad },
           { emoji: "📅", title: "অনলাইনে বুকিং করুন", sub: "পছন্দের তারিখ ও সময় বেছে নিন — কনফার্মেশন সাথে সাথে", cta: "📅 বুক করুন", href: "/services", grad: def.grad },
           { emoji: "⭐", title: "সন্তুষ্ট গ্রাহকদের পছন্দ", sub: "রিভিউ পড়ে নিশ্চিন্তে সার্ভিস নিন", cta: "⭐ রিভিউ দেখুন", href: "/reviews", grad: def.grad },
+          ...banners,
         ]}
       />
       <Page>
@@ -329,13 +361,32 @@ export function SvcHome() {
 
 export function SvcList() {
   const { def, base } = useDemo();
+  const [cat, setCat] = useState("All");
+  // Phase 4: filter by service category. Categories come from the services
+  // themselves (their `c` field); demos whose services carry no category
+  // simply show the full list with no filter chips.
+  const cats = ["All", ...Array.from(new Set(def.services.map((s) => s.c).filter((c): c is string => !!c)))];
+  const shown = cat === "All" ? def.services : def.services.filter((s) => s.c === cat);
   return (
     <Page>
       <Back href={base} label="হোম" />
       <h1 className="text-2xl font-black">🛠️ সব সার্ভিস</h1>
       <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(def.services.length)}টি সার্ভিস রয়েছে</p>
+      {cats.length > 1 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {cats.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={`rounded-full border px-4 py-1.5 text-xs font-bold transition ${chipCls(def, cat === c)}`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {def.services.map((s) => <ServiceCard key={s.id} s={s} />)}
+        {shown.map((s) => <ServiceCard key={s.id} s={s} />)}
       </div>
     </Page>
   );
@@ -399,13 +450,13 @@ export function SvcBook({ id }: { id: string }) {
   const [err, setErr] = useState("");
   const [done, setDone] = useState<{ id: string } | null>(null);
 
-  if (!s) return <Page><Empty emoji="😅" text="সার্ভিস পাওয়া যায়নি" /></Page>;
+  if (!s) return <Page><Empty emoji="😅" text="Service not found" /></Page>;
 
   function confirm() {
     setErr("");
-    if (name.trim().length < 3) return setErr("আপনার নাম লিখুন");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন");
-    if (address.trim().length < 5) return setErr("ঠিকানা লিখুন");
+    if (name.trim().length < 3) return setErr("Enter your name");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("Enter a valid 11-digit mobile number");
+    if (address.trim().length < 5) return setErr("Enter your address");
     const rec = store.placeBooking({
       itemName: s!.n,
       itemEmoji: s!.e,
@@ -423,19 +474,19 @@ export function SvcBook({ id }: { id: string }) {
       <Page narrow>
         <div className={`${cardCls(def)} py-8 text-center`}>
           <p className="text-6xl">🎉</p>
-          <p className="mt-3 text-xl font-black text-emerald-400">বুকিং কনফার্মড!</p>
-          <p className={`mt-1 text-xs ${subCls(def)}`}>ধন্যবাদ {name.trim()}!</p>
+          <p className="mt-3 text-xl font-black text-emerald-400">Booking confirmed!</p>
+          <p className={`mt-1 text-xs ${subCls(def)}`}>Thank you {name.trim()}!</p>
           <div className={`mx-auto mt-4 max-w-xs rounded-2xl p-4 text-left ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className={`text-xs ${subCls(def)}`}>বুকিং নম্বর</p>
+            <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
             <p className="mt-2 text-sm">{s.e} {s.n}</p>
             <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d)} • ⏰ {slot}</p>
-            <p className="mt-1 font-black">{toBnDigits(s.p.toLocaleString("en-IN"))} টাকা</p>
+            <p className="mt-1 font-black">{s.p.toLocaleString("en-IN")} Tk</p>
           </div>
-          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 ডেমো বুকিং — আসল সাইটে SMS কনফার্মেশন যাবে</p>
+          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 Demo booking — on the real site an SMS confirmation will be sent</p>
           <div className="mt-4 flex justify-center gap-2">
-            <Cta href={`${base}/bookings`} accent={def.accent} small>📋 আমার বুকিং</Cta>
-            <Cta href={base} accent={def.accent} ghost small>🏠 হোম</Cta>
+            <Cta href={`${base}/bookings`} accent={def.accent} small>📋 My bookings</Cta>
+            <Cta href={base} accent={def.accent} ghost small>🏠 Home</Cta>
           </div>
         </div>
       </Page>
@@ -445,10 +496,10 @@ export function SvcBook({ id }: { id: string }) {
   return (
     <Page narrow>
       <Back href={`${base}/s/${s.id}`} label={s.n} />
-      <h1 className="text-2xl font-black">📅 বুকিং করুন</h1>
+      <h1 className="text-2xl font-black">📅 Book now</h1>
       <p className={`mt-1 text-sm ${subCls(def)}`}>{s.e} {s.n} • <Price v={s.p} accent={def.accent} /></p>
 
-      <p className="mb-2 mt-5 text-sm font-bold">📆 তারিখ বেছে নিন</p>
+      <p className="mb-2 mt-5 text-sm font-bold">📆 Choose a date</p>
       <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
         {days.map((x, i) => (
           <button
@@ -463,7 +514,7 @@ export function SvcBook({ id }: { id: string }) {
         ))}
       </div>
 
-      <p className="mb-2 mt-5 text-sm font-bold">⏰ সময় বেছে নিন</p>
+      <p className="mb-2 mt-5 text-sm font-bold">⏰ Choose a time</p>
       <div className="flex flex-wrap gap-2">
         {SLOTS.map((t) => (
           <button
@@ -478,22 +529,22 @@ export function SvcBook({ id }: { id: string }) {
       </div>
 
       <div className={`${cardCls(def)} mt-5 space-y-3`}>
-        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
-        <TA dark={def.dark} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="ঠিকানা *" rows={2} />
+        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
+        <TA dark={def.dark} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address *" rows={2} />
       </div>
 
       <div className={`${cardCls(def)} mt-4 flex items-center justify-between`}>
-        <span className={subCls(def)}>সর্বমোট</span>
+        <span className={subCls(def)}>Total</span>
         <Price v={s.p} accent={def.accent} big />
       </div>
 
       {err && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {err}</p>}
       {!store.user && <div className="mt-3"><LoginHint /></div>}
       <button onClick={confirm} className="btn-demo mt-4 w-full !py-3.5 text-base" style={{ background: def.accent }}>
-        ✅ বুকিং কনফার্ম করুন
+        ✅ Confirm booking
       </button>
-      <p className={`mt-2 text-center text-[11px] ${subCls(def)}`}>ডেমো বুকিং — কোনো আসল টাকা লাগবে না</p>
+      <p className={`mt-2 text-center text-[11px] ${subCls(def)}`}>Demo booking — no real money needed</p>
     </Page>
   );
 }
@@ -503,18 +554,18 @@ export function SvcBookings() {
   const list = myBookings(store);
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">📋 আমার বুকিং</h1>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">📋 My bookings</h1>
       {!store.user && <div className="mt-3"><LoginHint /></div>}
       {list.length === 0 ? (
-        <Empty emoji="📭" text="এখনো কোনো বুকিং করেননি" />
+        <Empty emoji="📭" text="You have not made any bookings yet" />
       ) : (
         <div className="mt-4 space-y-3">
           {list.map((b) => <BookingRow key={b.id} b={b} dark={def.dark} />)}
         </div>
       )}
       <div className="mt-5 flex justify-center">
-        <Cta href={`${base}/services`} accent={def.accent} small>🛠️ নতুন বুকিং করুন</Cta>
+        <Cta href={`${base}/services`} accent={def.accent} small>🛠️ Book a new service</Cta>
       </div>
     </Page>
   );
@@ -523,10 +574,10 @@ export function SvcBookings() {
 export function SvcReviews() {
   const { def, base } = useDemo();
   const seed = [
-    { n: "রহিম উদ্দিন", r: 5, t: "খুবই ভালো সার্ভিস! সময়মতো এসেছে, কাজও একদম পরিষ্কার।", d: "২ দিন আগে" },
-    { n: "শারমিন আক্তার", r: 5, t: "দাম অনুযায়ী সেরা। আবার নেবো ইনশাআল্লাহ।", d: "১ সপ্তাহ আগে" },
-    { n: "করিম শেখ", r: 4, t: "ভালো লেগেছে। একটু দেরি হয়েছিল, তবে কাজ চমৎকার।", d: "২ সপ্তাহ আগে" },
-    { n: "নুসরাত জাহান", r: 5, t: "প্রফেশনাল আচরণ, ধন্যবাদ!", d: "১ মাস আগে" },
+    { n: "Rahim Uddin", r: 5, t: "Excellent service! They arrived on time and the work was spotless.", d: "2 days ago" },
+    { n: "Sharmin Akter", r: 5, t: "Best value for the price. I will book again.", d: "1 week ago" },
+    { n: "Karim Sheikh", r: 4, t: "Liked it. Slightly late, but the work was excellent.", d: "2 weeks ago" },
+    { n: "Nusrat Jahan", r: 5, t: "Professional behaviour, thank you!", d: "1 month ago" },
   ];
   const [list, setList] = useState(seed);
   const [name, setName] = useState("");
@@ -535,16 +586,16 @@ export function SvcReviews() {
   const [err, setErr] = useState("");
   function add() {
     setErr("");
-    if (name.trim().length < 2) return setErr("নাম লিখুন");
-    if (text.trim().length < 5) return setErr("রিভিউ লিখুন");
-    setList([{ n: name.trim(), r: rating, t: text.trim(), d: "এইমাত্র" }, ...list]);
+    if (name.trim().length < 2) return setErr("Enter a name");
+    if (text.trim().length < 5) return setErr("Write a review");
+    setList([{ n: name.trim(), r: rating, t: text.trim(), d: "Just now" }, ...list]);
     setName(""); setText(""); setRating(5);
   }
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">⭐ গ্রাহক রিভিউ</h1>
-      <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(list.length)}টি রিভিউ</p>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">⭐ Customer reviews</h1>
+      <p className={`mt-1 text-sm ${subCls(def)}`}>{list.length}reviews</p>
       <div className="mt-4 space-y-3">
         {list.map((r, i) => (
           <div key={i} className={cardCls(def)}>
@@ -558,16 +609,16 @@ export function SvcReviews() {
         ))}
       </div>
       <div className={`${cardCls(def)} mt-5`}>
-        <p className="mb-3 font-bold">✍️ আপনার রিভিউ দিন</p>
+        <p className="mb-3 font-bold">✍️ Leave your review</p>
         <div className="space-y-3">
-          <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
+          <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
           <Sel dark={def.dark} value={rating} onChange={(e) => setRating(Number(e.target.value))}>
-            {[5, 4, 3, 2, 1].map((r) => <option key={r} value={r}>{"★".repeat(r)} ({toBnDigits(r)})</option>)}
+            {[5, 4, 3, 2, 1].map((r) => <option key={r} value={r}>{"★".repeat(r)} ({r})</option>)}
           </Sel>
-          <TA dark={def.dark} value={text} onChange={(e) => setText(e.target.value)} placeholder="আপনার অভিজ্ঞতা লিখুন *" rows={3} />
+          <TA dark={def.dark} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write your experience *" rows={3} />
           {err && <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {err}</p>}
           <button onClick={add} className="btn-demo w-full !py-3" style={{ background: def.accent }}>
-            ⭐ রিভিউ জমা দিন
+            ⭐ Submit review
           </button>
         </div>
       </div>
@@ -609,7 +660,8 @@ function GalCard({ g }: { g: DemoGalleryItem }) {
 }
 
 export function GalHome() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   return (
     <>
       <Hero
@@ -618,6 +670,7 @@ export function GalHome() {
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🖼️ গ্যালারি দেখুন", href: "/gallery", grad: def.grad },
           { emoji: "💰", title: "স্বচ্ছ প্রাইসিং", sub: "প্যাকেজ দেখে বাজেট অনুযায়ী বেছে নিন", cta: "💰 প্রাইসিং", href: "/pricing", grad: def.grad },
           { emoji: "📸", title: "আপনার ইভেন্টের জন্য বুক করুন", sub: "তারিখ কনফার্ম করুন মিনিটেই", cta: "📸 বুক করুন", href: "/book", grad: def.grad },
+          ...banners,
         ]}
       />
       <Page>
@@ -773,7 +826,7 @@ function GalBookInner() {
   const sp = useSearchParams();
   const pkg = GAL_PKGS.find((p) => p.id === sp.get("pkg")) ?? GAL_PKGS[1];
   const days = nextDays(14);
-  const [etype, setEtype] = useState("বিয়ে");
+  const [etype, setEtype] = useState("Wedding");
   const [day, setDay] = useState(3);
   const [name, setName] = useState(store.user?.name ?? "");
   const [phone, setPhone] = useState(store.user?.phone ?? "");
@@ -782,10 +835,10 @@ function GalBookInner() {
 
   function confirm() {
     setErr("");
-    if (name.trim().length < 3) return setErr("আপনার নাম লিখুন");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন");
+    if (name.trim().length < 3) return setErr("Enter your name");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("Enter a valid 11-digit mobile number");
     const rec = store.placeBooking({
-      itemName: `${pkg.n} প্যাকেজ — ${etype}`,
+      itemName: `${pkg.n} Package — ${etype}`,
       itemEmoji: "📸",
       date: bnLong(days[day].d),
       slot: etype,
@@ -801,18 +854,18 @@ function GalBookInner() {
       <Page narrow>
         <div className={`${cardCls(def)} py-8 text-center`}>
           <p className="text-6xl">🎉</p>
-          <p className="mt-3 text-xl font-black text-emerald-400">বুকিং কনফার্মড!</p>
+          <p className="mt-3 text-xl font-black text-emerald-400">Booking confirmed!</p>
           <div className={`mx-auto mt-4 max-w-xs rounded-2xl p-4 text-left ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className={`text-xs ${subCls(def)}`}>বুকিং নম্বর</p>
+            <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
-            <p className="mt-2 text-sm">📸 {pkg.n} প্যাকেজ — {etype}</p>
+            <p className="mt-2 text-sm">📸 {pkg.n} Package — {etype}</p>
             <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[day].d)}</p>
-            <p className="mt-1 font-black">{toBnDigits(pkg.p.toLocaleString("en-IN"))} টাকা</p>
+            <p className="mt-1 font-black">{pkg.p.toLocaleString("en-IN")} Tk</p>
           </div>
-          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 ডেমো বুকিং — আসল সাইটে কল করে কনফার্ম করা হবে</p>
+          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 Demo booking — on the real site we will call to confirm</p>
           <div className="mt-4 flex justify-center gap-2">
-            <Cta href={`${base}/bookings`} accent={def.accent} small>📋 আমার বুকিং</Cta>
-            <Cta href={base} accent={def.accent} ghost small>🏠 হোম</Cta>
+            <Cta href={`${base}/bookings`} accent={def.accent} small>📋 My bookings</Cta>
+            <Cta href={base} accent={def.accent} ghost small>🏠 Home</Cta>
           </div>
         </div>
       </Page>
@@ -821,32 +874,32 @@ function GalBookInner() {
 
   return (
     <Page narrow>
-      <Back href={`${base}/pricing`} label="প্যাকেজ" />
-      <h1 className="text-2xl font-black">📸 সেশন বুক করুন</h1>
+      <Back href={`${base}/pricing`} label="Package" />
+      <h1 className="text-2xl font-black">📸 Book a session</h1>
       <div className={`${cardCls(def)} mt-4 flex items-center justify-between`}>
-        <span className="font-bold">{pkg.n} প্যাকেজ</span>
+        <span className="font-bold">{pkg.n} Package</span>
         <Price v={pkg.p} accent={def.accent} />
       </div>
       <div className="mt-4 space-y-3">
         <div>
-          <p className="mb-1.5 text-sm font-bold">🎭 ইভেন্টের ধরন</p>
+          <p className="mb-1.5 text-sm font-bold">🎭 Event type</p>
           <Sel dark={def.dark} value={etype} onChange={(e) => setEtype(e.target.value)}>
-            {["বিয়ে", "পোর্ট্রেট", "ইভেন্ট", "পণ্য", "পরিবার"].map((t) => <option key={t} value={t}>{t}</option>)}
+            {["Wedding", "Portrait", "Event", "Product", "Family"].map((t) => <option key={t} value={t}>{t}</option>)}
           </Sel>
         </div>
         <div>
-          <p className="mb-1.5 text-sm font-bold">📆 তারিখ</p>
+          <p className="mb-1.5 text-sm font-bold">📆 Date</p>
           <Sel dark={def.dark} value={day} onChange={(e) => setDay(Number(e.target.value))}>
             {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
           </Sel>
         </div>
-        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
+        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
       </div>
       {err && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {err}</p>}
       {!store.user && <div className="mt-3"><LoginHint /></div>}
       <button onClick={confirm} className="btn-demo mt-4 w-full !py-3.5 text-base" style={{ background: def.accent }}>
-        ✅ বুকিং কনফার্ম করুন
+        ✅ Confirm booking
       </button>
     </Page>
   );
@@ -874,7 +927,8 @@ export function GalContact() {
 const AMENITIES = ["📶 ফ্রি WiFi", "🅿️ ফ্রি পার্কিং", "🍳 কমপ্লিমেন্টারি ব্রেকফাস্ট", "🏊 সুইমিং পুল", "❄️ এসি রুম", "📺 স্মার্ট টিভি"];
 
 export function BookHome() {
-  const { def, base } = useDemo();
+  const { def, base, store } = useDemo();
+  const banners = bannerSlides();
   const [loc, setLoc] = useState("");
   const [guests, setGuests] = useState(2);
   const feat = def.products.slice(0, 4);
@@ -885,6 +939,7 @@ export function BookHome() {
         slides={[
           { img: def.heroImg, emoji: def.heroEmoji, title: def.heroTitle, sub: def.heroSub, cta: "🏨 লিস্টিং দেখুন", href: "/stays", grad: def.grad },
           { emoji: "💳", title: "সহজ বুকিং, নিরাপদ পেমেন্ট", sub: "অনলাইনে বুক করে নিশ্চিন্তে ঘুরুন", cta: "📅 বুক করুন", href: "/stays", grad: def.grad },
+          ...banners,
         ]}
       />
       <div className="px-4">
@@ -998,7 +1053,7 @@ export function BookFlow({ id }: { id: string }) {
   const [err, setErr] = useState("");
   const [done, setDone] = useState<{ id: string } | null>(null);
 
-  if (!p) return <Page><Empty emoji="😅" text="পাওয়া যায়নি" /></Page>;
+  if (!p) return <Page><Empty emoji="😅" text="Not found" /></Page>;
 
   const coFixed = Math.max(co, ci + 1);
   const nights = coFixed - ci;
@@ -1006,13 +1061,13 @@ export function BookFlow({ id }: { id: string }) {
 
   function confirm() {
     setErr("");
-    if (name.trim().length < 3) return setErr("আপনার নাম লিখুন");
-    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন");
+    if (name.trim().length < 3) return setErr("Enter your name");
+    if (!/^01[3-9]\d{8}$/.test(phone.trim())) return setErr("Enter a valid 11-digit mobile number");
     const rec = store.placeBooking({
       itemName: p!.n,
       itemEmoji: p!.e,
       date: `${bnLong(days[ci].d)} → ${bnLong(days[coFixed].d)}`,
-      slot: `${toBnDigits(guests)} জন • ${toBnDigits(nights)} রাত`,
+      slot: `${guests} guests • ${nights} nights`,
       name: name.trim(),
       phone: phone.trim(),
       total,
@@ -1025,19 +1080,19 @@ export function BookFlow({ id }: { id: string }) {
       <Page narrow>
         <div className={`${cardCls(def)} py-8 text-center`}>
           <p className="text-6xl">🎉</p>
-          <p className="mt-3 text-xl font-black text-emerald-400">বুকিং কনফার্মড!</p>
+          <p className="mt-3 text-xl font-black text-emerald-400">Booking confirmed!</p>
           <div className={`mx-auto mt-4 max-w-xs rounded-2xl p-4 text-left ${def.dark ? "bg-white/5" : "bg-slate-50"}`}>
-            <p className={`text-xs ${subCls(def)}`}>বুকিং নম্বর</p>
+            <p className={`text-xs ${subCls(def)}`}>Booking number</p>
             <p className="font-mono text-lg font-black" style={{ color: def.accent }}>{done.id}</p>
             <p className="mt-2 text-sm">{p.e} {p.n}</p>
             <p className={`text-xs ${subCls(def)}`}>📅 {bnLong(days[ci].d)} → {bnLong(days[coFixed].d)}</p>
-            <p className={`text-xs ${subCls(def)}`}>👥 {toBnDigits(guests)} জন • 🌙 {toBnDigits(nights)} রাত</p>
-            <p className="mt-1 font-black">{toBnDigits(total.toLocaleString("en-IN"))} টাকা</p>
+            <p className={`text-xs ${subCls(def)}`}>👥 {guests} guests • 🌙 {nights} nights</p>
+            <p className="mt-1 font-black">{total.toLocaleString("en-IN")} Tk</p>
           </div>
-          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 ডেমো বুকিং — আসল সাইটে কনফার্মেশন SMS যাবে</p>
+          <p className={`mt-3 text-[11px] ${subCls(def)}`}>💡 Demo booking — on the real site a confirmation SMS will be sent</p>
           <div className="mt-4 flex justify-center gap-2">
-            <Cta href={`${base}/my`} accent={def.accent} small>📋 আমার বুকিং</Cta>
-            <Cta href={base} accent={def.accent} ghost small>🏠 হোম</Cta>
+            <Cta href={`${base}/my`} accent={def.accent} small>📋 My bookings</Cta>
+            <Cta href={base} accent={def.accent} ghost small>🏠 Home</Cta>
           </div>
         </div>
       </Page>
@@ -1047,18 +1102,18 @@ export function BookFlow({ id }: { id: string }) {
   return (
     <Page narrow>
       <Back href={`${base}/p/${p.id}`} label={p.n} />
-      <h1 className="text-2xl font-black">📅 বুকিং করুন</h1>
+      <h1 className="text-2xl font-black">📅 Book now</h1>
       <p className={`mt-1 text-sm ${subCls(def)}`}>{p.e} {p.n}</p>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <div>
-          <p className="mb-1.5 text-sm font-bold">🛬 চেক-ইন</p>
+          <p className="mb-1.5 text-sm font-bold">🛬 Check-in</p>
           <Sel dark={def.dark} value={ci} onChange={(e) => { const v = Number(e.target.value); setCi(v); if (coFixed <= v) setCo(v + 1); }}>
             {days.map((x, i) => <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
           </Sel>
         </div>
         <div>
-          <p className="mb-1.5 text-sm font-bold">🛫 চেক-আউট</p>
+          <p className="mb-1.5 text-sm font-bold">🛫 Check-out</p>
           <Sel dark={def.dark} value={coFixed} onChange={(e) => setCo(Number(e.target.value))}>
             {days.map((x, i) => i > ci && <option key={i} value={i}>{x.day} — {bnLong(x.d)}</option>)}
           </Sel>
@@ -1066,31 +1121,31 @@ export function BookFlow({ id }: { id: string }) {
       </div>
 
       <div className={`${cardCls(def)} mt-3 flex items-center justify-between`}>
-        <span className="text-sm font-bold">👥 অতিথি সংখ্যা</span>
+        <span className="text-sm font-bold">👥 Number of guests</span>
         <div className="flex items-center gap-3">
           <button onClick={() => setGuests((g) => Math.max(1, g - 1))} className="grid h-9 w-9 place-items-center rounded-full bg-black/20 text-lg font-black">−</button>
-          <span className="text-lg font-black">{toBnDigits(guests)}</span>
+          <span className="text-lg font-black">{guests}</span>
           <button onClick={() => setGuests((g) => Math.min(10, g + 1))} className="grid h-9 w-9 place-items-center rounded-full bg-black/20 text-lg font-black">+</button>
         </div>
       </div>
 
       <div className={`${cardCls(def)} mt-3 space-y-1.5 text-sm`}>
-        <div className="flex justify-between"><span className={subCls(def)}>প্রতি রাত</span><span className="font-bold">{toBnDigits(p.p.toLocaleString("en-IN"))} টাকা{def.priceNote ? ` ${def.priceNote}` : ""}</span></div>
-        <div className="flex justify-between"><span className={subCls(def)}>মোট রাত</span><span className="font-bold">{toBnDigits(nights)}</span></div>
-        <div className="flex justify-between border-t border-white/10 pt-2"><span className="font-black">সর্বমোট</span><Price v={total} accent={def.accent} big /></div>
+        <div className="flex justify-between"><span className={subCls(def)}>Per night</span><span className="font-bold">{p.p.toLocaleString("en-IN")} Tk{def.priceNote ? ` ${def.priceNote}` : ""}</span></div>
+        <div className="flex justify-between"><span className={subCls(def)}>Total nights</span><span className="font-bold">{nights}</span></div>
+        <div className="flex justify-between border-t border-white/10 pt-2"><span className="font-black">Total</span><Price v={total} accent={def.accent} big /></div>
       </div>
 
       <div className={`${cardCls(def)} mt-3 space-y-3`}>
-        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার নাম *" />
-        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="মোবাইল নম্বর * (01XXXXXXXXX)" inputMode="numeric" />
+        <F dark={def.dark} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name *" />
+        <F dark={def.dark} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number * (01XXXXXXXXX)" inputMode="numeric" />
       </div>
 
       {err && <p className="mt-3 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400">⚠️ {err}</p>}
       {!store.user && <div className="mt-3"><LoginHint /></div>}
       <button onClick={confirm} className="btn-demo mt-4 w-full !py-3.5 text-base" style={{ background: def.accent }}>
-        ✅ বুকিং কনফার্ম করুন
+        ✅ Confirm booking
       </button>
-      <p className={`mt-2 text-center text-[11px] ${subCls(def)}`}>ডেমো বুকিং — কোনো আসল টাকা লাগবে না</p>
+      <p className={`mt-2 text-center text-[11px] ${subCls(def)}`}>Demo booking — no real money needed</p>
     </Page>
   );
 }
@@ -1100,18 +1155,18 @@ export function BookMy() {
   const list = myBookings(store);
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">📋 আমার বুকিং</h1>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">📋 My bookings</h1>
       {!store.user && <div className="mt-3"><LoginHint /></div>}
       {list.length === 0 ? (
-        <Empty emoji="📭" text="এখনো কোনো বুকিং করেননি" />
+        <Empty emoji="📭" text="You have not made any bookings yet" />
       ) : (
         <div className="mt-4 space-y-3">
           {list.map((b) => <BookingRow key={b.id} b={b} dark={def.dark} />)}
         </div>
       )}
       <div className="mt-5 flex justify-center">
-        <Cta href={`${base}/stays`} accent={def.accent} small>🏨 নতুন বুকিং করুন</Cta>
+        <Cta href={`${base}/stays`} accent={def.accent} small>🏨 Book a new stay</Cta>
       </div>
     </Page>
   );
@@ -1206,9 +1261,9 @@ export function NewsHome() {
   return (
     <>
       <div className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white ${def.dark ? "bg-red-600" : "bg-red-600"}`}>
-        <span className="animate-pulse rounded bg-white/25 px-2 py-0.5 text-xs">🔴 লাইভ</span>
-        <span className="truncate">সর্বশেষ খবর সবার আগে</span>
-        <Link href={`${base}/search`} className="ml-auto rounded-full bg-white/20 px-3 py-1 text-xs">🔍 খুঁজুন</Link>
+        <span className="animate-pulse rounded bg-white/25 px-2 py-0.5 text-xs">🔴 Live</span>
+        <span className="truncate">Latest news, first</span>
+        <Link href={`${base}/search`} className="ml-auto rounded-full bg-white/20 px-3 py-1 text-xs">🔍 Search</Link>
       </div>
       <Page>
         {first && (
@@ -1222,7 +1277,7 @@ export function NewsHome() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
             <div className="p-4">
-              <span className="rounded-full bg-red-500/15 px-2.5 py-1 text-[10px] font-black text-red-400">⚡ ব্রেকিং</span>
+              <span className="rounded-full bg-red-500/15 px-2.5 py-1 text-[10px] font-black text-red-400">⚡ Breaking</span>
               <p className="mt-2 text-lg font-black group-hover:underline">{first.t}</p>
               <p className={`mt-1 text-xs ${subCls(def)}`}>{first.c} • {first.time}</p>
             </div>
@@ -1239,7 +1294,7 @@ export function NewsHome() {
             </Link>
           ))}
         </div>
-        <SectionTitle t="📰 সর্বশেষ খবর" />
+        <SectionTitle t="📰 Latest news" />
         <div className="space-y-2">
           {rest.map((n) => <NewsRow key={n.id} n={n} />)}
         </div>
@@ -1253,11 +1308,11 @@ export function NewsCat({ cat }: { cat: string }) {
   const list = def.news.filter((n) => n.c === cat);
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
+      <Back href={base} label="Home" />
       <h1 className="text-2xl font-black">🏷️ {cat}</h1>
-      <p className={`mt-1 text-sm ${subCls(def)}`}>{toBnDigits(list.length)}টি খবর</p>
+      <p className={`mt-1 text-sm ${subCls(def)}`}>{list.length}news</p>
       {list.length === 0 ? (
-        <Empty emoji="📰" text="এই ক্যাটাগরিতে খবর নেই" />
+        <Empty emoji="📰" text="No news in this category" />
       ) : (
         <div className="mt-4 space-y-2">
           {list.map((n) => <NewsRow key={n.id} n={n} />)}
@@ -1271,8 +1326,10 @@ export function NewsArticle({ id }: { id: string }) {
   const { def, base } = useDemo();
   const n = def.news.find((x) => x.id === id);
   const [copied, setCopied] = useState(false);
-  if (!n) return <Page><Empty emoji="😅" text="খবর পাওয়া যায়নি" /></Page>;
-  const paras = n.body.split("।").map((s) => s.trim()).filter(Boolean).map((s) => s + "।");
+  if (!n) return <Page><Empty emoji="😅" text="News not found" /></Page>;
+  const paras = n.body.includes("।")
+    ? n.body.split("।").map((s) => s.trim()).filter(Boolean).map((s) => s + "।")
+    : n.body.split(/(?<=\.)\s+/).map((s) => s.trim()).filter(Boolean);
   const related = def.news.filter((x) => x.id !== n.id && x.c === n.c).slice(0, 4);
   function share() {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -1290,13 +1347,13 @@ export function NewsArticle({ id }: { id: string }) {
   }
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
+      <Back href={base} label="Home" />
       <div className={`grid place-items-center rounded-3xl p-12 text-8xl ${def.dark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
         {n.e}
       </div>
       <span className="mt-4 inline-block rounded-full bg-red-500/15 px-3 py-1 text-[11px] font-black text-red-400">{n.c}</span>
       <h1 className="mt-2 text-2xl font-black leading-snug">{n.t}</h1>
-      <p className={`mt-1 text-xs ${subCls(def)}`}>🕐 {n.time} • ✍️ ডেমো নিউজ ডেস্ক</p>
+      <p className={`mt-1 text-xs ${subCls(def)}`}>🕐 {n.time} • ✍️ Demo news desk</p>
       <div className="mt-5 space-y-3">
         {paras.map((p, i) => (
           <p key={i} className={`text-[15px] leading-relaxed ${def.dark ? "text-slate-200" : "text-slate-700"}`}>{p}</p>
@@ -1304,13 +1361,13 @@ export function NewsArticle({ id }: { id: string }) {
       </div>
       <div className="mt-6 flex gap-2">
         <button onClick={share} className="btn-demo !py-2.5 !text-sm" style={{ background: def.accent }}>
-          {copied ? "✅ লিংক কপি হয়েছে!" : "🔗 শেয়ার করুন"}
+          {copied ? "✅ Link copied!" : "🔗 Share"}
         </button>
         <Cta href={`${base}/cat/${encodeURIComponent(n.c)}`} accent={def.accent} ghost small>🏷️ {n.c}</Cta>
       </div>
       {related.length > 0 && (
         <div className="mt-8">
-          <SectionTitle t="🔗 সম্পর্কিত খবর" />
+          <SectionTitle t="🔗 Related news" />
           <div className="space-y-2">
             {related.map((r) => <NewsRow key={r.id} n={r} />)}
           </div>
@@ -1329,16 +1386,16 @@ export function NewsSearch() {
     : def.news;
   return (
     <Page narrow>
-      <Back href={base} label="হোম" />
-      <h1 className="text-2xl font-black">🔍 খবর খুঁজুন</h1>
+      <Back href={base} label="Home" />
+      <h1 className="text-2xl font-black">🔍 Search news</h1>
       <div className="mt-3">
-        <F dark={def.dark} value={q} onChange={(e) => setQ(e.target.value)} placeholder="খবরের শিরোনাম লিখুন…" autoFocus />
+        <F dark={def.dark} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Enter a news headline…" autoFocus />
       </div>
-      {query && <p className={`mt-2 text-xs ${subCls(def)}`}>{toBnDigits(list.length)}টি ফলাফল</p>}
+      {query && <p className={`mt-2 text-xs ${subCls(def)}`}>{list.length}results</p>}
       <div className="mt-3 space-y-2">
         {list.map((n) => <NewsRow key={n.id} n={n} />)}
       </div>
-      {query && list.length === 0 && <Empty emoji="🔍" text="কোনো খবর পাওয়া যায়নি" />}
+      {query && list.length === 0 && <Empty emoji="🔍" text="No news found" />}
     </Page>
   );
 }

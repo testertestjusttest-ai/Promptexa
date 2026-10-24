@@ -1,6 +1,6 @@
 "use client";
 
-/** DemoSite CRYPTO-EXCHANGE layout — Binance-style professional crypto exchange demo.
+/** DemoSite CRYPTO-EXCHANGE layout — professional crypto exchange demo.
  * 60+ pages: spot/futures/P2P trading, wallets, earn, launchpad, NFT, academy...
  * Browser-local data only; nothing touches the real DigiPlyra DB or admin.
  * ALL trading is simulated — no real crypto, no real money.
@@ -55,8 +55,22 @@ export const CEX_COINS: CexCoin[] = [
   { code: "TRX", name: "Tron", bn: "ট্রন", price: 0.27, change: 1.5, e: "🔱", vol: "৮৯০M", high: 0.278, low: 0.262 },
 ];
 
-export const coinOf = (code: string): CexCoin =>
-  CEX_COINS.find((c) => c.code === code.toUpperCase()) ?? CEX_COINS[0];
+export const coinOf = (code: string, coins: CexCoin[] = CEX_COINS): CexCoin =>
+  coins.find((c) => c.code === code.toUpperCase()) ?? coins[0];
+
+/** Trading-engine coins with admin price overrides merged in (demo only).
+ * Overrides come from the demo store (customCexPrices); high/low are clamped
+ * so an edited price never sits outside its own range. */
+export function useCexCoins(): CexCoin[] {
+  const { store } = useDemo();
+  const overrides = store.custom.customCexPrices ?? {};
+  return useMemo(() => CEX_COINS.map((c) => {
+    const o = overrides[c.code];
+    if (!o) return c;
+    const price = o.price ?? c.price;
+    return { ...c, price, change: o.change ?? c.change, high: Math.max(o.high ?? c.high, price), low: Math.min(o.low ?? c.low, price) };
+  }), [overrides]);
+}
 
 /** Deterministic pseudo-random from a string seed (stable across renders). */
 export function seeded(s: string): number {
@@ -66,8 +80,8 @@ export function seeded(s: string): number {
 }
 
 /** Generate a 48-point price series for a coin (SVG chart). */
-export function priceSeries(code: string, points = 48): number[] {
-  const c = coinOf(code);
+export function priceSeries(code: string, points = 48, coins: CexCoin[] = CEX_COINS): number[] {
+  const c = coinOf(code, coins);
   const out: number[] = [];
   let p = c.price / (1 + c.change / 100);
   for (let i = 0; i < points; i++) {
@@ -146,7 +160,7 @@ export const ACADEMY = [
 export function useSkin() {
   const { def } = useDemo();
   return {
-    dark: true, // crypto-exchange is always dark (Binance style)
+    dark: true, // crypto-exchange is always dark
     accent: def.accent || "#f0b90b",
     card: "rounded-xl border border-white/10 bg-[#12161c]",
     sub: "text-slate-400",
@@ -182,10 +196,11 @@ export function ChangeBadge({ v, big }: { v: number; big?: boolean }) {
 }
 
 export function Spark({ code, w = 96, h = 32 }: { code: string; w?: number; h?: number }) {
-  const data = useMemo(() => priceSeries(code, 24), [code]);
+  const coins = useCexCoins();
+  const data = useMemo(() => priceSeries(code, 24, coins), [code, coins]);
   const min = Math.min(...data), max = Math.max(...data);
   const pts = data.map((p, i) => `${(i / (data.length - 1)) * w},${h - ((p - min) / (max - min || 1)) * (h - 4) - 2}`).join(" ");
-  const up = coinOf(code).change >= 0;
+  const up = coinOf(code, coins).change >= 0;
   const col = up ? "#10b981" : "#ef4444";
   return (
     <svg width={w} height={h} className="shrink-0">
@@ -195,7 +210,8 @@ export function Spark({ code, w = 96, h = 32 }: { code: string; w?: number; h?: 
 }
 
 export function CoinIcon({ code, size = 40 }: { code: string; size?: number }) {
-  const c = coinOf(code);
+  const coins = useCexCoins();
+  const c = coinOf(code, coins);
   return (
     <span
       className="grid shrink-0 place-items-center rounded-full font-black text-white"
@@ -207,9 +223,10 @@ export function CoinIcon({ code, size = 40 }: { code: string; size?: number }) {
 }
 
 export function CoinRow({ code, link = true }: { code: string; link?: boolean }) {
+  const coins = useCexCoins();
   const { base } = useDemo();
   const { card } = useSkin();
-  const c = coinOf(code);
+  const c = coinOf(code, coins);
   const inner = (
     <div className={`${card} flex items-center gap-3 p-3 transition hover:border-[#f0b90b]/40`}>
       <CoinIcon code={code} />
@@ -227,9 +244,10 @@ export function CoinRow({ code, link = true }: { code: string; link?: boolean })
   return link ? <Link href={`${base}/coin/${c.code}`} className="block">{inner}</Link> : inner;
 }
 
-/** Scrolling ticker tape (Binance style). */
+/** Scrolling ticker tape (demo prices). */
 export function TickerTape() {
-  const items = [...CEX_COINS, ...CEX_COINS];
+  const coins = useCexCoins();
+  const items = [...coins, ...coins];
   return (
     <div className="overflow-hidden border-y border-white/10 bg-[#0d1117] py-2">
       <div className="flex w-max animate-[tick_40s_linear_infinite] gap-8">
@@ -248,7 +266,8 @@ export function TickerTape() {
 
 /** SVG candlestick-ish chart. */
 export function TradeChart({ code, height = 220 }: { code: string; height?: number }) {
-  const data = useMemo(() => priceSeries(code, 60), [code]);
+  const coins = useCexCoins();
+  const data = useMemo(() => priceSeries(code, 60, coins), [code, coins]);
   const w = 600;
   const min = Math.min(...data), max = Math.max(...data);
   const y = (p: number) => height - 12 - ((p - min) / (max - min || 1)) * (height - 32);
@@ -281,7 +300,8 @@ export function TradeChart({ code, height = 220 }: { code: string; height?: numb
 
 /** Simulated live order book. */
 export function OrderBook({ code, compact }: { code: string; compact?: boolean }) {
-  const c = coinOf(code);
+  const coins = useCexCoins();
+  const c = coinOf(code, coins);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setTick((x) => x + 1), 2500);
@@ -347,8 +367,8 @@ export function useCexBalances() {
   return [bal, setBal] as const;
 }
 
-export function balTotalUSD(bal: Record<string, number>): number {
-  return Object.entries(bal).reduce((s, [code, q]) => s + q * coinOf(code).price, 0);
+export function balTotalUSD(bal: Record<string, number>, coins: CexCoin[] = CEX_COINS): number {
+  return Object.entries(bal).reduce((s, [code, q]) => s + q * coinOf(code, coins).price, 0);
 }
 
 export interface CexOrder {
