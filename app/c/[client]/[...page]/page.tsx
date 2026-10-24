@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getDemoDef } from "@/app/web-dev/demos/demosite/defs";
@@ -10,6 +11,18 @@ async function getClient(slug: string) {
   const svc = createServiceClient();
   const { data } = await svc.from("client_sites").select("*").eq("slug", slug).eq("is_active", true).single();
   return data as any | null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ client: string }> }): Promise<Metadata> {
+  const { client } = await params;
+  const c = await getClient(client);
+  if (!c) return {};
+  return {
+    // absolute: bypass the root "%s -- DigiPlyra" template -- client sites are 100% white-label
+    title: { absolute: c.site_title },
+    description: `${c.site_title}: ${c.hero_title || ""}`,
+    openGraph: { title: c.site_title, siteName: c.site_title, description: c.hero_title || undefined },
+  };
 }
 
 /** Client sub-pages: /c/{client}/shop, /c/{client}/p/..., /c/{client}/admin ... */

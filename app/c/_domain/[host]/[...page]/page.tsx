@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getDemoDef } from "@/app/web-dev/demos/demosite/defs";
@@ -15,6 +16,18 @@ async function getClientByDomain(host: string) {
     .eq("is_active", true)
     .single();
   return data as any | null;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ host: string }> }): Promise<Metadata> {
+  const { host } = await params;
+  const c = await getClientByDomain(host);
+  if (!c) return {};
+  return {
+    // absolute: bypass the root "%s -- DigiPlyra" template -- client sites are 100% white-label
+    title: { absolute: c.site_title },
+    description: `${c.site_title}: ${c.hero_title || ""}`,
+    openGraph: { title: c.site_title, siteName: c.site_title, description: c.hero_title || undefined },
+  };
 }
 
 /** Custom-domain sub-pages: https://customer-domain.com/shop ... */

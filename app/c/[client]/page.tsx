@@ -18,8 +18,10 @@ export async function generateMetadata({ params }: { params: Promise<{ client: s
   const c = await getClient(client);
   if (!c) return {};
   return {
-    title: `${c.site_title} — ${c.demo_slug}`,
+    // absolute: bypass the root "%s -- DigiPlyra" template -- client sites are 100% white-label
+    title: { absolute: c.site_title },
     description: `${c.site_title}: ${c.hero_title || ""}`,
+    openGraph: { title: c.site_title, siteName: c.site_title, description: c.hero_title || undefined },
   };
 }
 
