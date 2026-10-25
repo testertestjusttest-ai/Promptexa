@@ -22,10 +22,12 @@ export default function Footer() {
             {t("ft_tagline")}
           </p>
           <div className="mt-5 flex gap-2">
-            <span className="chip">বিকাশ</span>
-            <span className="chip">নগদ</span>
-            <span className="chip">রকেট</span>
-            <span className="chip">কার্ড</span>
+            {(["ft_pay_1", "ft_pay_2", "ft_pay_3", "ft_pay_4"] as const)
+              .map((k) => t(k))
+              .filter(Boolean)
+              .map((label) => (
+                <span key={label} className="chip">{label}</span>
+              ))}
           </div>
         </div>
         <div>
