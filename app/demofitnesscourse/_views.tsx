@@ -128,7 +128,7 @@ export const PLANS = [
     name: "Full Course",
     price: 79,
     blurb: "The complete 8-week course. Every module, every lesson, lifetime access in this demo.",
-    features: ["8 weekly modules", "40+ guided lessons", "Printable workout sheets", "Lifetime access"],
+    features: ["8 weekly modules", "12 guided lessons", "Progress tracking", "Lifetime access in this demo"],
   },
   {
     id: "bundle",
