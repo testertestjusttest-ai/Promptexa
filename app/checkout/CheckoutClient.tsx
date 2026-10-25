@@ -82,7 +82,7 @@ export default function CheckoutClient() {
 
   async function applyPromo() {
     const code = promoInput.trim();
-    if (!code) return setPromoMsg("প্রোমো কোড লিখুন");
+    if (!code) return setPromoMsg(t("co_promo_empty"));
     setPromoLoading(true);
     setPromoMsg("");
     try {
@@ -92,12 +92,12 @@ export default function CheckoutClient() {
         body: JSON.stringify({ code, total_bdt: total }),
       });
       const d = await res.json();
-      if (!res.ok || !d.ok) throw new Error(d.error || "কোড প্রযোজ্য নয়");
+      if (!res.ok || !d.ok) throw new Error(d.error || t("co_promo_invalid"));
       setPromoApplied({ code: d.code, discount_percent: d.discount_percent, discount_bdt: d.discount_bdt });
-      setPromoMsg(`✅ ${d.code} — ${d.discount_percent}% ছাড় পেয়েছেন!`);
+      setPromoMsg(`✅ ${d.code} — ${d.discount_percent}% ${t("co_promo_got")}`);
     } catch (e) {
       setPromoApplied(null);
-      setPromoMsg("⚠️ " + (e instanceof Error ? e.message : "কোড প্রযোজ্য নয়"));
+      setPromoMsg("⚠️ " + (e instanceof Error ? e.message : t("co_promo_invalid")));
     } finally {
       setPromoLoading(false);
     }
@@ -368,7 +368,7 @@ export default function CheckoutClient() {
       {/* right: summary */}
       <div className="lg:col-span-2">
         <div className="glass sticky top-24 rounded-3xl p-6">
-          <h3 className="font-display text-lg font-bold text-white">🧾 অর্ডার সামারি</h3>
+          <h3 className="font-display text-lg font-bold text-white">{t("co_summary")}</h3>
           <ul className="mt-4 space-y-3">
             {(step === "manual-pay" ? orderItems : items).map((i) => (
               <li key={i.plan.id} className="flex items-center justify-between gap-3 text-sm">
@@ -388,22 +388,22 @@ export default function CheckoutClient() {
           <div className="divider-glow my-4" />
           {step === "info" && (
             <div className="mb-4">
-              <p className="mb-1.5 text-sm font-medium text-slate-300">🎟️ প্রোমো কোড <span className="text-slate-500">(যদি থাকে)</span></p>
+              <p className="mb-1.5 text-sm font-medium text-slate-300">{t("co_promo")} <span className="text-slate-500">{t("co_promo_if")}</span></p>
               {promoApplied ? (
                 <div className="flex items-center justify-between rounded-xl bg-[#d7ff3f]/10 px-3.5 py-2.5">
-                  <span className="font-mono text-sm font-bold text-[#d7ff3f]">{promoApplied.code} <span className="font-sans font-medium text-slate-300">— {promoApplied.discount_percent}% ছাড়</span></span>
-                  <button onClick={() => { setPromoApplied(null); setPromoInput(""); setPromoMsg(""); }} className="text-xs font-bold text-slate-400 hover:text-red-300">✕ বাদ দিন</button>
+                  <span className="font-mono text-sm font-bold text-[#d7ff3f]">{promoApplied.code} <span className="font-sans font-medium text-slate-300">— {promoApplied.discount_percent}% {t("co_promo_off")}</span></span>
+                  <button onClick={() => { setPromoApplied(null); setPromoInput(""); setPromoMsg(""); }} className="text-xs font-bold text-slate-400 hover:text-red-300">{t("co_promo_remove")}</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <input
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24))}
-                    placeholder="কোড লিখুন"
+                    placeholder={t("co_promo_ph")}
                     className="field uppercase"
                   />
                   <button onClick={applyPromo} disabled={promoLoading} className="btn-ghost shrink-0 px-4 text-sm">
-                    {promoLoading ? "..." : "প্রয়োগ"}
+                    {promoLoading ? "..." : t("co_promo_apply")}
                   </button>
                 </div>
               )}
@@ -413,7 +413,7 @@ export default function CheckoutClient() {
           {step === "manual-pay" ? (
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">সর্বমোট</span>
+                <span className="text-slate-400">{t("co_total")}</span>
                 <span className="font-display text-2xl font-bold text-[#d7ff3f]">{price(orderTotal)}</span>
               </div>
               {lang !== "bn" && (
@@ -423,17 +423,17 @@ export default function CheckoutClient() {
           ) : (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-400">সাবটোটাল</span>
+                <span className="text-slate-400">{t("co_subtotal")}</span>
                 <span className="font-semibold text-slate-200">{price(total)}</span>
               </div>
               {discountBdt > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#d7ff3f]">প্রোমো ছাড় ({promoApplied?.code})</span>
+                  <span className="text-[#d7ff3f]">{t("co_promo_discount")} ({promoApplied?.code})</span>
                   <span className="font-semibold text-[#d7ff3f]">− {price(discountBdt)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-slate-400">সর্বমোট</span>
+                <span className="text-slate-400">{t("co_total")}</span>
                 <span className="font-display text-2xl font-bold text-[#d7ff3f]">{price(finalTotal)}</span>
               </div>
               {lang !== "bn" && (
