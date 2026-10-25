@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { REVIEWS, REVIEW_COUNT, REVIEW_AVG } from "@/lib/reviews";
 import { toBnDigits } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 
 const PAGE = 12;
 
@@ -16,6 +17,10 @@ function Stars({ n }: { n: number }) {
 }
 
 export default function ReviewsSection() {
+  const { lang, t } = useLang();
+  // Digits follow the active language; review texts/names are stored
+  // Bangla pool data and render as stored in every language (see backlog).
+  const d = (v: string | number) => (lang === "bn" ? toBnDigits(v) : String(v));
   const [shown, setShown] = useState(6);
   const [expanded, setExpanded] = useState(false);
 
@@ -26,17 +31,17 @@ export default function ReviewsSection() {
       {/* summary */}
       <div className="mb-8 flex flex-wrap items-center justify-center gap-4">
         <div className="glass rounded-2xl px-6 py-4 text-center">
-          <p className="font-display text-3xl font-bold text-[#d7ff3f]">{toBnDigits(REVIEW_AVG)}</p>
+          <p className="font-display text-3xl font-bold text-[#d7ff3f]">{d(REVIEW_AVG)}</p>
           <Stars n={5} />
-          <p className="mt-1 text-xs text-slate-400">{toBnDigits(REVIEW_COUNT)}+ ভেরিফাইড রিভিউ</p>
+          <p className="mt-1 text-xs text-slate-400">{d(REVIEW_COUNT)}+ {t("rv_verified")}</p>
         </div>
         <div className="glass rounded-2xl px-6 py-4 text-center">
-          <p className="font-display text-3xl font-bold text-white">{toBnDigits("98")}%</p>
-          <p className="mt-1 text-xs text-slate-400">কাস্টমার সন্তুষ্টি</p>
+          <p className="font-display text-3xl font-bold text-white">{d("98")}%</p>
+          <p className="mt-1 text-xs text-slate-400">{t("rv_satisfaction")}</p>
         </div>
         <div className="glass rounded-2xl px-6 py-4 text-center">
-          <p className="font-display text-3xl font-bold text-white">{toBnDigits("5000")}+</p>
-          <p className="mt-1 text-xs text-slate-400">সফল ডেলিভারি</p>
+          <p className="font-display text-3xl font-bold text-white">{d("5000")}+</p>
+          <p className="mt-1 text-xs text-slate-400">{t("rv_deliveries")}</p>
         </div>
       </div>
 
@@ -46,7 +51,7 @@ export default function ReviewsSection() {
             <div className="flex items-center justify-between">
               <Stars n={r.stars} />
               <span className="rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-semibold text-slate-400">
-                ✓ ভেরিফাইড ক্রেতা
+                {t("rv_verified_buyer")}
               </span>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-slate-300">“{r.text}”</p>
@@ -64,7 +69,7 @@ export default function ReviewsSection() {
             onClick={() => { setExpanded(true); setShown(PAGE); }}
             className="btn-vault !px-8 !py-3 text-sm"
           >
-            📖 সব {toBnDigits(REVIEW_COUNT)}টি রিভিউ দেখুন
+            📖 {t("rv_see_all_pre")} {d(REVIEW_COUNT)}{lang === "bn" ? "" : " "}{t("rv_see_all_suf")}
           </button>
         ) : (
           <div className="space-y-3">
@@ -73,7 +78,7 @@ export default function ReviewsSection() {
                 onClick={() => setShown((s) => Math.min(s + 24, REVIEW_COUNT))}
                 className="btn-vault !px-8 !py-3 text-sm"
               >
-                আরও দেখুন ({toBnDigits(shown)}/{toBnDigits(REVIEW_COUNT)})
+                {t("rv_load_more")} ({d(shown)}/{d(REVIEW_COUNT)})
               </button>
             )}
             <div>
@@ -81,7 +86,7 @@ export default function ReviewsSection() {
                 onClick={() => { setExpanded(false); setShown(6); }}
                 className="text-sm font-semibold text-slate-400 hover:text-white"
               >
-                ▲ সংক্ষেপ করুন
+                ▲ {t("rv_collapse")}
               </button>
             </div>
           </div>

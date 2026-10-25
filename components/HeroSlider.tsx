@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Slide } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
 
-const FALLBACK: Slide[] = [
+const FALLBACK_BN: Slide[] = [
   {
     id: "f1",
     title_bn: "অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন",
@@ -19,8 +20,26 @@ const FALLBACK: Slide[] = [
   },
 ];
 
+const FALLBACK_EN: Slide[] = [
+  {
+    id: "f1",
+    title_bn: "Original Premium Subscriptions",
+    subtitle_bn: "CapCut Pro, Canva Pro, YouTube Premium — best prices, fast delivery.",
+    cta_text: "🛍️ Shop Now",
+    cta_link: "/shop",
+    image_url: null,
+    bg_from: "#8b5cf6",
+    bg_to: "#d7ff3f",
+    sort: 1,
+    is_active: true,
+  },
+];
+
 export default function HeroSlider({ slides }: { slides: Slide[] }) {
-  const list = slides.length > 0 ? slides : FALLBACK;
+  const { lang, t } = useLang();
+  // DB slides carry Bangla titles only (no title_en column yet); the
+  // fallback slide is language-aware, and all chrome below is translated.
+  const list = slides.length > 0 ? slides : lang === "bn" ? FALLBACK_BN : FALLBACK_EN;
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -115,7 +134,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                       {s.cta_text}
                     </Link>
                     <Link href="/shop" className="btn-ghost text-base">
-                      সব প্রোডাক্ট
+                      {t("hs_all_products")}
                     </Link>
                   </div>
                 </div>
@@ -129,14 +148,14 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
         <>
           <button
             onClick={() => go(idx - 1)}
-            aria-label="আগের স্লাইড"
+            aria-label={t("hs_prev")}
             className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur transition hover:border-[#d7ff3f]/60 sm:grid"
           >
             ←
           </button>
           <button
             onClick={() => go(idx + 1)}
-            aria-label="পরের স্লাইড"
+            aria-label={t("hs_next")}
             className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/40 text-white backdrop-blur transition hover:border-[#d7ff3f]/60 sm:grid"
           >
             →
@@ -146,7 +165,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
               <button
                 key={s.id}
                 onClick={() => go(i)}
-                aria-label={`স্লাইড ${i + 1}`}
+                aria-label={`${t("hs_slide")} ${i + 1}`}
                 className={`h-2 rounded-full transition-all ${
                   i === idx ? "w-8 bg-[#d7ff3f]" : "w-2 bg-white/25 hover:bg-white/50"
                 }`}
