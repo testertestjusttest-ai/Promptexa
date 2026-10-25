@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT, PAYMENT_METHOD_BN, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
+import { formatBDT, formatUSD, formatTk, PAYMENT_METHOD_BN, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 import type { PaymentMethod } from "@/lib/types";
 
 type Step = "info" | "manual-pay";
@@ -12,6 +13,33 @@ type Step = "info" | "manual-pay";
 export default function CheckoutClient() {
   const { items, total, clear } = useCart();
   const router = useRouter();
+  const { lang, t } = useLang();
+  /** Public price display: USD converted equivalent in EN/HI, Tk in BN.
+   *  BD checkout settlement stays in Tk throughout — the charged Tk amount
+   *  is always shown next to the USD total (see settle note below). */
+  const price = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatUSD(bdt));
+  /** Plan labels are admin-entered Bangla ("১ মাস", "১২ মাস", "আজীবন");
+   *  translate the common duration patterns for EN/HI views (same pattern
+   *  as ProductBuy). */
+  const BN_DIGIT = "০১২৩৪৫৬৭৮৯";
+  const toLatinDigits = (s: string) =>
+    s.replace(/[০-৯]/g, (d) => String(BN_DIGIT.indexOf(d)));
+  const planLabel = (label: string) => {
+    if (lang === "bn") return label;
+    const latin = toLatinDigits(label).trim();
+    const num = (unit: string, en: string, hi: string) => {
+      const m = latin.match(new RegExp(`^(\\d+)\\s*${unit}`));
+      if (!m) return null;
+      const n = Number(m[1]);
+      return lang === "hi" ? `${n} ${hi}` : `${n} ${en}${n > 1 ? "s" : ""}`;
+    };
+    return (
+      num("মাস", "month", "महीना") ??
+      num("বছর", "year", "साल") ??
+      num("দিন", "day", "दिन") ??
+      (latin.includes("আজীবন") ? (lang === "hi" ? "आजीवन" : "Lifetime") : latin)
+    );
+  };
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -306,7 +334,7 @@ export default function CheckoutClient() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-400">টাকার পরিমাণ</p>
-                  <p className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(orderTotal)}</p>
+                  <p className="font-display text-2xl font-bold text-[#d7ff3f]">{lang === "bn" ? formatBDT(orderTotal) : formatTk(orderTotal)}</p>
                 </div>
               </div>
               <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-slate-400">
@@ -350,10 +378,10 @@ export default function CheckoutClient() {
                   </span>
                   <div>
                     <p className="font-semibold text-white">{i.product.name}</p>
-                    <p className="text-xs text-slate-500">{i.plan.label_bn} × {i.qty}</p>
+                    <p className="text-xs text-slate-500">{planLabel(i.plan.label_bn)} × {i.qty}</p>
                   </div>
                 </div>
-                <p className="font-bold text-slate-200">{formatBDT(i.plan.price_bdt * i.qty)}</p>
+                <p className="font-bold text-slate-200">{price(i.plan.price_bdt * i.qty)}</p>
               </li>
             ))}
           </ul>
@@ -383,26 +411,34 @@ export default function CheckoutClient() {
             </div>
           )}
           {step === "manual-pay" ? (
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">সর্বমোট</span>
-              <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(orderTotal)}</span>
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">সর্বমোট</span>
+                <span className="font-display text-2xl font-bold text-[#d7ff3f]">{price(orderTotal)}</span>
+              </div>
+              {lang !== "bn" && (
+                <p className="mt-1 text-right text-xs text-slate-500">{t("pp_settle_note")} ({formatTk(orderTotal)})</p>
+              )}
             </div>
           ) : (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">সাবটোটাল</span>
-                <span className="font-semibold text-slate-200">{formatBDT(total)}</span>
+                <span className="font-semibold text-slate-200">{price(total)}</span>
               </div>
               {discountBdt > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-[#d7ff3f]">প্রোমো ছাড় ({promoApplied?.code})</span>
-                  <span className="font-semibold text-[#d7ff3f]">− {formatBDT(discountBdt)}</span>
+                  <span className="font-semibold text-[#d7ff3f]">− {price(discountBdt)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between pt-1">
                 <span className="text-slate-400">সর্বমোট</span>
-                <span className="font-display text-2xl font-bold text-[#d7ff3f]">{formatBDT(finalTotal)}</span>
+                <span className="font-display text-2xl font-bold text-[#d7ff3f]">{price(finalTotal)}</span>
               </div>
+              {lang !== "bn" && (
+                <p className="mt-1 text-right text-xs text-slate-500">{t("pp_settle_note")} ({formatTk(finalTotal)})</p>
+              )}
             </div>
           )}
         </div>

@@ -23,6 +23,12 @@ export function formatUSD(amountBdt: number): string {
   return `$${(amountBdt / BDT_PER_USD).toFixed(2)}`;
 }
 
+/** 1999 -> "1,999 Tk" (Latin digits, for EN/HI views where the Tk amount
+ *  actually charged must still be shown, e.g. the manual-pay amount). */
+export function formatTk(amountBdt: number): string {
+  return `${amountBdt.toLocaleString("en-US")} Tk`;
+}
+
 /** "DP-20261008-A1B2" style order numbers */
 export function generateOrderNumber(): string {
   const d = new Date();
