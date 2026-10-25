@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT } from "@/lib/format";
+import { formatBDT, formatUSD } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
 export default function CartDrawer() {
   const { items, total, isOpen, closeCart, removeItem, updateQty } = useCart();
-  const { t } = useLang();
+  const { lang, t } = useLang();
+  const price = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatUSD(bdt));
 
   return (
     <>
@@ -88,7 +89,7 @@ export default function CartDrawer() {
                       </button>
                     </div>
                     <p className="font-display font-bold text-[#d7ff3f]">
-                      {formatBDT(i.plan.price_bdt * i.qty)}
+                      {price(i.plan.price_bdt * i.qty)}
                     </p>
                   </div>
                 </li>
@@ -102,9 +103,14 @@ export default function CartDrawer() {
             <div className="mb-4 flex items-center justify-between">
               <span className="text-slate-400">{t("cart_total")}</span>
               <span className="font-display text-2xl font-bold text-[#d7ff3f]">
-                {formatBDT(total)}
+                {price(total)}
               </span>
             </div>
+            {lang !== "bn" && (
+              <p className="mb-4 text-right text-xs text-slate-500">
+                {t("pp_settle_note")}
+              </p>
+            )}
             <Link href="/checkout" onClick={closeCart} className="btn-vault w-full">
               {t("cart_checkout")}
             </Link>
