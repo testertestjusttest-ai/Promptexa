@@ -47,6 +47,7 @@ const HAND_GROUPS: Record<string, string> = {
   jewelry: "🛍️ Shopping",
   nursery: "🌿 Garden",
   cleaning: "🛠️ Services",
+  fitnesscourse: "💪 Fitness",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -622,6 +623,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Equipment included • Online booking</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "fitnesscourse",
+    name: "FitForm",
+    type: "Fitness Course Website",
+    desc: "8-week fitness course with a free starter guide, demo checkout, instant-access course area and coaching-call booking — USD pricing, mobile-first.",
+    price: "From $49",
+    render: () => (
+      <Frame>
+        <Nav logo="💪 FitForm" links={["Course", "Coaching", "Guide"]} cta="Join — $79" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/fc-img/hero.webp" alt="FitForm home fitness space" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Build strength at home, one week at a time</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Full Course", "$79"], ["+ Nutrition", "$119"], ["+ Coaching", "$199"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-emerald-50 px-2 py-1.5 ring-1 ring-emerald-100">
+                <p className="text-[11px] font-black text-emerald-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-emerald-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📖 Free Guide</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📅 Book a Call</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Free guide • Demo checkout • Instant course access</p>
       </Frame>
     ),
   },
