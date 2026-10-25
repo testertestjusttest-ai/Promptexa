@@ -11,6 +11,18 @@ export function formatBDT(amount: number): string {
   return `${toBnDigits(grouped)} টাকা`;
 }
 
+/**
+ * Public USD display rate: 1 USD = 123.71 BDT (Bangladesh Bank spot reference
+ * rate, 25 Oct 2026). Public USD figures are converted equivalents of the Tk
+ * price — never invented round prices. BD checkout settlement stays in Tk.
+ */
+export const BDT_PER_USD = 123.71;
+
+/** 1999 -> "$16.16" (converted equivalent at BDT_PER_USD, 2 decimals) */
+export function formatUSD(amountBdt: number): string {
+  return `$${(amountBdt / BDT_PER_USD).toFixed(2)}`;
+}
+
 /** "DP-20261008-A1B2" style order numbers */
 export function generateOrderNumber(): string {
   const d = new Date();

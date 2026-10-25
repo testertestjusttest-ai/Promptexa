@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Product } from "@/lib/types";
-import { formatBDT } from "@/lib/format";
+import { formatBDT, formatUSD } from "@/lib/format";
 import { isSoldOut } from "@/lib/types";
 import { useLang } from "@/lib/i18n";
 
@@ -81,7 +81,7 @@ export default function ProductCard({ product }: { product: Product }) {
               {t("pc_starting")}
             </p>
             <p className="font-display text-lg font-bold leading-tight text-[#d7ff3f]">
-              {formatBDT(minPrice)}
+              {lang === "bn" ? formatBDT(minPrice) : formatUSD(minPrice)}
             </p>
           </div>
           <span
