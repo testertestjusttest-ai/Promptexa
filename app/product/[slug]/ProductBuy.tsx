@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import type { Product } from "@/lib/types";
 import { isSoldOut } from "@/lib/types";
-import { formatBDT, toBnDigits } from "@/lib/format";
+import { formatBDT, formatUSD, toBnDigits } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 
 export default function ProductBuy({ product }: { product: Product }) {
+  const { lang, t } = useLang();
+  /** Public price display: USD converted equivalent in EN/HI, Tk in BN. */
+  const price = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatUSD(bdt));
   const plans = product.plans ?? [];
   const [planId, setPlanId] = useState(
     plans.find((p) => p.is_popular)?.id ?? plans[0]?.id
@@ -88,10 +92,10 @@ export default function ProductBuy({ product }: { product: Product }) {
               </div>
               <div className="text-right">
                 <p className="font-display text-lg font-bold text-[#d7ff3f]">
-                  {formatBDT(p.price_bdt)}
+                  {price(p.price_bdt)}
                 </p>
                 {p.old_price_bdt && p.old_price_bdt > p.price_bdt && (
-                  <p className="price-strike text-xs">{formatBDT(p.old_price_bdt)}</p>
+                  <p className="price-strike text-xs">{price(p.old_price_bdt)}</p>
                 )}
               </div>
               {p.is_popular && (
@@ -135,9 +139,12 @@ export default function ProductBuy({ product }: { product: Product }) {
       <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
         <span className="text-slate-400">সর্বমোট</span>
         <span className="font-display text-3xl font-bold text-[#d7ff3f]">
-          {formatBDT(plan.price_bdt * qty)}
+          {price(plan.price_bdt * qty)}
         </span>
       </div>
+      {lang !== "bn" && (
+        <p className="mt-1 text-right text-xs text-slate-500">{t("pp_settle_note")}</p>
+      )}
 
       {product.product_type === "service" && (
         <p className="rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
