@@ -20,6 +20,41 @@ export default function ProductBuy({ product }: { product: Product }) {
   const { addItem, openCart } = useCart();
   const router = useRouter();
 
+  /** Plan labels are admin-entered Bangla ("১ মাস", "১২ মাস", "১ বছর",
+   *  "আজীবন"); translate the common duration patterns for EN/HI views. */
+  const BN_DIGIT = "০১২৩৪৫৬৭৮৯";
+  const toLatinDigits = (s: string) =>
+    s.replace(/[০-৯]/g, (d) => String(BN_DIGIT.indexOf(d)));
+  const planLabel = (label: string) => {
+    if (lang === "bn") return label;
+    const latin = toLatinDigits(label).trim();
+    const num = (unit: string, en: string, hi: string) => {
+      const m = latin.match(new RegExp(`^(\\d+)\\s*${unit}`));
+      if (!m) return null;
+      const n = Number(m[1]);
+      return lang === "hi"
+        ? `${n} ${hi}`
+        : `${n} ${en}${n > 1 ? "s" : ""}`;
+    };
+    return (
+      num("মাস", "month", "महीना") ??
+      num("বছর", "year", "साल") ??
+      num("দিন", "day", "दिन") ??
+      (latin.includes("আজীবন")
+        ? lang === "hi"
+          ? "आजीवन"
+          : "Lifetime"
+        : latin)
+    );
+  };
+  const durationText = (days: number) =>
+    lang === "bn"
+      ? `${toBnDigits(days)} দিনের অ্যাক্সেস`
+      : lang === "hi"
+        ? `${days} दिनों की एक्सेस`
+        : `${days} days of access`;
+  const digits = (n: number) => (lang === "bn" ? toBnDigits(n) : String(n));
+
   const plan = plans.find((p) => p.id === planId);
   if (!plan) return null;
 
@@ -29,9 +64,9 @@ export default function ProductBuy({ product }: { product: Product }) {
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-red-500/15 text-3xl">
           📦
         </div>
-        <h3 className="mt-4 font-display text-xl font-bold text-white">স্টক শেষ</h3>
+        <h3 className="mt-4 font-display text-xl font-bold text-white">{t("pp_soldout_t")}</h3>
         <p className="mt-2 text-sm text-slate-400">
-          এই প্রোডাক্টের স্টক এখন শেষ। কিছুক্ষণ পর আবার চেক করুন অথবা সাপোর্টে জানান।
+          {t("pp_soldout_s")}
         </p>
       </div>
     );
@@ -54,7 +89,7 @@ export default function ProductBuy({ product }: { product: Product }) {
   return (
     <div className="glass ring-conic rounded-3xl p-6 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
-        প্যাকেজ সিলেক্ট করুন
+        {t("pp_select")}
       </p>
       <div className="mt-3 grid gap-3">
         {plans.map((p) => {
@@ -80,13 +115,13 @@ export default function ProductBuy({ product }: { product: Product }) {
                   ✓
                 </span>
                 <div>
-                  <p className="font-bold text-white">{p.label_bn}</p>
+                  <p className="font-bold text-white">{planLabel(p.label_bn)}</p>
                   {p.duration_days ? (
                     <p className="text-xs text-slate-500">
-                      {toBnDigits(p.duration_days)} দিনের অ্যাক্সেস
+                      {durationText(p.duration_days)}
                     </p>
                   ) : (
-                    <p className="text-xs text-slate-500">আজীবন অ্যাক্সেস</p>
+                    <p className="text-xs text-slate-500">{t("pp_lifetime")}</p>
                   )}
                 </div>
               </div>
@@ -100,7 +135,7 @@ export default function ProductBuy({ product }: { product: Product }) {
               </div>
               {p.is_popular && (
                 <span className="absolute -top-2.5 right-4 rounded-full bg-[#d7ff3f] px-2.5 py-0.5 text-[10px] font-bold text-[#060913]">
-                  জনপ্রিয়
+                  {t("pp_popular")}
                 </span>
               )}
             </button>
@@ -110,7 +145,7 @@ export default function ProductBuy({ product }: { product: Product }) {
 
       <div className="mt-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-slate-400">পরিমাণ</span>
+          <span className="text-sm text-slate-400">{t("pp_qty")}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -119,7 +154,7 @@ export default function ProductBuy({ product }: { product: Product }) {
               −
             </button>
             <span className="w-8 text-center font-display text-lg font-bold text-white">
-              {toBnDigits(qty)}
+              {digits(qty)}
             </span>
             <button
               onClick={() => setQty((q) => Math.min(9, q + 1))}
@@ -131,13 +166,13 @@ export default function ProductBuy({ product }: { product: Product }) {
         </div>
         {discount > 0 && (
           <span className="rounded-full bg-[#f43f5e]/15 px-3 py-1 text-sm font-bold text-[#fda4af]">
-            {toBnDigits(discount)}% ছাড়
+            {digits(discount)}% {t("pp_off")}
           </span>
         )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
-        <span className="text-slate-400">সর্বমোট</span>
+        <span className="text-slate-400">{t("pp_total")}</span>
         <span className="font-display text-3xl font-bold text-[#d7ff3f]">
           {price(plan.price_bdt * qty)}
         </span>
@@ -148,32 +183,31 @@ export default function ProductBuy({ product }: { product: Product }) {
 
       {product.product_type === "service" && (
         <p className="rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
-          🛠️ <b>সার্ভিস অর্ডার:</b> পেমেন্টের পর আমাদের টিম আপনার সাথে যোগাযোগ করে
-          রিকোয়ারমেন্ট অনুযায়ী কাজ শুরু করবে।
+          🛠️ {t("pp_service_note")}
         </p>
       )}
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button onClick={handleAdd} className="btn-ghost">
-          🛒 কার্টে যোগ করুন
+          {t("pp_add")}
         </button>
         <button onClick={handleBuyNow} className="btn-vault">
-          {product.product_type === "service" ? "🛠️ অর্ডার করুন" : "⚡ এখনই কিনুন"}
+          {product.product_type === "service" ? t("pp_order") : t("pp_buy")}
         </button>
       </div>
 
       <div className="mt-5 space-y-2 text-xs text-slate-500">
         {product.product_type === "service" ? (
           <>
-            <p>✓ অর্ডারের পর টিম যোগাযোগ করবে</p>
-            <p>✓ বিকাশ / নগদ / রকেট / কার্ড / ওয়ালেট সাপোর্টেড</p>
-            <p>✓ কাস্টম রিকোয়ারমেন্ট অনুযায়ী ডেলিভারি</p>
+            <p>✓ {t("pp_svc_bullet1")}</p>
+            <p>✓ {t("pp_svc_bullet2")}</p>
+            <p>✓ {t("pp_svc_bullet3")}</p>
           </>
         ) : (
           <>
-            <p>✓ পেমেন্টের ৫–৩০ মিনিটে ডেলিভারি</p>
-            <p>✓ বিকাশ / নগদ / রকেট / কার্ড সাপোর্টেড</p>
-            <p>✓ কোনো সমস্যায় রিপ্লেসমেন্ট গ্যারান্টি</p>
+            <p>✓ {t("pp_bullet_delivery")}</p>
+            <p>✓ {t("pp_bullet_pay")}</p>
+            <p>✓ {t("pp_bullet_replace")}</p>
           </>
         )}
       </div>
