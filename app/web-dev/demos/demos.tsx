@@ -45,6 +45,8 @@ const HAND_GROUPS: Record<string, string> = {
   payex: "💰 ফিনটেক", cryptovault: "💰 ফিনটেক", trustpay: "💰 ফিনটেক",
   binancepro: "💰 ফিনটেক", casinoplay: "🎰 গেমিং", buyinghouse: "🏭 Garments",
   jewelry: "🛍️ Shopping",
+  nursery: "🌿 Garden",
+  cleaning: "🛠️ Services",
 };
 
 const HAND_DEMOS: Demo[] = [
@@ -562,6 +564,64 @@ const HAND_DEMOS: Demo[] = [
           ))}
         </div>
         <p className="bg-cyan-500/10 px-4 py-2 text-center text-[10px] text-cyan-300">🚚 24-hour delivery in Dhaka</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "nursery",
+    name: "GreenLeaf Nursery",
+    type: "Plant Nursery & Garden Shop",
+    desc: "Indoor & outdoor plants, pots and care supplies — with light and watering needs on every plant and a beginner starter kit.",
+    price: "From 4,999 Tk",
+    render: () => (
+      <Frame dark>
+        <Nav logo="🌿 GreenLeaf Nursery" links={["Indoor", "Outdoor", "Pots & Care"]} cta="Cart" light />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/nursery-img/hero.webp" alt="GreenLeaf Nursery greenhouse" className="h-24 w-full object-cover" />
+        <div className="bg-gradient-to-r from-green-600 to-emerald-700 px-4 py-4 text-white">
+          <p className="text-lg font-black">Bring the green home</p>
+          <p className="text-[11px] opacity-90">Plants • Pots • Soil, tools and care guides</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 p-3">
+          {[["🪴", "Monstera", "850 Tk"], ["🌹", "Rose Plant", "320 Tk"], ["🏺", "Terracotta Pot", "380 Tk"]].map(([e, n, p]) => (
+            <div key={n} className="rounded-xl bg-white/5 p-2 text-center">
+              <div className="text-2xl">{e}</div>
+              <p className="mt-1 text-[10px] font-bold text-white">{n}</p>
+              <p className="text-[10px] font-bold text-green-300">{p}</p>
+            </div>
+          ))}
+        </div>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">🌿 Care card with every plant • Delivery across Bangladesh</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "cleaning",
+    name: "SparkleClean",
+    type: "Home Cleaning Service",
+    desc: "Home deep cleaning, kitchen & bathroom cleaning, sofa shampoo and office cleaning — fixed upfront prices, online booking and a full admin panel.",
+    price: "From 4,999 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="✨ SparkleClean" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/cl-img/hero.webp" alt="SparkleClean freshly cleaned living room" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">A spotless home, without lifting a finger</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Deep Clean", "3,500 Tk"], ["Kitchen", "1,800 Tk"], ["Bathroom", "900 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-sky-50 px-2 py-1.5 ring-1 ring-sky-100">
+                <p className="text-[11px] font-black text-sky-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-sky-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book a Cleaning</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🧹 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Equipment included • Online booking</p>
       </Frame>
     ),
   },

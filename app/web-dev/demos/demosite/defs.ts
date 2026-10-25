@@ -251,6 +251,18 @@ const HAND_DEFS: DemoSiteDef[] = [
       { n: "হেয়ার কালার", p: 2000, e: "🎨", t: "১২০ মিনিট" },
     ],
   }),
+  hand({
+    slug: "nursery", name: "গ্রিনলিফ নার্সারি", type: "প্ল্যান্ট নার্সারি ও গার্ডেন শপ", layout: "shop",
+    logoEmoji: "🌿", accent: "#16a34a", dark: false, grad: "from-green-600 via-emerald-700 to-teal-800",
+    heroTitle: "বাসায় আনুন সবুজের ছোঁয়া", heroSub: "ইনডোর-আউটডোর গাছ • টব • যত্নের সবকিছু", heroEmoji: "🌿",
+    cats: ["সব", "ইনডোর", "আউটডোর", "টব ও যত্ন"], desc: "সতেজ গাছ, টব আর গার্ডেনিং সরঞ্জাম — সারাদেশে হোম ডেলিভারি।",
+    items: [
+      { n: "মনস্টেরা", c: "ইনডোর", p: 850, e: "🪴" }, { n: "স্নেক প্ল্যান্ট", c: "ইনডোর", p: 450, e: "🌱" },
+      { n: "মানি প্ল্যান্ট", c: "ইনডোর", p: 350, e: "🍃" }, { n: "গাঁদা ফুলের চারা", c: "আউটডোর", p: 120, e: "🌼" },
+      { n: "জবা গাছ", c: "আউটডোর", p: 280, e: "🌺" }, { n: "গোলাপ চারা", c: "আউটডোর", p: 320, e: "🌹" },
+      { n: "টেরাকোটা টব", c: "টব ও যত্ন", p: 380, e: "🏺" }, { n: "পটিং মিক্স (৫ কেজি)", c: "টব ও যত্ন", p: 450, e: "🪱" },
+    ],
+  }),
 ];
 
 /* ================= 5 fintech demos (invest / exchange / wallet) ================= */
@@ -374,7 +386,75 @@ const FINTECH_DEFS: DemoSiteDef[] = [
   }),
 ];
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= AURELIA — luxury jewelry (hand-built, English) =================
+ * Recreation of the Laravel AURELIA site (aurelia-jewelry.rf.gd) as a
+ * dedicated "jewelry" layout with its own pages (jewelry-pages.tsx) and
+ * photo route (/jw-img). Prices are USD, content is English — the def is
+ * written out in full (not via hand()) to keep it faithful. */
+
+const AURELIA_DEF: DemoSiteDef = {
+  slug: "jewelry", name: "AURELIA", type: "লাক্সারি জুয়েলারি শপ", layout: "jewelry",
+  logoEmoji: "💎", accent: "#c9a24b", dark: true, grad: "from-amber-500 via-yellow-600 to-amber-800",
+  heroTitle: "Jewelry that outlives the moment it marks.",
+  heroSub: "Hand-finished rings, necklaces and bespoke commissions — designed in our atelier, made to be inherited.",
+  heroEmoji: "💎",
+  cats: ["All", "Rings", "Necklaces", "Earrings", "Bracelets", "Bespoke"],
+  products: [
+    { id: "p0", n: "The Aurelia Solitaire", p: 2450, e: "💍", c: "Rings", img: "/jw-img/hero.webp", rating: 5.0, reviews: 214, stock: 3, desc: "Our signature piece: a brilliant-cut 1.2ct diamond cradled in hand-polished 18k gold. Cut for maximum fire, set for a lifetime." },
+    { id: "p1", n: "Emerald Pendant Necklace", p: 1890, e: "📿", c: "Necklaces", img: "/jw-img/necklace.webp", rating: 4.9, reviews: 156, stock: 5, desc: "A deep-green Colombian emerald suspended from a fine 18k gold chain. Quietly dramatic, unmistakably Aurelia." },
+    { id: "p2", n: "Cascade Diamond Earrings", p: 1275, e: "✨", c: "Earrings", img: "/jw-img/earrings.webp", rating: 4.9, reviews: 188, stock: 8, desc: "Hand-matched diamonds in a flowing cascade setting that catches light with every movement." },
+    { id: "p3", n: "Heritage Gold Bangle", p: 980, e: "🪙", c: "Bracelets", img: "/jw-img/bracelet.webp", rating: 4.8, reviews: 97, stock: 6, desc: "A sculpted 18k gold bangle traced with pavé diamonds — an heirloom silhouette with a modern edge." },
+    { id: "p4", n: "Sapphire Royale Ring", p: 3150, e: "💎", c: "Rings", img: "/jw-img/ring.webp", rating: 5.0, reviews: 132, stock: 2, desc: "A Ceylon sapphire flanked by twin diamonds in white gold. Royal colour, contemporary cut." },
+    { id: "p5", n: "Bespoke Atelier Commission", p: 5000, e: "✦", c: "Bespoke", img: "/jw-img/craft.webp", rating: 5.0, reviews: 64, stock: 1, priceNote: "from", desc: "Your story, our bench. A one-of-one piece designed with our master jeweller from first sketch to final polish." },
+  ],
+  services: [],
+  gallery: [],
+  news: [],
+  about: "Aurelia began in 1998 as a two-person workshop restoring antique pieces for London dealers. Today our atelier designs its own collections and bespoke commissions for clients in thirty countries — but every piece is still finished the way the first ones were: by hand, under the lamp, one at a time.",
+  contact: "+44 20 7946 0000",
+  address: "12 Hatton Garden, London EC1N 8JR",
+  hours: "Mon – Sat · 10:00 AM – 6:00 PM",
+  theme: "elegant",
+};
+
+/* ================= SPARKLECLEAN — home cleaning service (2026-10-25) =================
+ * Modelled on the real Bangladeshi original Sheba.xyz "Clean My Home"
+ * (Home Deep Cleaning, Home Light Cleaning, Office Cleaning, Kitchen Hood,
+ * Pest Control, Tank Cleaning) — and built better within the engine:
+ * transparent per-service pricing with durations and what's included,
+ * category filtering (Deep Clean / Regular / Kitchen & Bath / Furniture /
+ * Office), online booking, and a visitor-editable admin. All content is
+ * English by default; no invented customer counts, reviews or ratings
+ * beyond the demo's own per-service star display. */
+
+const CLEANING_DEF: DemoSiteDef = {
+  slug: "cleaning", name: "SparkleClean", type: "Home Cleaning Service", layout: "service",
+  logoEmoji: "✨", accent: "#0ea5e9", dark: false, grad: "from-sky-500 via-cyan-600 to-teal-700",
+  heroTitle: "A spotless home, without lifting a finger",
+  heroSub: "Verified cleaners • All equipment included • Book in 2 minutes",
+  heroEmoji: "✨",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Full Home Deep Cleaning", p: 3500, e: "🏠", c: "Deep Clean", duration: "3 hours", rating: 4.9, desc: "Every room, top to bottom: dusting, mopping, cobweb removal, fans, switchboards and windows. Our team brings all equipment and eco-friendly supplies." },
+    { id: "s1", n: "Regular Home Cleaning", p: 1200, e: "🧹", c: "Regular", duration: "2 hours", rating: 4.8, desc: "Weekly or bi-weekly tidy-up: sweeping, mopping, dusting and a bathroom wipe-down that keeps your home fresh between deep cleans." },
+    { id: "s2", n: "Kitchen Deep Clean", p: 1800, e: "🍳", c: "Kitchen & Bath", duration: "2 hours", rating: 4.9, desc: "Degreased stove and hood, scrubbed tiles and sink, cabinets cleaned inside and out. Food-safe cleaners only." },
+    { id: "s3", n: "Bathroom Deep Clean", p: 900, e: "🚿", c: "Kitchen & Bath", duration: "1 hour", rating: 4.8, desc: "Descaled fittings, scrubbed tiles and grout, disinfected toilet and basin. Your bathroom smells fresh for days." },
+    { id: "s4", n: "Sofa & Carpet Shampoo", p: 1500, e: "🛋️", c: "Furniture", duration: "2 hours", rating: 4.8, desc: "Deep-extraction shampoo for sofas, mattresses and carpets, with stain treatment included. Dries within a few hours." },
+    { id: "s5", n: "Move-In / Move-Out Clean", p: 4500, e: "📦", c: "Deep Clean", duration: "4 hours", rating: 4.9, desc: "Empty-home deep clean before you move in or hand over the keys: walls, floors, fixtures and balconies." },
+    { id: "s6", n: "Office Cleaning", p: 2500, e: "🏢", c: "Office", duration: "3 hours", rating: 4.7, desc: "Desks, floors, meeting rooms and washrooms cleaned before your team arrives. Daily, weekly or one-off plans." },
+  ],
+  gallery: [],
+  news: [],
+  about: "SparkleClean is a home cleaning service for busy households in Dhaka. Book online, pick your date and time slot, and a verified two-person team arrives with all the equipment and supplies — you pay after the work is done and checked. Every service has a fixed upfront price: no hourly surprises, no hidden charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. All equipment and supplies included.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

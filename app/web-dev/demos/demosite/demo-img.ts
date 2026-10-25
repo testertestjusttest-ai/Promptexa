@@ -58,6 +58,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "cleaning": {
+    hero: "/cl-img/hero.webp",
+    cats: {
+    },
+  },
   "cosmetics": {
     hero: "/demo-img/cosmetics/hero.webp",
     cats: {
@@ -118,10 +123,8 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     },
   },
   "jewelry": {
-    hero: "/demo-img/jewelry/hero.webp",
+    hero: "/jw-img/hero.webp",
     cats: {
-      "স্বর্ণ": "/demo-img/jewelry/cat-1.webp",
-      "ডায়মন্ড": "/demo-img/jewelry/cat-2.webp",
     },
   },
   "makeupartist": {
@@ -142,6 +145,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
       "জাতীয়": "/demo-img/news/cat-1.webp",
       "খেলা": "/demo-img/news/cat-2.webp",
       "প্রযুক্তি": "/demo-img/news/cat-3.webp",
+    },
+  },
+  "nursery": {
+    hero: "/nursery-img/hero.webp",
+    cats: {
     },
   },
   "petshop": {
