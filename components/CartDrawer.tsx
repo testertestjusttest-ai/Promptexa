@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
 import { formatBDT } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 
 export default function CartDrawer() {
   const { items, total, isOpen, closeCart, removeItem, updateQty } = useCart();
+  const { t } = useLang();
 
   return (
     <>
@@ -22,7 +24,7 @@ export default function CartDrawer() {
       >
         <div className="flex items-center justify-between border-b border-white/10 p-5">
           <h2 className="font-display text-lg font-bold text-white">
-            🛒 আপনার কার্ট
+            {t("cart_title")}
           </h2>
           <button
             onClick={closeCart}
@@ -36,12 +38,12 @@ export default function CartDrawer() {
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <span className="text-5xl">🛍️</span>
-              <p className="mt-4 font-semibold text-slate-300">কার্ট খালি আছে</p>
+              <p className="mt-4 font-semibold text-slate-300">{t("cart_empty")}</p>
               <p className="mt-1 text-sm text-slate-500">
-                পছন্দের প্রিমিয়াম সাবস্ক্রিপশন যোগ করুন
+                {t("cart_empty_sub")}
               </p>
               <Link href="/shop" onClick={closeCart} className="btn-vault mt-6 !py-2.5 text-sm">
-                শপ দেখুন
+                {t("cart_browse")}
               </Link>
             </div>
           ) : (
@@ -64,7 +66,7 @@ export default function CartDrawer() {
                     <button
                       onClick={() => removeItem(i.plan.id)}
                       className="text-slate-500 hover:text-red-400"
-                      aria-label="মুছুন"
+                      aria-label={t("cart_remove")}
                     >
                       🗑
                     </button>
@@ -98,13 +100,13 @@ export default function CartDrawer() {
         {items.length > 0 && (
           <div className="border-t border-white/10 p-5">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-slate-400">সর্বমোট</span>
+              <span className="text-slate-400">{t("cart_total")}</span>
               <span className="font-display text-2xl font-bold text-[#d7ff3f]">
                 {formatBDT(total)}
               </span>
             </div>
             <Link href="/checkout" onClick={closeCart} className="btn-vault w-full">
-              চেকআউট করুন →
+              {t("cart_checkout")}
             </Link>
           </div>
         )}
