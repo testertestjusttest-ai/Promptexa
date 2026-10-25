@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLang } from "@/lib/i18n";
 
 /**
  * Renders a third-party ad code (Adsterra / Monetag / etc.) pasted
- * in Admin → Settings. Scripts execute on mount.
+ * in Admin → Settings. Scripts execute on mount. The default label
+ * follows the visitor's language; an explicit label prop wins.
  */
 export default function AdSlot({
   code,
   className = "",
-  label = "বিজ্ঞাপন",
+  label,
 }: {
   code: string;
   className?: string;
   label?: string;
 }) {
+  const { t } = useLang();
+  const displayLabel = label ?? t("ad_label");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,9 +49,9 @@ export default function AdSlot({
 
   return (
     <div className={`mx-auto max-w-7xl px-4 sm:px-6 ${className}`}>
-      {label ? (
+      {displayLabel ? (
         <p className="mb-1 text-center text-[10px] uppercase tracking-widest text-slate-600">
-          {label}
+          {displayLabel}
         </p>
       ) : null}
       <div ref={ref} className="flex justify-center overflow-hidden" />
@@ -57,6 +61,7 @@ export default function AdSlot({
 
 /** Popup / popunder-style ad — shows once per session with a close button. */
 export function AdPopup({ code }: { code: string }) {
+  const { t } = useLang();
   const ref = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +109,7 @@ export function AdPopup({ code }: { code: string }) {
           ✕
         </button>
         <p className="mb-2 text-center text-[10px] uppercase tracking-widest text-slate-500">
-          বিজ্ঞাপন
+          {t("ad_label")}
         </p>
         <div ref={ref} className="flex justify-center overflow-hidden" />
       </div>

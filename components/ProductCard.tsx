@@ -1,13 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { formatBDT } from "@/lib/format";
 import { isSoldOut } from "@/lib/types";
+import { useLang } from "@/lib/i18n";
 
 /**
  * Compact professional product card — Daraz-style:
  * image with overlaid badges, 1-line title, price + CTA. No wasted rows.
  */
 export default function ProductCard({ product }: { product: Product }) {
+  const { lang, t } = useLang();
   const plans = product.plans ?? [];
   const minPrice = plans.length ? Math.min(...plans.map((p) => p.price_bdt)) : 0;
   const hasDiscount = plans.some(
@@ -44,17 +48,17 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="absolute left-2.5 top-2.5 flex gap-1.5">
           {hasDiscount && !soldOut && (
             <span className="rounded-full bg-[#f43f5e]/90 px-2.5 py-1 text-[10px] font-bold text-white shadow">
-              ছাড়
+              {t("pc_discount")}
             </span>
           )}
           {product.is_featured && !soldOut && (
             <span className="rounded-full bg-[#d7ff3f]/90 px-2.5 py-1 text-[10px] font-bold text-black shadow">
-              জনপ্রিয়
+              {t("pc_popular")}
             </span>
           )}
           {soldOut && (
             <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-red-300">
-              স্টক শেষ
+              {t("pc_soldout")}
             </span>
           )}
         </div>
@@ -65,7 +69,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3 className="truncate font-display text-[15px] font-bold text-white transition group-hover:text-[#d7ff3f]">
           {product.name}
         </h3>
-        {product.tagline_bn ? (
+        {product.tagline_bn && lang === "bn" ? (
           <p className="mt-0.5 line-clamp-1 text-xs text-slate-400">
             {product.tagline_bn}
           </p>
@@ -74,7 +78,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto flex items-center justify-between pt-3">
           <div>
             <p className="text-[10px] uppercase tracking-wide text-slate-500">
-              শুরু মাত্র
+              {t("pc_starting")}
             </p>
             <p className="font-display text-lg font-bold leading-tight text-[#d7ff3f]">
               {formatBDT(minPrice)}

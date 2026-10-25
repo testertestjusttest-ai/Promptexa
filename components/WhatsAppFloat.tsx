@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 /**
  * Floating WhatsApp support button. The number is configured in
@@ -8,6 +9,7 @@ import { useEffect, useState } from "react";
  * as text — the button just opens a wa.me chat.
  */
 export default function WhatsAppFloat() {
+  const { t } = useLang();
   const [number, setNumber] = useState("");
 
   useEffect(() => {
@@ -27,10 +29,10 @@ export default function WhatsAppFloat() {
 
   return (
     <a
-      href={`https://wa.me/${number}?text=${encodeURIComponent("আসসালামু আলাইকুম, DigiPlyra সাপোর্ট দরকার 🙏")}`}
+      href={`https://wa.me/${number}?text=${encodeURIComponent(t("wa_msg"))}`}
       target="_blank"
       rel="noopener"
-      aria-label="WhatsApp সাপোর্ট"
+      aria-label={t("wa_aria")}
       className="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] shadow-[0_8px_24px_rgba(37,211,102,0.45)] transition hover:scale-110 active:scale-95"
     >
       <svg viewBox="0 0 32 32" className="h-7 w-7 fill-white">
