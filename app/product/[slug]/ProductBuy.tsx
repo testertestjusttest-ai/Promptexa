@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart";
 import type { Product } from "@/lib/types";
 import { isSoldOut } from "@/lib/types";
-import { formatBDT, formatUSD, toBnDigits } from "@/lib/format";
+import { formatBDT, formatUSD, toBnDigits, translatePlanLabel } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
 export default function ProductBuy({ product }: { product: Product }) {
@@ -20,33 +20,8 @@ export default function ProductBuy({ product }: { product: Product }) {
   const { addItem, openCart } = useCart();
   const router = useRouter();
 
-  /** Plan labels are admin-entered Bangla ("১ মাস", "১২ মাস", "১ বছর",
-   *  "আজীবন"); translate the common duration patterns for EN/HI views. */
-  const BN_DIGIT = "০১২৩৪৫৬৭৮৯";
-  const toLatinDigits = (s: string) =>
-    s.replace(/[০-৯]/g, (d) => String(BN_DIGIT.indexOf(d)));
-  const planLabel = (label: string) => {
-    if (lang === "bn") return label;
-    const latin = toLatinDigits(label).trim();
-    const num = (unit: string, en: string, hi: string) => {
-      const m = latin.match(new RegExp(`^(\\d+)\\s*${unit}`));
-      if (!m) return null;
-      const n = Number(m[1]);
-      return lang === "hi"
-        ? `${n} ${hi}`
-        : `${n} ${en}${n > 1 ? "s" : ""}`;
-    };
-    return (
-      num("মাস", "month", "महीना") ??
-      num("বছর", "year", "साल") ??
-      num("দিন", "day", "दिन") ??
-      (latin.includes("আজীবন")
-        ? lang === "hi"
-          ? "आजीवन"
-          : "Lifetime"
-        : latin)
-    );
-  };
+  /** Plan labels are admin-entered Bangla; translate for EN/HI views. */
+  const planLabel = (label: string) => translatePlanLabel(label, lang);
   const durationText = (days: number) =>
     lang === "bn"
       ? `${toBnDigits(days)} দিনের অ্যাক্সেস`

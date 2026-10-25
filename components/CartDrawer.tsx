@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT, formatUSD } from "@/lib/format";
+import { formatBDT, formatUSD, translatePlanLabel } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
 export default function CartDrawer() {
@@ -61,7 +61,7 @@ export default function CartDrawer() {
                       </span>
                       <div>
                         <p className="font-semibold text-white">{i.product.name}</p>
-                        <p className="text-xs text-slate-400">{i.plan.label_bn}</p>
+                        <p className="text-xs text-slate-400">{translatePlanLabel(i.plan.label_bn, lang)}</p>
                       </div>
                     </div>
                     <button

@@ -23,6 +23,31 @@ export function formatUSD(amountBdt: number): string {
   return `$${(amountBdt / BDT_PER_USD).toFixed(2)}`;
 }
 
+/**
+ * Plan labels are admin-entered Bangla ("১ মাস", "১২ মাস", "১ বছর",
+ * "আজীবন"). Translate the common duration patterns for EN/HI views;
+ * unknown/English labels pass through. BN view returns the label as-is.
+ */
+export function translatePlanLabel(label: string, lang: string): string {
+  if (lang === "bn") return label;
+  const BN_DIGIT = "০১২৩৪৫৬৭৮৯";
+  const latin = label
+    .replace(/[০-৯]/g, (d) => String(BN_DIGIT.indexOf(d)))
+    .trim();
+  const num = (unit: string, en: string, hi: string) => {
+    const m = latin.match(new RegExp(`^(\\d+)\\s*${unit}`));
+    if (!m) return null;
+    const n = Number(m[1]);
+    return lang === "hi" ? `${n} ${hi}` : `${n} ${en}${n > 1 ? "s" : ""}`;
+  };
+  return (
+    num("মাস", "month", "महीना") ??
+    num("বছর", "year", "साल") ??
+    num("দিন", "day", "दिन") ??
+    (latin.includes("আজীবন") ? (lang === "hi" ? "आजीवन" : "Lifetime") : latin)
+  );
+}
+
 /** 1999 -> "1,999 Tk" (Latin digits, for EN/HI views where the Tk amount
  *  actually charged must still be shown, e.g. the manual-pay amount). */
 export function formatTk(amountBdt: number): string {
