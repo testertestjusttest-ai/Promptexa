@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatBDT, toBnDigits, timeAgo, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
+import { formatBDT, formatTk, displayPrice, toBnDigits, timeAgo, paymentKindLabel, paymentMethodLabel, isPaymentMethodLive } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 import type { Wallet, WalletTxn } from "@/lib/types";
 import AdSlot from "@/components/AdSlot";
 import MotionBg from "@/components/MotionBg";
@@ -88,6 +89,24 @@ const TXN_BN: Record<string, string> = {
   adjustment: "⚙️ অ্যাডজাস্ট",
 };
 
+const TXN_EN: Record<string, string> = {
+  ad_reward: "🎬 Ad bonus",
+  referral_bonus: "👥 Referral bonus",
+  purchase: "🛒 Purchase",
+  withdrawal: "💸 Withdrawal",
+  refund: "↩️ Refund",
+  adjustment: "⚙️ Adjustment",
+};
+
+const TXN_HI: Record<string, string> = {
+  ad_reward: "🎬 विज्ञापन बोनस",
+  referral_bonus: "👥 रेफ़रल बोनस",
+  purchase: "🛒 खरीदारी",
+  withdrawal: "💸 निकासी",
+  refund: "↩️ रिफ़ंड",
+  adjustment: "⚙️ समायोजन",
+};
+
 export default function EarnClient({
   earnTopAds = [],
   earnBottomAds = [],
@@ -95,6 +114,15 @@ export default function EarnClient({
   earnTopAds?: string[];
   earnBottomAds?: string[];
 }) {
+  const { lang, t } = useLang();
+  /** Digits: Bangla digits in BN view, Latin digits in EN/HI views. */
+  const d = (v: string | number) => (lang === "bn" ? toBnDigits(v) : String(v));
+  /** Money: Bangla Tk in BN view; USD equivalent + Tk amount in EN/HI views. */
+  const money = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : displayPrice(bdt, lang));
+  /** Tk amount actually charged/paid, Latin digits in EN/HI views. */
+  const tk = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatTk(bdt));
+  const TXN = lang === "hi" ? TXN_HI : lang === "en" ? TXN_EN : TXN_BN;
+
   const [loading, setLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [wallet, setWallet] = useState<Wallet | null>(null);
@@ -110,7 +138,7 @@ export default function EarnClient({
   const [claiming, setClaiming] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // 20-box hourly round: watch all 20 → claim ৳20 lump sum
+  // 20-box hourly round: watch all 20 → claim 20 Tk lump sum
   const [cardsOn, setCardsOn] = useState(false);
   const [cardsDone, setCardsDone] = useState<number[]>([]);
   const [roundClaimed, setRoundClaimed] = useState(false);
@@ -258,21 +286,28 @@ export default function EarnClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ box: i, waited_sec: BOX_WAIT_SEC }),
       });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      const done: number[] = d.cards_done ?? [];
+      const d2 = await res.json();
+      if (!res.ok) throw new Error(d2.error || t("er_failed"));
+      const done: number[] = d2.cards_done ?? [];
       setCardsDone(done);
-      setRoundClaimed(!!d.claimed);
-      setRoundSecsLeft(Number(d.seconds_left) || 0);
+      setRoundClaimed(!!d2.claimed);
+      setRoundSecsLeft(Number(d2.seconds_left) || 0);
       // Only arm the 1-hour countdown once all 20 cards are done.
       setRoundActive(done.length >= CARDS_GOAL);
       setNowMs(Date.now());
-      if ((d.cards_done ?? []).length >= CARDS_GOAL) {
-        setMsg(`🎉 ${toBnDigits(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${toBnDigits(d.round_reward ?? roundReward)} টাকা বোনাস নিন!`);
+      if ((d2.cards_done ?? []).length >= CARDS_GOAL) {
+        const rw = d2.round_reward ?? roundReward;
+        setMsg(
+          lang === "bn"
+            ? `🎉 ${d(CARDS_GOAL)}টি কার্ড সম্পূর্ণ! এখন নিচের বাটনে ${d(rw)} টাকা বোনাস নিন!`
+            : lang === "hi"
+              ? `🎉 ${CARDS_GOAL} कार्ड पूरे! नीचे दिए बटन से ${rw} टका बोनस लें!`
+              : `🎉 All ${CARDS_GOAL} cards done! Take your ${rw} Tk bonus with the button below!`
+        );
         playCelebration();
       }
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"} — আবার চেষ্টা করুন`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("er_failed")} — ${t("er_try_again")}`);
       load();
     } finally {
       setCountingBox(null);
@@ -285,13 +320,19 @@ export default function EarnClient({
     setClaimingRound(true);
     try {
       const res = await fetch("/api/rewards/claim-round", { method: "POST" });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg(`🎉 ${toBnDigits(d.amount)} টাকা ওয়ালেটে যোগ হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর।`);
+      const d2 = await res.json();
+      if (!res.ok) throw new Error(d2.error || t("er_failed"));
+      setMsg(
+        lang === "bn"
+          ? `🎉 ${d(d2.amount)} টাকা ওয়ালেটে যোগ হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর।`
+          : lang === "hi"
+            ? `🎉 ${d2.amount} टका वॉलेट में जुड़ गया! अगला राउंड 1 घंटे बाद।`
+            : `🎉 ${d2.amount} Tk added to your wallet! Next round in 1 hour.`
+      );
       playCelebration();
       load();
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("er_failed")}`);
     } finally {
       setClaimingRound(false);
     }
@@ -312,13 +353,19 @@ export default function EarnClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ watched_sec: WATCH_SEC }),
       });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg(`🎉 ${formatBDT(d.amount)} বোনাস ওয়ালেটে যোগ হয়েছে!`);
+      const d2 = await res.json();
+      if (!res.ok) throw new Error(d2.error || t("er_failed"));
+      setMsg(
+        lang === "bn"
+          ? `🎉 ${formatBDT(d2.amount)} বোনাস ওয়ালেটে যোগ হয়েছে!`
+          : lang === "hi"
+            ? `🎉 ${d2.amount} टका बोनस वॉलेट में जुड़ गया!`
+            : `🎉 ${formatTk(d2.amount)} bonus added to your wallet!`
+      );
       setAdOpen(false);
       load();
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("er_failed")}`);
     } finally {
       setClaiming(false);
     }
@@ -338,14 +385,14 @@ export default function EarnClient({
           trx_id: depTrx,
         }),
       });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg("✅ ডিপোজিট রিকোয়েস্ট পাঠানো হয়েছে — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে।");
+      const d2 = await res.json();
+      if (!res.ok) throw new Error(d2.error || t("er_failed"));
+      setMsg(t("er_dep_ok"));
       setDepAmount("");
       setDepTrx("");
       load();
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("er_failed")}`);
     } finally {
       setDepLoading(false);
     }
@@ -365,14 +412,14 @@ export default function EarnClient({
           account_number: wdAcct,
         }),
       });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg("✅ উত্তোলন রিকোয়েস্ট পাঠানো হয়েছে — অ্যাডমিন যাচাই করে পাঠিয়ে দেবে।");
+      const d2 = await res.json();
+      if (!res.ok) throw new Error(d2.error || t("er_failed"));
+      setMsg(t("er_wd_ok"));
       setWdAmount("");
       setWdAcct("");
       load();
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("er_failed")}`);
     } finally {
       setWdLoading(false);
     }
@@ -380,15 +427,22 @@ export default function EarnClient({
 
   function copy(text: string, label: string) {
     navigator.clipboard.writeText(text).then(
-      () => setMsg(`📋 ${label} কপি হয়েছে!`),
-      () => setMsg("⚠️ কপি হয়নি")
+      () =>
+        setMsg(
+          lang === "bn"
+            ? `📋 ${label} কপি হয়েছে!`
+            : lang === "hi"
+              ? `📋 ${label} कॉपी हो गया!`
+              : `📋 ${label} copied!`
+        ),
+      () => setMsg(t("er_copy_failed"))
     );
   }
 
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-400">
-        লোড হচ্ছে...
+        {t("er_loading")}
       </div>
     );
   }
@@ -399,13 +453,13 @@ export default function EarnClient({
         <div className="glass rounded-3xl p-8">
           <div className="text-5xl">💰</div>
           <h1 className="mt-4 font-display text-xl font-bold text-white">
-            আয় করতে লগইন করুন
+            {t("er_login_title")}
           </h1>
           <p className="mt-2 text-sm text-slate-400">
-            অ্যাড দেখে ও বন্ধুদের রেফার করে টাকা আয় করুন
+            {t("er_login_sub")}
           </p>
           <Link href="/auth/login" className="btn-vault mt-6 inline-flex">
-            লগইন / রেজিস্টার
+            {t("er_login_btn")}
           </Link>
         </div>
       </div>
@@ -420,10 +474,10 @@ export default function EarnClient({
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-3xl font-bold text-white">
-        💰 আয় করুন
+        {t("er_title")}
       </h1>
       <p className="mt-1 text-sm text-slate-400">
-        অ্যাড দেখুন, বন্ধুদের রেফার করুন — টাকা জমা হবে ওয়ালেটে
+        {t("er_sub")}
       </p>
 
       {msg && (
@@ -441,50 +495,72 @@ export default function EarnClient({
         <MotionBg intensity="soft" />
         <div className="relative">
         <p className="text-xs uppercase tracking-wide text-slate-500">
-          ওয়ালেট ব্যালেন্স
+          {t("er_wallet")}
         </p>
         <p className="font-display text-4xl font-bold text-[#d7ff3f]">
-          {formatBDT(Number(wallet?.balance_bdt ?? 0))}
+          {money(Number(wallet?.balance_bdt ?? 0))}
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
           <div className="rounded-xl bg-white/[0.04] p-3">
-            <p className="text-[11px] text-slate-500">মোট আয়</p>
-            <p className="font-bold text-white">{formatBDT(Number(wallet?.total_earned_bdt ?? 0))}</p>
+            <p className="text-[11px] text-slate-500">{t("er_total_earned")}</p>
+            <p className="font-bold text-white">{money(Number(wallet?.total_earned_bdt ?? 0))}</p>
           </div>
           <div className="rounded-xl bg-white/[0.04] p-3">
-            <p className="text-[11px] text-slate-500">খরচ</p>
-            <p className="font-bold text-white">{formatBDT(Number(wallet?.total_spent_bdt ?? 0))}</p>
+            <p className="text-[11px] text-slate-500">{t("er_spent")}</p>
+            <p className="font-bold text-white">{money(Number(wallet?.total_spent_bdt ?? 0))}</p>
           </div>
           <div className="rounded-xl bg-white/[0.04] p-3">
-            <p className="text-[11px] text-slate-500">উত্তোলন</p>
-            <p className="font-bold text-white">{formatBDT(Number(wallet?.total_withdrawn_bdt ?? 0))}</p>
+            <p className="text-[11px] text-slate-500">{t("er_withdrawn")}</p>
+            <p className="font-bold text-white">{money(Number(wallet?.total_withdrawn_bdt ?? 0))}</p>
           </div>
         </div>
         <Link href="/shop" className="btn-vault mt-4 inline-flex w-full !py-3 text-sm">
-          🛒 ব্যালেন্স দিয়ে কিনুন
+          {t("er_shop_balance")}
         </Link>
         </div>
       </div>
 
-      {/* watch ad — 20-card hourly round, ৳20 lump sum */}
+      {/* watch ad — 20-card hourly round, 20 Tk lump sum */}
       <div className="glass mt-6 rounded-3xl p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-white">🎬 অ্যাড দেখে আয়</h2>
+          <h2 className="font-display text-lg font-bold text-white">{t("er_watch_title")}</h2>
           {config?.enabled && (
             <span className="rounded-full bg-[#d7ff3f]/15 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
-              প্রতি রাউন্ডে {toBnDigits(roundReward)} টাকা
+              {lang === "bn"
+                ? `প্রতি রাউন্ডে ${d(roundReward)} টাকা`
+                : lang === "hi"
+                  ? `प्रति राउंड ${roundReward} टका`
+                  : `${roundReward} Tk per round`}
             </span>
           )}
         </div>
         {!config?.enabled ? (
-          <p className="mt-3 text-sm text-slate-500">রিওয়ার্ড সিস্টেম এখন বন্ধ আছে।</p>
+          <p className="mt-3 text-sm text-slate-500">{t("er_rewards_off")}</p>
         ) : (
           <>
             <p className="mt-2 text-sm text-slate-400">
-              💰 <b className="text-white">আর্ন নাও</b> চাপুন — {toBnDigits(CARDS_GOAL)}টি কার্ড
-              আসবে। প্রতিটি কার্ডে ক্লিক করলে অ্যাড খুলবে, {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
-              পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{toBnDigits(CARDS_GOAL)}টি শেষ হলে একসাথে {toBnDigits(roundReward)} টাকা ওয়ালেটে!</b>
-              <br />⏳ {toBnDigits(CARDS_GOAL)}টি কার্ড শেষ হলে বাকি রাউন্ড-টাইমার দেখা যাবে — রাউন্ডের ১ ঘণ্টা শেষ হলে নতুন রাউন্ড শুরু হবে।
+              {lang === "bn" ? (
+                <>
+                  💰 <b className="text-white">আর্ন নাও</b> চাপুন — {d(CARDS_GOAL)}টি কার্ড
+                  আসবে। প্রতিটি কার্ডে ক্লিক করলে অ্যাড খুলবে, {d(BOX_WAIT_SEC)} সেকেন্ড
+                  পর কার্ডে ✓ পড়বে (লক থাকবে)। <b className="text-[#d7ff3f]">{d(CARDS_GOAL)}টি শেষ হলে একসাথে {d(roundReward)} টাকা ওয়ালেটে!</b>
+                  <br />⏳ {d(CARDS_GOAL)}টি কার্ড শেষ হলে বাকি রাউন্ড-টাইমার দেখা যাবে — রাউন্ডের ১ ঘণ্টা শেষ হলে নতুন রাউন্ড শুরু হবে।
+                </>
+              ) : lang === "hi" ? (
+                <>
+                  💰 <b className="text-white">Earn Now</b> दबाएँ — {CARDS_GOAL} कार्ड
+                  आएँगे। किसी कार्ड पर क्लिक करने से विज्ञापन खुलेगा, {BOX_WAIT_SEC} सेकंड
+                  बाद कार्ड पर ✓ लग जाएगा (लॉक रहेगा)। <b className="text-[#d7ff3f]">{CARDS_GOAL} पूरे होने पर एक साथ {roundReward} टका वॉलेट में!</b>
+                  <br />⏳ {CARDS_GOAL} कार्ड पूरे होने पर बाक़ी राउंड-टाइमर दिखेगा — राउंड का 1 घंटा खत्म होने पर नया राउंड शुरू होगा।
+                </>
+              ) : (
+                <>
+                  💰 Tap <b className="text-white">Earn Now</b> — {CARDS_GOAL} cards
+                  will appear. Clicking a card opens an ad; after {BOX_WAIT_SEC} seconds
+                  the card gets a ✓ (locked). <b className="text-[#d7ff3f]">All {CARDS_GOAL} done — {roundReward} Tk in your wallet at once!</b>
+                  <br />⏳ After all {CARDS_GOAL} cards are done, the remaining round timer will show — a new round starts when the round&apos;s 1 hour ends.
+                </>
+              )}
             </p>
 
             {!cardsOn ? (
@@ -494,12 +570,12 @@ export default function EarnClient({
             ) : (
               <div className="mt-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">🎯 এই রাউন্ডের অগ্রগতি</span>
+                  <span className="text-slate-400">{t("er_progress")}</span>
                   <span className="font-bold text-[#d7ff3f]">
-                    {toBnDigits(cardsDone.length)}/{toBnDigits(CARDS_GOAL)} কার্ড
+                    {d(cardsDone.length)}/{d(CARDS_GOAL)} {t("er_cards")}
                     {roundActive && (
                       <span className="ml-2 text-slate-400">
-                        ⏳ {toBnDigits(Math.floor(roundWaitSec / 60))}:{toBnDigits(String(roundWaitSec % 60).padStart(2, "0"))}
+                        ⏳ {d(Math.floor(roundWaitSec / 60))}:{d(String(roundWaitSec % 60).padStart(2, "0"))}
                       </span>
                     )}
                   </span>
@@ -532,14 +608,14 @@ export default function EarnClient({
                         {done ? (
                           <>
                             <span className="text-2xl">✓</span>
-                            <span className="mt-0.5 text-[10px] font-bold text-[#d7ff3f]/90">কমপ্লিট ✓</span>
+                            <span className="mt-0.5 text-[10px] font-bold text-[#d7ff3f]/90">{t("er_box_done")}</span>
                           </>
                         ) : counting ? (
                           <>
                             <span className="font-display text-2xl text-cyan-300">
-                              {toBnDigits(boxSecs)}
+                              {d(boxSecs)}
                             </span>
-                            <span className="mt-0.5 text-[10px] text-slate-400">সেকেন্ড…</span>
+                            <span className="mt-0.5 text-[10px] text-slate-400">{t("er_seconds")}</span>
                             <span
                               className="absolute bottom-0 left-0 h-1 bg-cyan-300/70 transition-all duration-1000"
                               style={{ width: `${((BOX_WAIT_SEC - boxSecs) / BOX_WAIT_SEC) * 100}%` }}
@@ -548,9 +624,9 @@ export default function EarnClient({
                         ) : (
                           <>
                             <span className="font-display text-xl text-slate-200">
-                              {toBnDigits(i + 1)}
+                              {d(i + 1)}
                             </span>
-                            <span className="mt-0.5 text-[10px] text-slate-500">অ্যাড দেখুন</span>
+                            <span className="mt-0.5 text-[10px] text-slate-500">{t("er_watch_ad")}</span>
                           </>
                         )}
                       </button>
@@ -561,27 +637,44 @@ export default function EarnClient({
                   <div className="mt-4 animate-pulse rounded-3xl border-2 border-[#d7ff3f]/60 bg-gradient-to-br from-[#d7ff3f]/20 via-lime-500/10 to-[#d7ff3f]/20 p-5 text-center">
                     <p className="text-3xl">🎉🎊🎉</p>
                     <p className="font-display mt-2 text-xl font-black text-white">
-                      {toBnDigits(CARDS_GOAL)}টি কার্ড কমপ্লিট!
+                      {lang === "bn"
+                        ? `${d(CARDS_GOAL)}টি কার্ড কমপ্লিট!`
+                        : lang === "hi"
+                          ? `${CARDS_GOAL} कार्ड पूरे!`
+                          : `${CARDS_GOAL} cards complete!`}
                     </p>
                     <p className="mt-1 text-sm text-slate-300">
-                      আপনার {toBnDigits(roundReward)} টাকা বোনাস রেডি
+                      {lang === "bn"
+                        ? `আপনার ${d(roundReward)} টাকা বোনাস রেডি`
+                        : lang === "hi"
+                          ? `आपका ${roundReward} टका बोनस तैयार है`
+                          : `Your ${roundReward} Tk bonus is ready`}
                     </p>
                     <button
                       onClick={claimRound}
                       disabled={claimingRound}
                       className="btn-vault mt-3 w-full !py-4 text-lg font-black shadow-[0_0_32px_rgba(215,255,63,0.5)]"
                     >
-                      {claimingRound ? "⏳ বোনাস যোগ হচ্ছে..." : `🎁 ${toBnDigits(roundReward)} টাকা বোনাস নিন!`}
+                      {claimingRound
+                        ? t("er_claiming")
+                        : lang === "bn"
+                          ? `🎁 ${d(roundReward)} টাকা বোনাস নিন!`
+                          : lang === "hi"
+                            ? `🎁 ${roundReward} टका बोनस लें!`
+                            : `🎁 Claim your ${roundReward} Tk bonus!`}
                     </button>
                   </div>
                 ) : roundClaimed ? (
                   <p className="mt-4 rounded-2xl bg-[#d7ff3f]/10 p-4 text-center text-sm font-bold text-[#d7ff3f]">
-                    ✅ এই রাউন্ডের {toBnDigits(roundReward)} টাকা বোনাস নেওয়া হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর ⏳
+                    {lang === "bn"
+                      ? `✅ এই রাউন্ডের ${d(roundReward)} টাকা বোনাস নেওয়া হয়েছে! পরের রাউন্ড ১ ঘণ্টা পর ⏳`
+                      : lang === "hi"
+                        ? `✅ इस राउंड का ${roundReward} टका बोनस ले लिया गया है! अगला राउंड 1 घंटे बाद ⏳`
+                        : `✅ This round's ${roundReward} Tk bonus is claimed! Next round in 1 hour ⏳`}
                   </p>
                 ) : (
                   <p className="mt-3 text-center text-xs text-slate-500">
-                    💡 কার্ডে ক্লিক → নতুন ট্যাবে অ্যাড খুলবে → {toBnDigits(BOX_WAIT_SEC)} সেকেন্ড
-                    অপেক্ষা → ✓ লকড (১ ঘণ্টা)
+                    {t("er_cards_tip")}
                   </p>
                 )}
               </div>
@@ -592,11 +685,27 @@ export default function EarnClient({
 
       {/* referral */}
       <div className="glass mt-6 rounded-3xl p-6">
-        <h2 className="font-display text-lg font-bold text-white">👥 বন্ধুদের রেফার করুন</h2>
+        <h2 className="font-display text-lg font-bold text-white">{t("er_refer_title")}</h2>
         <p className="mt-2 text-sm text-slate-400">
-          আপনার লিংক দিয়ে কেউ অ্যাকাউন্ট খুললেই বোনাস! এখন পর্যন্ত{" "}
-          <b className="text-white">{toBnDigits(refCount)} জন</b> জয়েন করেছে, আয়{" "}
-          <b className="text-[#d7ff3f]">{formatBDT(refEarned)}</b>
+          {lang === "bn" ? (
+            <>
+              আপনার লিংক দিয়ে কেউ অ্যাকাউন্ট খুললেই বোনাস! এখন পর্যন্ত{" "}
+              <b className="text-white">{d(refCount)} জন</b> জয়েন করেছে, আয়{" "}
+              <b className="text-[#d7ff3f]">{money(refEarned)}</b>
+            </>
+          ) : lang === "hi" ? (
+            <>
+              आपके लिंक से कोई खाता खोले तो बोनस! अब तक{" "}
+              <b className="text-white">{refCount} लोग</b> जुड़ चुके हैं, कमाई{" "}
+              <b className="text-[#d7ff3f]">{money(refEarned)}</b>
+            </>
+          ) : (
+            <>
+              Bonus when someone opens an account with your link! So far{" "}
+              <b className="text-white">{refCount} people</b> joined, earned{" "}
+              <b className="text-[#d7ff3f]">{money(refEarned)}</b>
+            </>
+          )}
         </p>
         {refCode && (
           <div className="mt-4 space-y-2">
@@ -605,22 +714,22 @@ export default function EarnClient({
                 {refLink}
               </code>
               <button
-                onClick={() => copy(refLink, "রেফারেল লিংক")}
+                onClick={() => copy(refLink, t("er_ref_link"))}
                 className="shrink-0 rounded-xl bg-white/10 px-4 py-3 text-sm font-bold text-white"
               >
                 📋
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">কোড:</span>
+              <span className="text-sm text-slate-500">{t("er_ref_code")}:</span>
               <code className="rounded-lg bg-white/5 px-3 py-1.5 font-mono text-sm font-bold text-white">
                 {refCode}
               </code>
               <button
-                onClick={() => copy(refCode, "রেফারেল কোড")}
+                onClick={() => copy(refCode, t("er_ref_code"))}
                 className="text-sm font-bold text-[#d7ff3f]"
               >
-                কপি
+                {t("er_copy")}
               </button>
             </div>
           </div>
@@ -629,16 +738,29 @@ export default function EarnClient({
 
       {/* deposit */}
       <div id="deposit" className="glass mt-6 scroll-mt-24 rounded-3xl p-6">
-        <h2 className="font-display text-lg font-bold text-white">💰 ওয়ালেটে টাকা জমা (ডিপোজিট)</h2>
+        <h2 className="font-display text-lg font-bold text-white">{t("er_dep_title")}</h2>
         <p className="mt-1 text-xs text-slate-500">
-          নিচের নম্বরে টাকা পাঠিয়ে TrxID দিন — অ্যাডমিন যাচাই করে ওয়ালেটে যোগ করবে
+          {t("er_dep_sub")}
         </p>
         {depPayNumber() ? (
           <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/[0.06] px-4 py-3">
             <div>
               <p className="text-xs text-slate-400">
-                📲 এই নম্বরে ({depMethod === "bkash" ? "বিকাশ" : depMethod === "nagad" ? "নগদ" : "রকেট"}){" "}
-                <b className="text-white">{paymentKindBn(depPayInfo().kind)}</b> করুন
+                {lang === "bn" ? (
+                  <>
+                    📲 এই নম্বরে ({paymentMethodLabel(depMethod, lang)}){" "}
+                    <b className="text-white">{paymentKindLabel(depPayInfo().kind, lang)}</b> করুন
+                  </>
+                ) : lang === "hi" ? (
+                  <>
+                    📲 इस नंबर ({paymentMethodLabel(depMethod, lang)}) पर{" "}
+                    <b className="text-white">{paymentKindLabel(depPayInfo().kind, lang)}</b> करें
+                  </>
+                ) : (
+                  <>
+                    📲 <b className="text-white">{paymentKindLabel(depPayInfo().kind, lang)}</b> to this number ({paymentMethodLabel(depMethod, lang)})
+                  </>
+                )}
               </p>
               <p className="font-display text-xl font-bold tracking-wide text-[#d7ff3f]">{depPayNumber()}</p>
             </div>
@@ -647,7 +769,7 @@ export default function EarnClient({
               onClick={copyDepNumber}
               className="shrink-0 rounded-xl bg-[#d7ff3f]/15 px-4 py-2 text-sm font-bold text-[#d7ff3f] transition hover:bg-[#d7ff3f]/25"
             >
-              {numCopied ? "✓ কপি হয়েছে" : "📋 কপি"}
+              {numCopied ? t("er_copied") : `📋 ${t("er_copy")}`}
             </button>
           </div>
         ) : null}
@@ -657,49 +779,49 @@ export default function EarnClient({
             min={100}
             value={depAmount}
             onChange={(e) => setDepAmount(e.target.value)}
-            placeholder="টাকার পরিমাণ (সর্বনিম্ন ১০০)"
+            placeholder={t("er_dep_amount_ph")}
             className="field sm:col-span-2"
             required
           />
           {liveDepMethods.length > 0 ? (
             <select value={depMethod} onChange={(e) => setDepMethod(e.target.value)} className="field">
               {liveDepMethods.map((m) => (
-                <option key={m} value={m}>{m === "bkash" ? "বিকাশ" : m === "nagad" ? "নগদ" : "রকেট"}</option>
+                <option key={m} value={m}>{paymentMethodLabel(m, lang)}</option>
               ))}
             </select>
           ) : (
             <p className="rounded-xl bg-white/[0.03] px-4 py-3 text-sm text-slate-500 sm:col-span-2">
-              ডিপোজিট মাধ্যম এখন বন্ধ আছে — পরে আবার চেষ্টা করুন।
+              {t("er_dep_none")}
             </p>
           )}
           <input
             value={depTrx}
             onChange={(e) => setDepTrx(e.target.value)}
-            placeholder="TrxID (পেমেন্টের ট্রানজেকশন আইডি)"
+            placeholder={t("er_dep_trx_ph")}
             className="field"
             required
           />
           <button type="submit" disabled={depLoading} className="btn-vault sm:col-span-2 !py-3 text-sm">
-            {depLoading ? "পাঠানো হচ্ছে..." : "ডিপোজিট রিকোয়েস্ট পাঠান"}
+            {depLoading ? t("er_sending") : t("er_dep_submit")}
           </button>
         </form>
         {deposits.length > 0 && (
           <div className="mt-4 space-y-2">
-            {deposits.map((d) => (
-              <div key={d.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5 text-sm">
+            {deposits.map((dd) => (
+              <div key={dd.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5 text-sm">
                 <span className="text-slate-300">
-                  {formatBDT(Number(d.amount_bdt))} • {d.method} • {d.trx_id}
+                  {money(Number(dd.amount_bdt))} • {paymentMethodLabel(dd.method, lang)} • {dd.trx_id}
                 </span>
                 <span
                   className={
-                    d.status === "approved"
+                    dd.status === "approved"
                       ? "text-xs font-bold text-green-400"
-                      : d.status === "rejected"
+                      : dd.status === "rejected"
                         ? "text-xs font-bold text-red-400"
                         : "text-xs font-bold text-amber-300"
                   }
                 >
-                  {d.status === "approved" ? "✅ যোগ হয়েছে" : d.status === "rejected" ? "❌ বাতিল" : "⏳ প্রসেসিং"}
+                  {dd.status === "approved" ? t("er_status_added") : dd.status === "rejected" ? t("er_status_rejected") : t("er_status_pending")}
                 </span>
               </div>
             ))}
@@ -709,9 +831,13 @@ export default function EarnClient({
 
       {/* withdraw */}
       <div className="glass mt-6 rounded-3xl p-6">
-        <h2 className="font-display text-lg font-bold text-white">💸 টাকা উত্তোলন</h2>
+        <h2 className="font-display text-lg font-bold text-white">{t("er_wd_title")}</h2>
         <p className="mt-1 text-xs text-slate-500">
-          সর্বনিম্ন {formatBDT(config?.min_withdraw_bdt ?? 500)} — বিকাশ / নগদ / রকেটে পাবেন
+          {lang === "bn"
+            ? <>সর্বনিম্ন {tk(config?.min_withdraw_bdt ?? 500)} — বিকাশ / নগদ / রকেটে পাবেন</>
+            : lang === "hi"
+              ? <>न्यूनतम {tk(config?.min_withdraw_bdt ?? 500)} — bKash / Nagad / Rocket पर मिलेगा</>
+              : <>Minimum {tk(config?.min_withdraw_bdt ?? 500)} — paid to bKash / Nagad / Rocket</>}
         </p>
         <form onSubmit={withdraw} className="mt-4 grid gap-3 sm:grid-cols-2">
           <input
@@ -719,24 +845,30 @@ export default function EarnClient({
             min={config?.min_withdraw_bdt ?? 500}
             value={wdAmount}
             onChange={(e) => setWdAmount(e.target.value)}
-            placeholder={`টাকার পরিমাণ (সর্বনিম্ন ${config?.min_withdraw_bdt ?? 500})`}
+            placeholder={
+              lang === "bn"
+                ? `টাকার পরিমাণ (সর্বনিম্ন ${d(config?.min_withdraw_bdt ?? 500)})`
+                : lang === "hi"
+                  ? `राशि (न्यूनतम ${config?.min_withdraw_bdt ?? 500} टका)`
+                  : `Amount (minimum ${config?.min_withdraw_bdt ?? 500} Tk)`
+            }
             className="field sm:col-span-2"
             required
           />
           <select value={wdMethod} onChange={(e) => setWdMethod(e.target.value)} className="field">
-            <option value="bkash">বিকাশ</option>
-            <option value="nagad">নগদ</option>
-            <option value="rocket">রকেট</option>
+            <option value="bkash">{paymentMethodLabel("bkash", lang)}</option>
+            <option value="nagad">{paymentMethodLabel("nagad", lang)}</option>
+            <option value="rocket">{paymentMethodLabel("rocket", lang)}</option>
           </select>
           <input
             value={wdAcct}
             onChange={(e) => setWdAcct(e.target.value)}
-            placeholder="মোবাইল নম্বর (01XXXXXXXXX)"
+            placeholder={t("er_wd_acct_ph")}
             className="field"
             required
           />
           <button type="submit" disabled={wdLoading} className="btn-vault sm:col-span-2 !py-3 text-sm">
-            {wdLoading ? "পাঠানো হচ্ছে..." : "উত্তোলন রিকোয়েস্ট পাঠান"}
+            {wdLoading ? t("er_sending") : t("er_wd_submit")}
           </button>
         </form>
         {withdrawals.length > 0 && (
@@ -744,7 +876,7 @@ export default function EarnClient({
             {withdrawals.map((w) => (
               <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5 text-sm">
                 <span className="text-slate-300">
-                  {formatBDT(Number(w.amount_bdt))} • {w.method} • {w.account_number}
+                  {money(Number(w.amount_bdt))} • {paymentMethodLabel(w.method, lang)} • {w.account_number}
                 </span>
                 <span
                   className={
@@ -755,7 +887,7 @@ export default function EarnClient({
                         : "text-xs font-bold text-amber-300"
                   }
                 >
-                  {w.status === "approved" ? "✅ সম্পন্ন" : w.status === "rejected" ? "❌ বাতিল" : "⏳ প্রসেসিং"}
+                  {w.status === "approved" ? t("er_status_done") : w.status === "rejected" ? t("er_status_rejected") : t("er_status_pending")}
                 </span>
               </div>
             ))}
@@ -765,19 +897,19 @@ export default function EarnClient({
 
       {/* transactions */}
       <div className="glass mt-6 rounded-3xl p-6">
-        <h2 className="font-display text-lg font-bold text-white">📜 লেনদেন হিস্ট্রি</h2>
+        <h2 className="font-display text-lg font-bold text-white">{t("er_txn_title")}</h2>
         <div className="mt-3 space-y-2">
           {txns.length === 0 && (
-            <p className="py-4 text-center text-sm text-slate-500">এখনো কোনো লেনদেন নেই</p>
+            <p className="py-4 text-center text-sm text-slate-500">{t("er_txn_empty")}</p>
           )}
-          {txns.map((t) => (
-            <div key={t.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5">
+          {txns.map((txn) => (
+            <div key={txn.id} className="flex items-center justify-between rounded-xl bg-white/[0.03] px-4 py-2.5">
               <div>
-                <p className="text-sm font-semibold text-white">{TXN_BN[t.type] ?? t.type}</p>
-                <p className="text-xs text-slate-500">{timeAgo(t.created_at)}</p>
+                <p className="text-sm font-semibold text-white">{TXN[txn.type] ?? txn.type}</p>
+                <p className="text-xs text-slate-500">{timeAgo(txn.created_at, lang)}</p>
               </div>
-              <p className={`font-display font-bold ${Number(t.amount_bdt) >= 0 ? "text-[#d7ff3f]" : "text-red-300"}`}>
-                {Number(t.amount_bdt) >= 0 ? "+" : "−"}{formatBDT(Math.abs(Number(t.amount_bdt)))}
+              <p className={`font-display font-bold ${Number(txn.amount_bdt) >= 0 ? "text-[#d7ff3f]" : "text-red-300"}`}>
+                {Number(txn.amount_bdt) >= 0 ? "+" : "−"}{money(Math.abs(Number(txn.amount_bdt)))}
               </p>
             </div>
           ))}
@@ -793,7 +925,7 @@ export default function EarnClient({
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-4 backdrop-blur-sm">
           <div className="mx-auto my-8 max-w-lg rounded-3xl bg-[#0b1120] p-5">
             <div className="flex items-center justify-between">
-              <h3 className="font-display font-bold text-white">🎬 স্পন্সরড অ্যাড</h3>
+              <h3 className="font-display font-bold text-white">{t("er_ad_title")}</h3>
               <button
                 onClick={() => setAdOpen(false)}
                 className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-white"
@@ -806,15 +938,20 @@ export default function EarnClient({
                 <AdFrame code={config.reward_ad_code} />
               ) : (
                 <div className="grid min-h-[240px] place-items-center rounded-xl bg-black/30 text-slate-500">
-                  অ্যাড লোড হচ্ছে...
+                  {t("er_ad_loading")}
                 </div>
               )}
             </div>
             <div className="mt-4 text-center">
               {countdown > 0 ? (
                 <p className="text-sm text-slate-400">
-                  বোনাস পেতে অপেক্ষা করুন:{" "}
-                  <b className="font-display text-2xl text-[#d7ff3f]">{toBnDigits(countdown)}</b> সে.
+                  {lang === "bn" ? (
+                    <>বোনাস পেতে অপেক্ষা করুন: <b className="font-display text-2xl text-[#d7ff3f]">{d(countdown)}</b> সে.</>
+                  ) : lang === "hi" ? (
+                    <>बोनस पाने के लिए इंतज़ार करें: <b className="font-display text-2xl text-[#d7ff3f]">{countdown}</b> से.</>
+                  ) : (
+                    <>Wait to get your bonus: <b className="font-display text-2xl text-[#d7ff3f]">{countdown}</b> sec.</>
+                  )}
                 </p>
               ) : (
                 <button
@@ -822,7 +959,13 @@ export default function EarnClient({
                   disabled={claiming}
                   className="btn-vault w-full !py-3 text-sm"
                 >
-                  {claiming ? "যোগ হচ্ছে..." : `🎁 ${formatBDT(config?.ad_reward_bdt ?? 0)} বোনাস নিন`}
+                  {claiming
+                    ? t("er_adding")
+                    : lang === "bn"
+                      ? `🎁 ${formatBDT(config?.ad_reward_bdt ?? 0)} বোনাস নিন`
+                      : lang === "hi"
+                        ? `🎁 ${config?.ad_reward_bdt ?? 0} टका बोनस लें`
+                        : `🎁 Claim ${formatTk(config?.ad_reward_bdt ?? 0)} bonus`}
                 </button>
               )}
             </div>

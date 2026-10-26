@@ -3,8 +3,8 @@ import EarnClient from "./EarnClient";
 import { getAdsConfig, activeSlots } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "আয় করুন — DigiPlyra",
-  description: "অ্যাড দেখে ও বন্ধুদের রেফার করে টাকা আয় করুন",
+  title: "Earn — DigiPlyra",
+  description: "Earn money by watching ads and referring friends",
 };
 
 export default async function EarnPage() {
