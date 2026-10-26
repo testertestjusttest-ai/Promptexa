@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLang } from "@/lib/i18n";
 import MotionBg from "@/components/MotionBg";
 
 type QA = { q: string; a: string; keys: string[]; cat: string };
@@ -22,11 +23,74 @@ const BANK: QA[] = [
   { cat: "👤 অ্যাকাউন্ট", q: "সাপোর্টের সাথে কীভাবে যোগাযোগ করবো?", a: "সাইটের ডান-নিচে সবুজ WhatsApp বাটনে ক্লিক করুন — প্রতিদিন সকাল ৯টা থেকে রাত ১১টা পর্যন্ত সাপোর্ট পাবেন।", keys: ["যোগাযোগ", "সাপোর্ট", "whatsapp", "হোয়াটসঅ্যাপ", "ফোন"] },
 ];
 
-function findAnswer(query: string): QA | null {
+/** Faithful English rendering of BANK — same order, same facts, no new claims. */
+const BANK_EN: QA[] = [
+  { cat: "🌐 Website Services", q: "How much does it cost to build a website?", a: "Prices vary by demo type — each demo card shows its price. For a custom quote for your needs, fill in the form on the /web-dev page and we will let you know within 24 hours.", keys: ["price", "cost", "how much", "website"] },
+  { cat: "🌐 Website Services", q: "How long does website delivery take?", a: "Usually 7–14 days. If you provide your content (images, text) quickly, delivery can be even faster.", keys: ["days", "time", "delivery", "how long"] },
+  { cat: "🌐 Website Services", q: "What does demo mean? Will my site look like this?", a: "A demo is only a sample — your site will be built 100% customized with your business name, logo, images and content, just the way you like. Try every button on the demo; your site will work the same way.", keys: ["demo", "sample"] },
+  { cat: "🌐 Website Services", q: "What support comes with the website?", a: "Domain setup, hosting, bKash/Nagad payment integration, Google SEO, Facebook Pixel, training in Bangla and free technical support — we do it all.", keys: ["support", "help"] },
+  { cat: "💰 Earnings & Rewards", q: "How do I earn money on the Earn page?", a: "Tap \"Earn Now\" → 20 cards will appear. Clicking each card opens an ad; after 15 seconds the card gets a ✓. When all 20 are done, take a 20 Tk bonus into your wallet at once! Each round lasts 1 hour.", keys: ["earn", "reward", "bonus", "card", "money"] },
+  { cat: "💰 Earnings & Rewards", q: "When can I withdraw money?", a: "You can withdraw once your wallet reaches a minimum of 500 Tk. Enter your bKash/Nagad/Rocket number in the withdraw form on the Earn page — the admin will verify and send it.", keys: ["withdraw", "bkash", "money"] },
+  { cat: "💰 Earnings & Rewards", q: "What do I get for referring?", a: "When someone joins through your referral link and makes their first purchase, you get a 20 Tk bonus. You will find the link on the Earn page.", keys: ["refer", "referral", "friend"] },
+  { cat: "🛒 Shopping", q: "How do I pay?", a: "Pay directly by card/mobile banking (SSLCommerz), or send money manually via bKash/Nagad/Rocket and submit the TrxID — delivery follows once the admin confirms.", keys: ["payment", "bkash", "nagad", "trx"] },
+  { cat: "🛒 Shopping", q: "How do I download an APK/file?", a: "Once payment is confirmed, a download button appears on your dashboard. The link is single-use and valid for 7 days — download it in time.", keys: ["apk", "download", "file", "install"] },
+  { cat: "🛒 Shopping", q: "Will I get a refund?", a: "Digital products are generally not refundable, but if you got the wrong product or there is a delivery problem, tell support — we will sort it out.", keys: ["refund"] },
+  { cat: "🎮 ID Marketplace", q: "Is buying and selling IDs safe?", a: "100% escrow system — the buyer's money is held with the admin first. The seller gets paid only after the buyer receives the ID and confirms. Never pay the seller directly!", keys: ["safe", "escrow", "fraud"] },
+  { cat: "🎮 ID Marketplace", q: "What is the admin fee for selling an ID?", a: "Only 2% — once a sale is complete, 2% of the price is deducted and the rest is given to the seller.", keys: ["fee", "commission", "2%"] },
+  { cat: "👤 Account", q: "I can't log in — what do I do?", a: "If you forgot your password, use the 'Forgot password?' option on the login page. If that still doesn't work, message WhatsApp support.", keys: ["login", "password"] },
+  { cat: "👤 Account", q: "How do I contact support?", a: "Click the green WhatsApp button at the bottom-right of the site — support is available every day from 9 AM to 11 PM.", keys: ["contact", "support", "whatsapp", "phone"] },
+];
+
+/** Faithful Hindi rendering of BANK — same order, same facts, no new claims. */
+const BANK_HI: QA[] = [
+  { cat: "🌐 वेबसाइट सेवाएं", q: "वेबसाइट बनवाने में कितना खर्च आएगा?", a: "कीमत डेमो के प्रकार पर निर्भर करती है — हर डेमो कार्ड पर कीमत लिखी होती है। अपनी ज़रूरत के अनुसार कस्टम कोट के लिए /web-dev पेज का फ़ॉर्म भरें, 24 घंटे के भीतर हम बता देंगे।", keys: ["कीमत", "खर्च", "कितना", "price", "cost"] },
+  { cat: "🌐 वेबसाइट सेवाएं", q: "वेबसाइट डिलीवरी में कितने दिन लगेंगे?", a: "आमतौर पर 7–14 दिन। अगर आप अपना कंटेंट (तस्वीरें, लेख) जल्दी दे दें तो डिलीवरी और भी तेज़ हो सकती है।", keys: ["दिन", "समय", "डिलीवरी", "delivery", "time"] },
+  { cat: "🌐 वेबसाइट सेवाएं", q: "डेमो का क्या मतलब है? क्या मेरी साइट ऐसी ही होगी?", a: "डेमो सिर्फ़ एक नमूना है — आपकी साइट आपके बिज़नेस के नाम, लोगो, तस्वीरों और कंटेंट के साथ 100% कस्टमाइज़ करके बनाई जाएगी। डेमो का हर बटन आज़माकर देखें, आपकी साइट में भी वह ऐसे ही काम करेगा।", keys: ["डेमो", "नमूना", "demo"] },
+  { cat: "🌐 वेबसाइट सेवाएं", q: "वेबसाइट के साथ क्या-क्या सपोर्ट मिलेगा?", a: "डोमेन सेटअप, होस्टिंग, bKash/Nagad पेमेंट इंटीग्रेशन, Google SEO, Facebook Pixel, बांग्ला में ट्रेनिंग और मुफ़्त टेक्निकल सपोर्ट — यह सब हम कर देते हैं।", keys: ["सपोर्ट", "मदद", "support"] },
+  { cat: "💰 कमाई और रिवॉर्ड", q: "अर्न पेज पर पैसे कैसे कमाऊँ?", a: "\"Earn Now\" दबाएँ → 20 कार्ड आएँगे। हर कार्ड पर क्लिक करने से विज्ञापन खुलेगा, 15 सेकंड बाद कार्ड पर ✓ लग जाएगा। 20 पूरे होने पर एक साथ 20 टका बोनस वॉलेट में लें! हर राउंड 1 घंटे का होता है।", keys: ["कमाई", "अर्न", "रिवॉर्ड", "बोनस", "कार्ड", "earn", "reward"] },
+  { cat: "💰 कमाई और रिवॉर्ड", q: "पैसे कब निकाल सकूँगा? (विड्रॉ)", a: "वॉलेट में कम से कम 500 टका होते ही विड्रॉ किया जा सकता है। अर्न पेज के विड्रॉ फ़ॉर्म में अपना bKash/Nagad/Rocket नंबर दें — एडमिन जाँचकर भेज देगा।", keys: ["विड्रॉ", "निकालना", "withdraw", "bkash"] },
+  { cat: "💰 कमाई और रिवॉर्ड", q: "रेफ़र करने पर क्या मिलेगा?", a: "आपके रेफ़रल लिंक से कोई जुड़कर पहली खरीदारी करता है तो आपको 20 टका बोनस मिलेगा। लिंक अर्न पेज पर मिलेगा।", keys: ["रेफ़र", "refer", "दोस्त"] },
+  { cat: "🛒 खरीदारी", q: "भुगतान कैसे करूँ?", a: "कार्ड/मोबाइल बैंकिंग (SSLCommerz) से सीधे, या bKash/Nagad/Rocket पर मैन्युअली पैसे भेजकर TrxID सबमिट करें — एडमिन के कन्फ़र्म करते ही डिलीवरी हो जाएगी।", keys: ["भुगतान", "bkash", "nagad", "payment", "trx"] },
+  { cat: "🛒 खरीदारी", q: "APK/फ़ाइल कैसे डाउनलोड करूँ?", a: "भुगतान कन्फ़र्म होते ही डैशबोर्ड पर डाउनलोड बटन आ जाएगा। लिंक सिर्फ़ एक बार इस्तेमाल हो सकता है और 7 दिन तक वैध है — समय पर डाउनलोड कर लें।", keys: ["apk", "डाउनलोड", "फ़ाइल", "download", "इंस्टॉल"] },
+  { cat: "🛒 खरीदारी", q: "क्या रिफ़ंड मिलेगा?", a: "डिजिटल प्रोडक्ट पर आमतौर पर रिफ़ंड नहीं होता, लेकिन गलत प्रोडक्ट या डिलीवरी की समस्या होने पर सपोर्ट को बताएँ — हम समाधान कर देंगे।", keys: ["रिफ़ंड", "वापसी", "refund"] },
+  { cat: "🎮 ID बाज़ार", q: "ID की खरीद-बिक्री क्या सुरक्षित है?", a: "100% एस्क्रो सिस्टम — खरीदार का पैसा पहले एडमिन के पास जमा रहता है। ID मिलने और कन्फ़र्म करने पर ही विक्रेता को पैसा मिलता है। विक्रेता को सीधे पैसे न दें!", keys: ["सुरक्षित", "एस्क्रो", "धोखा", "safe", "escrow"] },
+  { cat: "🎮 ID बाज़ार", q: "ID बेचने पर एडमिन फ़ीस कितनी है?", a: "सिर्फ़ 2% — बिक्री पूरी होने पर कीमत का 2% काटकर बाक़ी पैसा विक्रेता को दे दिया जाता है।", keys: ["फ़ीस", "कमीशन", "fee", "2%"] },
+  { cat: "👤 खाता", q: "लॉगिन नहीं हो रहा है, क्या करूँ?", a: "पासवर्ड भूल गए हैं तो लॉगिन पेज पर 'पासवर्ड भूल गए?' विकल्प इस्तेमाल करें। फिर भी न हो तो WhatsApp सपोर्ट पर मैसेज करें।", keys: ["लॉगिन", "पासवर्ड", "login", "password"] },
+  { cat: "👤 खाता", q: "सपोर्ट से कैसे संपर्क करूँ?", a: "साइट के नीचे-दाएँ हरे WhatsApp बटन पर क्लिक करें — हर दिन सुबह 9 बजे से रात 11 बजे तक सपोर्ट मिलेगा।", keys: ["संपर्क", "सपोर्ट", "whatsapp", "फ़ोन"] },
+];
+
+const CHROME = {
+  bn: {
+    title: "❓ সাধারণ জিজ্ঞাসা",
+    sub: "প্রশ্ন লিখুন — অটোমেটিক উত্তর পাবেন ⚡",
+    greeting: "👋 আসসালামু আলাইকুম! আমি DigiPlyra সহকারী। আপনার প্রশ্ন লিখুন — সাথে সাথে উত্তর দেবো।",
+    fallback: "😅 এই বিষয়ে তথ্য পাইনি। WhatsApp সাপোর্টে (ডান-নিচের সবুজ বাটন) জিজ্ঞেস করুন — সাথে সাথে সাহায্য পাবেন!",
+    placeholder: "আপনার প্রশ্ন লিখুন… (যেমন: ওয়েবসাইটের দাম কত?)",
+    send: "পাঠান ➤",
+  },
+  en: {
+    title: "❓ Frequently Asked Questions",
+    sub: "Type your question — get an instant answer ⚡",
+    greeting: "👋 Hello! I'm the DigiPlyra assistant. Type your question — I'll answer right away.",
+    fallback: "😅 I couldn't find information on this topic. Ask WhatsApp support (the green button at the bottom-right) — you'll get help right away!",
+    placeholder: "Type your question… (e.g. How much does a website cost?)",
+    send: "Send ➤",
+  },
+  hi: {
+    title: "❓ सामान्य प्रश्न",
+    sub: "प्रश्न लिखें — तुरंत उत्तर पाएँ ⚡",
+    greeting: "👋 नमस्ते! मैं DigiPlyra सहायक हूँ। अपना प्रश्न लिखें — तुरंत उत्तर दूँगा।",
+    fallback: "😅 इस विषय पर जानकारी नहीं मिली। WhatsApp सपोर्ट (नीचे-दाएँ हरा बटन) पर पूछें — तुरंत मदद मिलेगी!",
+    placeholder: "अपना प्रश्न लिखें… (जैसे: वेबसाइट की कीमत कितनी है?)",
+    send: "भेजें ➤",
+  },
+} as const;
+
+function findAnswer(query: string, bank: QA[]): QA | null {
   const q = query.toLowerCase();
   let best: QA | null = null;
   let bestScore = 0;
-  for (const item of BANK) {
+  for (const item of bank) {
     let score = 0;
     for (const k of item.keys) if (q.includes(k.toLowerCase())) score += k.length > 3 ? 2 : 1;
     // bonus for question-word overlap
@@ -37,36 +101,47 @@ function findAnswer(query: string): QA | null {
   return bestScore > 0 ? best : null;
 }
 
-const CATS = [...new Set(BANK.map((b) => b.cat))];
-
 export default function FaqPage() {
+  const { lang } = useLang();
+  const bank = lang === "en" ? BANK_EN : lang === "hi" ? BANK_HI : BANK;
+  const chrome = CHROME[lang];
+  const CATS = useMemo(() => [...new Set(bank.map((b) => b.cat))], [bank]);
+
   const [ask, setAsk] = useState("");
-  const [chat, setChat] = useState<{ me: boolean; text: string }[]>([
-    { me: false, text: "👋 আসসালামু আলাইকুম! আমি DigiPlyra সহকারী। আপনার প্রশ্ন লিখুন — সাথে সাথে উত্তর দেবো।" },
+  const [chat, setChat] = useState<{ me: boolean; text: string }[]>(() => [
+    { me: false, text: chrome.greeting },
   ]);
   const [openCat, setOpenCat] = useState<string>(CATS[0]);
   const [openQ, setOpenQ] = useState<number | null>(null);
 
+  // Keep the visible bank + greeting in sync when the drawer language changes.
+  useEffect(() => {
+    setChat([{ me: false, text: CHROME[lang].greeting }]);
+    setOpenCat([...new Set(bank.map((b) => b.cat))][0]);
+    setOpenQ(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   function send() {
     const q = ask.trim();
     if (!q) return;
-    const ans = findAnswer(q);
+    const ans = findAnswer(q, bank);
     setChat((c) => [
       ...c,
       { me: true, text: q },
-      { me: false, text: ans ? ans.a : "😅 এই বিষয়ে তথ্য পাইনি। WhatsApp সাপোর্টে (ডান-নিচের সবুজ বাটন) জিজ্ঞেস করুন — সাথে সাথে সাহায্য পাবেন!" },
+      { me: false, text: ans ? ans.a : chrome.fallback },
     ]);
     setAsk("");
   }
 
-  const catItems = useMemo(() => BANK.map((b, i) => ({ ...b, i })).filter((b) => b.cat === openCat), [openCat]);
+  const catItems = useMemo(() => bank.map((b, i) => ({ ...b, i })).filter((b) => b.cat === openCat), [bank, openCat]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="relative overflow-hidden rounded-3xl border border-white/10 px-6 py-8 text-center">
         <MotionBg intensity="soft" />
-        <h1 className="font-display relative text-3xl font-black text-white">❓ সাধারণ জিজ্ঞাসা</h1>
-        <p className="relative mt-2 text-sm text-slate-400">প্রশ্ন লিখুন — অটোমেটিক উত্তর পাবেন ⚡</p>
+        <h1 className="font-display relative text-3xl font-black text-white">{chrome.title}</h1>
+        <p className="relative mt-2 text-sm text-slate-400">{chrome.sub}</p>
       </div>
 
       {/* Auto-answer ask box */}
@@ -85,10 +160,10 @@ export default function FaqPage() {
             value={ask}
             onChange={(e) => setAsk(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="আপনার প্রশ্ন লিখুন… (যেমন: ওয়েবসাইটের দাম কত?)"
+            placeholder={chrome.placeholder}
             className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#d7ff3f]/50"
           />
-          <button onClick={send} className="btn-vault !px-5 !py-2.5 text-sm">পাঠান ➤</button>
+          <button onClick={send} className="btn-vault !px-5 !py-2.5 text-sm">{chrome.send}</button>
         </div>
       </div>
 
