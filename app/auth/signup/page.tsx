@@ -4,8 +4,10 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useLang } from "@/lib/i18n";
 
 function SignupForm() {
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +40,7 @@ function SignupForm() {
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password.length < 6) return setError("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে");
+    if (password.length < 6) return setError(t("au_password_short"));
     setLoading(true);
     try {
       // create account (email pre-confirmed server-side — no verification link)
@@ -53,7 +55,7 @@ function SignupForm() {
         }),
       });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "রেজিস্ট্রেশন হয়নি");
+      if (!res.ok) throw new Error(d.error || t("au_signup_failed"));
 
       // sign in immediately
       const supabase = createClient();
@@ -61,7 +63,7 @@ function SignupForm() {
         email: email.trim(),
         password,
       });
-      if (signErr) throw new Error("অ্যাকাউন্ট হয়েছে — লগইন করুন");
+      if (signErr) throw new Error(t("au_signup_login_first"));
 
       try {
         localStorage.removeItem("dp_ref");
@@ -72,7 +74,7 @@ function SignupForm() {
       router.push("/dashboard");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "রেজিস্ট্রেশন হয়নি");
+      setError(e instanceof Error ? e.message : t("au_signup_failed"));
     } finally {
       setLoading(false);
     }
@@ -81,32 +83,32 @@ function SignupForm() {
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="glass ring-conic rounded-3xl p-8">
-        <h1 className="font-display text-2xl font-bold text-white">✨ রেজিস্টার</h1>
+        <h1 className="font-display text-2xl font-bold text-white">{t("au_signup_title")}</h1>
         <p className="mt-1 text-sm text-slate-400">
-          ফ্রি অ্যাকাউন্ট খুলুন — ইমেইল ভেরিফিকেশন লাগবে না
+          {t("au_signup_sub")}
         </p>
         {referral && (
           <p className="mt-3 rounded-xl bg-[#d7ff3f]/10 px-4 py-2.5 text-sm text-[#d7ff3f]">
-            🎁 রেফারেল কোড প্রয়োগ হয়েছে: <b className="font-mono">{referral}</b>
+            {t("au_referral_applied")} <b className="font-mono">{referral}</b>
           </p>
         )}
         <form onSubmit={handleSignup} className="mt-6 space-y-4">
           <input required value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="আপনার নাম" className="field" />
+            placeholder={t("au_name")} className="field" />
           <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="ইমেইল" className="field" />
+            placeholder={t("au_email")} className="field" />
           <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" className="field" />
+            placeholder={t("au_password_hint")} className="field" />
           <input value={referral} onChange={(e) => setReferral(e.target.value.toUpperCase())}
-            placeholder="রেফারেল কোড (যদি থাকে)" className="field font-mono" />
+            placeholder={t("au_referral")} className="field font-mono" />
           {error && <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">⚠️ {error}</p>}
           <button type="submit" disabled={loading} className="btn-vault w-full">
-            {loading ? "অ্যাকাউন্ট হচ্ছে..." : "অ্যাকাউন্ট খুলুন"}
+            {loading ? t("au_signup_loading") : t("au_signup_btn")}
           </button>
         </form>
         <p className="mt-5 text-center text-sm text-slate-400">
-          অ্যাকাউন্ট আছে?{" "}
-          <Link href="/auth/login" className="font-bold text-[#d7ff3f]">লগইন করুন</Link>
+          {t("au_has_account")}{" "}
+          <Link href="/auth/login" className="font-bold text-[#d7ff3f]">{t("au_login_link")}</Link>
         </p>
       </div>
     </div>

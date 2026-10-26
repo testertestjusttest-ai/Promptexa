@@ -4,8 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useLang } from "@/lib/i18n";
 
 export default function LoginPage() {
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ export default function LoginPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "লগইন হয়নি");
+      setError(e instanceof Error ? e.message : t("au_login_failed"));
     } finally {
       setLoading(false);
     }
@@ -44,21 +46,21 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="glass ring-conic rounded-3xl p-8">
-        <h1 className="font-display text-2xl font-bold text-white">🔐 লগইন</h1>
-        <p className="mt-1 text-sm text-slate-400">ড্যাশবোর্ডে আপনার ডেলিভারি দেখুন</p>
+        <h1 className="font-display text-2xl font-bold text-white">{t("au_login_title")}</h1>
+        <p className="mt-1 text-sm text-slate-400">{t("au_login_sub")}</p>
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="ইমেইল" className="field" />
+            placeholder={t("au_email")} className="field" />
           <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="পাসওয়ার্ড" className="field" />
+            placeholder={t("au_password")} className="field" />
           {error && <p className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300">⚠️ {error}</p>}
           <button type="submit" disabled={loading} className="btn-vault w-full">
-            {loading ? "লগইন হচ্ছে..." : "লগইন করুন"}
+            {loading ? t("au_login_loading") : t("au_login_btn")}
           </button>
         </form>
         <p className="mt-5 text-center text-sm text-slate-400">
-          অ্যাকাউন্ট নেই?{" "}
-          <Link href="/auth/signup" className="font-bold text-[#d7ff3f]">রেজিস্টার করুন</Link>
+          {t("au_no_account")}{" "}
+          <Link href="/auth/signup" className="font-bold text-[#d7ff3f]">{t("au_register_link")}</Link>
         </p>
       </div>
     </div>
