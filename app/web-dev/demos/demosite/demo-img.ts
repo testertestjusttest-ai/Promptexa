@@ -152,6 +152,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "painting": {
+    hero: "/pt-img/hero.webp",
+    cats: {
+    },
+  },
   "petshop": {
     hero: "/demo-img/petshop/hero.webp",
     cats: {
@@ -313,7 +318,7 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     },
   },
   "weddingplan": {
-    hero: "/demo-img/weddingplan/hero.webp",
+    hero: "/wp-img/hero.webp",
     cats: {
     },
   },

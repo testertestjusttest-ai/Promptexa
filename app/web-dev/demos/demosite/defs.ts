@@ -454,7 +454,43 @@ const CLEANING_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= PAINTPRO — home painting service (2026-10-26) =================
+ * Modelled on the real Bangladeshi original Sheba.xyz "Painting Service"
+ * (Painting & Renovation: Wall Pasting & Paint Job, Furniture Paint) — and
+ * built better within the engine: transparent per-job pricing with durations
+ * and what's included, category filtering (Interior / Exterior / Wood &
+ * Finish / Protection), online booking, and a visitor-editable admin. All
+ * content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const PAINTING_DEF: DemoSiteDef = {
+  slug: "painting", name: "PaintPro", type: "Home Painting Service", layout: "service",
+  logoEmoji: "🎨", accent: "#6d28d9", dark: false, grad: "from-violet-600 via-indigo-600 to-blue-700",
+  heroTitle: "Fresh walls, zero hassle — painted in days, not weeks",
+  heroSub: "Verified painters • Paint + labour included • Free colour consultation",
+  heroEmoji: "🎨",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Full Home Painting (2-Bedroom)", p: 18000, e: "🏠", c: "Interior", duration: "3 days", rating: 4.9, desc: "Every wall, ceiling and trim in a 2-bedroom home: surface prep, primer and two coats of premium washable paint. Furniture covered and masked — you come back to a finished home." },
+    { id: "s1", n: "Single Room Painting", p: 6500, e: "🛏️", c: "Interior", duration: "1 day", rating: 4.8, desc: "One room, fully refreshed: crack filling, primer and two coats in the colour of your choice. Perfect for a bedroom makeover or a rental refresh." },
+    { id: "s2", n: "Designer Texture Wall", p: 4500, e: "✨", c: "Interior", duration: "1 day", rating: 4.9, desc: "One feature wall in a designer finish — metallic, stone, or geometric texture. Our colour consultant helps you pick a shade that suits your light." },
+    { id: "s3", n: "Ceiling Painting", p: 3500, e: "⬜", c: "Interior", duration: "1 day", rating: 4.7, desc: "Stain-free, even ceilings: old stains sealed, two coats of bright white, clean edges where wall meets ceiling." },
+    { id: "s4", n: "Wood & Furniture Polish", p: 5500, e: "🪑", c: "Wood & Finish", duration: "2 days", rating: 4.8, desc: "Doors, cabinets and wooden furniture sanded, sealed and polished to a rich finish — lacquer or hand-rubbed polish, your choice." },
+    { id: "s5", n: "Exterior Wall Painting", p: 12000, e: "🏡", c: "Exterior", duration: "2 days", rating: 4.8, desc: "Weather-shield exterior paint for house fronts and boundary walls: pressure wash, crack repair, primer and two weatherproof coats." },
+    { id: "s6", n: "Waterproofing & Damp Treatment", p: 8000, e: "🛡️", c: "Protection", duration: "2 days", rating: 4.9, desc: "Damp patches treated at the source: waterproof coating for leak-prone walls and roofs, with a written treatment note on completion." },
+  ],
+  gallery: [],
+  news: [],
+  about: "PaintPro is a home painting service for busy households in Dhaka. Book online, pick your date, and a verified two-person painting team arrives with all paint, tools and covers — you pay after the work is done and checked. Every job has a fixed upfront price: no per-litre surprises, no hidden charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Paint, primer and labour included.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

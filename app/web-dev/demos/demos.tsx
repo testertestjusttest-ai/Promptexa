@@ -47,6 +47,7 @@ const HAND_GROUPS: Record<string, string> = {
   jewelry: "🛍️ Shopping",
   nursery: "🌿 Garden",
   cleaning: "🛠️ Services",
+  painting: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -623,6 +624,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Equipment included • Online booking</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "painting",
+    name: "PaintPro",
+    type: "Home Painting Service",
+    desc: "Full-home, single-room, texture-wall, wood polish, exterior and waterproofing jobs — fixed upfront prices, free colour consultation, online booking and a full admin panel.",
+    price: "From 3,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🎨 PaintPro" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pt-img/hero.webp" alt="PaintPro freshly painted living room" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Fresh walls, zero hassle — painted in days, not weeks</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Full Home", "18,000 Tk"], ["Single Room", "6,500 Tk"], ["Texture Wall", "4,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-violet-50 px-2 py-1.5 ring-1 ring-violet-100">
+                <p className="text-[11px] font-black text-violet-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-violet-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book a Painter</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🎨 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Paint + labour included • Free colour consult</p>
       </Frame>
     ),
   },
