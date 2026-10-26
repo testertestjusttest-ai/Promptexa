@@ -4,8 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import { formatBDT, formatUSD, formatTk, PAYMENT_METHOD_BN, paymentKindBn, isPaymentMethodLive } from "@/lib/format";
+import { formatBDT, formatUSD, formatTk, translatePlanLabel, paymentMethodLabel, paymentKindLabel, isPaymentMethodLive } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
+import { SectionHeading } from "@/components/Section";
+
+/** Page heading as a client component so it follows the drawer language
+ *  (the page itself stays a server component). */
+export function CheckoutHeading() {
+  const { t } = useLang();
+  return <SectionHeading kicker={t("co_page_kicker")} title={t("co_page_title")} />;
+}
 import type { PaymentMethod } from "@/lib/types";
 
 type Step = "info" | "manual-pay";
@@ -18,28 +26,9 @@ export default function CheckoutClient() {
    *  BD checkout settlement stays in Tk throughout — the charged Tk amount
    *  is always shown next to the USD total (see settle note below). */
   const price = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatUSD(bdt));
-  /** Plan labels are admin-entered Bangla ("১ মাস", "১২ মাস", "আজীবন");
-   *  translate the common duration patterns for EN/HI views (same pattern
-   *  as ProductBuy). */
-  const BN_DIGIT = "০১২৩৪৫৬৭৮৯";
-  const toLatinDigits = (s: string) =>
-    s.replace(/[০-৯]/g, (d) => String(BN_DIGIT.indexOf(d)));
-  const planLabel = (label: string) => {
-    if (lang === "bn") return label;
-    const latin = toLatinDigits(label).trim();
-    const num = (unit: string, en: string, hi: string) => {
-      const m = latin.match(new RegExp(`^(\\d+)\\s*${unit}`));
-      if (!m) return null;
-      const n = Number(m[1]);
-      return lang === "hi" ? `${n} ${hi}` : `${n} ${en}${n > 1 ? "s" : ""}`;
-    };
-    return (
-      num("মাস", "month", "महीना") ??
-      num("বছর", "year", "साल") ??
-      num("দিন", "day", "दिन") ??
-      (latin.includes("আজীবন") ? (lang === "hi" ? "आजीवन" : "Lifetime") : latin)
-    );
-  };
+  /** Shared helper (same as ProductBuy/CartDrawer): admin-entered Bangla
+   *  durations translate for EN/HI views, pass through in BN. */
+  const planLabel = (label: string) => translatePlanLabel(label, lang);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -126,9 +115,9 @@ export default function CheckoutClient() {
     return (
       <div className="glass mx-auto max-w-md rounded-2xl p-10 text-center">
         <div className="text-5xl">🛒</div>
-        <p className="mt-4 font-bold text-white">কার্ট খালি</p>
+        <p className="mt-4 font-bold text-white">{t("co_cart_empty")}</p>
         <Link href="/shop" className="btn-vault mt-6 inline-flex text-sm">
-          শপে ফিরে যান
+          {t("co_back_shop")}
         </Link>
       </div>
     );
@@ -138,13 +127,13 @@ export default function CheckoutClient() {
 
   async function placeOrder() {
     setError("");
-    if (!name.trim()) return setError("আপনার নাম লিখুন");
-    if (!validPhone) return setError("সঠিক ১১ সংখ্যার মোবাইল নম্বর দিন (01XXXXXXXXX)");
+    if (!name.trim()) return setError(t("co_err_name"));
+    if (!validPhone) return setError(t("co_err_phone"));
     if (method !== "sslcommerz" && method !== "wallet" && !isPaymentMethodLive(payInfo(method))) {
-      return setError("এই পেমেন্ট মাধ্যম এখন চালু নেই");
+      return setError(t("co_err_method_off"));
     }
     if (method === "wallet" && (walletBal === null || walletBal < finalTotal)) {
-      return setError("ওয়ালেটে যথেষ্ট ব্যালেন্স নেই — নিচের অপশন থেকে ব্যালেন্স বাড়ান।");
+      return setError(t("co_err_wallet_low"));
     }
     setLoading(true);
     try {
@@ -164,7 +153,7 @@ export default function CheckoutClient() {
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "অর্ডার হয়নি");
+      if (!res.ok || !data.ok) throw new Error(data.error || t("co_err_order_fail"));
 
       // snapshot totals BEFORE clearing — step 2 shows these
       setOrderTotal(Number(data.total_bdt) || total);
@@ -184,7 +173,7 @@ export default function CheckoutClient() {
           body: JSON.stringify({ order_id: data.order_id }),
         });
         const initData = await init.json();
-        if (!init.ok || !initData.ok) throw new Error(initData.error || "পেমেন্ট শুরু হয়নি");
+        if (!init.ok || !initData.ok) throw new Error(initData.error || t("co_err_pay_fail"));
         window.location.href = initData.gateway_url;
         return;
       }
@@ -194,7 +183,7 @@ export default function CheckoutClient() {
       setOrderNumber(data.order_number);
       setStep("manual-pay");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "কিছু ভুল হয়েছে");
+      setError(e instanceof Error ? e.message : t("co_err_generic"));
     } finally {
       setLoading(false);
     }
@@ -203,7 +192,7 @@ export default function CheckoutClient() {
   async function submitTrx() {
     setError("");
     if (!senderNumber.trim() || !trxId.trim()) {
-      return setError("সেন্ডার নম্বর ও TrxID দুটোই দিন");
+      return setError(t("co_err_trx_both"));
     }
     setLoading(true);
     try {
@@ -213,16 +202,16 @@ export default function CheckoutClient() {
         body: JSON.stringify({ order_id: orderId, sender_number: senderNumber.trim(), trx_id: trxId.trim() }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.error || "জমা হয়নি");
+      if (!res.ok || !data.ok) throw new Error(data.error || t("co_err_trx_fail"));
       router.push(`/checkout/success?order=${orderNumber}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "কিছু ভুল হয়েছে");
+      setError(e instanceof Error ? e.message : t("co_err_generic"));
     } finally {
       setLoading(false);
     }
   }
 
-  const methodLabel = PAYMENT_METHOD_BN[method] ?? method;
+  const methodLabel = paymentMethodLabel(method, lang);
 
   return (
     <div className="grid gap-8 lg:grid-cols-5">
@@ -230,42 +219,42 @@ export default function CheckoutClient() {
       <div className="lg:col-span-3">
         {step === "info" ? (
           <div className="glass rounded-3xl p-6 sm:p-8">
-            <h2 className="font-display text-xl font-bold text-white">👤 আপনার তথ্য</h2>
+            <h2 className="font-display text-xl font-bold text-white">{t("co_info")}</h2>
             <div className="mt-5 space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">নাম *</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="আপনার পুরো নাম" className="field" />
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">{t("co_name")}</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("co_name_ph")} className="field" />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">মোবাইল নম্বর *</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">{t("co_phone")}</label>
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" inputMode="numeric" className="field" />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">ইমেইল (ঐচ্ছিক)</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">{t("co_email")}</label>
                 <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" type="email" className="field" />
-                <p className="mt-1 text-xs text-slate-500">এই ইমেইলে রেজিস্টার করলে অর্ডারটি আপনার ড্যাশবোর্ডে যোগ হবে</p>
+                <p className="mt-1 text-xs text-slate-500">{t("co_email_note")}</p>
               </div>
             </div>
 
-            <h2 className="mt-8 font-display text-xl font-bold text-white">💳 পেমেন্ট মাধ্যম</h2>
+            <h2 className="mt-8 font-display text-xl font-bold text-white">{t("co_pay_method")}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {sslOn && (
                 <MethodCard active={method === "sslcommerz"} onClick={() => setMethod("sslcommerz")}
-                  icon="💳" title="কার্ড / মোবাইল ব্যাংকিং" desc="SSLCommerz — অটো কনফার্ম" />
+                  icon="💳" title={t("co_ssl_title")} desc={t("co_ssl_desc")} />
               )}
               <MethodCard active={method === "wallet"} onClick={() => setMethod("wallet")}
-                icon="💰" title="ওয়ালেট ব্যালেন্স"
-                desc={walletBal === null ? "লগইন করুন" : `ব্যালেন্স: ${formatBDT(walletBal)}`}
+                icon="💰" title={t("co_wallet_title")}
+                desc={walletBal === null ? t("co_wallet_login") : `${t("co_wallet_bal")} ${lang === "bn" ? formatBDT(walletBal) : formatTk(walletBal)}`}
                 disabled={walletBal === null} />
               {(["bkash", "nagad", "rocket"] as PaymentMethod[]).map((m) => {
                 const info = payInfo(m);
-                const kindBn = paymentKindBn(info.kind);
+                const kind = paymentKindLabel(info.kind, lang);
                 const live = isPaymentMethodLive(info);
                 return (
                   <MethodCard key={m} active={method === m} onClick={() => setMethod(m)}
                     icon={info.image ? "" : m === "bkash" ? "🩷" : m === "nagad" ? "🟠" : "🟣"}
                     img={info.image || undefined}
-                    title={PAYMENT_METHOD_BN[m]} desc={live ? `${kindBn}: ${info.number}` : "শীঘ্রই আসছে"}
+                    title={paymentMethodLabel(m, lang)} desc={live ? `${kind}: ${info.number}` : t("co_coming_soon")}
                     disabled={!live} />
                 );
               })}
@@ -273,22 +262,22 @@ export default function CheckoutClient() {
 
             {method === "wallet" && walletBal !== null && walletBal < finalTotal && (
               <div className="mt-4 rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
-                <p className="text-sm font-bold text-amber-200">⚠️ ওয়ালেটে যথেষ্ট ব্যালেন্স নেই</p>
+                <p className="text-sm font-bold text-amber-200">{t("co_wallet_low")}</p>
                 <p className="mt-1 text-xs text-slate-400">
-                  আছে: {formatBDT(walletBal)} — দরকার: {formatBDT(finalTotal)}
+                  {t("co_have")} {lang === "bn" ? formatBDT(walletBal) : formatTk(walletBal)} — {t("co_need")} {lang === "bn" ? formatBDT(finalTotal) : formatTk(finalTotal)}
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <Link
                     href="/earn"
                     className="rounded-xl bg-[#d7ff3f]/10 px-3 py-2.5 text-center text-sm font-bold text-[#d7ff3f] transition hover:bg-[#d7ff3f]/20"
                   >
-                    📺 অ্যাড দেখে আয় করুন
+                    {t("co_earn_ads")}
                   </Link>
                   <Link
                     href="/earn#deposit"
                     className="rounded-xl bg-white/5 px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-white/10"
                   >
-                    💰 ডিপোজিট করুন
+                    {t("co_deposit")}
                   </Link>
                 </div>
               </div>
@@ -296,12 +285,12 @@ export default function CheckoutClient() {
 
             <div className="mt-5">
               <label className="mb-1.5 block text-sm font-medium text-slate-300">
-                অতিরিক্ত তথ্য / রিকোয়ারমেন্ট <span className="text-slate-500">(ঐচ্ছিক)</span>
+                {t("co_notes_label")} <span className="text-slate-500">{t("co_notes_opt")}</span>
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="ওয়েবসাইট অর্ডারের ক্ষেত্রে কী ধরনের সাইট চান, ফিচার, রেফারেন্স লিংক ইত্যাদি লিখুন"
+                placeholder={t("co_notes_ph")}
                 className="field min-h-[90px]"
                 maxLength={2000}
               />
@@ -312,46 +301,46 @@ export default function CheckoutClient() {
             )}
 
             <button onClick={placeOrder} disabled={loading} className="btn-vault mt-6 w-full text-base">
-              {loading ? "প্রসেস হচ্ছে..." : method === "sslcommerz" ? `পেমেন্ট করুন — ${formatBDT(finalTotal)}` : `অর্ডার করুন — ${formatBDT(finalTotal)}`}
+              {loading ? t("co_processing") : method === "sslcommerz" ? `${t("co_pay_btn")}${price(finalTotal)}` : `${t("co_order_btn")}${price(finalTotal)}`}
             </button>
-            <p className="mt-3 text-center text-xs text-slate-500">🔒 আপনার তথ্য সম্পূর্ণ নিরাপদ</p>
+            <p className="mt-3 text-center text-xs text-slate-500">{t("co_secure")}</p>
           </div>
         ) : (
           <div className="glass ring-conic rounded-3xl p-6 sm:p-8">
-            <span className="chip chip-lime">ধাপ ২ / ২</span>
+            <span className="chip chip-lime">{t("co_step2")}</span>
             <h2 className="mt-3 font-display text-xl font-bold text-white">
-              {methodLabel}-এ টাকা পাঠান
+              {t("co_send_prefix")}{methodLabel}{t("co_send_suffix")}
             </h2>
             <div className="mt-5 rounded-2xl bg-white/[0.03] p-5">
-              <p className="text-sm text-slate-400">অর্ডার নম্বর</p>
+              <p className="text-sm text-slate-400">{t("co_order_no")}</p>
               <p className="font-display text-lg font-bold text-[#d7ff3f]">{orderNumber}</p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-slate-400">
-                    পাঠাবেন এই নম্বরে ({methodLabel} — {paymentKindBn(payInfo(method).kind)})
+                    {t("co_send_to_num")} ({methodLabel} — {paymentKindLabel(payInfo(method).kind, lang)})
                   </p>
                   <p className="font-display text-2xl font-bold text-white">{payInfo(method).number}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-400">টাকার পরিমাণ</p>
+                  <p className="text-sm text-slate-400">{t("co_amount")}</p>
                   <p className="font-display text-2xl font-bold text-[#d7ff3f]">{lang === "bn" ? formatBDT(orderTotal) : formatTk(orderTotal)}</p>
                 </div>
               </div>
               <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-slate-400">
-                <li><b className="text-white">{{ sendmoney: "Send Money", cashout: "Cash Out", payment: "Payment", merchant: "Payment" }[payInfo(method).kind as "sendmoney" | "cashout" | "payment" | "merchant"] || "Payment"}</b> করে উপরের নম্বরে টাকা পাঠান</li>
-                <li>ট্রানজেকশন আইডি (TrxID) কপি করুন</li>
-                <li>নিচের ফর্মে সেন্ডার নম্বর ও TrxID দিয়ে জমা দিন</li>
+                <li>{t("co_step1_pre")}<b className="text-white">{paymentKindLabel(payInfo(method).kind, lang)}</b>{t("co_step1_post")}</li>
+                <li>{t("co_step2_text")}</li>
+                <li>{t("co_step3_text")}</li>
               </ol>
             </div>
 
             <div className="mt-5 space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-300">যে নম্বর থেকে টাকা পাঠিয়েছেন *</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-300">{t("co_sender_label")}</label>
                 <input value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="01XXXXXXXXX" className="field" inputMode="numeric" />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">TrxID *</label>
-                <input value={trxId} onChange={(e) => setTrxId(e.target.value)} placeholder="যেমন: 9HX7K2LMNQ" className="field uppercase" />
+                <input value={trxId} onChange={(e) => setTrxId(e.target.value)} placeholder={t("co_trx_ph")} className="field uppercase" />
               </div>
             </div>
 
@@ -359,7 +348,7 @@ export default function CheckoutClient() {
               <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm font-medium text-red-300">⚠️ {error}</p>
             )}
             <button onClick={submitTrx} disabled={loading} className="btn-vault mt-6 w-full text-base">
-              {loading ? "জমা হচ্ছে..." : "✓ পেমেন্ট জমা দিন"}
+              {loading ? t("co_submitting") : t("co_submit_trx")}
             </button>
           </div>
         )}

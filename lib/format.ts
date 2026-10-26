@@ -95,6 +95,28 @@ export function paymentKindBn(kind?: string | null): string {
   return PAYMENT_KIND_BN[kind || ""] || "পেমেন্ট";
 }
 
+/** Payment-method display name per language. Brand names are the checkout
+ *  payment options in every language — Bangla script in BN view, the
+ *  brands' Latin spellings (bKash/Nagad/Rocket) in EN/HI views, so the
+ *  default English view carries no Bangla script. */
+export function paymentMethodLabel(method: string, lang: string): string {
+  if (lang === "bn") return PAYMENT_METHOD_BN[method] ?? method;
+  if (method === "sslcommerz") return lang === "hi" ? "कार्ड / मोबाइल बैंकिंग" : "Card / Mobile Banking";
+  if (method === "wallet") return lang === "hi" ? "वॉलेट बैलेंस" : "Wallet Balance";
+  const LATIN: Record<string, string> = { bkash: "bKash", nagad: "Nagad", rocket: "Rocket" };
+  return LATIN[method] ?? method;
+}
+
+/** How the customer should send money, per language. */
+export function paymentKindLabel(kind: string | null | undefined, lang: string): string {
+  if (lang === "bn") return paymentKindBn(kind);
+  const k = kind || "sendmoney";
+  if (lang === "hi") {
+    return k === "cashout" ? "कैश आउट" : k === "sendmoney" ? "सेंड मनी" : "भुगतान";
+  }
+  return k === "cashout" ? "Cash Out" : k === "sendmoney" ? "Send Money" : "Payment";
+}
+
 /** A manual payment method is live when it has a number and isn't switched off. */
 export function isPaymentMethodLive(
   info: { number?: string; enabled?: boolean } | string | null | undefined
@@ -104,8 +126,30 @@ export function isPaymentMethodLive(
   return !!(info.number && info.number.trim() && info.enabled !== false);
 }
 
-export function timeAgo(iso: string): string {
+/** Relative time; lang defaults to "bn" (all existing callers). EN/HI
+ *  views pass their language so public pages carry no Bangla script. */
+export function timeAgo(iso: string, lang?: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (lang === "en") {
+    if (s < 60) return "just now";
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d} day${d > 1 ? "s" : ""} ago`;
+    return new Date(iso).toLocaleDateString("en-US");
+  }
+  if (lang === "hi") {
+    if (s < 60) return "अभी";
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m} मिनट पहले`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} घंटे पहले`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d} दिन पहले`;
+    return new Date(iso).toLocaleDateString("hi-IN");
+  }
   if (s < 60) return "এইমাত্র";
   const m = Math.floor(s / 60);
   if (m < 60) return `${toBnDigits(m)} মিনিট আগে`;
