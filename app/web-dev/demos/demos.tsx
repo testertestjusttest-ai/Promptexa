@@ -39,11 +39,11 @@ export type Demo = {
 
 const HAND_GROUPS: Record<string, string> = {
   restaurant: "🍔 Food", fashion: "🛍️ Shopping", portfolio: "🎨 Portfolio",
-  news: "📰 মিডিয়া", realestate: "🏠 Property", gym: "💪 Fitness",
-  travel: "✈️ Booking", saas: "☁️ Software", salon: "💅 বিউটি", gadget: "🔌 Tech",
+  news: "📰 Media", realestate: "🏠 Property", gym: "💪 Fitness",
+  travel: "✈️ Booking", saas: "☁️ Software", salon: "💅 Beauty", gadget: "🔌 Tech",
   investpro: "💰 Fintech", agroinvest: "💰 Fintech", swiftex: "💰 Fintech",
   payex: "💰 Fintech", cryptovault: "💰 Fintech", trustpay: "💰 Fintech",
-  binancepro: "💰 Fintech", casinoplay: "🎰 গেমিং", buyinghouse: "🏭 Garments",
+  binancepro: "💰 Fintech", casinoplay: "🎰 Gaming", buyinghouse: "🏭 Garments",
   jewelry: "🛍️ Shopping",
   nursery: "🌿 Garden",
   cleaning: "🛠️ Services",
@@ -290,28 +290,28 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "casinoplay",
-    name: "ক্যাসিনোপ্লে",
-    type: "ক্যাসিনো ও স্পোর্টস বেটিং",
-    desc: "লাইভ বেটিং, ৫০০+ ক্যাসিনো গেম, তিন পাত্তি, ক্র্যাশ — ৬০+ পেজের গেমিং প্ল্যাটফর্ম।",
-    price: "২৪,৯৯৯ টাকা থেকে",
+    name: "CasinoPlay",
+    type: "Casino & Sports Betting",
+    desc: "Live betting, 500+ casino games, Teen Patti, Crash — a 60+ page gaming platform.",
+    price: "From 24,999 Tk",
     render: () => (
       <Frame dark>
-        <Nav logo="🎰 ক্যাসিনোপ্লে" links={["স্পোর্টস", "লাইভ"]} cta="খেলুন" light />
+        <Nav logo="🎰 CasinoPlay" links={["Sports", "Live"]} cta="Play" light />
         <div className="bg-gradient-to-br from-amber-600 via-[#1a1405] to-[#0b1120] px-4 py-6 text-white">
-          <p className="text-center text-[11px] font-black text-[#f5c518]">🔴 ৬টি ম্যাচ লাইভ</p>
+          <p className="text-center text-[11px] font-black text-[#f5c518]">🔴 6 matches live</p>
           <div className="mt-3 grid grid-cols-3 gap-1.5">
-            {[["🎰", "স্লটস"], ["🪔", "তিন পাত্তি"], ["📈", "ক্র্যাশ"]].map(([e, t]) => (
+            {[["🎰", "Slots"], ["🪔", "Teen Patti"], ["📈", "Crash"]].map(([e, t]) => (
               <div key={t} className="rounded-xl border border-[#f5c518]/30 bg-black/40 p-2 text-center">
                 <div className="text-xl">{e}</div><p className="mt-0.5 text-[9px] font-bold">{t}</p>
               </div>
             ))}
           </div>
           <div className="mx-auto mt-3 flex max-w-[200px] items-center justify-between rounded-xl bg-white/10 px-3 py-1.5">
-            <span className="text-[10px]">ঢাকা 🆚 কুমিল্লা</span>
-            <span className="text-[10px] font-black text-[#f5c518]">১.৮৫</span>
+            <span className="text-[10px]">Dhaka vs Cumilla</span>
+            <span className="text-[10px] font-black text-[#f5c518]">1.85</span>
           </div>
         </div>
-        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">💰 ১ কোটি+ জ্যাকপট</p>
+        <p className="bg-black/40 px-4 py-2 text-center text-[10px] text-slate-500">💰 10M+ jackpot</p>
       </Frame>
     ),
   },
@@ -384,26 +384,26 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "news",
-    name: "খবর ২৪",
-    type: "নিউজ পোর্টাল",
-    desc: "লাইভ আপডেট, ক্যাটাগরি, বিজ্ঞাপন স্লটসহ নিউজ সাইট।",
-    price: "৯,৯৯৯ টাকা থেকে",
+    name: "News 24",
+    type: "News Portal",
+    desc: "News site with live updates, categories and ad slots.",
+    price: "From 9,999 Tk",
     render: () => (
       <Frame>
         <div className="bg-red-600 px-4 py-2.5 text-white">
-          <span className="text-lg font-black">খবর ২৪</span>
-          <span className="ml-2 rounded bg-white/20 px-2 py-0.5 text-[10px]">🔴 লাইভ</span>
+          <span className="text-lg font-black">News 24</span>
+          <span className="ml-2 rounded bg-white/20 px-2 py-0.5 text-[10px]">🔴 Live</span>
         </div>
         <div className="flex gap-2 overflow-hidden bg-slate-100 px-3 py-1.5 text-[10px] text-slate-600">
-          {["জাতীয়", "খেলা", "বিনোদন", "প্রযুক্তি", "আন্তর্জাতিক"].map((c) => (
+          {["National", "Sports", "Entertainment", "Technology", "World"].map((c) => (
             <span key={c} className="whitespace-nowrap rounded-full bg-white px-2 py-0.5">{c}</span>
           ))}
         </div>
         <div className="space-y-2 p-3">
           {[
-            ["🏏", "বাংলাদেশের ঐতিহাসিক জয়!", "২ ঘণ্টা আগে"],
-            ["💻", "নতুন প্রযুক্তি পার্ক উদ্বোধন", "৫ ঘণ্টা আগে"],
-            ["🌧️", "আবহাওয়া: ভারী বৃষ্টির পূর্বাভাস", "৮ ঘণ্টা আগে"],
+            ["🏏", "Historic win for Bangladesh!", "2 hours ago"],
+            ["💻", "New tech park inaugurated", "5 hours ago"],
+            ["🌧️", "Weather: heavy rain forecast", "8 hours ago"],
           ].map(([e, t, time], i) => (
             <div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 p-2">
               <span className="text-2xl">{e}</span>
@@ -523,21 +523,21 @@ const HAND_DEMOS: Demo[] = [
   },
   {
     slug: "salon",
-    name: "রূপচর্চা",
-    type: "বিউটি পার্লার",
-    desc: "সার্ভিস মেনু, অ্যাপয়েন্টমেন্ট বুকিংসহ পার্লার সাইট।",
-    price: "৪,৯৯৯ টাকা থেকে",
+    name: "Glow Studio",
+    type: "Beauty Salon",
+    desc: "Salon site with service menu and appointment booking.",
+    price: "From 4,999 Tk",
     render: () => (
       <Frame>
-        <Nav logo="💅 রূপচর্চা" links={["সার্ভিস", "গ্যালারি", "অফার"]} cta="বুকিং দিন" />
+        <Nav logo="💅 Glow Studio" links={["Services", "Gallery", "Offers"]} cta="Book Now" />
         <div className="bg-gradient-to-br from-rose-400 via-pink-500 to-fuchsia-600 px-4 py-8 text-white">
-          <p className="text-xl font-black">নিজেকে নতুন করে<br />আবিষ্কার করুন</p>
-          <p className="mt-1 text-[11px] opacity-90">এক্সপার্ট বিউটিশিয়ান • প্রিমিয়াম প্রোডাক্ট</p>
+          <p className="text-xl font-black">Rediscover<br />yourself</p>
+          <p className="mt-1 text-[11px] opacity-90">Expert beauticians • Premium products</p>
         </div>
         <div className="space-y-2 p-3">
-          {["💇 হেয়ার কাট ৩০০ টাকা", "💆 ফেসিয়াল ৮০০ টাকা", "💅 ম্যানিকিউর ৫০০ টাকা"].map((s, i) => (
+          {["💇 Hair Cut 300 Tk", "💆 Facial 800 Tk", "💅 Manicure 500 Tk"].map((s, i) => (
             <div key={i} className="flex items-center justify-between rounded-xl bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-900">
-              <span>{s}</span><span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] text-white">বুক</span>
+              <span>{s}</span><span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] text-white">Book</span>
             </div>
           ))}
         </div>
@@ -692,7 +692,7 @@ const HAND_DEMOS: Demo[] = [
 /* ---- merge engine demos (40) ---- */
 import { ENGINE_DEMOS } from "./engine-demos";
 
-const WITH_GROUPS: Demo[] = HAND_DEMOS.map((d) => ({ ...d, group: HAND_GROUPS[d.slug] ?? "🌐 অন্যান্য" }));
+const WITH_GROUPS: Demo[] = HAND_DEMOS.map((d) => ({ ...d, group: HAND_GROUPS[d.slug] ?? "🌐 Others" }));
 
 /** All demos: 15 hand-crafted + 40 engine-driven = 55. */
 export const DEMOS: Demo[] = [...WITH_GROUPS, ...ENGINE_DEMOS];
