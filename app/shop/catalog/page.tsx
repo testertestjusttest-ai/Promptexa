@@ -1,6 +1,5 @@
 import { getCategories, getProducts } from "@/lib/catalog";
-import { SectionHeading } from "@/components/Section";
-import ShopClient from "../ShopClient";
+import ShopClient, { CatalogHeading } from "../ShopClient";
 
 export const dynamic = "force-dynamic";
 
@@ -17,11 +16,7 @@ export default async function ShopPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <SectionHeading
-        kicker="শপ"
-        title="সব প্রিমিয়াম প্রোডাক্ট"
-        sub="অরিজিনাল সাবস্ক্রিপশন — দ্রুত ডেলিভারি গ্যারান্টি"
-      />
+      <CatalogHeading />
       <ShopClient
         products={products}
         categories={categories}

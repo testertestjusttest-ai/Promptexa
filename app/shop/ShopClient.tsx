@@ -3,6 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Category, Product } from "@/lib/types";
 import ProductCard from "@/components/ProductCard";
+import { useLang } from "@/lib/i18n";
+import { SectionHeading } from "@/components/Section";
+
+/** Catalog heading as a client component so it follows the drawer language
+ *  (the page itself stays a server component). */
+export function CatalogHeading() {
+  const { t } = useLang();
+  return <SectionHeading kicker={t("shop_catalog_kicker")} title={t("shop_catalog_title")} sub={t("shop_catalog_sub")} />;
+}
 
 export default function ShopClient({
   products,
@@ -15,6 +24,7 @@ export default function ShopClient({
 }) {
   const [cat, setCat] = useState(initialCat);
   const [query, setQuery] = useState("");
+  const { lang, t } = useLang();
 
   useEffect(() => {
     setCat(initialCat);
@@ -44,7 +54,7 @@ export default function ShopClient({
                 : "bg-white/5 text-slate-300 hover:bg-white/10"
             }`}
           >
-            সবগুলো
+            {t("shop_cat_all")}
           </button>
           {categories.map((c) => (
             <button
@@ -56,14 +66,14 @@ export default function ShopClient({
                   : "bg-white/5 text-slate-300 hover:bg-white/10"
               }`}
             >
-              {c.icon} {c.name_bn}
+              {c.icon} {lang === "bn" ? c.name_bn : c.name_en || c.name_bn}
             </button>
           ))}
         </div>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="🔍 প্রোডাক্ট খুঁজুন..."
+          placeholder={t("shop_cat_search_ph")}
           className="field max-w-xs"
         />
       </div>
@@ -77,9 +87,9 @@ export default function ShopClient({
       ) : (
         <div className="glass mx-auto max-w-md rounded-2xl p-10 text-center">
           <div className="text-5xl">🔍</div>
-          <p className="mt-4 font-bold text-white">কিছু পাওয়া যায়নি</p>
+          <p className="mt-4 font-bold text-white">{t("shop_cat_empty_t")}</p>
           <p className="mt-1 text-sm text-slate-400">
-            অন্য ক্যাটাগরি বা সার্চ টার্ম চেষ্টা করুন।
+            {t("shop_cat_empty_s")}
           </p>
         </div>
       )}
