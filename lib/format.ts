@@ -75,6 +75,42 @@ export const ORDER_STATUS_BN: Record<string, string> = {
   refunded: "রিফান্ডেড",
 };
 
+/** Order-status display label per language (dashboard + order history). */
+export const ORDER_STATUS_EN: Record<string, string> = {
+  pending: "Pending",
+  payment_pending: "Payment Processing",
+  paid: "Payment Complete",
+  delivered: "Delivered",
+  keys_pending: "Key Being Prepared",
+  service_pending: "Service Order",
+  cancelled: "Cancelled",
+  refunded: "Refunded",
+};
+
+export const ORDER_STATUS_HI: Record<string, string> = {
+  pending: "लंबित",
+  payment_pending: "भुगतान प्रक्रिया में है",
+  paid: "भुगतान पूरा हो गया",
+  delivered: "डिलीवर हो गया",
+  keys_pending: "की तैयार की जा रही है",
+  service_pending: "सर्विस ऑर्डर",
+  cancelled: "रद्द कर दिया गया",
+  refunded: "रिफ़ंड हो गया",
+};
+
+export function orderStatusLabel(status: string, lang: string): string {
+  if (lang === "hi") return ORDER_STATUS_HI[status] ?? status;
+  if (lang === "en") return ORDER_STATUS_EN[status] ?? status;
+  return ORDER_STATUS_BN[status] ?? status;
+}
+
+/** Dashboard/order-history price: Bangla Tk in BN view; USD equivalent +
+ *  the Tk amount actually charged in EN/HI views (same rule as checkout). */
+export function displayPrice(amountBdt: number, lang: string): string {
+  if (lang === "bn") return formatBDT(amountBdt);
+  return `${formatUSD(amountBdt)} (${formatTk(amountBdt)})`;
+}
+
 export const PAYMENT_METHOD_BN: Record<string, string> = {
   sslcommerz: "কার্ড / মোবাইল ব্যাংকিং",
   bkash: "বিকাশ",

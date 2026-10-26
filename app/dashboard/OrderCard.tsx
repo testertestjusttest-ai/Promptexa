@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { formatBDT, ORDER_STATUS_BN, PAYMENT_METHOD_BN, timeAgo } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
+import {
+  displayPrice,
+  orderStatusLabel,
+  paymentMethodLabel,
+  timeAgo,
+  translatePlanLabel,
+} from "@/lib/format";
 import { StatusBadge } from "@/components/Section";
 import FileInstall from "@/components/FileInstall";
 import type { DownloadToken } from "@/lib/types";
@@ -19,6 +26,7 @@ export type DashboardOrder = {
 };
 
 export default function OrderCard({ order }: { order: DashboardOrder }) {
+  const { t, lang } = useLang();
   const [copied, setCopied] = useState<string | null>(null);
 
   async function copy(text: string) {
@@ -41,25 +49,30 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-display font-bold text-[#d7ff3f]">{order.order_number}</p>
-          <p className="text-xs text-slate-500">{timeAgo(order.created_at)}</p>
+          <p className="text-xs text-slate-500">{timeAgo(order.created_at, lang)}</p>
         </div>
-        <StatusBadge status={order.status} label={ORDER_STATUS_BN[order.status] ?? order.status} />
+        <StatusBadge status={order.status} label={orderStatusLabel(order.status, lang)} />
       </div>
 
       <ul className="mt-4 space-y-1.5">
         {order.items.map((it, i) => (
           <li key={i} className="flex justify-between text-sm">
             <span className="text-slate-300">
-              {it.product_name} <span className="text-slate-500">({it.plan_label_bn} × {it.qty})</span>
+              {it.product_name}{" "}
+              <span className="text-slate-500">
+                ({translatePlanLabel(it.plan_label_bn, lang)} × {it.qty})
+              </span>
             </span>
-            <span className="font-semibold text-white">{formatBDT(it.price_bdt * it.qty)}</span>
+            <span className="font-semibold text-white">
+              {displayPrice(it.price_bdt * it.qty, lang)}
+            </span>
           </li>
         ))}
       </ul>
 
       {delivered && realKeys.length > 0 && (
         <div className="mt-4 rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/[0.04] p-4">
-          <p className="text-sm font-bold text-[#d7ff3f]">🔑 আপনার ডেলিভারি</p>
+          <p className="text-sm font-bold text-[#d7ff3f]">{t("db_delivery")}</p>
           <div className="mt-3 space-y-3">
             {realKeys.map((k, i) => (
               <div key={i} className="rounded-xl bg-black/40 p-3">
@@ -69,7 +82,7 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
                     onClick={() => copy(k.key_text)}
                     className="shrink-0 rounded-lg bg-[#d7ff3f]/15 px-3 py-1.5 text-xs font-bold text-[#d7ff3f] hover:bg-[#d7ff3f]/25"
                   >
-                    {copied === k.key_text ? "✓ কপি হয়েছে" : "📋 কপি"}
+                    {copied === k.key_text ? t("db_copied") : t("db_copy")}
                   </button>
                 </div>
                 {k.key_note && <p className="mt-1.5 text-xs text-slate-400">{k.key_note}</p>}
@@ -85,26 +98,28 @@ export default function OrderCard({ order }: { order: DashboardOrder }) {
 
       {order.status === "keys_pending" && (
         <p className="mt-4 rounded-xl bg-violet-500/10 px-4 py-3 text-sm text-violet-300">
-          ⏳ পেমেন্ট সম্পন্ন! আপনার কী প্রস্তুত করা হচ্ছে — কিছুক্ষণের মধ্যে এখানে দেখতে পাবেন।
+          {t("db_note_keys_pending")}
         </p>
       )}
 
       {order.status === "service_pending" && (
         <p className="mt-4 rounded-xl bg-[#8b5cf6]/10 px-4 py-3 text-sm text-violet-200">
-          🛠️ সার্ভিস অর্ডার গৃহীত! আমাদের টিম শীঘ্রই আপনার সাথে যোগাযোগ করবে।
+          {t("db_note_service")}
         </p>
       )}
       {(order.status === "pending" || order.status === "payment_pending") && (
         <p className="mt-4 rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
-          ⏳ পেমেন্ট যাচাইয়ের অপেক্ষায় আছে। ম্যানুয়াল পেমেন্ট হলে সাধারণত ৫–৩০ মিনিট লাগে।
+          {t("db_note_pending")}
         </p>
       )}
 
       <div className="mt-4 flex justify-between border-t border-white/5 pt-3 text-sm">
         <span className="text-slate-500">
-          {order.payment_method ? PAYMENT_METHOD_BN[order.payment_method] : ""}
+          {order.payment_method ? paymentMethodLabel(order.payment_method, lang) : ""}
         </span>
-        <span className="font-display font-bold text-white">মোট: {formatBDT(order.total_bdt)}</span>
+        <span className="font-display font-bold text-white">
+          {t("db_total")} {displayPrice(order.total_bdt, lang)}
+        </span>
       </div>
     </div>
   );
