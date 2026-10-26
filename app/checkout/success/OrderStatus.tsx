@@ -2,8 +2,54 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatBDT, ORDER_STATUS_BN, PAYMENT_METHOD_BN, timeAgo } from "@/lib/format";
+import { formatBDT, formatUSD, formatTk, paymentMethodLabel, timeAgo, translatePlanLabel } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 import { StatusBadge } from "@/components/Section";
+
+/** Order-status label per language (admin-entered statuses are English keys;
+ *  BN view keeps the established Bangla wording). */
+function statusLabel(status: string, lang: string): string {
+  if (lang === "bn") {
+    const BN: Record<string, string> = {
+      pending: "অপেক্ষমাণ",
+      payment_pending: "পেমেন্ট প্রক্রিয়াধীন",
+      paid: "পেমেন্ট সম্পন্ন",
+      delivered: "ডেলিভারি সম্পন্ন",
+      keys_pending: "কী প্রস্তুত হচ্ছে",
+      service_pending: "সার্ভিস অর্ডার",
+      cancelled: "বাতিল",
+      refunded: "রিফান্ডেড",
+    };
+    return BN[status] ?? status;
+  }
+  const EN: Record<string, string> = {
+    pending: "Pending",
+    payment_pending: "Payment processing",
+    paid: "Payment complete",
+    delivered: "Delivered",
+    keys_pending: "Key being prepared",
+    service_pending: "Service order",
+    cancelled: "Cancelled",
+    refunded: "Refunded",
+  };
+  const HI: Record<string, string> = {
+    pending: "लंबित",
+    payment_pending: "भुगतान प्रक्रिया में",
+    paid: "भुगतान पूरा",
+    delivered: "डिलीवर हो गया",
+    keys_pending: "की तैयार हो रही है",
+    service_pending: "सेवा ऑर्डर",
+    cancelled: "रद्द",
+    refunded: "रिफंड",
+  };
+  return (lang === "hi" ? HI : EN)[status] ?? status;
+}
+
+/** Shown by the success page when no order number is in the URL. */
+export function SuccessEmpty() {
+  const { t } = useLang();
+  return <p className="text-center text-slate-400">{t("co_succ_empty")}</p>;
+}
 
 type OrderInfo = {
   order_number: string;
@@ -21,6 +67,7 @@ type ItemInfo = {
 };
 
 export default function OrderStatus({ orderNumber }: { orderNumber: string }) {
+  const { lang, t } = useLang();
   const [order, setOrder] = useState<OrderInfo | null>(null);
   const [items, setItems] = useState<ItemInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,14 +94,17 @@ export default function OrderStatus({ orderNumber }: { orderNumber: string }) {
   }, [orderNumber]);
 
   if (loading) {
-    return <p className="py-10 text-center text-slate-400">লোড হচ্ছে...</p>;
+    return <p className="py-10 text-center text-slate-400">{t("co_succ_loading")}</p>;
   }
   if (!order) {
-    return <p className="py-10 text-center text-slate-400">অর্ডার পাওয়া যায়নি।</p>;
+    return <p className="py-10 text-center text-slate-400">{t("co_succ_notfound")}</p>;
   }
 
   const done = order.status === "delivered";
   const waiting = ["pending", "payment_pending", "paid", "keys_pending"].includes(order.status);
+  /** Public price display: USD converted equivalent in EN/HI, Tk in BN —
+   *  same rule as the cart/checkout (BD settlement stays in Tk). */
+  const price = (bdt: number) => (lang === "bn" ? formatBDT(bdt) : formatUSD(bdt));
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -63,54 +113,55 @@ export default function OrderStatus({ orderNumber }: { orderNumber: string }) {
           {done ? "🎉" : "⏳"}
         </div>
         <h1 className="mt-5 font-display text-3xl font-bold text-white">
-          {done ? "ডেলিভারি সম্পন্ন!" : "অর্ডার গ্রহণ করা হয়েছে!"}
+          {done ? t("co_succ_done") : t("co_succ_received")}
         </h1>
         <p className="mt-2 text-slate-400">
-          {done
-            ? "আপনার প্রিমিয়াম কী ড্যাশবোর্ডে পৌঁছে গেছে।"
-            : "পেমেন্ট যাচাই করে দ্রুত ডেলিভারি দেওয়া হবে। এই পেজটি রিফ্রেশ করলে স্ট্যাটাস আপডেট দেখবেন।"}
+          {done ? t("co_succ_done_sub") : t("co_succ_wait_sub")}
         </p>
 
         <div className="mt-6 flex items-center justify-center gap-3">
-          <StatusBadge status={order.status} label={ORDER_STATUS_BN[order.status] ?? order.status} />
-          <span className="text-sm text-slate-500">{timeAgo(order.created_at)}</span>
+          <StatusBadge status={order.status} label={statusLabel(order.status, lang)} />
+          <span className="text-sm text-slate-500">{timeAgo(order.created_at, lang)}</span>
         </div>
 
         <div className="mt-6 rounded-2xl bg-white/[0.03] p-5 text-left">
           <div className="flex justify-between py-1.5 text-sm">
-            <span className="text-slate-500">অর্ডার নম্বর</span>
+            <span className="text-slate-500">{t("co_succ_order_no")}</span>
             <span className="font-bold text-[#d7ff3f]">{order.order_number}</span>
           </div>
           <div className="flex justify-between py-1.5 text-sm">
-            <span className="text-slate-500">নাম</span>
+            <span className="text-slate-500">{t("co_succ_name")}</span>
             <span className="font-semibold text-white">{order.customer_name}</span>
           </div>
           <div className="flex justify-between py-1.5 text-sm">
-            <span className="text-slate-500">পেমেন্ট</span>
-            <span className="text-white">{order.payment_method ? PAYMENT_METHOD_BN[order.payment_method] : "—"}</span>
+            <span className="text-slate-500">{t("co_succ_payment")}</span>
+            <span className="text-white">{order.payment_method ? paymentMethodLabel(order.payment_method, lang) : "—"}</span>
           </div>
           <div className="divider-glow my-2" />
           {items.map((it, i) => (
             <div key={i} className="flex justify-between py-1.5 text-sm">
-              <span className="text-slate-300">{it.product_name} <span className="text-slate-500">({it.plan_label_bn} × {it.qty})</span></span>
-              <span className="font-semibold text-white">{formatBDT(it.price_bdt * it.qty)}</span>
+              <span className="text-slate-300">{it.product_name} <span className="text-slate-500">({translatePlanLabel(it.plan_label_bn, lang)} × {it.qty})</span></span>
+              <span className="font-semibold text-white">{price(it.price_bdt * it.qty)}</span>
             </div>
           ))}
           <div className="flex justify-between border-t border-white/10 pt-3 text-sm">
-            <span className="font-bold text-slate-300">সর্বমোট</span>
-            <span className="font-display text-xl font-bold text-[#d7ff3f]">{formatBDT(order.total_bdt)}</span>
+            <span className="font-bold text-slate-300">{t("co_succ_total")}</span>
+            <span className="font-display text-xl font-bold text-[#d7ff3f]">{price(order.total_bdt)}</span>
           </div>
+          {lang !== "bn" && (
+            <p className="mt-1 text-right text-xs text-slate-500">{t("pp_settle_note")} ({formatTk(order.total_bdt)})</p>
+          )}
         </div>
 
         {waiting && (
           <p className="mt-4 text-xs text-slate-500">
-            ℹ️ ম্যানুয়াল পেমেন্ট (বিকাশ/নগদ/রকেট) যাচাই করতে সাধারণত ৫–৩০ মিনিট লাগে।
+            {t("co_succ_manual_note")}
           </p>
         )}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href="/dashboard" className="btn-vault">📦 আমার ডেলিভারি দেখুন</Link>
-          <Link href="/shop" className="btn-ghost">আরও কিনুন</Link>
+          <Link href="/dashboard" className="btn-vault">{t("co_succ_dashboard")}</Link>
+          <Link href="/shop" className="btn-ghost">{t("co_succ_shop")}</Link>
         </div>
       </div>
     </div>

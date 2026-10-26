@@ -1,4 +1,4 @@
-import OrderStatus from "./OrderStatus";
+import OrderStatus, { SuccessEmpty } from "./OrderStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export default async function SuccessPage({
       {order ? (
         <OrderStatus orderNumber={order} />
       ) : (
-        <p className="text-center text-slate-400">অর্ডার নম্বর পাওয়া যায়নি।</p>
+        <SuccessEmpty />
       )}
     </div>
   );
