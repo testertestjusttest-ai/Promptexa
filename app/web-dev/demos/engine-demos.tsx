@@ -39,6 +39,14 @@ const EN_GALLERY: Record<string, { name: string; type: string; desc: string; gro
   furniture: { name: "Home Decor", type: "Furniture Shop", desc: "Premium furniture — free delivery and fitting.", group: "🛍️ Shopping", heroSub: "Solid wood • 5-year warranty" },
   petshop: { name: "Pet Friend", type: "Pet Shop", desc: "Pet food and care — everything in one place.", group: "🛍️ Shopping", heroSub: "Vet advice • Home delivery" },
   sports: { name: "Sports House", type: "Sports Shop", desc: "Original sports gear — players' favourite.", group: "🛍️ Shopping", heroSub: "Original brands • Team discounts" },
+  appliances: { name: "Smart Home", type: "Home Appliances", desc: "Home electronics — with official warranty.", group: "🛍️ Shopping", heroSub: "Energy saving • Free installation" },
+  flower: { name: "Flower Smile", type: "Flower Shop", desc: "Fresh flowers daily — including event decoration.", group: "🛍️ Shopping", heroSub: "Morning flowers • Event decor" },
+  toy: { name: "Toy Kingdom", type: "Toy Shop", desc: "Safe toys for children — by age group.", group: "🛍️ Shopping", heroSub: "Safe • Educational" },
+  stationary: { name: "Study Corner", type: "Stationery Shop", desc: "All school and office stationery — at wholesale rates.", group: "🛍️ Shopping", heroSub: "School packages • Home delivery" },
+  biriyani: { name: "Biriyani House", type: "Restaurant", desc: "Dhaka's best biriyani — cooked over a wood fire.", group: "🍔 Food", heroSub: "Wood-fired • 30-minute delivery" },
+  juicebar: { name: "Juice Bar", type: "Juice Shop", desc: "Fresh fruit juice — with no-sugar options.", group: "🍔 Food", heroSub: "100% natural • No preservatives" },
+  sweets: { name: "Mishtanno", type: "Sweet Shop", desc: "Traditional sweets — freshly made every day.", group: "🍔 Food", heroSub: "Pure chhana • Fresh daily" },
+  chinese: { name: "Dragon", type: "Chinese Restaurant", desc: "Authentic Chinese — chef direct from China.", group: "🍔 Food", heroSub: "Authentic recipes • Family packs" },
 };
 
 export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => {
