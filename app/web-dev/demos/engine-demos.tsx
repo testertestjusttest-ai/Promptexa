@@ -26,12 +26,26 @@ function engineMockup(def: EngineDef) {
   );
 }
 
-export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => ({
-  slug: def.slug,
-  name: def.name,
-  type: def.type,
-  desc: def.desc,
-  price: def.price,
-  group: def.group,
-  render: () => engineMockup(def),
-}));
+/** Gallery-layer English names for engine demos, sliced per run (demo pages
+ *  still render from engine-data.ts and are a separate, deeper item). */
+const EN_GALLERY: Record<string, { name: string; type: string; desc: string; group: string; heroSub: string }> = {
+  cafe: { name: "Coffee House", type: "Cafe Website", desc: "Modern cafe site with menu and online ordering.", group: "🍔 Food", heroSub: "Fresh brew • Home delivery" },
+  grocery: { name: "Daily Bazaar", type: "Grocery Store", desc: "Online grocery market — order and get home delivery.", group: "🛍️ Shopping", heroSub: "Fresh products • Fast delivery" },
+  bakery: { name: "Sweet Bites", type: "Bakery", desc: "Fresh bakery items — baked hot every day.", group: "🍔 Food", heroSub: "Fresh daily • Delivery on order" },
+  pharmacy: { name: "Sheba Pharmacy", type: "Pharmacy", desc: "Medicine home delivery — upload your prescription.", group: "🛍️ Shopping", heroSub: "Genuine medicine • Fast delivery" },
+  bookstore: { name: "The Book House", type: "Bookstore", desc: "A huge collection of books — courier delivery nationwide.", group: "🛍️ Shopping", heroSub: "Original books • Cash on delivery" },
+  mobilestore: { name: "Mobile Point", type: "Mobile Accessories", desc: "Original mobile accessories — at wholesale prices.", group: "🛍️ Shopping", heroSub: "Original • With warranty" },
+  cosmetics: { name: "Ruposhi", type: "Cosmetics Shop", desc: "Original brand cosmetics — including skincare.", group: "🛍️ Shopping", heroSub: "100% original • Dermatologist advice" },
+  furniture: { name: "Home Decor", type: "Furniture Shop", desc: "Premium furniture — free delivery and fitting.", group: "🛍️ Shopping", heroSub: "Solid wood • 5-year warranty" },
+  petshop: { name: "Pet Friend", type: "Pet Shop", desc: "Pet food and care — everything in one place.", group: "🛍️ Shopping", heroSub: "Vet advice • Home delivery" },
+  sports: { name: "Sports House", type: "Sports Shop", desc: "Original sports gear — players' favourite.", group: "🛍️ Shopping", heroSub: "Original brands • Team discounts" },
+};
+
+export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => {
+  const en = EN_GALLERY[def.slug];
+  if (!en) {
+    return { slug: def.slug, name: def.name, type: def.type, desc: def.desc, price: def.price, group: def.group, render: () => engineMockup(def) };
+  }
+  const shown: EngineDef = { ...def, name: en.name, type: en.type, desc: en.desc, group: en.group, heroSub: en.heroSub };
+  return { slug: def.slug, name: en.name, type: en.type, desc: en.desc, price: "From 4,999 Tk", group: en.group, render: () => engineMockup(shown) };
+});
