@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Free Fire Diamond Top-Up | DigiPlyra",
   description:
-    "Player UID দিলেই সরাসরি গেমে Free Fire ডায়মন্ড — দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট।",
+    "Enter your Player UID and get Free Fire diamonds delivered straight to your game — fast delivery, secure payment.",
 };
 
 export default async function TopUpPage() {
