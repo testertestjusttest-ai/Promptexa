@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
+import { toBnDigits } from "@/lib/format";
 import type { MovieLink } from "@/lib/movies";
 
 const VERIFY_MS = 3000;
@@ -26,6 +28,8 @@ export default function UnlockFlow({
   adCount: number;
   adLinks: string[];
 }) {
+  const { lang, t } = useLang();
+  const digits = (n: string | number) => (lang === "bn" ? toBnDigits(n) : String(n));
   const [doneMap, setDoneMap] = useState<Record<number, boolean>>({});
   const [verifying, setVerifying] = useState<number | null>(null);
   const [cooldown, setCooldown] = useState(0);
@@ -38,8 +42,8 @@ export default function UnlockFlow({
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
+    const tmr = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(tmr);
   }, [cooldown]);
 
   function clickCard(i: number) {
@@ -74,9 +78,12 @@ export default function UnlockFlow({
       <div className="mt-4 rounded-2xl bg-black/25 p-4 ring-1 ring-white/10">
         <div className="flex items-center justify-between text-sm">
           <p className="font-bold text-white">
-            📢 এড দেখুন <span className="text-yellow-300">{doneCount}/{adCount}</span>
+            {t("mv_unl_progress")}{" "}
+            <span className="text-yellow-300">
+              {digits(doneCount)}/{digits(adCount)}
+            </span>
           </p>
-          <p className="text-xs text-blue-100/60">সবগুলো শেষ হলে লিংক খুলবে</p>
+          <p className="text-xs text-blue-100/60">{t("mv_unl_progress_note")}</p>
         </div>
         <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10">
           <div
@@ -86,7 +93,9 @@ export default function UnlockFlow({
         </div>
         {cooldown > 0 && !unlocked && (
           <p className="mt-2 text-center text-sm font-bold text-yellow-300">
-            ⏳ পরের এড {cooldown} সেকেন্ড পর ক্লিক করতে পারবেন
+            {t("mv_unl_cool_pre")}
+            {digits(cooldown)}
+            {t("mv_unl_cool_post")}
           </p>
         )}
       </div>
@@ -128,20 +137,26 @@ export default function UnlockFlow({
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-2 pt-6">
                   <p className="text-xs font-extrabold text-white">
-                    {done ? "✅ সম্পন্ন" : `📢 এড ${i + 1}`}
+                    {done ? t("mv_unl_done") : `${t("mv_unl_ad")} ${digits(i + 1)}`}
                   </p>
                   {!done && !isVerifying && cooldown === 0 && (
-                    <p className="text-[10px] text-yellow-300">ট্যাপ করে এড দেখুন</p>
+                    <p className="text-[10px] text-yellow-300">{t("mv_unl_tap")}</p>
                   )}
                   {!done && !isVerifying && cooldown > 0 && (
-                    <p className="text-[10px] text-blue-100/70">⏳ {cooldown}s অপেক্ষা</p>
+                    <p className="text-[10px] text-blue-100/70">
+                      {t("mv_unl_wait_pre")}
+                      {digits(cooldown)}
+                      {t("mv_unl_wait_post")}
+                    </p>
                   )}
                 </div>
                 {isVerifying && (
                   <div className="absolute inset-0 grid place-items-center bg-black/70">
                     <div className="flex flex-col items-center gap-2">
                       <div className="spinner" />
-                      <p className="text-[10px] font-bold text-yellow-300">যাচাই হচ্ছে…</p>
+                      <p className="text-[10px] font-bold text-yellow-300">
+                        {t("mv_unl_verifying")}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -152,7 +167,7 @@ export default function UnlockFlow({
                 )}
                 {!url && !done && !isVerifying && (
                   <span className="absolute right-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-blue-100/70">
-                    ডেমো
+                    {t("mv_unl_demo")}
                   </span>
                 )}
               </button>
@@ -166,10 +181,10 @@ export default function UnlockFlow({
         <div className="ad-card mt-4 rounded-2xl bg-black/25 p-5 ring-1 ring-yellow-300/30 sm:p-7">
           <div className="text-center">
             <div className="ad-card-done text-5xl">🎉</div>
-            <h2 className="mt-3 text-xl font-extrabold text-white">সব এড সম্পন্ন!</h2>
-            <p className="mt-1 text-sm text-blue-100/70">
-              নিচের বাটনে WATCH NOW চাপুন — ডানপাশে কোয়ালিটি দেখে নিন
-            </p>
+            <h2 className="mt-3 text-xl font-extrabold text-white">
+              {t("mv_unl_all_done")}
+            </h2>
+            <p className="mt-1 text-sm text-blue-100/70">{t("mv_unl_watch_hint")}</p>
           </div>
 
           {watchBtns.length > 0 && (
@@ -223,15 +238,16 @@ export default function UnlockFlow({
           )}
 
           <p className="mt-5 text-center text-xs text-blue-100/60">
-            লিংক নতুন ট্যাবে খুলবে — টেরাবক্স লিংকে অ্যাপ না থাকলে ইনস্টল করতে বলবে
+            {t("mv_unl_tab_note")}
           </p>
         </div>
       )}
 
       {!unlocked && (
         <p className="mt-4 text-center text-xs text-blue-100/60">
-          💡 প্রতিটা কার্ডে ট্যাপ করুন — এড নতুন ট্যাবে খুলবে, তারপর {COOLDOWN_S} সেকেন্ড
-          অপেক্ষা করে পরের কার্ডে ট্যাপ করুন
+          {t("mv_unl_tip_pre")}
+          {digits(COOLDOWN_S)}
+          {t("mv_unl_tip_post")}
         </p>
       )}
     </>
