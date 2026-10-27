@@ -55,6 +55,14 @@ const EN_GALLERY: Record<string, { name: string; type: string; desc: string; gro
   tutor: { name: "Study Hub", type: "Tutoring Service", desc: "Experienced tutors — at home or online.", group: "🛠️ Services", heroSub: "Verified tutors • Free demo class" },
   eventplan: { name: "Utsab", type: "Event Planner", desc: "Any event — from planning to execution.", group: "🛠️ Services", heroSub: "500+ events • Full package" },
   weddingplan: { name: "Dream Wedding", type: "Wedding Planner", desc: "Your dream wedding — everything under one roof.", group: "🛠️ Services", heroSub: "200+ weddings • Custom packages" },
+  itsupport: { name: "Tech Support", type: "IT Service", desc: "Computer and laptop problems — fixed at your doorstep.", group: "🛠️ Services", heroSub: "Doorstep • Data safe" },
+  plumber: { name: "Pipe Master", type: "Plumbing Service", desc: "Any water-line problem — fixed fast.", group: "🛠️ Services", heroSub: "Emergency service • With guarantee" },
+  artist: { name: "Touch of Color", type: "Painter", desc: "Hand-painted pictures — portraits painted on order.", group: "🎨 Portfolio", heroSub: "100+ paintings • Commissions open" },
+  interior: { name: "Dream Home", type: "Interior Design", desc: "Home and office interiors — with 3D designs.", group: "🎨 Portfolio", heroSub: "3D visuals • Turnkey projects" },
+  architect: { name: "The Architect", type: "Architecture Firm", desc: "Home design and plans — with approval support.", group: "🎨 Portfolio", heroSub: "500+ projects • Approval support" },
+  makeupartist: { name: "Sajgoj", type: "Makeup Artist", desc: "Bridal and party makeup — service at home.", group: "🎨 Portfolio", heroSub: "Bridal specialist • Premium products" },
+  chef: { name: "Chef Karim", type: "Chef Portfolio", desc: "Private chef — cooks at your home.", group: "🎨 Portfolio", heroSub: "15 years' experience • Custom menus" },
+  hotel: { name: "Sea View Hotel", type: "Hotel Booking", desc: "Beachfront hotel — best view.", group: "✈️ Booking", heroSub: "Sea-view rooms • Complimentary breakfast" },
 };
 
 export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => {
