@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import MarketClient from "./MarketClient";
 
 export const metadata: Metadata = {
-  title: "Free Fire ID বাজার — DigiPlyra",
-  description: "নিরাপদ এসক্রো সিস্টেমে Free Fire ID বেচাকেনা করুন",
+  title: "Free Fire ID Market — DigiPlyra",
+  description: "Buy & sell Free Fire IDs safely with an escrow system",
 };
 
 export default function MarketplacePage() {

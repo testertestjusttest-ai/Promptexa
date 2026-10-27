@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatBDT, toBnDigits } from "@/lib/format";
+import { formatBDT, formatTk, toBnDigits } from "@/lib/format";
 import { FF_HERO, resolveListingImage } from "@/lib/ffAssets";
 import { useLang } from "@/lib/i18n";
 
@@ -19,7 +19,8 @@ type Listing = {
 };
 
 export default function MarketClient() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const digits = (n: number) => (lang === "bn" ? toBnDigits(n) : String(n));
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,8 +61,8 @@ export default function MarketClient() {
             </a>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[11px] font-semibold">
-            {["✅ এসক্রো সুরক্ষা", "💬 ইন-সাইট চ্যাট", "⚡ দ্রুত ডিল", "🛡️ অ্যাডমিন যাচাই"].map((t) => (
-              <span key={t} className="rounded-full bg-white/10 px-3 py-1.5 text-slate-200 backdrop-blur-sm">{t}</span>
+            {[t("m_trust_1"), t("m_trust_2"), t("m_trust_3"), t("m_trust_4")].map((s) => (
+              <span key={s} className="rounded-full bg-white/10 px-3 py-1.5 text-slate-200 backdrop-blur-sm">{s}</span>
             ))}
           </div>
         </div>
@@ -70,10 +71,10 @@ export default function MarketClient() {
       {/* how escrow works */}
       <div className="mt-6 grid gap-3 sm:grid-cols-4">
         {[
-          ["💰", "ক্রেতা পেমেন্ট করে", "টাকা DigiPlyra অ্যাডমিনের কাছে জমা"],
-          ["👀", "বিক্রেতা দেখতে পায়", "অ্যাডমিন টাকা পেয়েছে — নিশ্চিন্তে ID দিন"],
-          ["🎮", "ID হস্তান্তর", "ক্রেতাকে ID বুঝিয়ে দিন"],
-          ["✅", "কনফার্ম → টাকা", "ক্রেতা 'পেয়েছি' বললেই বিক্রেতা টাকা পায়"],
+          ["💰", t("m_step1_t"), t("m_step1_d")],
+          ["👀", t("m_step2_t"), t("m_step2_d")],
+          ["🎮", t("m_step3_t"), t("m_step3_d")],
+          ["✅", t("m_step4_t"), t("m_step4_d")],
         ].map(([i, t, d]) => (
           <div key={t} className="glass rounded-2xl p-4 text-center">
             <div className="text-2xl">{i}</div>
@@ -84,7 +85,7 @@ export default function MarketClient() {
       </div>
 
       <h2 id="listings" className="font-display mt-10 scroll-mt-24 text-xl font-bold text-white">
-        🆕 {t("m_listings")} ({toBnDigits(listings.length)})
+        🆕 {t("m_listings")} ({digits(listings.length)})
       </h2>
 
       {loading ? (
@@ -111,7 +112,7 @@ export default function MarketClient() {
                   </div>
                 )}
                 <span className="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
-                  {formatBDT(Number(l.price_bdt))}
+                  {lang === "bn" ? formatBDT(Number(l.price_bdt)) : formatTk(Number(l.price_bdt))}
                 </span>
                 {l.featured_until && new Date(l.featured_until).getTime() > Date.now() && (
                   <span className="absolute left-3 top-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-xs font-bold text-black">
@@ -122,7 +123,7 @@ export default function MarketClient() {
               <div className="p-4">
                 <h3 className="font-bold text-white line-clamp-1">{l.title}</h3>
                 <p className="mt-1 text-xs text-slate-500 line-clamp-2">{l.description}</p>
-                <p className="mt-2 text-[11px] text-slate-500">👁️ {toBnDigits(l.views ?? 0)} {t("c_views")}</p>
+                <p className="mt-2 text-[11px] text-slate-500">👁️ {digits(l.views ?? 0)} {t("c_views")}</p>
               </div>
             </Link>
           ))}
