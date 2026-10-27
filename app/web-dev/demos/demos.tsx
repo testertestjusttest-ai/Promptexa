@@ -48,6 +48,7 @@ const HAND_GROUPS: Record<string, string> = {
   nursery: "🌿 Garden",
   cleaning: "🛠️ Services",
   painting: "🛠️ Services",
+  pestcontrol: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -654,6 +655,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Paint + labour included • Free colour consult</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "pestcontrol",
+    name: "PestGuard",
+    type: "Pest Control Service",
+    desc: "General pest control, cockroach, termite, mosquito, rodent and bed-bug treatments — fixed upfront prices, free inspection, online booking and a full admin panel.",
+    price: "From 1,200 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🛡️ PestGuard" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pc-img/hero.webp" alt="PestGuard technician treating a living room" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Pests gone, home safe — treated in a day, not weeks</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["General", "2,500 Tk"], ["Cockroach", "1,500 Tk"], ["Termite", "6,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-emerald-50 px-2 py-1.5 ring-1 ring-emerald-100">
+                <p className="text-[11px] font-black text-emerald-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-emerald-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book a Treatment</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🛡️ All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free inspection • Child- & pet-safe products</p>
       </Frame>
     ),
   },

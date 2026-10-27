@@ -157,6 +157,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "pestcontrol": {
+    hero: "/pc-img/hero.webp",
+    cats: {
+    },
+  },
   "petshop": {
     hero: "/demo-img/petshop/hero.webp",
     cats: {

@@ -490,7 +490,43 @@ const PAINTING_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= PESTGUARD — pest control service (2026-10-27) =================
+ * Modelled on the common Bangladeshi home-service pest-control offering
+ * (general pest control, termite, mosquito, rodent and bed-bug treatments) —
+ * and built better within the engine: transparent per-job pricing with
+ * durations and what's included, category filtering (General / Kitchen /
+ * Termite / Outdoor / Rodent), online booking, and a visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const PESTCONTROL_DEF: DemoSiteDef = {
+  slug: "pestcontrol", name: "PestGuard", type: "Pest Control Service", layout: "service",
+  logoEmoji: "🛡️", accent: "#15803d", dark: false, grad: "from-emerald-600 via-green-600 to-lime-700",
+  heroTitle: "Pests gone, home safe — treated in a day, not weeks",
+  heroSub: "Licensed technicians • Child- & pet-safe products • Free inspection",
+  heroEmoji: "🛡️",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "General Pest Control (2-Bedroom Home)", p: 2500, e: "🏠", c: "General", duration: "2 hours", rating: 4.9, desc: "Whole-home spray for crawling insects: skirting boards, drains, kitchen corners and balconies treated with child- and pet-safe products. You return to a pest-free home the same day." },
+    { id: "s1", n: "Cockroach Control (Kitchen)", p: 1500, e: "🪳", c: "Kitchen", duration: "1 hour", rating: 4.8, desc: "Gel-bait and crack-and-crevice treatment for kitchens: no smell, no need to empty every cabinet, and the treatment keeps working for weeks after the visit." },
+    { id: "s2", n: "Termite Treatment", p: 6000, e: "🐜", c: "Termite", duration: "3 hours", rating: 4.9, desc: "Termite inspection plus soil and wood treatment for infested areas, with a written treatment note on completion and advice on keeping them away." },
+    { id: "s3", n: "Mosquito Fogging & Larvicide", p: 1200, e: "🦟", c: "Outdoor", duration: "1 hour", rating: 4.7, desc: "Fogging for yards, balconies and stairwells plus larvicide for standing water — timed for the evening when mosquitoes are most active." },
+    { id: "s4", n: "Rodent Control", p: 1800, e: "🐭", c: "Rodent", duration: "2 hours", rating: 4.8, desc: "Traps and sealed entry points for rats and mice: entry holes closed, droppings cleared, and a follow-up check booked before the technician leaves." },
+    { id: "s5", n: "Bed Bug Treatment", p: 3500, e: "🛏️", c: "General", duration: "2 hours", rating: 4.8, desc: "Mattresses, bed frames and furniture treated in two passes, with a preparation checklist sent before the visit so one treatment is enough." },
+    { id: "s6", n: "Office / Commercial Pest Control", p: 4500, e: "🏢", c: "General", duration: "3 hours", rating: 4.8, desc: "After-hours treatment for offices, shops and restaurants: scheduled outside working hours, with a service report for your records." },
+  ],
+  gallery: [],
+  news: [],
+  about: "PestGuard is a pest control service for busy households in Dhaka. Book online, pick your date, and a licensed two-person team arrives with all products and equipment — you pay after the work is done and checked. Every job has a fixed upfront price: no per-room surprises, no hidden charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Inspection free; products included.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
