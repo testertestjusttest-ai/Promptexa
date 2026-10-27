@@ -63,6 +63,11 @@ const EN_GALLERY: Record<string, { name: string; type: string; desc: string; gro
   makeupartist: { name: "Sajgoj", type: "Makeup Artist", desc: "Bridal and party makeup — service at home.", group: "🎨 Portfolio", heroSub: "Bridal specialist • Premium products" },
   chef: { name: "Chef Karim", type: "Chef Portfolio", desc: "Private chef — cooks at your home.", group: "🎨 Portfolio", heroSub: "15 years' experience • Custom menus" },
   hotel: { name: "Sea View Hotel", type: "Hotel Booking", desc: "Beachfront hotel — best view.", group: "✈️ Booking", heroSub: "Sea-view rooms • Complimentary breakfast" },
+  resort: { name: "Palm Resort", type: "Resort Booking", desc: "A resort in nature — with a swimming pool.", group: "✈️ Booking", heroSub: "Swimming pool • Barbecue" },
+  busservice: { name: "Green Line", type: "Bus Service", desc: "Comfortable buses — routes nationwide.", group: "✈️ Booking", heroSub: "AC buses • Online tickets" },
+  carrental: { name: "Rental Cars", type: "Car Rental", desc: "Cars with driver — by the hour or day.", group: "✈️ Booking", heroSub: "With driver • Full tank" },
+  tourpackage: { name: "Wander", type: "Tour Package", desc: "Guided tour packages — hotel and meals included.", group: "✈️ Booking", heroSub: "Guide • Hotel • Meals included" },
+  yoga: { name: "Tranquility", type: "Yoga Center", desc: "Morning yoga classes — keep body and mind healthy.", group: "✈️ Booking", heroSub: "Certified instructors • Meditation" },
 };
 
 export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => {
