@@ -47,6 +47,14 @@ const EN_GALLERY: Record<string, { name: string; type: string; desc: string; gro
   juicebar: { name: "Juice Bar", type: "Juice Shop", desc: "Fresh fruit juice — with no-sugar options.", group: "🍔 Food", heroSub: "100% natural • No preservatives" },
   sweets: { name: "Mishtanno", type: "Sweet Shop", desc: "Traditional sweets — freshly made every day.", group: "🍔 Food", heroSub: "Pure chhana • Fresh daily" },
   chinese: { name: "Dragon", type: "Chinese Restaurant", desc: "Authentic Chinese — chef direct from China.", group: "🍔 Food", heroSub: "Authentic recipes • Family packs" },
+  clinic: { name: "Sheba Clinic", type: "Clinic", desc: "Specialist doctors — book your serial online.", group: "🛠️ Services", heroSub: "Experienced doctors • Modern lab" },
+  dental: { name: "Bright Smile", type: "Dental Care", desc: "Modern dental treatment — painless procedures.", group: "🛠️ Services", heroSub: "Painless • German machines" },
+  carwash: { name: "Sparkle Wash", type: "Car Wash", desc: "Professional car wash — service at your doorstep.", group: "🛠️ Services", heroSub: "Doorstep service • Eco friendly" },
+  laundry: { name: "Fresh Laundry", type: "Laundry Service", desc: "Laundry with pickup and delivery — returned in 24 hours.", group: "🛠️ Services", heroSub: "Free pickup • 24-hour delivery" },
+  electrician: { name: "Power Service", type: "Electrician", desc: "Certified electricians — emergency service within 1 hour.", group: "🛠️ Services", heroSub: "Certified • Service in 1 hour" },
+  tutor: { name: "Study Hub", type: "Tutoring Service", desc: "Experienced tutors — at home or online.", group: "🛠️ Services", heroSub: "Verified tutors • Free demo class" },
+  eventplan: { name: "Utsab", type: "Event Planner", desc: "Any event — from planning to execution.", group: "🛠️ Services", heroSub: "500+ events • Full package" },
+  weddingplan: { name: "Dream Wedding", type: "Wedding Planner", desc: "Your dream wedding — everything under one roof.", group: "🛠️ Services", heroSub: "200+ weddings • Custom packages" },
 };
 
 export const ENGINE_DEMOS: Demo[] = ENGINE_DEFS.map((def) => {
