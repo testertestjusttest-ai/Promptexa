@@ -24,11 +24,11 @@ export default function SellClient() {
         fd.append("file", f);
         const res = await fetch("/api/marketplace/upload", { method: "POST", body: fd });
         const d = await res.json();
-        if (!res.ok) throw new Error(d.error || "আপলোড হয়নি");
+        if (!res.ok) throw new Error(d.error || t("s_err_upload"));
         setImages((im) => [...im, d.url]);
       }
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "আপলোড ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_upload_fail")}`);
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -38,10 +38,10 @@ export default function SellClient() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
-    if (!form.title.trim()) return setMsg("⚠️ টাইটেল দিন (যেমন: লেভেল ৬৫, ৩০০+ স্কিন)");
-    if (!(Number(form.price_bdt) > 0)) return setMsg("⚠️ সঠিক দাম দিন");
-    if (!/^01[3-9]\d{8}$/.test(form.seller_phone.trim())) return setMsg("⚠️ সঠিক মোবাইল নম্বর দিন");
-    if (images.length === 0) return setMsg("⚠️ কমপক্ষে ১টি স্ক্রিনশট আপলোড করুন");
+    if (!form.title.trim()) return setMsg(`⚠️ ${t("s_err_title")}`);
+    if (!(Number(form.price_bdt) > 0)) return setMsg(`⚠️ ${t("s_err_price")}`);
+    if (!/^01[3-9]\d{8}$/.test(form.seller_phone.trim())) return setMsg(`⚠️ ${t("s_err_phone")}`);
+    if (images.length === 0) return setMsg(`⚠️ ${t("s_err_shots")}`);
     setSending(true);
     try {
       const res = await fetch("/api/marketplace", {
@@ -50,10 +50,10 @@ export default function SellClient() {
         body: JSON.stringify({ ...form, price_bdt: Number(form.price_bdt), images }),
       });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "হয়নি");
+      if (!res.ok) throw new Error(d.error || t("s_err_submit"));
       router.push(`/marketplace/${d.id}`);
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_fail")}`);
     } finally {
       setSending(false);
     }
@@ -68,7 +68,7 @@ export default function SellClient() {
           <div>
             <label className="mb-1.5 block text-sm text-slate-300">{t("s_form_title")}</label>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="field" placeholder="যেমন: লেভেল ৬৮ ID, ৪০০+ স্কিন, সব ক্যারেক্টার" maxLength={120} />
+              className="field" placeholder={t("s_ph_title")} maxLength={120} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -79,7 +79,7 @@ export default function SellClient() {
             <div>
               <label className="mb-1.5 block text-sm text-slate-300">{t("s_uid")}</label>
               <input value={form.game_uid} onChange={(e) => setForm({ ...form, game_uid: e.target.value })}
-                className="field" placeholder="UID (ঐচ্ছিক)" maxLength={60} />
+                className="field" placeholder={t("s_ph_uid")} maxLength={60} />
             </div>
           </div>
           <div>
@@ -95,7 +95,7 @@ export default function SellClient() {
             <label className="mb-1.5 block text-sm text-slate-300">{t("s_desc")}</label>
             <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="field min-h-[120px]" maxLength={3000}
-              placeholder="ID-টি কেমন — লেভেল, স্কিন সংখ্যা, ক্যারেক্টার, পেট, ডায়মন্ড, র‍্যাংক... বিস্তারিত লিখুন" />
+              placeholder={t("s_ph_desc")} />
           </div>
           <div>
             <label className="mb-1.5 block text-sm text-slate-300">{t("s_shots")}</label>
