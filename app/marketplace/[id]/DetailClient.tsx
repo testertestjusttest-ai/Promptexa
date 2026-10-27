@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { formatBDT, toBnDigits, timeAgo } from "@/lib/format";
-import { DEAL_BN, DEAL_STEPS } from "@/lib/escrow";
+import { formatBDT, formatTk, toBnDigits, timeAgo } from "@/lib/format";
+import { dealStatusLabel, dealSteps } from "@/lib/escrow";
 import { resolveListingImage } from "@/lib/ffAssets";
 import { useLang } from "@/lib/i18n";
 
@@ -21,7 +21,9 @@ type Deal = {
 type Msg = { id: string; sender_id: string; body: string; created_at: string };
 
 export default function DetailClient({ id }: { id: string }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const digits = (n: number) => (lang === "bn" ? toBnDigits(n) : String(n));
+  const price = (n: number) => (lang === "bn" ? formatBDT(n) : formatTk(n));
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
@@ -36,7 +38,7 @@ export default function DetailClient({ id }: { id: string }) {
   const chatRef = useRef<HTMLDivElement>(null);
 
   async function boost() {
-    if (boosting || !confirm("৩০ টাকা ওয়ালেট থেকে কেটে ৩ দিন ফিচার্ড করবেন?")) return;
+    if (boosting || !confirm(t("d_dt_boost_confirm"))) return;
     setBoosting(true);
     try {
       const res = await fetch("/api/marketplace/boost", {
@@ -45,11 +47,11 @@ export default function DetailClient({ id }: { id: string }) {
         body: JSON.stringify({ listing_id: id }),
       });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error || "ব্যর্থ");
-      setMsg("🎉 বুস্ট সফল! ৩ দিন সবার উপরে দেখাবে।");
+      if (!res.ok) throw new Error(d.error || t("s_err_fail"));
+      setMsg(t("d_dt_boost_ok"));
       load(true);
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "ব্যর্থ"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_fail")}`);
     } finally {
       setBoosting(false);
     }
@@ -90,7 +92,7 @@ export default function DetailClient({ id }: { id: string }) {
       setChatText("");
       load(true);
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "হয়নি"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_submit")}`);
     } finally {
       setSending(false);
     }
@@ -109,7 +111,7 @@ export default function DetailClient({ id }: { id: string }) {
       if (!res.ok) throw new Error(d.error);
       load(true);
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "হয়নি"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_submit")}`);
     } finally {
       setBuying(false);
     }
@@ -117,7 +119,7 @@ export default function DetailClient({ id }: { id: string }) {
 
   async function dealAction(deal: Deal, action: string, extra: Record<string, string> = {}) {
     if (!deal) return;
-    if (action === "dispute" && !confirm("বিরোধ খুলবেন? অ্যাডমিন বিষয়টি দেখবে।")) return;
+    if (action === "dispute" && !confirm(t("d_dt_dispute_confirm"))) return;
     setActing(true);
     setMsg("");
     try {
@@ -128,17 +130,17 @@ export default function DetailClient({ id }: { id: string }) {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
-      setMsg(`✅ ${d.label ?? "সম্পন্ন"}`);
+      setMsg(`✅ ${d.label ?? t("d_dt_done")}`);
       load(true);
     } catch (e) {
-      setMsg(`⚠️ ${e instanceof Error ? e.message : "হয়নি"}`);
+      setMsg(`⚠️ ${e instanceof Error ? e.message : t("s_err_submit")}`);
     } finally {
       setActing(false);
     }
   }
 
-  if (loading) return <p className="mx-auto max-w-4xl px-4 py-16 text-center text-slate-500">লোড হচ্ছে...</p>;
-  if (!data) return <p className="mx-auto max-w-4xl px-4 py-16 text-center text-slate-500">লিস্টিং পাওয়া যায়নি</p>;
+  if (loading) return <p className="mx-auto max-w-4xl px-4 py-16 text-center text-slate-500">{t("c_loading")}</p>;
+  if (!data) return <p className="mx-auto max-w-4xl px-4 py-16 text-center text-slate-500">{t("d_dt_notfound")}</p>;
 
   const l = data.listing;
   const me = data.me;
@@ -149,13 +151,13 @@ export default function DetailClient({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <Link href="/marketplace" className="text-sm text-slate-400 hover:text-white">← সব ID</Link>
+      <Link href="/marketplace" className="text-sm text-slate-400 hover:text-white">{t("d_dt_back")}</Link>
 
       {l.status !== "approved" && (
         <div className="mt-4 rounded-2xl bg-amber-400/10 p-4 text-sm text-amber-200">
-          {l.status === "pending" && "⏳ এই পোস্টটি অ্যাডমিন রিভিউতে আছে — অনুমোদনের পর লাইভ হবে।"}
-          {l.status === "sold" && "✅ এই ID বিক্রি হয়ে গেছে।"}
-          {l.status === "rejected" && "❌ এই পোস্টটি বাতিল করা হয়েছে।"}
+          {l.status === "pending" && t("d_dt_pending")}
+          {l.status === "sold" && t("d_dt_sold")}
+          {l.status === "rejected" && t("d_dt_rejected")}
         </div>
       )}
 
@@ -189,12 +191,12 @@ export default function DetailClient({ id }: { id: string }) {
           <div className="glass mt-4 rounded-3xl p-6">
             <div className="flex items-start justify-between gap-3">
               <h1 className="font-display text-2xl font-bold text-white">{l.title}</h1>
-              <p className="font-display shrink-0 text-2xl font-bold text-[#d7ff3f]">{formatBDT(Number(l.price_bdt))}</p>
+              <p className="font-display shrink-0 text-2xl font-bold text-[#d7ff3f]">{price(Number(l.price_bdt))}</p>
             </div>
             <p className="mt-2 text-xs text-slate-500">
-              👤 বিক্রেতা: <b className="text-slate-300">{data.seller_name}</b>
+              {t("d_dt_seller")} <b className="text-slate-300">{data.seller_name}</b>
               {l.game_uid && <> • 🆔 UID: <b className="text-slate-300">{l.game_uid}</b></>}
-              {" "}• 👁️ {toBnDigits(l.views ?? 0)}
+              {" "}• 👁️ {digits(l.views ?? 0)}
             </p>
             {l.seller_phone && (
               <a href={`tel:${l.seller_phone}`} className="mt-3 inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-bold text-emerald-300 transition hover:bg-emerald-400/20">
@@ -216,9 +218,9 @@ export default function DetailClient({ id }: { id: string }) {
           <div className="glass rounded-3xl p-6">
             <h3 className="font-bold text-white">{t("d_escrow_title")}</h3>
             <ol className="mt-3 space-y-2">
-              {DEAL_STEPS.map((s, i) => (
+              {dealSteps(lang).map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#d7ff3f]/15 text-xs font-bold text-[#d7ff3f]">{toBnDigits(i + 1)}</span>
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#d7ff3f]/15 text-xs font-bold text-[#d7ff3f]">{digits(i + 1)}</span>
                   {s}
                 </li>
               ))}
@@ -230,9 +232,9 @@ export default function DetailClient({ id }: { id: string }) {
             <div className="glass rounded-3xl p-6">
               {!myDeal ? (
                 <>
-                  <p className="text-sm text-slate-400">টাকা সরাসরি বিক্রেতার কাছে যাবে না — আগে অ্যাডমিনের কাছে জমা থাকবে।</p>
+                  <p className="text-sm text-slate-400">{t("d_dt_escrow_note")}</p>
                   <button onClick={buy} disabled={buying} className="btn-vault mt-4 w-full !py-3.5 text-base">
-                    {buying ? "প্রসেস হচ্ছে..." : `🛡️ নিরাপদে কিনুন — ${formatBDT(Number(l.price_bdt))}`}
+                    {buying ? t("d_dt_buying") : `${t("d_dt_buy")} — ${price(Number(l.price_bdt))}`}
                   </button>
                 </>
               ) : (
@@ -245,7 +247,7 @@ export default function DetailClient({ id }: { id: string }) {
 
           {isSeller && deals.length > 0 && (
             <div className="glass rounded-3xl p-6">
-              <h3 className="font-bold text-white">📦 আপনার ডিল ({toBnDigits(deals.length)})</h3>
+              <h3 className="font-bold text-white">{t("d_dt_mydeals")} ({digits(deals.length)})</h3>
               <div className="mt-3 space-y-3">
                 {deals.map((d) => (
                   <DealBox key={d.id} deal={d} role="seller" acting={acting} onAction={(a, e) => dealAction(d, a, e)} />
@@ -267,11 +269,11 @@ export default function DetailClient({ id }: { id: string }) {
           {/* chat */}
           {data.canChat ? (
             <div className="glass rounded-3xl p-6">
-              <h3 className="font-bold text-white">💬 ক্রেতা-বিক্রেতা চ্যাট</h3>
-              <p className="mt-1 text-[11px] text-slate-500">এই চ্যাট অ্যাডমিনও দেখতে পারে — নিরাপত্তার জন্য এখানেই কথা বলুন।</p>
+              <h3 className="font-bold text-white">{t("d_dt_chat_t")}</h3>
+              <p className="mt-1 text-[11px] text-slate-500">{t("d_dt_chat_sub")}</p>
               <div ref={chatRef} className="mt-3 max-h-72 space-y-2 overflow-y-auto rounded-2xl bg-black/25 p-3">
                 {(data.messages as Msg[]).length === 0 && (
-                  <p className="py-6 text-center text-xs text-slate-500">এখনো কোনো মেসেজ নেই — প্রথম মেসেজ পাঠান! 👋</p>
+                  <p className="py-6 text-center text-xs text-slate-500">{t("d_dt_chat_empty")}</p>
                 )}
                 {(data.messages as Msg[]).map((m) => {
                   const mine = m.sender_id === me;
@@ -279,9 +281,9 @@ export default function DetailClient({ id }: { id: string }) {
                   return (
                     <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 ${mine ? "bg-[#d7ff3f]/15 text-white" : "bg-white/[0.06] text-slate-200"}`}>
-                        {isStaffMsg && <p className="text-[10px] font-bold text-cyan-300">🛡️ সাপোর্ট</p>}
+                        {isStaffMsg && <p className="text-[10px] font-bold text-cyan-300">{t("d_dt_support")}</p>}
                         <p className="text-sm">{m.body}</p>
-                        <p className="mt-0.5 text-[10px] text-slate-500">{timeAgo(m.created_at)}</p>
+                        <p className="mt-0.5 text-[10px] text-slate-500">{timeAgo(m.created_at, lang)}</p>
                       </div>
                     </div>
                   );
@@ -289,16 +291,16 @@ export default function DetailClient({ id }: { id: string }) {
               </div>
               <form onSubmit={sendChat} className="mt-3 flex gap-2">
                 <input value={chatText} onChange={(e) => setChatText(e.target.value)}
-                  className="field !py-2.5" placeholder="মেসেজ লিখুন..." maxLength={1000} />
+                  className="field !py-2.5" placeholder={t("d_dt_chat_ph")} maxLength={1000} />
                 <button type="submit" disabled={sending} className="btn-vault shrink-0 !px-5 !py-2.5 text-sm">
-                  {sending ? "..." : "পাঠান"}
+                  {sending ? "..." : t("d_dt_chat_send")}
                 </button>
               </form>
             </div>
           ) : (
             me && !isSeller && l.status === "approved" && (
               <div className="glass rounded-3xl p-6 text-center text-sm text-slate-400">
-                💬 বিক্রেতার সাথে চ্যাট করতে প্রথমে <b className="text-white">নিরাপদে কিনুন</b> চাপুন।
+                {t("d_dt_chat_first_a")} <b className="text-white">{t("d_dt_buy")}</b> {t("d_dt_chat_first_b")}
               </div>
             )
           )}
@@ -317,75 +319,77 @@ function DealBox({
   senderNo?: string; setSenderNo?: (v: string) => void;
   acting: boolean; onAction: (action: string, extra?: Record<string, string>) => void;
 }) {
+  const { t, lang } = useLang();
+  const price = (n: number) => (lang === "bn" ? formatBDT(n) : formatTk(n));
   return (
     <div className="rounded-2xl bg-black/25 p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-white">ডিল #{deal.id.slice(0, 8)}</p>
+        <p className="text-sm font-bold text-white">{t("d_dt_deal")}{deal.id.slice(0, 8)}</p>
         <span className="rounded-full bg-[#d7ff3f]/15 px-3 py-1 text-xs font-bold text-[#d7ff3f]">
-          {DEAL_BN[deal.status] ?? deal.status}
+          {dealStatusLabel(deal.status, lang)}
         </span>
       </div>
-      <p className="mt-1 text-xs text-slate-500">পরিমাণ: {formatBDT(Number(deal.amount_bdt))}</p>
+      <p className="mt-1 text-xs text-slate-500">{t("d_dt_amount")} {price(Number(deal.amount_bdt))}</p>
 
       {role === "buyer" && deal.status === "awaiting_payment" && (
         <div className="mt-3 space-y-2">
-          <p className="text-xs text-slate-400">📱 বিকাশ/নগদ/রকেটে <b className="text-white">{formatBDT(Number(deal.amount_bdt))}</b> পাঠিয়ে TrxID দিন — টাকা অ্যাডমিনের কাছে জমা থাকবে।</p>
+          <p className="text-xs text-slate-400">{t("d_dt_pay_a")} <b className="text-white">{price(Number(deal.amount_bdt))}</b> {t("d_dt_pay_b")}</p>
           <input value={trxid ?? ""} onChange={(e) => setTrxid?.(e.target.value)} className="field !py-2.5 uppercase" placeholder="TrxID" />
-          <input value={senderNo ?? ""} onChange={(e) => setSenderNo?.(e.target.value)} className="field !py-2.5" placeholder="সেন্ডার নম্বর (01XXXXXXXXX)" inputMode="numeric" />
+          <input value={senderNo ?? ""} onChange={(e) => setSenderNo?.(e.target.value)} className="field !py-2.5" placeholder={t("d_dt_sender_ph")} inputMode="numeric" />
           <button onClick={() => onAction("pay", { trxid: trxid ?? "", sender_number: senderNo ?? "" })}
             disabled={acting} className="btn-vault w-full !py-2.5 text-sm">
-            {acting ? "..." : "✓ পেমেন্ট কনফার্ম করুন"}
+            {acting ? "..." : t("d_dt_pay_confirm")}
           </button>
         </div>
       )}
 
       {role === "buyer" && deal.status === "paid_to_admin" && (
         <p className="mt-3 rounded-xl bg-cyan-400/10 p-3 text-xs text-cyan-200">
-          ✅ টাকা অ্যাডমিনের কাছে জমা আছে। বিক্রেতা এখন আপনাকে ID বুঝিয়ে দেবে — চ্যাটে যোগাযোগ রাখুন।
+          {t("d_dt_paid_note")}
         </p>
       )}
 
       {role === "buyer" && deal.status === "id_delivered" && (
         <div className="mt-3 grid gap-2">
           <button onClick={() => onAction("confirm")} disabled={acting} className="btn-vault w-full !py-2.5 text-sm">
-            ✅ আইডি পেয়েছি — টাকা ছাড়ুন
+            {t("d_dt_confirm")}
           </button>
           <button onClick={() => onAction("dispute")} disabled={acting} className="w-full rounded-xl border border-red-400/30 py-2.5 text-sm font-bold text-red-300">
-            ⚠️ সমস্যা আছে — বিরোধ খুলুন
+            {t("d_dt_dispute")}
           </button>
         </div>
       )}
 
       {role === "seller" && deal.status === "awaiting_payment" && (
-        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">⏳ ক্রেতার পেমেন্টের অপেক্ষায়...</p>
+        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">{t("d_dt_wait_pay")}</p>
       )}
 
       {role === "seller" && deal.status === "paid_to_admin" && (
         <div className="mt-3">
           <p className="rounded-xl bg-green-400/10 p-3 text-xs text-green-200">
-            ✅ ক্রেতা <b>অ্যাডমিনকে টাকা দিয়েছে</b> — নিশ্চিন্তে ID বুঝিয়ে দিন! টাকা আটকে আছে অ্যাডমিনের কাছে, ক্রেতা কনফার্ম করলেই পাবেন।
+            {t("d_dt_seller_paid_a")} <b>{t("d_dt_seller_paid_b")}</b> {t("d_dt_seller_paid_c")}
           </p>
           <button onClick={() => onAction("deliver")} disabled={acting} className="btn-vault mt-2 w-full !py-2.5 text-sm">
-            {acting ? "..." : "🎮 আইডি বুঝিয়ে দিয়েছি"}
+            {acting ? "..." : t("d_dt_deliver")}
           </button>
         </div>
       )}
 
       {role === "seller" && deal.status === "id_delivered" && (
-        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">⏳ ক্রেতার কনফার্মেশনের অপেক্ষায় — কনফার্ম করলেই টাকা পাবেন।</p>
+        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">{t("d_dt_wait_confirm")}</p>
       )}
 
       {deal.status === "completed" && (
-        <p className="mt-3 rounded-xl bg-[#d7ff3f]/10 p-3 text-center text-sm font-bold text-[#d7ff3f]">🎉 ডিল সম্পন্ন!</p>
+        <p className="mt-3 rounded-xl bg-[#d7ff3f]/10 p-3 text-center text-sm font-bold text-[#d7ff3f]">{t("d_dt_completed")}</p>
       )}
       {deal.status === "disputed" && (
-        <p className="mt-3 rounded-xl bg-red-400/10 p-3 text-xs text-red-200">⚠️ বিরোধ চলছে — অ্যাডমিন যাচাই করে সিদ্ধান্ত দেবে।</p>
+        <p className="mt-3 rounded-xl bg-red-400/10 p-3 text-xs text-red-200">{t("d_dt_disputed")}</p>
       )}
       {deal.status === "refunded" && (
-        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">↩️ ক্রেতাকে রিফান্ড করা হয়েছে।</p>
+        <p className="mt-3 rounded-xl bg-white/5 p-3 text-xs text-slate-400">{t("d_dt_refunded")}</p>
       )}
       {deal.admin_note && (
-        <p className="mt-2 text-[11px] text-slate-500">📝 অ্যাডমিন নোট: {deal.admin_note}</p>
+        <p className="mt-2 text-[11px] text-slate-500">{t("d_dt_admin_note")} {deal.admin_note}</p>
       )}
     </div>
   );
