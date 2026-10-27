@@ -513,6 +513,12 @@ const STR = {
     mv_empty_text: "মুভি যোগ করা হচ্ছে — একটু পরে আবার আসুন।",
     mv_shop: "শপে ঘুরে আসুন",
     mv_featured: "⭐ ফিচার্ড",
+    mv_dt_back: "← সব মুভি",
+    mv_dt_views: "বার দেখা",
+    mv_dt_unlock: "🔓 মুভি আনলক করুন",
+    mv_dt_no_links: "এই মুভির লিংক এখনো যোগ করা হয়নি — শীঘ্রই আসছে।",
+    mv_dt_note:
+      "ℹ️ কয়েকটা এড দেখলেই দেখা ও ডাউনলোড লিংক আনলক হয়ে যাবে — প্রতিটা ধাপে নির্দেশনা দেওয়া থাকবে।",
   },
   en: {
     nav_home: "🏠 Home",
@@ -1021,6 +1027,12 @@ const STR = {
     mv_empty_text: "Movies are being added — check back soon.",
     mv_shop: "Browse the shop",
     mv_featured: "⭐ Featured",
+    mv_dt_back: "← All Movies",
+    mv_dt_views: "views",
+    mv_dt_unlock: "🔓 Unlock Movie",
+    mv_dt_no_links: "Links for this movie haven't been added yet — coming soon.",
+    mv_dt_note:
+      "ℹ️ Watch a few ads and the watch & download links will unlock — each step has instructions.",
   },
   hi: {
     nav_home: "🏠 होम",
@@ -1527,6 +1539,12 @@ const STR = {
     mv_empty_text: "फ़िल्में जोड़ी जा रही हैं — थोड़ी देर बाद फिर आएँ।",
     mv_shop: "शॉप देखें",
     mv_featured: "⭐ फ़ीचर्ड",
+    mv_dt_back: "← सभी फ़िल्में",
+    mv_dt_views: "बार देखा गया",
+    mv_dt_unlock: "🔓 मूवी अनलॉक करें",
+    mv_dt_no_links: "इस मूवी के लिंक अभी नहीं जोड़े गए हैं — जल्द आ रहे हैं।",
+    mv_dt_note:
+      "ℹ️ कुछ विज्ञापन देखने पर देखने और डाउनलोड लिंक अनलॉक हो जाएँगे — हर चरण में निर्देश दिए जाएँगे।",
   },
 } as const;
 
