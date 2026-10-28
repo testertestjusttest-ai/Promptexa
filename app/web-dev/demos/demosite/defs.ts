@@ -526,7 +526,44 @@ const PESTCONTROL_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= FIXPOINT — appliance repair service (2026-10-28) =================
+ * Modelled on the real home-service appliance-repair offering (Urban Company /
+ * Sheba-style: refrigerator, washing machine, AC, microwave, dishwasher and TV
+ * repair with home visits, fixed labour charges and genuine parts) — and built
+ * better within the engine: transparent per-job pricing with durations and
+ * what's included, category filtering (Cooling / Laundry / Kitchen / Heating /
+ * Electronics), free inspection, online booking, and a visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const APPLIANCEREPAIR_DEF: DemoSiteDef = {
+  slug: "appliancerepair", name: "FixPoint", type: "Appliance Repair Service", layout: "service",
+  logoEmoji: "🔧", accent: "#0369a1", dark: false, grad: "from-sky-600 via-blue-600 to-indigo-700",
+  heroTitle: "Broken appliance? Fixed today — at your home",
+  heroSub: "Verified technicians • Genuine parts • Free inspection",
+  heroEmoji: "🔧",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Refrigerator Repair", p: 1500, e: "🧊", c: "Cooling", duration: "2 hours", rating: 4.9, desc: "Not cooling, leaking or noisy fridge fixed at home: gas check, thermostat, compressor and door-seal diagnosis, with genuine parts quoted before any work starts." },
+    { id: "s1", n: "Washing Machine Repair", p: 1200, e: "👕", c: "Laundry", duration: "2 hours", rating: 4.8, desc: "Drum, pump, drain and spin problems solved: the technician tests a full cycle before leaving, so you know it actually works." },
+    { id: "s2", n: "AC Service & Repair", p: 2500, e: "❄️", c: "Cooling", duration: "2 hours", rating: 4.9, desc: "Split and window AC service, gas refill check and cooling repair: filters cleaned, outdoor unit inspected, and cooling tested on the spot." },
+    { id: "s3", n: "Microwave Oven Repair", p: 1000, e: "🍲", c: "Kitchen", duration: "1 hour", rating: 4.7, desc: "Not heating, sparking or dead display: magnetron, door switch and control-board faults diagnosed, with a heating test before the visit ends." },
+    { id: "s4", n: "Dishwasher Repair", p: 1500, e: "🍽️", c: "Kitchen", duration: "2 hours", rating: 4.8, desc: "Leaking, not draining or not cleaning: pump, hose and spray-arm faults fixed, then a full wash cycle run to prove the repair." },
+    { id: "s5", n: "Water Heater / Geyser Repair", p: 1200, e: "🚿", c: "Heating", duration: "1 hour", rating: 4.8, desc: "No hot water, tripping or leaking geyser: heating element, thermostat and safety-valve check, with the tank tested at full heat." },
+    { id: "s6", n: "LED TV Repair", p: 1800, e: "📺", c: "Electronics", duration: "2 hours", rating: 4.8, desc: "No picture, no sound or flickering screen: backlight, power-board and panel diagnosis at your home, with the set tested on live channels before sign-off." },
+  ],
+  gallery: [],
+  news: [],
+  about: "FixPoint is an appliance repair service for busy households in Dhaka. Book online, pick your date and time slot, and a verified technician arrives with tools and common parts — you pay after the repair is tested and working. Every job has a fixed upfront labour price: parts are quoted before fitting, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Inspection free; parts quoted before fitting.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
