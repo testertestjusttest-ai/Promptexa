@@ -2,15 +2,15 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "DigiPlyra — অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন",
+    name: "DigiPlyra — Original Premium Subscriptions",
     short_name: "DigiPlyra",
     description:
-      "CapCut Pro, Canva Pro, YouTube Premium সহ সব জনপ্রিয় অ্যাপের অরিজিনাল প্রিমিয়াম সাবস্ক্রিপশন — সবচেয়ে কম দামে, দ্রুত ডেলিভারি।",
+      "Original premium subscriptions for all popular apps including CapCut Pro, Canva Pro, YouTube Premium — at the lowest prices, with fast delivery.",
     start_url: "/",
     display: "standalone",
     background_color: "#060913",
     theme_color: "#060913",
-    lang: "bn",
+    lang: "en",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icon-512.jpg", sizes: "512x512", type: "image/jpeg", purpose: "any" },

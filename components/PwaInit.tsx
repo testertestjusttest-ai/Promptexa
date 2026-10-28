@@ -2,9 +2,11 @@
 
 import SiteLogo from "@/components/SiteLogo";
 import { useEffect, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 /** Registers the service worker + loads OneSignal (if configured) */
 export default function PwaInit() {
+  const { t } = useLang();
   const [showInstall, setShowInstall] = useState(false);
   const [deferred, setDeferred] = useState<unknown>(null);
 
@@ -63,11 +65,11 @@ export default function PwaInit() {
       <div className="glass ring-conic flex items-center gap-3 rounded-2xl p-4">
         <SiteLogo className="h-11 w-11 rounded-xl" />
         <div className="flex-1">
-          <p className="text-sm font-bold text-white">অ্যাপ ইনস্টল করুন 📲</p>
-          <p className="text-xs text-slate-400">হোম স্ক্রিনে DigiPlyra যোগ করুন</p>
+          <p className="text-sm font-bold text-white">{t("pwa_title")}</p>
+          <p className="text-xs text-slate-400">{t("pwa_sub")}</p>
         </div>
         <button onClick={install} className="rounded-xl bg-[#d7ff3f] px-4 py-2 text-sm font-bold text-[#060913]">
-          ইনস্টল
+          {t("pwa_install")}
         </button>
         <button onClick={() => setShowInstall(false)} className="text-slate-500">✕</button>
       </div>

@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { timeAgo } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 
 type Item = { id: string; title: string; body: string; link: string; is_read: boolean; created_at: string };
 
 export default function NotificationBell() {
+  const { lang, t } = useLang();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [unread, setUnread] = useState(0);
@@ -57,7 +59,7 @@ export default function NotificationBell() {
       <button
         onClick={openPanel}
         className="relative grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-lg transition hover:border-[#d7ff3f]/50"
-        aria-label="নোটিফিকেশন"
+        aria-label={t("nb_title")}
       >
         🔔
         {unread > 0 && (
@@ -68,10 +70,10 @@ export default function NotificationBell() {
       </button>
       {open && (
         <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1120] shadow-2xl">
-          <p className="border-b border-white/5 px-4 py-3 text-sm font-bold text-white">🔔 নোটিফিকেশন</p>
+          <p className="border-b border-white/5 px-4 py-3 text-sm font-bold text-white">{t("nb_title")}</p>
           <div className="max-h-96 overflow-y-auto">
             {items.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-slate-500">কোনো নোটিফিকেশন নেই</p>
+              <p className="px-4 py-8 text-center text-sm text-slate-500">{t("nb_empty")}</p>
             )}
             {items.map((n) => (
               <Link
@@ -82,7 +84,7 @@ export default function NotificationBell() {
               >
                 <p className="text-sm font-bold text-white">{n.title}</p>
                 <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">{n.body}</p>
-                <p className="mt-1 text-[11px] text-slate-600">{timeAgo(n.created_at)}</p>
+                <p className="mt-1 text-[11px] text-slate-600">{timeAgo(n.created_at, lang)}</p>
               </Link>
             ))}
           </div>
