@@ -7,6 +7,7 @@
  */
 
 import { DemositeProvider } from "@/app/web-dev/demos/demosite/store";
+import { DemoLangProvider } from "@/app/web-dev/demos/demosite/demo-lang";
 import DemoSite from "@/app/web-dev/demos/demosite/DemoSite";
 import type { DemoSiteDef } from "@/app/web-dev/demos/demosite/types";
 import type { DemoCustom } from "@/app/web-dev/demos/demosite/store";
@@ -25,15 +26,22 @@ export default function ClientSiteShell({
   /** "" when served via the customer's own domain. */
   baseOverride?: string;
 }) {
+  // Mount the demo-language provider (same as every /demo* route) so a
+  // customer site's chrome — navbar, drawer, footer — defaults to English
+  // with the language switcher inside the drawer, instead of the legacy
+  // Bangla chrome that /c sites rendered until now. Buying-house sites
+  // are unaffected: chrome prefers bh-lang for that layout.
   return (
-    <DemositeProvider
-      slug={def.slug}
-      def={def}
-      clientSlug={clientSlug}
-      initialCustom={custom}
-      baseOverride={baseOverride}
-    >
-      <DemoSite page={page} />
-    </DemositeProvider>
+    <DemoLangProvider>
+      <DemositeProvider
+        slug={def.slug}
+        def={def}
+        clientSlug={clientSlug}
+        initialCustom={custom}
+        baseOverride={baseOverride}
+      >
+        <DemoSite page={page} />
+      </DemositeProvider>
+    </DemoLangProvider>
   );
 }
