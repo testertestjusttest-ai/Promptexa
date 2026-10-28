@@ -4,19 +4,22 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import MotionBg from "@/components/MotionBg";
+import { useLang } from "@/lib/i18n";
 
 type Thread = { id: string; other_id: string; other_name: string; last_body: string; last_mine: boolean; last_at: string };
 type Msg = { id: string; sender_id: string; body: string; created_at: string; mine: boolean };
 
 export default function ChatPage() {
+  const { t } = useLang();
   return (
-    <Suspense fallback={<p className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-400">লোড হচ্ছে...</p>}>
+    <Suspense fallback={<p className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-400">{t("cm_loading")}</p>}>
       <ChatInner />
     </Suspense>
   );
 }
 
 function ChatInner() {
+  const { t } = useLang();
   const sp = useSearchParams();
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [loggedIn, setLoggedIn] = useState(true);
@@ -107,19 +110,19 @@ function ChatInner() {
     setSending(false);
   }
 
-  if (enabled === null) return <p className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-400">লোড হচ্ছে...</p>;
+  if (enabled === null) return <p className="mx-auto max-w-3xl px-4 py-16 text-center text-slate-400">{t("cm_loading")}</p>;
   if (!loggedIn) return (
     <div className="mx-auto max-w-md px-4 py-16 text-center">
       <p className="text-4xl">💬</p>
-      <h1 className="font-display mt-3 text-xl font-black text-white">চ্যাট করতে লগইন করুন</h1>
-      <Link href="/auth/login" className="btn-vault mt-4 inline-flex">লগইন করুন</Link>
+      <h1 className="font-display mt-3 text-xl font-black text-white">{t("cm_login_title")}</h1>
+      <Link href="/auth/login" className="btn-vault mt-4 inline-flex">{t("cm_login_btn")}</Link>
     </div>
   );
   if (!enabled) return (
     <div className="mx-auto max-w-md px-4 py-16 text-center">
       <p className="text-4xl">🔇</p>
-      <h1 className="font-display mt-3 text-xl font-black text-white">কমিউনিটি চ্যাট এখন বন্ধ আছে</h1>
-      <p className="mt-2 text-sm text-slate-400">অ্যাডমিন চ্যাট চালু করলে এখানে অন্য ইউজারদের সাথে কথা বলতে পারবেন।</p>
+      <h1 className="font-display mt-3 text-xl font-black text-white">{t("cm_off_title")}</h1>
+      <p className="mt-2 text-sm text-slate-400">{t("cm_off_text")}</p>
     </div>
   );
 
@@ -127,8 +130,8 @@ function ChatInner() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="relative overflow-hidden rounded-3xl border border-white/10 px-6 py-6">
         <MotionBg intensity="soft" />
-        <h1 className="font-display relative text-2xl font-black text-white">💬 কমিউনিটি চ্যাট</h1>
-        <p className="relative mt-1 text-xs text-slate-500">শুধু আপনি আর যার সাথে কথা বলছেন — তৃতীয় কেউ দেখতে পাবে না (অ্যাডমিন ছাড়া)।</p>
+        <h1 className="font-display relative text-2xl font-black text-white">{t("cm_title")}</h1>
+        <p className="relative mt-1 text-xs text-slate-500">{t("cm_sub")}</p>
       </div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-[300px_1fr]">
@@ -136,10 +139,10 @@ function ChatInner() {
         <div className={`${active ? "hidden md:block" : ""} glass rounded-3xl p-4`}>
           <input
             value={q} onChange={(e) => setQ(e.target.value)}
-            placeholder="🔍 ইউজার খুঁজুন (নাম লিখুন)…"
+            placeholder={t("cm_search_ph")}
             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#d7ff3f]/50"
           />
-          {searching && <p className="mt-2 text-xs text-slate-500">খুঁজছি...</p>}
+          {searching && <p className="mt-2 text-xs text-slate-500">{t("cm_searching")}</p>}
           {results.length > 0 && (
             <div className="mt-2 space-y-1">
               {results.map((u) => (
@@ -155,13 +158,13 @@ function ChatInner() {
           )}
           <div className="mt-3 space-y-1.5">
             {threads.length === 0 && results.length === 0 && (
-              <p className="py-6 text-center text-xs text-slate-500">এখনো কোনো চ্যাট নেই।<br />উপরে নাম লিখে খুঁজে চ্যাট শুরু করুন 👆</p>
+              <p className="py-6 text-center text-xs text-slate-500">{t("cm_empty_1")}<br />{t("cm_empty_2")}</p>
             )}
-            {threads.map((t) => (
-              <button key={t.id} onClick={() => { setActive(t.id); loadMsgs(t.id); }}
-                className={`w-full rounded-xl px-3 py-2.5 text-left transition ${active === t.id ? "bg-[#d7ff3f]/15 ring-1 ring-[#d7ff3f]/40" : "bg-white/5 hover:bg-white/10"}`}>
-                <p className="text-sm font-bold text-white">{t.other_name}</p>
-                <p className="mt-0.5 truncate text-xs text-slate-400">{t.last_mine ? "আপনি: " : ""}{t.last_body || "…"}</p>
+            {threads.map((th) => (
+              <button key={th.id} onClick={() => { setActive(th.id); loadMsgs(th.id); }}
+                className={`w-full rounded-xl px-3 py-2.5 text-left transition ${active === th.id ? "bg-[#d7ff3f]/15 ring-1 ring-[#d7ff3f]/40" : "bg-white/5 hover:bg-white/10"}`}>
+                <p className="text-sm font-bold text-white">{th.other_name}</p>
+                <p className="mt-0.5 truncate text-xs text-slate-400">{th.last_mine ? t("cm_you") : ""}{th.last_body || "…"}</p>
               </button>
             ))}
           </div>
@@ -173,7 +176,7 @@ function ChatInner() {
             <div className="grid flex-1 place-items-center text-center">
               <div>
                 <p className="text-5xl">💬</p>
-                <p className="mt-3 text-sm text-slate-400">বাম পাশ থেকে একটি চ্যাট সিলেক্ট করুন</p>
+                <p className="mt-3 text-sm text-slate-400">{t("cm_select")}</p>
               </div>
             </div>
           ) : (
@@ -199,11 +202,11 @@ function ChatInner() {
                 <input
                   value={draft} onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && send()}
-                  placeholder="মেসেজ লিখুন…"
+                  placeholder={t("cm_msg_ph")}
                   className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-[#d7ff3f]/50"
                 />
                 <button onClick={send} disabled={sending} className="btn-vault !px-5 !py-2.5 text-sm disabled:opacity-50">
-                  {sending ? "…" : "পাঠান ➤"}
+                  {sending ? "…" : t("cm_send")}
                 </button>
               </div>
             </>
