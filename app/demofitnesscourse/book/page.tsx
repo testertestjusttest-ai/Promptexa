@@ -4,7 +4,7 @@ import { BookView } from "../_views";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Book a Coaching Call — FitForm | Demo Website by DigiPlyra",
+  title: "Book a Coaching Call — FitForm",
   description: "FitForm demo coaching-call booking — stored in your browser only.",
 };
 

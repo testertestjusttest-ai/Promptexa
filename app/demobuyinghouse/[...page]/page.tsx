@@ -18,7 +18,7 @@ export function generateMetadata(): Metadata {
   // when the visitor picks Bangla; server metadata cannot read that
   // browser-local choice, so the default (English) title is served.
   return {
-    title: "TexBridge Sourcing — Garments Buying House | Demo Website by DigiPlyra",
+    title: "TexBridge Sourcing — Garments Buying House",
     description: "TexBridge Sourcing: World-Class Garment Sourcing from Bangladesh. A DigiPlyra interactive demo website — explore it!",
   };
 }

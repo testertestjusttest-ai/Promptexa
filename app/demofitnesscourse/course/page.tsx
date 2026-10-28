@@ -4,7 +4,7 @@ import { CourseView } from "../_views";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "My Course — FitForm | Demo Website by DigiPlyra",
+  title: "My Course — FitForm",
   description: "FitForm demo course area — lessons unlock after the demo checkout.",
 };
 

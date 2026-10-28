@@ -15,7 +15,7 @@ export function generateMetadata(): Metadata {
   if (!raw) return {};
   const def = applyAgencyDemoOverride(raw);
   return {
-    title: `${def.name} — ${def.type} | Demo Website by DigiPlyra`,
+    title: `${def.name} — ${def.type}`,
     description: `${def.name}: ${def.heroTitle}. A DigiPlyra interactive demo website — explore it!`,
   };
 }
