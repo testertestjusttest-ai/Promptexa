@@ -10,14 +10,14 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await fetchPublishedPostBySlug(slug);
-  if (!post) return { title: "Article not found — DigiPlyra News" };
+  if (!post) return { title: "Article not found" };
   const title = post.seo_title || post.title_en;
   const description = post.seo_description || post.excerpt_en || post.title_en;
   const url = postUrl(slug);
   const hasBn = !!post.title_bn;
   const hasHi = !!post.title_hi;
   return {
-    title: `${title} — DigiPlyra News`,
+    title: `${title}`,
     description: description.slice(0, 160),
     keywords: post.seo_keywords ? post.seo_keywords.split(",").map((k) => k.trim()).filter(Boolean) : undefined,
     alternates: {

@@ -5,7 +5,7 @@ import type { TopUpPackage } from "@/lib/topup";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Free Fire Diamond Top-Up | DigiPlyra",
+  title: "Free Fire Diamond Top-Up",
   description:
     "Enter your Player UID and get Free Fire diamonds delivered straight to your game — fast delivery, secure payment.",
 };

@@ -5,7 +5,7 @@ import { DEMOS } from "./web-dev/demos/demos";
 export async function generateMetadata(): Promise<Metadata> {
   const n = DEMOS.length;
   return {
-    title: "DigiPlyra — Website Design Agency",
+    title: "Website Design Agency",
     description: `DigiPlyra builds complete websites for your business — ${n}+ live demo designs, packages from 4,999 Tk, every site with 30+ pages and a full admin panel. Pick a demo, get a free quote.`,
     alternates: { canonical: "https://promptexa.vercel.app/" },
     openGraph: {
