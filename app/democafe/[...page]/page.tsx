@@ -7,13 +7,17 @@ import { DemoShell } from "../../web-dev/demos/full-demos";
 import { applyAgencyDemoOverride } from "../../web-dev/demos/demosite/agency-demo-overrides";
 import { DemoLangProvider } from "../../web-dev/demos/demosite/demo-lang";
 import { AgencyDemoBar } from "../../web-dev/demos/demosite/agency-demo-bar";
+import { localizeDemoDef } from "../../web-dev/demos/demosite/demo-def-i18n";
 
 export const dynamic = "force-dynamic";
 
 export function generateMetadata(): Metadata {
   const raw = getDemoDef("cafe");
   if (!raw) return {};
-  const def = applyAgencyDemoOverride(raw);
+  // Default view is English: metadata + shell/bar names use the EN def.
+  // The provider below still gets the raw def, so the BN view localizes
+  // client-side via the store (demo-def-i18n.ts) and stays Bangla.
+  const def = localizeDemoDef(applyAgencyDemoOverride(raw), "en");
   return {
     title: `${def.name} — ${def.type}`,
     description: `${def.name}: ${def.heroTitle} — interactive demo`,
@@ -26,11 +30,12 @@ export default async function Page({ params }: { params: Promise<{ page?: string
   const raw = getDemoDef("cafe");
   if (!raw) notFound();
   const def = applyAgencyDemoOverride(raw);
+  const enDef = localizeDemoDef(def, "en");
   return (
     <DemoLangProvider>
       <DemositeProvider slug={def.slug} def={def}>
-        <DemoShell name={def.name} type={def.type} slug={def.slug}>
-          <AgencyDemoBar slug={def.slug} name={def.name} />
+        <DemoShell name={enDef.name} type={enDef.type} slug={def.slug}>
+          <AgencyDemoBar slug={def.slug} name={enDef.name} />
           <DemoSite page={page ?? []} />
         </DemoShell>
       </DemositeProvider>

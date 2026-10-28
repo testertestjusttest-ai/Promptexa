@@ -8,6 +8,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { DemoProduct, DemoServiceItem, DemoGalleryItem, DemoSiteDef, DemoInvestPlan, DemoRate, DemoCoin, DemoNewsItem } from "./types";
+import { useDemoLangOpt } from "./demo-lang";
+import { localizeDemoDef } from "./demo-def-i18n";
 
 export interface DemoUser {
   name: string;
@@ -301,25 +303,34 @@ export function DemositeProvider({ slug, def, children, clientSlug, initialCusto
   const [gameHistory, setGameHistory] = useState<DemoGameRec[]>([]);
   const [custom, setCustom] = useState<DemoCustom>(() => ({ ...(initialCustom ?? {}) }));
 
+  // Demo language (null when no DemoLangProvider is mounted — legacy use):
+  // def-data overlays (demo-def-i18n.ts) localize the def per language.
+  // Admin customizations below still win over the overlay, and the BN view
+  // (or any demo without an overlay) keeps the original def untouched.
+  const demoLang = useDemoLangOpt();
+
   // Merge admin customizations (theme, accent, names) into the def
-  const liveDef: DemoSiteDef = useMemo(() => ({
-    ...def,
-    theme: (custom.theme as DemoSiteDef["theme"]) ?? def.theme,
-    accent: custom.accent ?? def.accent,
-    name: custom.siteName ?? def.name,
-    logoEmoji: custom.logoEmoji ?? def.logoEmoji,
-    heroTitle: custom.heroTitle ?? def.heroTitle,
-    heroSub: custom.heroSub ?? def.heroSub,
-    dark: custom.dark ?? def.dark,
-    products: custom.customProducts ?? def.products,
-    services: custom.customServices ?? def.services,
-    gallery: custom.customGallery ?? def.gallery,
-    about: custom.customAbout ?? def.about,
-    investPlans: custom.customInvestPlans ?? def.investPlans,
-    rates: custom.customRates ?? def.rates,
-    coins: custom.customCoins ?? def.coins,
-    news: custom.customNews ?? def.news,
-  }), [def, custom]);
+  const liveDef: DemoSiteDef = useMemo(() => {
+    const loc = localizeDemoDef(def, demoLang?.lang ?? "bn");
+    return {
+      ...loc,
+      theme: (custom.theme as DemoSiteDef["theme"]) ?? loc.theme,
+      accent: custom.accent ?? loc.accent,
+      name: custom.siteName ?? loc.name,
+      logoEmoji: custom.logoEmoji ?? loc.logoEmoji,
+      heroTitle: custom.heroTitle ?? loc.heroTitle,
+      heroSub: custom.heroSub ?? loc.heroSub,
+      dark: custom.dark ?? loc.dark,
+      products: custom.customProducts ?? loc.products,
+      services: custom.customServices ?? loc.services,
+      gallery: custom.customGallery ?? loc.gallery,
+      about: custom.customAbout ?? loc.about,
+      investPlans: custom.customInvestPlans ?? loc.investPlans,
+      rates: custom.customRates ?? loc.rates,
+      coins: custom.customCoins ?? loc.coins,
+      news: custom.customNews ?? loc.news,
+    };
+  }, [def, custom, demoLang?.lang]);
 
   const loadIdentity = useCallback(() => {
     const id = ident();
