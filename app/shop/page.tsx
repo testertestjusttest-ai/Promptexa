@@ -3,6 +3,21 @@ import ShopHomeClient from "./ShopHomeClient";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Shop Premium Subscriptions",
+  description:
+    "Original premium subscriptions — CapCut Pro, Canva Pro, YouTube Premium and more — with fast delivery and secure payment.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "DigiPlyra",
+    url: "https://promptexa.vercel.app/shop",
+    title: "Shop Premium Subscriptions — DigiPlyra",
+    description:
+      "Original premium subscriptions — CapCut Pro, Canva Pro, YouTube Premium and more — with fast delivery and secure payment.",
+  },
+};
+
 export default async function HomePage() {
   const [featured, allActive, categories, store, slides, ads] = await Promise.all([
     getProducts(true),

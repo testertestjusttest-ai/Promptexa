@@ -3,6 +3,21 @@ import ShopClient, { CatalogHeading } from "../ShopClient";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "All Products",
+  description:
+    "Browse every premium subscription in the DigiPlyra catalog — CapCut Pro, Canva Pro, YouTube Premium, Spotify Premium and more.",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "DigiPlyra",
+    url: "https://promptexa.vercel.app/shop/catalog",
+    title: "All Products — DigiPlyra",
+    description:
+      "Browse every premium subscription in the DigiPlyra catalog — CapCut Pro, Canva Pro, YouTube Premium, Spotify Premium and more.",
+  },
+};
+
 export default async function ShopPage({
   searchParams,
 }: {
