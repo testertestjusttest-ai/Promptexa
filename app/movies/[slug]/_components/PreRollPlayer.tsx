@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 const PREROLL_SECONDS = 5;
 
@@ -46,6 +47,7 @@ export default function PreRollPlayer({
   adCodes: string[];
   direct: boolean;
 }) {
+  const { t } = useLang();
   const [left, setLeft] = useState(PREROLL_SECONDS);
   const done = left <= 0;
 
@@ -59,12 +61,16 @@ export default function PreRollPlayer({
     return (
       <div className="relative aspect-video w-full overflow-hidden bg-black">
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500">বিজ্ঞাপন</p>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500">{t("mv_wd_pre_ad")}</p>
           {adCodes.map((c, i) => (
             <RawAd key={i} code={c} />
           ))}
           <div className="text-4xl font-bold tabular-nums text-[#d7ff3f]">{left}</div>
-          <p className="text-sm text-slate-300">⏳ {left} সেকেন্ড পর ভিডিও শুরু হবে…</p>
+          <p className="text-sm text-slate-300">
+            {t("mv_wd_pre_wait_pre")}
+            {left}
+            {t("mv_wd_pre_wait_post")}
+          </p>
           <div className="h-1 w-40 overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-[#d7ff3f] transition-all duration-1000"

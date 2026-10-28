@@ -2,30 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 
 const WAIT_SECS = 5;
 
 /**
  * Ad-gated step: shows step instructions + countdown, then unlocks
  * the continue button. Ads render around this component (server-side).
+ * Title/description/button copy come from the mv_wd_* keys by flow
+ * (watch vs download) and step — the server pages pass no copy.
  */
 export default function StepGate({
   step,
   totalSteps,
-  title,
-  desc,
+  kind,
   nextHref,
-  nextLabel,
   icon = "➡",
 }: {
   step: number;
   totalSteps: number;
-  title: string;
-  desc: string;
+  kind: "watch" | "download";
   nextHref: string;
-  nextLabel: string;
   icon?: string;
 }) {
+  const { t } = useLang();
   const [secs, setSecs] = useState(WAIT_SECS);
 
   useEffect(() => {
@@ -33,6 +33,29 @@ export default function StepGate({
     const t = setTimeout(() => setSecs((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [secs]);
+
+  const title =
+    kind === "watch"
+      ? step === 1
+        ? t("mv_wd_watch_t1")
+        : t("mv_wd_last_t")
+      : step === 1
+        ? t("mv_wd_dl_t1")
+        : t("mv_wd_last_t");
+  const desc =
+    kind === "watch"
+      ? step === 1
+        ? t("mv_wd_watch_d1")
+        : t("mv_wd_watch_d2")
+      : step === 1
+        ? t("mv_wd_dl_d1")
+        : t("mv_wd_dl_d2");
+  const nextLabel =
+    step === 1
+      ? t("mv_wd_next")
+      : kind === "watch"
+        ? t("mv_wd_watch_next2")
+        : t("mv_wd_dl_next2");
 
   return (
     <div className="glass mx-auto mt-6 max-w-xl rounded-3xl p-6 text-center sm:p-8">
@@ -45,7 +68,7 @@ export default function StepGate({
         ))}
       </div>
       <p className="mt-3 text-xs font-bold uppercase tracking-widest text-slate-500">
-        ধাপ {step} / {totalSteps}
+        {t("mv_wd_step")} {step} / {totalSteps}
       </p>
       <h2 className="font-display mt-2 text-xl font-bold text-white">{title}</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
@@ -63,7 +86,9 @@ export default function StepGate({
       )}
       {secs > 0 && (
         <p className="mt-3 text-xs text-slate-600">
-          ⏳ {secs} সেকেন্ড অপেক্ষা করুন, তারপর বাটন আসবে
+          {t("mv_wd_wait_pre")}
+          {secs}
+          {t("mv_wd_wait_post")}
         </p>
       )}
     </div>

@@ -539,6 +539,32 @@ const STR = {
     mv_unl_tip_post: " সেকেন্ড অপেক্ষা করে পরের কার্ডে ট্যাপ করুন",
     mv_unl_fallback_watch: "ভিডিও দেখুন",
     mv_unl_fallback_dl: "ডাউনলোড",
+    mv_wd_step: "ধাপ",
+    mv_wd_wait_pre: "⏳ ",
+    mv_wd_wait_post: " সেকেন্ড অপেক্ষা করুন, তারপর বাটন আসবে",
+    mv_wd_watch_t1: "📺 মুভি দেখার প্রস্তুতি",
+    mv_wd_watch_d1:
+      "নিচে একটি ছোট বিজ্ঞাপন দেখুন। কাউন্টডাউন শেষ হলে 'পরবর্তী ধাপ' বাটনে ক্লিক করুন — এভাবেই আমাদের সাইট ফ্রি থাকে।",
+    mv_wd_last_t: "⚡ শেষ ধাপ!",
+    mv_wd_watch_d2:
+      "আর মাত্র একটা ধাপ! কাউন্টডাউন শেষ হলে নিচের বাটনে ক্লিক করলেই ভিডিও প্লেয়ার চালু হবে।",
+    mv_wd_next: "পরবর্তী ধাপ →",
+    mv_wd_watch_next2: "🎬 প্লেয়ার চালু করুন",
+    mv_wd_player_note: "ভিডিও না চললে পেজ রিফ্রেশ করুন অথবা ডাউনলোড করে দেখুন",
+    mv_wd_pre_ad: "বিজ্ঞাপন",
+    mv_wd_pre_wait_pre: "⏳ ",
+    mv_wd_pre_wait_post: " সেকেন্ড পর ভিডিও শুরু হবে…",
+    mv_wd_dl_t1: "⬇ ডাউনলোডের প্রস্তুতি",
+    mv_wd_dl_d1:
+      "ডাউনলোড লিংক পেতে ২টা ছোট ধাপ পার হতে হবে। প্রথমে নিচের বিজ্ঞাপনটি দেখুন, কাউন্টডাউন শেষ হলে 'পরবর্তী ধাপ' চাপুন।",
+    mv_wd_dl_d2:
+      "আর মাত্র একটা ধাপ! কাউন্টডাউন শেষ হলে বাটনে ক্লিক করলেই আপনার ডাউনলোড লিংক রেডি হয়ে যাবে।",
+    mv_wd_dl_next2: "🔗 ডাউনলোড লিংক নিন",
+    mv_wd_dl_ready_t: "ডাউনলোড লিংক রেডি!",
+    mv_wd_dl_ready_d:
+      "নিচের বাটনে ক্লিক করলে ডাউনলোড পেজ খুলবে। ফাইলটি আমাদের পার্টনার সার্ভারে রাখা আছে — সেখান থেকে ডাউনলোড হবে।",
+    mv_wd_dl_ready_btn: "⬇ ডাউনলোড শুরু করুন",
+    mv_wd_dl_ready_note: "নতুন ট্যাবে খুলবে — পপআপ ব্লক থাকলে Allow করুন",
   },
   en: {
     nav_home: "🏠 Home",
@@ -1073,6 +1099,32 @@ const STR = {
     mv_unl_tip_post: " seconds before tapping the next card",
     mv_unl_fallback_watch: "Watch video",
     mv_unl_fallback_dl: "Download",
+    mv_wd_step: "Step",
+    mv_wd_wait_pre: "⏳ Wait ",
+    mv_wd_wait_post: " seconds, then the button will appear",
+    mv_wd_watch_t1: "📺 Getting ready to watch",
+    mv_wd_watch_d1:
+      "Watch a short ad below. When the countdown ends, tap 'Next step' — that's how this site stays free.",
+    mv_wd_last_t: "⚡ Last step!",
+    mv_wd_watch_d2:
+      "Just one more step! When the countdown ends, tap the button below and the video player will start.",
+    mv_wd_next: "Next step →",
+    mv_wd_watch_next2: "🎬 Start player",
+    mv_wd_player_note: "If the video doesn't play, refresh the page or download it to watch",
+    mv_wd_pre_ad: "Advertisement",
+    mv_wd_pre_wait_pre: "⏳ Video starts in ",
+    mv_wd_pre_wait_post: " seconds…",
+    mv_wd_dl_t1: "⬇ Getting ready to download",
+    mv_wd_dl_d1:
+      "To get the download link, pass 2 short steps. First watch the ad below, then tap 'Next step' when the countdown ends.",
+    mv_wd_dl_d2:
+      "Just one more step! When the countdown ends, tap the button and your download link will be ready.",
+    mv_wd_dl_next2: "🔗 Get download link",
+    mv_wd_dl_ready_t: "Download link ready!",
+    mv_wd_dl_ready_d:
+      "Tap the button below to open the download page. The file is hosted on our partner's server — it will download from there.",
+    mv_wd_dl_ready_btn: "⬇ Start download",
+    mv_wd_dl_ready_note: "Opens in a new tab — allow pop-ups if blocked",
   },
   hi: {
     nav_home: "🏠 होम",
@@ -1605,6 +1657,32 @@ const STR = {
     mv_unl_tip_post: " सेकंड रुककर अगले कार्ड पर टैप करें",
     mv_unl_fallback_watch: "वीडियो देखें",
     mv_unl_fallback_dl: "डाउनलोड करें",
+    mv_wd_step: "चरण",
+    mv_wd_wait_pre: "⏳ ",
+    mv_wd_wait_post: " सेकंड प्रतीक्षा करें, फिर बटन दिखाई देगा",
+    mv_wd_watch_t1: "📺 देखने की तैयारी",
+    mv_wd_watch_d1:
+      "नीचे एक छोटा विज्ञापन देखें। उलटी गिनती खत्म होने पर 'अगला चरण' दबाएँ — इसी तरह यह साइट मुफ़्त रहती है।",
+    mv_wd_last_t: "⚡ अंतिम चरण!",
+    mv_wd_watch_d2:
+      "बस एक और चरण! उलटी गिनती खत्म होने पर नीचे दिए बटन को दबाते ही वीडियो प्लेयर शुरू हो जाएगा।",
+    mv_wd_next: "अगला चरण →",
+    mv_wd_watch_next2: "🎬 प्लेयर शुरू करें",
+    mv_wd_player_note: "वीडियो न चले तो पेज रिफ़्रेश करें या डाउनलोड करके देखें",
+    mv_wd_pre_ad: "विज्ञापन",
+    mv_wd_pre_wait_pre: "⏳ वीडियो ",
+    mv_wd_pre_wait_post: " सेकंड में शुरू होगा…",
+    mv_wd_dl_t1: "⬇ डाउनलोड की तैयारी",
+    mv_wd_dl_d1:
+      "डाउनलोड लिंक पाने के लिए 2 छोटे चरण पूरे करें। पहले नीचे दिया विज्ञापन देखें, उलटी गिनती खत्म होने पर 'अगला चरण' दबाएँ।",
+    mv_wd_dl_d2:
+      "बस एक और चरण! उलटी गिनती खत्म होने पर बटन दबाते ही आपका डाउनलोड लिंक तैयार हो जाएगा।",
+    mv_wd_dl_next2: "🔗 डाउनलोड लिंक लें",
+    mv_wd_dl_ready_t: "डाउनलोड लिंक तैयार है!",
+    mv_wd_dl_ready_d:
+      "नीचे दिए बटन को दबाते ही डाउनलोड पेज खुलेगा। फ़ाइल हमारे पार्टनर के सर्वर पर रखी है — वहीं से डाउनलोड होगा।",
+    mv_wd_dl_ready_btn: "⬇ डाउनलोड शुरू करें",
+    mv_wd_dl_ready_note: "नए टैब में खुलेगा — पॉप-अप ब्लॉक हो तो Allow करें",
   },
 } as const;
 

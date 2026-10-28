@@ -5,6 +5,7 @@ import { getAdsConfig, activeMovieSlots } from "@/lib/catalog";
 import AdSlot from "@/components/AdSlot";
 import StepGate from "../../_components/StepGate";
 import PreRollPlayer from "../../_components/PreRollPlayer";
+import PlayerNote from "../../_components/PlayerNote";
 import MoviesBlue from "../../../_components/MoviesBlue";
 
 export const dynamic = "force-dynamic";
@@ -57,9 +58,7 @@ export default async function WatchStepPage({
               direct={direct}
             />
           </div>
-          <p className="mt-3 text-center text-xs text-blue-100/60">
-            ভিডিও না চললে পেজ রিফ্রেশ করুন অথবা ডাউনলোড করে দেখুন
-          </p>
+          <PlayerNote />
 
           {playerAds.map((s) => (
             <div key={`b-${s.id}`} className="mt-4">
@@ -95,14 +94,8 @@ export default async function WatchStepPage({
         <StepGate
           step={n}
           totalSteps={TOTAL_STEPS}
-          title={n === 1 ? "📺 মুভি দেখার প্রস্তুতি" : "⚡ শেষ ধাপ!"}
-          desc={
-            n === 1
-              ? "নিচে একটি ছোট বিজ্ঞাপন দেখুন। কাউন্টডাউন শেষ হলে 'পরবর্তী ধাপ' বাটনে ক্লিক করুন — এভাবেই আমাদের সাইট ফ্রি থাকে।"
-              : "আর মাত্র একটা ধাপ! কাউন্টডাউন শেষ হলে নিচের বাটনে ক্লিক করলেই ভিডিও প্লেয়ার চালু হবে।"
-          }
+          kind="watch"
           nextHref={isLast ? `/movies/${movie.slug}/watch/player` : `/movies/${movie.slug}/watch/2`}
-          nextLabel={isLast ? "🎬 প্লেয়ার চালু করুন" : "পরবর্তী ধাপ →"}
         />
 
         {stepAds.map((s) => (
