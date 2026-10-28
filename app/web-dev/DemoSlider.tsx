@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useLang } from "@/lib/i18n";
 import { DEMOS } from "./demos/demos";
 
 /** Hand-crafted flagship demos for the slider. */
@@ -11,6 +12,7 @@ const AUTOPLAY_MS = 4500;
 
 /** Auto-playing showcase slider — slides move LEFT on advance. */
 export default function DemoSlider() {
+  const { t } = useLang();
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef<number | null>(null);
@@ -39,12 +41,12 @@ export default function DemoSlider() {
     >
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
         <p className="text-sm font-black text-white">
-          🎬 <span className="text-[#d7ff3f]">লাইভ ডেমো</span> শোকেস
+          🎬 <span className="text-[#d7ff3f]">{t("wdev_slider_live")}</span> {t("wdev_slider_show")}
         </p>
         <div className="flex items-center gap-2">
-          <button onClick={() => go(-1)} aria-label="আগের" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-[#d7ff3f] hover:text-black">‹</button>
+          <button onClick={() => go(-1)} aria-label={t("wdev_slider_prev")} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-[#d7ff3f] hover:text-black">‹</button>
           <span className="text-xs font-bold text-slate-400">{idx + 1} / {n}</span>
-          <button onClick={() => go(1)} aria-label="পরের" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-[#d7ff3f] hover:text-black">›</button>
+          <button onClick={() => go(1)} aria-label={t("wdev_slider_next")} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-[#d7ff3f] hover:text-black">›</button>
         </div>
       </div>
 
@@ -80,10 +82,10 @@ export default function DemoSlider() {
                   </p>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link href={`/demo${d.slug}`} className="btn-vault inline-flex !px-6 !py-3 text-sm">
-                      👁️ লাইভ ডেমো দেখুন
+                      {t("wdev_slider_view")}
                     </Link>
                     <Link href="/#quote" className="inline-flex items-center rounded-xl border border-white/20 px-6 py-3 text-sm font-bold text-white transition hover:border-[#d7ff3f]/60">
-                      📝 এরকম সাইট চাই
+                      {t("wdev_slider_want")}
                     </Link>
                   </div>
                 </div>
