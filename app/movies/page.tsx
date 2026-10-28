@@ -6,7 +6,7 @@ import MoviesListClient from "./MoviesListClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Watch & Download Movies — DigiPlyra",
+  title: "Watch & Download Movies",
   description: "Watch your favourite movies instantly, or download them.",
 };
 

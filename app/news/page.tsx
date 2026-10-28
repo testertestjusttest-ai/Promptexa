@@ -5,7 +5,7 @@ import { fetchPublishedPosts, fetchCategories } from "@/lib/agency-news";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "News — DigiPlyra",
+  title: "News",
   description:
     "DigiPlyra News: website tips, agency updates and tech news. 10 stories a day, 2 about the agency.",
   alternates: { canonical: "https://promptexa.vercel.app/news" },

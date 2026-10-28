@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import WebDevClient from "./WebDevClient";
 
 export const metadata: Metadata = {
-  title: "Build a Website — DigiPlyra",
+  title: "Build a Website",
   description: "Get a professional website built by the DigiPlyra team",
   alternates: { canonical: "https://promptexa.vercel.app/" },
 };
