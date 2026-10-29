@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatBDT, formatTk, toBnDigits } from "@/lib/format";
 import type { TopUpPackage, TopUpOrder } from "@/lib/topup";
+import { translateTopupBadge, translateTopupPackageName } from "@/lib/topup";
 import { useLang } from "@/lib/i18n";
 import {
   soundEnabled,
@@ -286,14 +287,14 @@ export default function TopUpClient({
               >
                 {p.badge && (
                   <span className="absolute -top-2.5 left-3 z-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2.5 py-0.5 text-[10px] font-black text-black">
-                    {p.badge}
+                    {translateTopupBadge(p.badge, lang)}
                   </span>
                 )}
                 <div className="text-3xl">
                   {packArt(p) ? (
                     <img
                       src={packArt(p)!}
-                      alt={p.name}
+                      alt={translateTopupPackageName(p.name, lang)}
                       loading="lazy"
                       className="h-24 w-full rounded-2xl object-cover ring-1 ring-white/10"
                     />
@@ -303,7 +304,7 @@ export default function TopUpClient({
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-sm font-extrabold leading-tight">{p.name}</p>
+                <p className="mt-2 text-sm font-extrabold leading-tight">{translateTopupPackageName(p.name, lang)}</p>
                 {p.kind === "diamond" && p.diamonds > 0 && (
                   <p className="mt-0.5 text-xs text-orange-200/70">
                     {digits(p.diamonds)} {t("tu_diamonds")}{p.bonus > 0 ? ` + ${digits(p.bonus)} ${t("tu_bonus")}` : ""}

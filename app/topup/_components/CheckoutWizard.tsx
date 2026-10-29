@@ -10,7 +10,7 @@ import {
   paymentKindLabel,
   isPaymentMethodLive,
 } from "@/lib/format";
-import { isValidUid, type TopUpPackage, type TopUpOrder } from "@/lib/topup";
+import { isValidUid, translateTopupPackageName, type TopUpPackage, type TopUpOrder } from "@/lib/topup";
 import { useLang } from "@/lib/i18n";
 import {
   soundEnabled,
@@ -236,7 +236,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
             {/* package hero card */}
             <div className="relative mt-6 overflow-hidden rounded-3xl border border-amber-400/25">
               {art ? (
-                <img src={art} alt={pkg.name} className="h-44 w-full object-cover sm:h-56" />
+                <img src={art} alt={translateTopupPackageName(pkg.name, lang)} className="h-44 w-full object-cover sm:h-56" />
               ) : (
                 <div className="flex h-44 items-center justify-center bg-gradient-to-br from-amber-500/30 to-orange-600/10 text-7xl sm:h-56">
                   🎫
@@ -250,7 +250,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
               )}
               <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                 <div>
-                  <h1 className="text-2xl font-black sm:text-3xl">{pkg.name}</h1>
+                  <h1 className="text-2xl font-black sm:text-3xl">{translateTopupPackageName(pkg.name, lang)}</h1>
                   {pkg.kind === "diamond" && pkg.diamonds > 0 && (
                     <p className="text-sm text-orange-200/70">
                       💎 {digits(pkg.diamonds)} {t("tu_diamonds")}
@@ -337,7 +337,7 @@ export default function CheckoutWizard({ pkg }: { pkg: TopUpPackage }) {
                   </div>
                   <div className="relative mt-3 space-y-2 text-sm">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold">{pkg.name}</span>
+                      <span className="font-bold">{translateTopupPackageName(pkg.name, lang)}</span>
                       <span className="font-black text-amber-300">{price(Number(pkg.price_bdt))}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
