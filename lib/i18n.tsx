@@ -739,7 +739,7 @@ const STR = {
     c_featured: "⭐ Featured",
     c_views: "views",
     c_call: "Call",
-    m_badge: "🔥 Bangladesh's safest ID marketplace",
+    m_badge: "🔥 The safest ID marketplace",
     m_title_a: "Free Fire",
     m_title_b: "ID Market",
     m_sub: "Buy & sell IDs with 100% safety — money stays with the admin first, the seller gets paid only after you confirm receiving the ID. No chance of fraud! 🛡️",
