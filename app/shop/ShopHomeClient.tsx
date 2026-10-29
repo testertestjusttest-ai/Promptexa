@@ -119,9 +119,9 @@ export default function ShopHomeClient({
                 <div className="mt-3 font-bold text-white">
                   {lang === "bn" ? c.name_bn : c.name_en || c.name_bn}
                 </div>
-                <div className="text-xs text-slate-500">
-                  {lang === "bn" ? c.name_en : c.name_bn}
-                </div>
+                {lang === "bn" && c.name_en && (
+                  <div className="text-xs text-slate-500">{c.name_en}</div>
+                )}
               </Link>
             ))}
           </div>
