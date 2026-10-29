@@ -306,7 +306,7 @@ export default function TopUpClient({
                 <p className="mt-2 text-sm font-extrabold leading-tight">{p.name}</p>
                 {p.kind === "diamond" && p.diamonds > 0 && (
                   <p className="mt-0.5 text-xs text-orange-200/70">
-                    {digits(p.diamonds)} {t("tu_diamonds")}{p.bonus > 0 ? ` + ${digits(p.bonus)} {t("tu_bonus")}` : ""}
+                    {digits(p.diamonds)} {t("tu_diamonds")}{p.bonus > 0 ? ` + ${digits(p.bonus)} ${t("tu_bonus")}` : ""}
                   </p>
                 )}
                 <div className="mt-3 flex items-baseline gap-2">
