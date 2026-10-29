@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { REVIEWS, REVIEW_COUNT, REVIEW_AVG } from "@/lib/reviews";
+import { REVIEWS, REVIEWS_EN, REVIEWS_HI, REVIEW_COUNT, REVIEW_AVG } from "@/lib/reviews";
 import { toBnDigits } from "@/lib/format";
 import { useLang } from "@/lib/i18n";
 
@@ -18,13 +18,15 @@ function Stars({ n }: { n: number }) {
 
 export default function ReviewsSection() {
   const { lang, t } = useLang();
-  // Digits follow the active language; review texts/names are stored
-  // Bangla pool data and render as stored in every language (see backlog).
+  // Digits follow the active language; review names/texts come from the
+  // per-language pool (same seed order, so slot N is the same person,
+  // product and stars in every language).
   const d = (v: string | number) => (lang === "bn" ? toBnDigits(v) : String(v));
   const [shown, setShown] = useState(6);
   const [expanded, setExpanded] = useState(false);
 
-  const visible = REVIEWS.slice(0, shown);
+  const list = lang === "bn" ? REVIEWS : lang === "hi" ? REVIEWS_HI : REVIEWS_EN;
+  const visible = list.slice(0, shown);
 
   return (
     <div>
