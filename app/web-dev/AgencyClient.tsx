@@ -138,7 +138,7 @@ const PACKAGES = [
 
 const SERVICES: { icon: string; name: Tr; desc: string }[] = [
   { icon: "🏢", name: ["Business website", "ব্যবসায়িক ওয়েবসাইট", "बिज़नेस वेबसाइट"], desc: "Company profile, services, gallery, contact and quote forms." },
-  { icon: "🛍️", name: ["E-commerce shop", "ই-কমার্স শপ", "ई-कॉमर्स शॉप"], desc: "Products, cart, checkout, bKash / Nagad / Rocket and order tracking." },
+  { icon: "🛍️", name: ["E-commerce shop", "ই-কমার্স শপ", "ई-कॉमर्स शॉप"], desc: "Products, cart, checkout, secure payments and order tracking." },
   { icon: "📅", name: ["Booking website", "বুকিং ওয়েবসাইট", "बुकिंग वेबसाइट"], desc: "Services, slots, appointments and customer reminders." },
   { icon: "📰", name: ["News & blog", "নিউজ ও ব্লগ", "न्यूज़ और ब्लॉग"], desc: "Articles, categories, search and SEO-ready publishing." },
   { icon: "🤝", name: ["Marketplace", "মার্কেটপ্লেস", "मार्केटप्लेस"], desc: "Multi-seller listings, escrow-style orders and seller dashboards." },
