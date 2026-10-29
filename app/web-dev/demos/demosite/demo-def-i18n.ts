@@ -1,101 +1,60 @@
 /**
- * Per-demo def-data translation (deep Americanization slice).
+ * Demo def-data localization (deep Americanization slice).
  *
- * Demo page bodies render def fields (name, hero text, categories, product /
- * service / gallery names) verbatim, so the gallery-layer EN translations
- * from earlier runs never reached the demo pages themselves. This module
- * adds English overlays, one demo at a time, and `localizeDemoDef` applies
- * them inside the DemositeProvider (see store.tsx) based on the demo's
- * client-side language:
+ * Demo page bodies render def fields verbatim. Most def content (names,
+ * hero text, products, services) is already English-first via the agency
+ * overrides in agency-demo-overrides.ts — every demo route applies them —
+ * so a per-demo overlay here would only duplicate or downgrade that copy
+ * (tried for cafe in commit cd14943c and reverted for exactly that reason).
+ *
+ * The ONE def surface the overrides still leave Bangla is the shared
+ * contact block: defs.ts CONTACT / ADDRESS / HOURS render verbatim on
+ * demo contact, about, FAQ and chrome-footer surfaces. This module maps
+ * exactly those three shared values to faithful English in the EN/HI view:
  * - "bn" -> the original def, untouched (BN view is byte-identical).
- * - "en" or "hi" -> the overlay (Hindi falls back to English, same rule as
- *   demo-lang.tsx: strings not yet translated to Hindi render in English).
- * - A demo with no overlay entry renders exactly as before, in every language.
+ * - "en" or "hi" -> the English contact block (Hindi falls back to
+ *   English, same rule as demo-lang.tsx).
+ * - A def whose contact block already differs (custom values, or a demo
+ *   with its own language system) is returned untouched: matching is by
+ *   exact string equality, never by guessing.
+ * - "buyinghouse" is excluded: its bh-lang system already owns its
+ *   contact rendering (including its own EN_ADDRESS/EN_HOURS).
  *
  * Pure function, no React imports — safe to import from server components
- * (e.g. a demo page's generateMetadata) as well as the client store.
+ * as well as the client store (see store.tsx liveDef).
  */
 
 import type { DemoSiteDef } from "./types";
 
-export interface DemoDefEnOverlay {
-  /** English demo name (must match the /demos gallery EN name). */
-  name: string;
-  type: string;
-  /** English version of the engine def's `desc` (used for the About text). */
-  desc: string;
-  heroTitle: string;
-  heroSub: string;
-  /** Full English category list, same order as the def's `cats`. */
-  cats: string[];
-  /** Bangla category -> English category (for product/gallery `c` fields). */
-  catMap: Record<string, string>;
-  /** Bangla item name -> English item name (products, services, gallery). */
-  itemNames: Record<string, string>;
-}
+/** Exact shared values from defs.ts (CONTACT / ADDRESS / HOURS). */
+const BN_CONTACT = "০১৮৩৩৪০২৫৮৬";
+const BN_ADDRESS = "বাড়ি ১২, রোড ৫, ধানমন্ডি, ঢাকা-১২০৫";
+const BN_HOURS = "প্রতিদিন সকাল ৯টা – রাত ১০টা";
 
-/** English product-description templates, mirroring the Bangla DESCS in
- *  defs.ts (same index order) so descriptions stay consistent per product. */
-const EN_DESCS = [
-  (n: string, shop: string) =>
-    `${n} — a bestseller at ${shop}. Carefully selected quality product, home delivery across the country.`,
-  (n: string) =>
-    `Premium-quality ${n}. Guaranteed original product, easy return policy.`,
-  (n: string) =>
-    `${n} now online! Limited stock — order today and get fast delivery.`,
-  (n: string) =>
-    `${n}, loved most by customers. At the best price, carefully packaged and delivered to your door.`,
-];
-
-const OVERLAYS: Record<string, DemoDefEnOverlay> = {
-  cafe: {
-    name: "Coffee House",
-    type: "Cafe Website",
-    desc: "A modern cafe site with a menu and online ordering.",
-    heroTitle: "The address for the best coffee",
-    heroSub: "Fresh brew • Home delivery",
-    cats: ["All", "Coffee", "Food"],
-    catMap: { "সব": "All", "কফি": "Coffee", "খাবার": "Food" },
-    itemNames: {
-      "ক্যাপাচিনো": "Cappuccino",
-      "ক্যাফে ল্যাটে": "Cafe Latte",
-      "এসপ্রেসো": "Espresso",
-      "চকলেট কেক": "Chocolate Cake",
-      "কুকিজ": "Cookies",
-      "স্যান্ডউইচ": "Sandwich",
-    },
-  },
-};
+/** Faithful English equivalents (same number, same address, same hours). */
+const EN_CONTACT = "01833402586";
+const EN_ADDRESS = "House 12, Road 5, Dhanmondi, Dhaka 1205";
+const EN_HOURS = "Every day, 9 AM – 10 PM";
 
 /**
  * Returns the def localized for `lang`. Returns the SAME object when
- * lang is "bn" or when the demo has no overlay — so untouched demos and
- * the BN view can never regress.
+ * lang is "bn", when the demo is buyinghouse, or when the def carries no
+ * shared Bangla contact block — so untouched demos can never regress.
  */
 export function localizeDemoDef(def: DemoSiteDef, lang: string): DemoSiteDef {
   if (lang === "bn") return def;
-  const ov = OVERLAYS[def.slug];
-  if (!ov) return def;
-  const cat = (c: string) => ov.catMap[c] ?? c;
-  const item = (n: string) => ov.itemNames[n] ?? n;
+  if (def.slug === "buyinghouse") return def;
+  if (
+    def.contact !== BN_CONTACT &&
+    def.address !== BN_ADDRESS &&
+    def.hours !== BN_HOURS
+  ) {
+    return def;
+  }
   return {
     ...def,
-    name: ov.name,
-    type: ov.type,
-    heroTitle: ov.heroTitle,
-    heroSub: ov.heroSub,
-    cats: ov.cats,
-    about:
-      `${ov.name} — ${ov.type}. ${ov.desc} ` +
-      `We are committed to giving every customer the best quality, honest prices and sincere service. ` +
-      `Your trust is our greatest achievement.`,
-    products: def.products.map((p, i) => ({
-      ...p,
-      n: item(p.n),
-      c: cat(p.c),
-      desc: EN_DESCS[i % EN_DESCS.length](item(p.n), ov.name),
-    })),
-    services: def.services.map((s) => ({ ...s, n: item(s.n) })),
-    gallery: def.gallery.map((g) => ({ ...g, t: item(g.t), c: cat(g.c) })),
+    contact: def.contact === BN_CONTACT ? EN_CONTACT : def.contact,
+    address: def.address === BN_ADDRESS ? EN_ADDRESS : def.address,
+    hours: def.hours === BN_HOURS ? EN_HOURS : def.hours,
   };
 }
