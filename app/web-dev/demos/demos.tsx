@@ -50,6 +50,7 @@ const HAND_GROUPS: Record<string, string> = {
   painting: "🛠️ Services",
   pestcontrol: "🛠️ Services",
   appliancerepair: "🛠️ Services",
+  moving: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -716,6 +717,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free inspection • Genuine parts</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "moving",
+    name: "MoveMate",
+    type: "Packers & Movers Service",
+    desc: "House, office and intercity moves with a verified crew — packing materials included, fixed per-job prices, careful handling and a full admin panel.",
+    price: "From 2,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="📦 MoveMate" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/mm-img/hero.webp" alt="MoveMate crew loading boxes into a moving truck" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Moving day, without the stress — packed, moved, unpacked</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["1-Bedroom", "7,500 Tk"], ["2-Bedroom", "12,000 Tk"], ["Office Move", "20,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-orange-50 px-2 py-1.5 ring-1 ring-orange-100">
+                <p className="text-[11px] font-black text-orange-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-orange-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book a Crew</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📦 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Packing included • Careful handling</p>
       </Frame>
     ),
   },

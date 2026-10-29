@@ -563,7 +563,45 @@ const APPLIANCEREPAIR_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+
+/* ================= MOVEMATE — packers & movers service (2026-10-29) =================
+ * Modelled on the real home-service packers-and-movers offering (house and
+ * office shifting, packing, furniture handling and intercity moves with a
+ * crew + truck, fixed per-job prices) — and built better within the engine:
+ * transparent per-job pricing with durations and what's included, category
+ * filtering (Home / Office / Packing / Single Items / Long Distance / Labour),
+ * online booking, and a visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const MOVING_DEF: DemoSiteDef = {
+  slug: "moving", name: "MoveMate", type: "Packers & Movers Service", layout: "service",
+  logoEmoji: "📦", accent: "#ea580c", dark: false, grad: "from-amber-600 via-orange-600 to-red-700",
+  heroTitle: "Moving day, without the stress — packed, moved, unpacked",
+  heroSub: "Verified moving crew • Packing materials included • Careful handling",
+  heroEmoji: "📦",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "1-Bedroom Apartment Move", p: 7500, e: "🏠", c: "Home", duration: "4 hours", rating: 4.9, desc: "A full move for a 1-bedroom flat: packing, loading, transport across town, unloading and placing furniture in the right rooms — boxes, tape and wrapping included." },
+    { id: "s1", n: "2-Bedroom House Move", p: 12000, e: "🏡", c: "Home", duration: "6 hours", rating: 4.9, desc: "House move with a bigger crew and truck: every room packed and labelled, furniture wrapped and reassembled, and the old place left clean and empty." },
+    { id: "s2", n: "Office / Shop Move", p: 20000, e: "🏢", c: "Office", duration: "1 day", rating: 4.8, desc: "Office and shop shifting planned around your working hours: desks, computers and stock packed, labelled and set up at the new address, with a move plan agreed in advance." },
+    { id: "s3", n: "Furniture & Appliance Move", p: 2500, e: "🛋️", c: "Single Items", duration: "2 hours", rating: 4.8, desc: "One heavy item, moved properly: sofa, bed, fridge or washing machine wrapped, carried by two people and placed exactly where you want it — no truck hire needed." },
+    { id: "s4", n: "Packing-Only Service", p: 4500, e: "📦", c: "Packing", duration: "3 hours", rating: 4.9, desc: "You have the truck, we do the packing: fragile items wrapped, boxes labelled room by room, and an inventory list handed over before the crew leaves." },
+    { id: "s5", n: "Intercity Move", p: 18000, e: "🚚", c: "Long Distance", duration: "1 day", rating: 4.8, desc: "City-to-city moving with a covered truck: loading, long-distance transport and unloading at the new home, with the arrival time confirmed before departure." },
+    { id: "s6", n: "Loading & Unloading Labour", p: 3000, e: "💪", c: "Labour", duration: "2 hours", rating: 4.7, desc: "Extra hands when you need them: a two-person crew to load or unload your own truck, with trolleys and straps so heavy items move safely." },
+  ],
+  gallery: [],
+  news: [],
+  about: "MoveMate is a packers and movers service for busy households in Dhaka. Book online, pick your date, and a verified crew arrives with packing materials and a truck — you pay after everything is delivered and placed. Every job has a fixed upfront price: no per-box surprises, no hidden charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Packing materials included; truck size confirmed before the move.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
