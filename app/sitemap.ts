@@ -11,7 +11,7 @@ const STATIC_ROUTES = [
   "/marketplace",
   "/marketplace/sell",
   "/web-dev",
-  "/dashboard",
+  // "/dashboard" deliberately omitted: it is auth-gated and disallowed in robots.ts.
   "/auth/login",
   "/auth/signup",
   "/news",
