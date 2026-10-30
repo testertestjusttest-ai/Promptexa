@@ -288,7 +288,7 @@ function SplitHero({ slides, accent }: { slides: HeroSlide[]; accent: string }) 
   );
 }
 
-/** Minimal hero — centered, airy, no image background. */
+/** Minimal hero — centered, airy; shows the demo's photo below the text when one exists. */
 function MinimalHero({ slides, accent }: { slides: HeroSlide[]; accent: string }) {
   const s = slides[0];
   return (
@@ -297,6 +297,11 @@ function MinimalHero({ slides, accent }: { slides: HeroSlide[]; accent: string }
       <h1 className="mx-auto mt-3 max-w-2xl text-3xl font-extralight leading-snug sm:text-5xl">{s.title}</h1>
       <div className="mx-auto mt-4 h-px w-16" style={{ background: accent }} />
       <HeroCta s={{ ...s, sub: "" }} accent={accent} />
+      {s.img && (
+        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl shadow-xl">
+          <img src={s.img} alt="" className="h-64 w-full object-cover sm:h-96" />
+        </div>
+      )}
     </div>
   );
 }
