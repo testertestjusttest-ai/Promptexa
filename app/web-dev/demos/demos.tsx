@@ -51,6 +51,7 @@ const HAND_GROUPS: Record<string, string> = {
   pestcontrol: "🛠️ Services",
   appliancerepair: "🛠️ Services",
   moving: "🛠️ Services",
+  security: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -747,6 +748,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Packing included • Careful handling</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "security",
+    name: "SafeNest",
+    type: "Home Security Service",
+    desc: "CCTV kits, smart locks, alarms and video doorbells fitted by licensed installers — fixed per-job prices, phone alerts, and a full admin panel.",
+    price: "From 1,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🛡️ SafeNest" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/sc-img/hero.webp" alt="SafeNest technician installing a security camera on a house" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Your home, watched over — day and night</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["CCTV Kit", "15,000 Tk"], ["Smart Lock", "8,000 Tk"], ["Doorbell", "6,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-teal-50 px-2 py-1.5 ring-1 ring-teal-100">
+                <p className="text-[11px] font-black text-teal-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-teal-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book an Installer</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🛡️ All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Licensed installers • Phone alerts</p>
       </Frame>
     ),
   },

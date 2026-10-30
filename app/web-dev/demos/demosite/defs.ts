@@ -601,7 +601,44 @@ const MOVING_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= SAFENEST — home security & CCTV installation service (2026-10-30) =================
+ * Modelled on the real home-security installer offering (camera kits, smart
+ * locks, alarms, video doorbells and intercoms with professional fitting and
+ * phone alerts) — and built better within the engine: transparent per-job
+ * pricing with durations and what's included, category filtering (Cameras /
+ * Smart Home / Security / Care / Planning), online booking, and a
+ * visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const SECURITY_DEF: DemoSiteDef = {
+  slug: "security", name: "SafeNest", type: "Home Security Service", layout: "service",
+  logoEmoji: "🛡️", accent: "#0f766e", dark: false, grad: "from-teal-600 via-emerald-600 to-slate-800",
+  heroTitle: "Your home, watched over — day and night",
+  heroSub: "Licensed installers • HD cameras • Alerts on your phone",
+  heroEmoji: "🛡️",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "CCTV Camera Kit (4 Cameras)", p: 15000, e: "📹", c: "Cameras", duration: "4 hours", rating: 4.9, desc: "Four HD cameras with night vision, a recorder and phone viewing: fitted, angled to cover every entrance, and tested with you before the installer leaves." },
+    { id: "s1", n: "Smart Door Lock Installation", p: 8000, e: "🔐", c: "Smart Home", duration: "2 hours", rating: 4.8, desc: "Keypad or fingerprint lock fitted to your existing door: set codes for family members, get entry alerts on your phone, and keep a spare key as backup." },
+    { id: "s2", n: "Video Doorbell Installation", p: 6500, e: "🔔", c: "Smart Home", duration: "1 hour", rating: 4.9, desc: "See and talk to visitors from your phone, anywhere: doorbell wired or battery-fitted, motion alerts set up, and the app configured on your phone." },
+    { id: "s3", n: "Burglar Alarm System", p: 12000, e: "🚨", c: "Security", duration: "3 hours", rating: 4.8, desc: "Door and window sensors plus a loud siren and phone alerts: the system is armed and tested zone by zone, and everyone in the house is shown how to use it." },
+    { id: "s4", n: "Video Intercom System", p: 9000, e: "📞", c: "Security", duration: "3 hours", rating: 4.7, desc: "Gate or door intercom with a video screen inside: buzz visitors in without going to the door, with indoor units fitted in the rooms you choose." },
+    { id: "s5", n: "Annual Maintenance & Support", p: 4500, e: "🛠️", c: "Care", duration: "2 hours", rating: 4.9, desc: "A yearly visit that keeps everything working: cameras cleaned and re-angled, firmware updated, batteries replaced, and any fault fixed on the spot." },
+    { id: "s6", n: "Security Survey & Consultation", p: 1500, e: "🔍", c: "Planning", duration: "1 hour", rating: 4.8, desc: "A walk-through of your home's weak points — entrances, blind spots, lighting — ending in a written plan with exact camera positions and a fixed quote." },
+  ],
+  gallery: [],
+  news: [],
+  about: "SafeNest is a home security installation service for households in Dhaka. Book online, pick your date, and a licensed installer fits your cameras, locks or alarm — you pay after everything is tested and working. Every job has a fixed upfront price: equipment and fitting quoted together, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Equipment + fitting included; 1-year installation warranty.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
