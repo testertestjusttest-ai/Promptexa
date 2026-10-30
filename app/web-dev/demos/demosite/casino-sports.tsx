@@ -13,7 +13,7 @@ import { CatalogTile } from "./casino-catalog";
 interface CasiBanner { img?: string; title: string; sub: string; href: string; grad: string }
 
 const DEFAULT_BANNERS: CasiBanner[] = [
-  { title: "🎁 100% Welcome Bonus", sub: "Up to 20,000 credits on your first deposit", href: "/promotions", grad: "from-amber-500 via-orange-700 to-[#0b1120]" },
+  { img: "/cp-img/hero.webp", title: "🎁 100% Welcome Bonus", sub: "Up to 20,000 credits on your first deposit", href: "/promotions", grad: "from-amber-500 via-orange-700 to-[#0b1120]" },
   { title: "📈 Crash — up to 10,000x", sub: "Cash out at the right moment", href: "/crash", grad: "from-emerald-500 via-teal-800 to-[#0b1120]" },
   { title: "💣 Mines — new game", sub: "Dodge the bombs, collect the gems", href: "/mines", grad: "from-violet-600 via-purple-900 to-[#0b1120]" },
   { title: "🏏 Live cricket betting", sub: "Ball-by-ball live odds", href: "/live", grad: "from-sky-500 via-blue-900 to-[#0b1120]" },
