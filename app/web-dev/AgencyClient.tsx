@@ -90,9 +90,9 @@ const S: Record<string, Tr> = {
   storeCta: ["Visit the store", "স্টোরে যান", "स्टोर पर जाएं"],
   newsTitle: ["DigiPlyra news", "DigiPlyra নিউজ", "DigiPlyra समाचार"],
   newsSub: [
-    "Website tips, agency updates and tech news — fresh stories every day. The daily news system launches with the full agency site.",
-    "ওয়েবসাইট টিপস, এজেন্সি আপডেট আর টেক নিউজ — প্রতিদিন নতুন খবর। দৈনিক নিউজ সিস্টেম পূর্ণাঙ্গ এজেন্সি সাইটের সাথে চালু হবে।",
-    "वेबसाइट टिप्स, एजेंसी अपडेट और टेक न्यूज़ — हर दिन नई खबरें। दैनिक न्यूज़ सिस्टम पूरी एजेंसी साइट के साथ शुरू होगा।",
+    "Website tips, agency updates and tech news — fresh stories published every day.",
+    "ওয়েবসাইট টিপস, এজেন্সি আপডেট আর টেক নিউজ — প্রতিদিন নতুন খবর প্রকাশিত হয়।",
+    "वेबसाइट टिप्स, एजेंसी अपडेट और टेक न्यूज़ — हर दिन नई खबरें प्रकाशित होती हैं।",
   ],
   newsCta: ["Read the news", "নিউজ পড়ুন", "समाचार पढ़ें"],
   quoteTitle: ["Free quote request", "ফ্রি কোট রিকোয়েস্ট", "मुफ़्त कोट अनुरोध"],
