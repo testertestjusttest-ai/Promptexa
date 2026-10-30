@@ -68,7 +68,7 @@ export function DemoShell({ name, type, slug, children }: { name: string; type: 
         <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-[#d7ff3f]/25 bg-[#d7ff3f]/5 p-4">
           <p className="text-center text-xs font-black text-[#d7ff3f]">💬 What we support</p>
           <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-            {["Domain setup", "Hosting", "bKash/Nagad payment", "Online order system", "Google SEO", "Facebook pixel", "Training", "Lifetime advice"].map((s) => (
+            {["Domain setup", "Hosting", "Secure payment options", "Online order system", "Google SEO", "Facebook pixel", "Training", "Lifetime advice"].map((s) => (
               <span key={s} className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold text-slate-200">✓ {s}</span>
             ))}
           </div>
