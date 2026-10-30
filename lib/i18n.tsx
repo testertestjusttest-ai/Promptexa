@@ -816,7 +816,7 @@ const STR = {
     tu_step1_t: "Choose a package",
     tu_step1_d: "Pick your favourite diamond pack",
     tu_step2_t: "UID & payment",
-    tu_step2_d: "Player UID + bKash/Nagad payment",
+    tu_step2_d: "Player UID + secure payment",
     tu_step3_t: "Get diamonds",
     tu_step3_d: "Delivered in-game in 5–15 minutes",
     tu_pkgs_title: "💎 Select a package",
