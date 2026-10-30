@@ -232,7 +232,7 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     },
   },
   "tourpackage": {
-    hero: "/demo-img/tourpackage/hero.webp",
+    hero: "/tp-img/hero.webp",
     cats: {
     },
   },
