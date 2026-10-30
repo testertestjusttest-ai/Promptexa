@@ -809,7 +809,7 @@ const STR = {
     tu_hero_post: "for diamonds delivered straight to your game account",
     tu_chip_1: "⚡ Fast delivery",
     tu_chip_2: "🔒 100% safe",
-    tu_chip_3: "🇧🇩 Bangladesh server",
+    tu_chip_3: "🌍 Works worldwide",
     tu_chip_4: "💬 24/7 support",
     tu_delivered_total: "🚚 Total deliveries:",
     tu_today: "⚡ Today:",
