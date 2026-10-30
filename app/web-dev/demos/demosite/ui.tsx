@@ -359,6 +359,11 @@ function PlayfulHero({ slides, accent }: { slides: HeroSlide[]; accent: string }
         <h1 className="mt-4 text-3xl font-black text-white drop-shadow-lg sm:text-5xl">{s.title}</h1>
         <p className="mx-auto mt-2 max-w-xl font-bold text-white/90 sm:text-lg">{s.sub}</p>
         <HeroCta s={s} accent={accent} />
+        {s.img && (
+          <div className="mx-auto mt-8 overflow-hidden rounded-3xl shadow-xl">
+            <img src={s.img} alt="" className="h-64 w-full object-cover sm:h-96" />
+          </div>
+        )}
       </div>
     </div>
   );
