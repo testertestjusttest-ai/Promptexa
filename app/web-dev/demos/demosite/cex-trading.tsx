@@ -32,6 +32,11 @@ export function CexHome() {
               <div key={t} className="rounded-xl bg-white/5 p-3"><p className="text-lg font-black text-[#f0b90b]">{v}</p><p className="text-[11px] text-slate-400">{t}</p></div>
             ))}
           </div>
+          {def.heroImg ? (
+            <div className="mt-6 max-w-3xl overflow-hidden rounded-2xl border border-white/10">
+              <img src={def.heroImg} alt="" className="h-64 w-full object-cover sm:h-80" />
+            </div>
+          ) : null}
         </div>
       </div>
       <TickerTape />

@@ -261,6 +261,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "binancepro": {
+    hero: "/bp-img/hero.webp",
+    cats: {
+    },
+  },
   "toy": {
     hero: "/demo-img/toy/hero.webp",
     cats: {
