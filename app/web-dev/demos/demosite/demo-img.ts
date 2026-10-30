@@ -219,6 +219,11 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "security": {
+    hero: "/sc-img/hero.webp",
+    cats: {
+    },
+  },
   "sports": {
     hero: "/demo-img/sports/hero.webp",
     cats: {
