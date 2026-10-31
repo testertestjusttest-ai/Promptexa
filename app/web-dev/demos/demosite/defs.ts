@@ -638,7 +638,45 @@ const SECURITY_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+
+/* ================= GREENSCAPE — gardening & landscaping service (2026-10-31) =================
+ * Modelled on the real gardening-service offering (lawn mowing, hedge
+ * trimming, planting, tree pruning, cleanups and garden design with fixed
+ * per-job pricing) — and built better within the engine: transparent per-job
+ * pricing with durations and what's included, category filtering (Lawn /
+ * Trimming / Design / Trees / Watering / Care / Planting), online booking,
+ * and a visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const GARDENING_DEF: DemoSiteDef = {
+  slug: "gardening", name: "GreenScape", type: "Gardening & Landscaping Service", layout: "service",
+  logoEmoji: "🌿", accent: "#15803d", dark: false, grad: "from-green-600 via-emerald-600 to-lime-800",
+  heroTitle: "Your garden, kept beautiful all year",
+  heroSub: "Trained gardeners • Fixed prices • Green waste taken away",
+  heroEmoji: "🌿",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Lawn Mowing & Edging", p: 1200, e: "🌱", c: "Lawn", duration: "1 hour", rating: 4.9, desc: "Mow, edge and blow: a crisp lawn edge, clippings bagged or mulched to your choice, and paths swept clean before the crew leaves." },
+    { id: "s1", n: "Hedge Trimming", p: 2000, e: "✂️", c: "Trimming", duration: "2 hours", rating: 4.8, desc: "Hedges and shrubs shaped evenly and tidied to the height you choose: clippings collected and hauled away, no mess left behind." },
+    { id: "s2", n: "Garden Design & Planting", p: 15000, e: "🌸", c: "Design", duration: "2 days", rating: 4.9, desc: "A full redesign for a tired garden: layout plan, new lawn or beds, and plants chosen for your sunlight and soil — quoted in writing before work starts." },
+    { id: "s3", n: "Tree Pruning", p: 3500, e: "🌳", c: "Trees", duration: "3 hours", rating: 4.8, desc: "Dead and overgrown branches cut back safely, the tree's shape kept natural, and all branches chipped and removed from your garden." },
+    { id: "s4", n: "Irrigation System Setup", p: 8000, e: "💧", c: "Watering", duration: "4 hours", rating: 4.7, desc: "Drip lines and sprinklers fitted to your beds and lawn, timer set for early mornings, and every zone tested with you before handover." },
+    { id: "s5", n: "Seasonal Garden Cleanup", p: 4500, e: "🍂", c: "Care", duration: "3 hours", rating: 4.9, desc: "Leaves cleared, beds cut back, weeds pulled and paths washed: the once-a-season reset that leaves the garden ready for the months ahead." },
+    { id: "s6", n: "Flower Bed Planting", p: 2500, e: "🌷", c: "Planting", duration: "2 hours", rating: 4.8, desc: "Beds weeded, soil enriched and planted with seasonal flowers: marigolds, roses and hibiscus arranged by colour and height, then watered in." },
+  ],
+  gallery: [],
+  news: [],
+  about: "GreenScape is a gardening and landscaping service for households in Dhaka. Book online, pick your date, and a trained crew mows, trims, plants or redesigns your garden — you pay after the work is checked and finished. Every job has a fixed upfront price: labour and green-waste removal quoted together, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Green-waste removal included; 30-day plant replacement guarantee.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

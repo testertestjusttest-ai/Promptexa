@@ -52,6 +52,7 @@ const HAND_GROUPS: Record<string, string> = {
   appliancerepair: "🛠️ Services",
   moving: "🛠️ Services",
   security: "🛠️ Services",
+  gardening: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -778,6 +779,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Licensed installers • Phone alerts</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "gardening",
+    name: "GreenScape",
+    type: "Gardening & Landscaping Service",
+    desc: "Lawn mowing, hedge trimming, planting, tree pruning and full garden redesigns by trained gardeners — fixed per-job prices, green waste taken away, and a full admin panel.",
+    price: "From 1,200 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🌿 GreenScape" links={["Services", "Book", "Reviews"]} cta="Book Now" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/gs-img/hero.webp" alt="GreenScape gardener trimming a hedge in a lush garden" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Your garden, kept beautiful all year</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Lawn Mowing", "1,200 Tk"], ["Hedge Trimming", "2,000 Tk"], ["Tree Pruning", "3,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-green-50 px-2 py-1.5 ring-1 ring-green-100">
+                <p className="text-[11px] font-black text-green-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-green-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📅 Book a Gardener</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🌿 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Trained gardeners • Waste taken away</p>
       </Frame>
     ),
   },
