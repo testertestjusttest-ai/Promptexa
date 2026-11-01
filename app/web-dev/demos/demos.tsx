@@ -53,6 +53,7 @@ const HAND_GROUPS: Record<string, string> = {
   moving: "🛠️ Services",
   security: "🛠️ Services",
   gardening: "🛠️ Services",
+  solar: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -809,6 +810,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Trained gardeners • Waste taken away</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "solar",
+    name: "SunVolt",
+    type: "Solar Panel Installation Service",
+    desc: "Rooftop surveys, home solar kits by size, solar water heating, inverter and battery work, and annual panel care — fixed per-job prices, tested before handover, and a full admin panel.",
+    price: "From 1,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="☀️ SunVolt" links={["Services", "Book", "Reviews"]} cta="Book a Survey" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/sv-img/hero.webp" alt="SunVolt technician installing solar panels on a sunny rooftop" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Sunshine in, bills down — solar on your roof</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Survey", "1,500 Tk"], ["1kW System", "85,000 Tk"], ["3kW System", "210,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-amber-50 px-2 py-1.5 ring-1 ring-amber-100">
+                <p className="text-[11px] font-black text-amber-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-amber-600 px-3 py-1.5 text-center text-[11px] font-black text-white">☀️ Get a Quote</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🔋 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free survey • 5-year warranty</p>
       </Frame>
     ),
   },
