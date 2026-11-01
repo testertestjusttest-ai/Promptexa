@@ -676,7 +676,44 @@ const GARDENING_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= SUNVOLT — solar panel installation service (2026-11-01) =================
+ * Modelled on the real solar-installer offering (rooftop survey, home solar
+ * kits by size, solar water heating, inverter/battery work and annual panel
+ * care with fixed per-job pricing) — and built better within the engine:
+ * transparent per-job pricing with durations and what's included, category
+ * filtering (Survey / Home Systems / Water Heating / Power / Care), online
+ * booking, and a visitor-editable admin.
+ * All content is English by default; no invented customer counts, reviews or
+ * ratings beyond the demo's own per-service star display. */
+
+const SOLAR_DEF: DemoSiteDef = {
+  slug: "solar", name: "SunVolt", type: "Solar Panel Installation Service", layout: "service",
+  logoEmoji: "☀️", accent: "#d97706", dark: false, grad: "from-amber-500 via-yellow-500 to-orange-700",
+  heroTitle: "Sunshine in, bills down — solar on your roof",
+  heroSub: "Free rooftop survey • Fixed prices • Panels, inverter and battery in one visit",
+  heroEmoji: "☀️",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Rooftop Solar Survey & Design", p: 1500, e: "📐", c: "Survey", duration: "2 hours", rating: 4.9, desc: "A technician measures your roof, checks shading through the day and sizes the system for your actual usage — you get a written plan and a fixed quote before any work starts." },
+    { id: "s1", n: "1kW Home Solar System", p: 85000, e: "🏠", c: "Home Systems", duration: "1 day", rating: 4.8, desc: "A complete small-home kit: panels, inverter, wiring and safety switches, fitted and tested in a day — enough to run lights, fans and a TV from the sun." },
+    { id: "s2", n: "3kW Home Solar System", p: 210000, e: "🏡", c: "Home Systems", duration: "2 days", rating: 4.9, desc: "The family-home standard: panels, inverter and battery backup sized for a fridge, fans, lights and daily appliances, with a monitoring app set up for you." },
+    { id: "s3", n: "5kW Home Solar System", p: 320000, e: "🏘️", c: "Home Systems", duration: "3 days", rating: 4.9, desc: "A full-home system for larger households: more panels, a bigger inverter and battery bank, wired so essential loads keep running during a power cut." },
+    { id: "s4", n: "Solar Water Heater Installation", p: 45000, e: "🚿", c: "Water Heating", duration: "4 hours", rating: 4.8, desc: "A rooftop solar water heater plumbed into your existing lines: hot water from the sun, with the electric backup wired and explained before handover." },
+    { id: "s5", n: "Inverter & Battery Replacement", p: 12000, e: "🔋", c: "Power", duration: "2 hours", rating: 4.7, desc: "A tired inverter or battery swapped for a matched replacement: old unit removed, the new one wired, charged and load-tested with you watching." },
+    { id: "s6", n: "Annual Panel Cleaning & Check", p: 4500, e: "🧽", c: "Care", duration: "2 hours", rating: 4.9, desc: "Panels washed, mounts and cables inspected, and output measured against the install day: a written health report, and any fault quoted before repair." },
+  ],
+  gallery: [],
+  news: [],
+  about: "SunVolt is a solar panel installation service for households and small businesses in Dhaka. Book online, get a free survey and a fixed written quote, and a trained crew installs panels, inverter and battery — you pay after the system is tested and running. Every job has a fixed upfront price: labour and standard parts quoted together, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Survey fee adjusted against any system order; 5-year workmanship warranty on installations.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
