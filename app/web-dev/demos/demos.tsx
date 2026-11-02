@@ -54,6 +54,7 @@ const HAND_GROUPS: Record<string, string> = {
   security: "🛠️ Services",
   gardening: "🛠️ Services",
   solar: "🛠️ Services",
+  locksmith: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -840,6 +841,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free survey • 5-year warranty</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "locksmith",
+    name: "LockKey",
+    type: "Locksmith & Key Service",
+    desc: "24/7 emergency lockouts, lock fitting, key cutting, smart locks, car keys and safes — a mobile technician comes to your door, fixed prices agreed before work starts, and a full admin panel.",
+    price: "From 300 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🔑 LockKey" links={["Services", "Book", "Reviews"]} cta="24/7 Call-Out" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/lk-img/hero.webp" alt="LockKey locksmith fitting a brass door lock" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Locked out? Back inside fast — day or night</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Emergency Lockout", "1,500 Tk"], ["Key Cutting", "300 Tk"], ["Smart Lock", "6,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-amber-50 px-2 py-1.5 ring-1 ring-amber-100">
+                <p className="text-[11px] font-black text-amber-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-amber-600 px-3 py-1.5 text-center text-[11px] font-black text-white">🚨 Emergency Call-Out</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🔑 All Services</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">24/7 • Non-destructive entry • Fixed prices</p>
       </Frame>
     ),
   },

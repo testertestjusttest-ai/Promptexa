@@ -713,7 +713,34 @@ const SOLAR_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const LOCKSMITH_DEF: DemoSiteDef = {
+  slug: "locksmith", name: "LockKey", type: "Locksmith & Key Service", layout: "service",
+  logoEmoji: "🔑", accent: "#b45309", dark: false, grad: "from-amber-600 via-yellow-600 to-stone-800",
+  heroTitle: "Locked out? Back inside fast — day or night",
+  heroSub: "24/7 emergency call-out • Non-destructive entry • Fixed prices agreed before work starts",
+  heroEmoji: "🔑",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Emergency Home Lockout", p: 1500, e: "🚪", c: "Emergency", duration: "30 minutes", rating: 4.9, desc: "Locked out of your home at any hour: a technician comes to you and opens the door without damage wherever possible — no drilling unless the lock itself is broken." },
+    { id: "s1", n: "Lock Installation & Replacement", p: 2500, e: "🔒", c: "Locks", duration: "1 hour", rating: 4.8, desc: "New deadbolts, knob locks and padlocks fitted and aligned properly: old hardware removed, the new lock tested with you, and spare keys cut on the spot." },
+    { id: "s2", n: "Key Cutting & Duplication", p: 300, e: "🔑", c: "Keys", duration: "15 minutes", rating: 4.9, desc: "Precise copies of house, office, padlock and cabinet keys cut while you wait — including high-security keys where the original card is presented." },
+    { id: "s3", n: "Smart Lock Installation", p: 6500, e: "📱", c: "Smart", duration: "2 hours", rating: 4.8, desc: "Keypad, fingerprint or phone-controlled locks fitted to your door, codes and app set up with you, and every entry method tested before handover." },
+    { id: "s4", n: "Car Key Cutting & Programming", p: 4500, e: "🚗", c: "Car Keys", duration: "1 hour", rating: 4.7, desc: "Replacement car keys cut and programmed at your location — no towing to a dealer. Lost keys deleted from the car where the system allows it." },
+    { id: "s5", n: "Safe Installation & Opening", p: 5000, e: "🗄️", c: "Safes", duration: "2 hours", rating: 4.8, desc: "Home and office safes bolted in place, combination or digital locks set, and locked-out safes opened with the least damage the safe allows." },
+    { id: "s6", n: "Rekeying & Master Key Systems", p: 1800, e: "🗝️", c: "Commercial", duration: "1 hour", rating: 4.9, desc: "One key for many doors, or old keys made useless after a move: cylinders re-pinned on site, new keys issued, and a written key record left with you." },
+  ],
+  gallery: [],
+  news: [],
+  about: "LockKey is a locksmith and key service for households and small businesses in Dhaka. Book online or call any time — a mobile technician comes to your door with cutting and programming equipment, so most jobs finish in a single visit. Every job has a fixed upfront price agreed before work starts: labour and standard parts quoted together, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open 24 hours, every day",
+  priceNote: "Prices in Tk. Emergency call-out included in the lockout price; parts quoted before fitting.",
+  theme: "minimal",
+};
+
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
