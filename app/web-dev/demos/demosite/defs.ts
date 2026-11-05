@@ -740,7 +740,43 @@ const LOCKSMITH_DEF: DemoSiteDef = {
   theme: "minimal",
 };
 
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* Modelled on real Bangladeshi couriers (inside-city parcels roughly
+ * 60 Tk up to 500g, outside-Dhaka roughly 110–130 Tk, COD around 1%,
+ * documents roughly 15–40 Tk) — and built better within the engine:
+ * transparent per-service prices with weight, zone and delivery time,
+ * category filtering (Parcel / Express / Documents / E-commerce /
+ * Large / International), online booking, live-tracking framing, and
+ * a visitor-editable admin. All content is English by default; no
+ * invented customer counts or coverage claims beyond the demo's own
+ * per-service star display. */
+
+const COURIER_DEF: DemoSiteDef = {
+  slug: "courier", name: "ParcelPro", type: "Courier & Parcel Delivery Service", layout: "service",
+  logoEmoji: "📦", accent: "#0e7490", dark: false, grad: "from-cyan-600 via-sky-600 to-slate-800",
+  heroTitle: "Parcels picked up, tracked, delivered — across the city and the country",
+  heroSub: "Door-to-door pickup • Live tracking • Cash on delivery • Fixed prices by weight and zone",
+  heroEmoji: "📦",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Same-City Parcel Delivery", p: 60, e: "📦", c: "Parcel", duration: "Same day", rating: 4.9, desc: "Door-to-door delivery inside the city for parcels up to 1 kg: pickup from your home or shop, live tracking from pickup to doorstep, and a photo proof of delivery." },
+    { id: "s1", n: "Nationwide Parcel Delivery", p: 120, e: "🚚", c: "Parcel", duration: "2–3 days", rating: 4.8, desc: "Parcels up to 1 kg sent to any district: booked online, tracked at every hub, and delivered to the door — 20 Tk per extra kg, quoted before you book." },
+    { id: "s2", n: "Express Same-Day Courier", p: 250, e: "⚡", c: "Express", duration: "Within 6 hours", rating: 4.9, desc: "Urgent parcels and documents across the city in hours, not days: a dedicated rider, priority handling, and delivery confirmed by phone and tracking." },
+    { id: "s3", n: "Document & Envelope Delivery", p: 40, e: "✉️", c: "Documents", duration: "Next day", rating: 4.8, desc: "Letters, certificates, contracts and small envelopes delivered sealed and signed for: the receiver signs on delivery, and you get the confirmation the same day." },
+    { id: "s4", n: "E-commerce COD Delivery", p: 90, e: "💵", c: "E-commerce", duration: "1–2 days", rating: 4.7, desc: "For online sellers: cash collected from the buyer on delivery, a 1% COD charge on the collected amount, and fast payout to your account after delivery." },
+    { id: "s5", n: "Fragile & Large Parcel", p: 350, e: "🛡️", c: "Large", duration: "2–3 days", rating: 4.8, desc: "Glassware, electronics and parcels up to 10 kg: packed with protection, marked fragile at every hub, and handled separately from standard parcels." },
+    { id: "s6", n: "International Document Express", p: 1500, e: "✈️", c: "International", duration: "3–5 days", rating: 4.7, desc: "Documents sent abroad by air express: customs forms filled with you, tracking across borders, and delivery confirmation from the destination courier." },
+  ],
+  gallery: [],
+  news: [],
+  about: "ParcelPro is a courier and parcel delivery service for households and online sellers in Dhaka. Book online or call — a rider picks up from your door, every parcel is tracked from pickup to delivery, and every service has a fixed upfront price agreed before booking: weight, zone and delivery time quoted together, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 9:00 AM – 10:00 PM",
+  priceNote: "Prices in Tk per parcel up to 1 kg unless stated. COD charge 1% of the collected amount on e-commerce deliveries.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

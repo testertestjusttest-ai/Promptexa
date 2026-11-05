@@ -55,6 +55,7 @@ const HAND_GROUPS: Record<string, string> = {
   gardening: "🛠️ Services",
   solar: "🛠️ Services",
   locksmith: "🛠️ Services",
+  courier: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -871,6 +872,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">24/7 • Non-destructive entry • Fixed prices</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "courier",
+    name: "ParcelPro",
+    type: "Courier & Parcel Delivery Service",
+    desc: "Same-city and nationwide parcels, express same-day courier, documents, e-commerce COD delivery, fragile and large parcels, and international documents — fixed prices by weight and zone, live tracking, and a full admin panel.",
+    price: "From 40 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="📦 ParcelPro" links={["Services", "Track", "Book"]} cta="Book Pickup" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pp-img/hero.webp" alt="ParcelPro courier loading parcels into a delivery van" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Parcels picked up, tracked, delivered</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Same-City", "60 Tk"], ["Nationwide", "120 Tk"], ["Express", "250 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-cyan-50 px-2 py-1.5 ring-1 ring-cyan-100">
+                <p className="text-[11px] font-black text-cyan-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-cyan-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📦 Book a Pickup</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📍 Track a Parcel</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Live tracking • Cash on delivery</p>
       </Frame>
     ),
   },

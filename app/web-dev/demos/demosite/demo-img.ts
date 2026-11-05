@@ -392,4 +392,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "courier": {
+    hero: "/pp-img/hero.webp",
+    cats: {
+    },
+  },
 };
