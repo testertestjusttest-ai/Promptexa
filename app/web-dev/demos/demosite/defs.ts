@@ -776,7 +776,44 @@ const COURIER_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk per parcel up to 1 kg unless stated. COD charge 1% of the collected amount on e-commerce deliveries.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* Modelled on real photography studios (Kelxshot Studios, Sissel Studio,
+ * WTL Photography Studio, Candid Studios, Jenya Johnston, Calla Esse) —
+ * wedding collections with two photographers, preview galleries and album
+ * options; portrait/headshot and family sessions by the hour with edited
+ * photo counts; event coverage by the hour; engagement shoots; prints and
+ * albums as add-ons; private online galleries and a booking deposit — and
+ * built better within the engine: transparent per-service prices, online
+ * booking, and a visitor-editable admin. All content is English by
+ * default; no invented customer counts or coverage claims beyond the
+ * demo's own per-service star display. */
+
+const PHOTOGRAPHY_DEF: DemoSiteDef = {
+  slug: "photography", name: "LensCraft", type: "Photography Studio", layout: "service",
+  logoEmoji: "📷", accent: "#b45309", dark: false, grad: "from-amber-600 via-orange-600 to-stone-800",
+  heroTitle: "Every moment, beautifully kept forever",
+  heroSub: "Weddings • Portraits • Events • Family — edited photos, private gallery, albums & prints",
+  heroEmoji: "📷",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Wedding Day Photography", p: 45000, e: "💍", c: "Wedding", duration: "Full day", rating: 4.9, desc: "Full-day coverage from getting ready to the last dance: two photographers, 500+ edited photos in a private online gallery, and a preview set within 2 days." },
+    { id: "s1", n: "Engagement & Pre-Wedding Shoot", p: 8000, e: "💕", c: "Wedding", duration: "2 hours", rating: 4.9, desc: "A relaxed two-hour shoot at the location of your choice: one photographer, 40 edited photos, two outfits, and a private gallery to share with family." },
+    { id: "s2", n: "Portrait & Headshot Session", p: 3500, e: "🧑", c: "Portrait", duration: "1 hour", rating: 4.8, desc: "Studio or outdoor portraits for work, profiles and portfolios: one hour, two outfits, 10 retouched photos, and a print-ready file with every image." },
+    { id: "s3", n: "Family & Group Portraits", p: 5000, e: "👨‍👩‍👧", c: "Portrait", duration: "1 hour", rating: 4.8, desc: "Family groups of up to eight people, guided posing included: one hour at your home or outdoors, 15 edited photos, and a private gallery for the whole family." },
+    { id: "s4", n: "Event & Party Coverage", p: 12000, e: "🎉", c: "Event", duration: "4 hours", rating: 4.7, desc: "Birthdays, corporate events and celebrations covered end to end: one photographer for four hours, 150+ edited photos, and a shareable online gallery." },
+    { id: "s5", n: "Product & Food Photography", p: 6000, e: "🍽️", c: "Studio", duration: "Half day", rating: 4.8, desc: "Clean studio shots for shops, menus and catalogues: styled sets, 20 edited photos with white-background files, and a print-ready file with every image." },
+    { id: "s6", n: "Wedding Album & Prints", p: 9500, e: "📖", c: "Studio", duration: "2 weeks", rating: 4.9, desc: "A 30-page premium lay-flat album designed from your wedding gallery, plus 20 fine-art prints: proofed with you before printing, delivered to your door." },
+  ],
+  gallery: [],
+  news: [],
+  about: "LensCraft is a photography studio in Dhaka for weddings, portraits, events and families. Book online or call — a photographer plans the shoot with you, every photo is professionally edited, and your images arrive in a private online gallery with prints and albums available: fixed prices agreed before booking, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 9:00 AM – 10:00 PM",
+  priceNote: "Prices in Tk per session. 50% advance confirms your booking; edited photos delivered in a private online gallery within 7 days.",
+  theme: "elegant",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

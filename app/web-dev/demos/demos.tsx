@@ -56,6 +56,7 @@ const HAND_GROUPS: Record<string, string> = {
   solar: "🛠️ Services",
   locksmith: "🛠️ Services",
   courier: "🛠️ Services",
+  photography: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -902,6 +903,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Live tracking • Cash on delivery</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "photography",
+    name: "LensCraft",
+    type: "Photography Studio",
+    desc: "Weddings, portraits, events and family sessions — two photographers on wedding days, edited photos in a private gallery, albums and prints, and a full admin panel.",
+    price: "From 3,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="📷 LensCraft" links={["Services", "Gallery", "Book"]} cta="Book a Shoot" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/ph-img/hero.webp" alt="LensCraft photographer shooting a wedding couple in a garden at sunset" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Every moment, beautifully kept forever</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Wedding Day", "45,000 Tk"], ["Portraits", "3,500 Tk"], ["Events", "12,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-amber-50 px-2 py-1.5 ring-1 ring-amber-100">
+                <p className="text-[11px] font-black text-amber-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-amber-600 px-3 py-1.5 text-center text-[11px] font-black text-white">📷 Book a Shoot</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">🖼️ View Gallery</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Edited photos • Private gallery</p>
       </Frame>
     ),
   },
