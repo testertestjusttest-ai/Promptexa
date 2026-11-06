@@ -813,7 +813,45 @@ const PHOTOGRAPHY_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk per session. 50% advance confirms your booking; edited photos delivered in a private online gallery within 7 days.",
   theme: "elegant",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+/* ================= MOTORCARE — auto repair & car service (2026-11-07) =================
+ * Modelled on the real auto-care chains (Firestone Complete Auto Care,
+ * Meineke, Midas) — oil changes, brake inspection and repair, tire
+ * rotation and balancing, wheel alignment, battery testing and
+ * replacement, engine diagnostics, AC service, multi-point inspection —
+ * and built better within the engine: transparent per-service prices with
+ * durations and what's included, category filtering (Maintenance / Brakes /
+ * Tires / Electrical / Diagnostics / Comfort), online booking, and a
+ * visitor-editable admin. All content is English by default; no invented
+ * customer counts or coverage claims beyond the demo's own per-service
+ * star display. */
+
+const AUTOREPAIR_DEF: DemoSiteDef = {
+  slug: "autorepair", name: "MotorCare", type: "Auto Repair & Car Service", layout: "service",
+  logoEmoji: "🚗", accent: "#b91c1c", dark: false, grad: "from-red-700 via-zinc-700 to-zinc-900",
+  heroTitle: "Your car, fixed right — back on the road today",
+  heroSub: "Oil change • Brakes • Tires • Diagnostics — genuine parts, fixed prices, same-day service",
+  heroEmoji: "🚗",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Engine Oil & Filter Change", p: 2500, e: "🛢️", c: "Maintenance", duration: "45 minutes", rating: 4.9, desc: "Engine oil and filter replaced with the grade your car needs, plus a free multi-point check of fluids, belts, lights and tire pressure — done while you wait." },
+    { id: "s1", n: "Brake Pad Replacement", p: 4500, e: "🛑", c: "Brakes", duration: "2 hours", rating: 4.8, desc: "Brake pads replaced per axle with rotors checked and a free brake inspection first: stopping power tested on the road with you before handover." },
+    { id: "s2", n: "Tire Rotation & Balancing", p: 1200, e: "🛞", c: "Tires", duration: "1 hour", rating: 4.8, desc: "All four tires rotated and balanced for even wear and a smoother ride: tread and pressure checked, and the spare inspected while the car is up." },
+    { id: "s3", n: "Wheel Alignment", p: 2000, e: "🎯", c: "Tires", duration: "1 hour", rating: 4.9, desc: "Four-wheel alignment on a laser aligner: steering centred, tire wear evened out, and a before-and-after printout handed to you with the keys." },
+    { id: "s4", n: "Battery Check & Replacement", p: 6500, e: "🔋", c: "Electrical", duration: "45 minutes", rating: 4.8, desc: "Battery tested free, terminals cleaned, and a new battery fitted with the right rating for your car — old battery taken away, 1-year battery warranty included." },
+    { id: "s5", n: "Engine Diagnostics", p: 1800, e: "🔍", c: "Diagnostics", duration: "1 hour", rating: 4.7, desc: "A full computer scan for warning lights, rough idling or poor mileage: the fault code explained in plain words, with a fixed repair quote before any work starts." },
+    { id: "s6", n: "AC Service & Gas Refill", p: 3500, e: "❄️", c: "Comfort", duration: "2 hours", rating: 4.8, desc: "AC gas topped up or refilled, cabin filter replaced, and cooling tested vent by vent: leaks checked first, so the cold air stays cold all summer." },
+  ],
+  gallery: [],
+  news: [],
+  about: "MotorCare is a car repair and servicing workshop in Dhaka. Book online or call — a mechanic inspects your car, quotes a fixed price before any work starts, and fits genuine parts: every job has a fixed upfront price agreed before booking, no surprise charges.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Genuine parts + labour included; 6-month service warranty on every job.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

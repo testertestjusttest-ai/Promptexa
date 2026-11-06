@@ -402,4 +402,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "autorepair": {
+    hero: "/au-img/hero.webp",
+    cats: {
+    },
+  },
 };

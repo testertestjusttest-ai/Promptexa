@@ -57,6 +57,7 @@ const HAND_GROUPS: Record<string, string> = {
   locksmith: "🛠️ Services",
   courier: "🛠️ Services",
   photography: "🛠️ Services",
+  autorepair: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -933,6 +934,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Edited photos • Private gallery</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "autorepair",
+    name: "MotorCare",
+    type: "Auto Repair & Car Service",
+    desc: "Oil changes, brake repair, tire rotation and balancing, wheel alignment, battery replacement, engine diagnostics and AC service — fixed prices, genuine parts, same-day service, and a full admin panel.",
+    price: "From 1,200 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🔧 MotorCare" links={["Services", "Book", "Reviews"]} cta="Book Service" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/au-img/hero.webp" alt="MotorCare mechanic working under the open hood of a car in a bright workshop" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Your car, fixed right — back on the road today</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Oil Change", "2,500 Tk"], ["Brakes", "4,500 Tk"], ["Alignment", "2,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-red-50 px-2 py-1.5 ring-1 ring-red-100">
+                <p className="text-[11px] font-black text-red-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-red-700 px-3 py-1.5 text-center text-[11px] font-black text-white">🔧 Book Service</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📋 Free Inspection</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Genuine parts • Same-day service</p>
       </Frame>
     ),
   },
