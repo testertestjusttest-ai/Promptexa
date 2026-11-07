@@ -32,7 +32,13 @@ const STANDALONE_DEMO_ROUTES = [
  * Sitemap (Phase 5): static routes + published news articles + all demo routes.
  * Drafts never appear. If the news tables are not ready yet, the sitemap
  * degrades to the static routes instead of failing.
+ *
+ * Revalidate hourly: without this the sitemap is frozen at build time, so
+ * news articles published after the last deploy (10 a day) never appear in
+ * it until the next code push. Hourly regeneration picks them up on its own.
  */
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
