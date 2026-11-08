@@ -58,6 +58,7 @@ const HAND_GROUPS: Record<string, string> = {
   courier: "🛠️ Services",
   photography: "🛠️ Services",
   autorepair: "🛠️ Services",
+  catering: "🍔 Food",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -964,6 +965,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Genuine parts • Same-day service</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "catering",
+    name: "FeastHouse",
+    type: "Catering & Event Food Service",
+    desc: "Wedding buffets, corporate lunches and drop-off catering — fixed prices, a free tasting before you book, staffing, setup and breakdown included, and a full admin panel.",
+    price: "From 6,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🍽️ FeastHouse" links={["Menus", "Book", "Reviews"]} cta="Get a Quote" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/ct-img/hero.webp" alt="FeastHouse catering buffet with silver chafing dishes and desserts at a wedding reception" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Great food, beautifully served — for every celebration</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Wedding Buffet", "85,000 Tk"], ["Corporate Lunch", "25,000 Tk"], ["Dessert Table", "6,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-amber-50 px-2 py-1.5 ring-1 ring-amber-100">
+                <p className="text-[11px] font-black text-amber-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-amber-700 px-3 py-1.5 text-center text-[11px] font-black text-white">🍽️ Book a Tasting</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📋 Get a Quote</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free tasting • Setup included</p>
       </Frame>
     ),
   },

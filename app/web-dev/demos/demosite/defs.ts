@@ -851,7 +851,33 @@ const AUTOREPAIR_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk. Genuine parts + labour included; 6-month service warranty on every job.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const CATERING_DEF: DemoSiteDef = {
+  slug: "catering", name: "FeastHouse", type: "Catering & Event Food Service", layout: "service",
+  logoEmoji: "🍽️", accent: "#92400e", dark: false, grad: "from-amber-700 via-stone-700 to-stone-900",
+  heroTitle: "Great food, beautifully served — for every celebration",
+  heroSub: "Wedding buffets • Corporate lunches • Drop-off catering — fixed prices, tastings before you book, setup and service included",
+  heroEmoji: "🍽️",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Wedding Buffet (100 Guests)", p: 85000, e: "💒", c: "Wedding", duration: "Full day", rating: 4.9, desc: "A full dinner buffet for up to 100 guests: hot and cold hors d'oeuvres, salads, two entrées, sides and a dessert table, with cake cutting included — plus an onsite chef and 1 server per 30 guests for a 4-hour event." },
+    { id: "s1", n: "Corporate Lunch (50 Guests)", p: 25000, e: "🏢", c: "Corporate", duration: "2 hours", rating: 4.8, desc: "A hot buffet or boxed lunches for up to 50 people: salads, mains and drinks delivered hot, set up and cleared away — order by 5 PM the day before and lunch is ready on time." },
+    { id: "s2", n: "Birthday Party Package", p: 12000, e: "🎂", c: "Party", duration: "3 hours", rating: 4.9, desc: "Food, cake table and drinks for up to 30 guests: a kid-friendly menu, themed table setup and a server on site, so the host enjoys the party instead of running it." },
+    { id: "s3", n: "Drop-Off Catering", p: 8000, e: "📦", c: "Drop-off", duration: "1 hour", rating: 4.8, desc: "Hot food delivered in insulated boxes for up to 25 people — no staff, no setup: mains, rice, salad and drinks, ready to serve the moment it arrives." },
+    { id: "s4", n: "Cocktail & Canapé Reception", p: 18000, e: "🥂", c: "Reception", duration: "3 hours", rating: 4.8, desc: "Passed canapés, a live carving station and a dessert table for up to 40 guests, with a bartender on request — the polished start to a wedding, launch or anniversary evening." },
+    { id: "s5", n: "BBQ & Live Grill Station", p: 30000, e: "🔥", c: "Live station", duration: "4 hours", rating: 4.9, desc: "A live grill station for up to 60 guests: kebabs, grilled chicken and fish cooked to order in front of your guests, with salads, breads and sauces — the centrepiece of an outdoor party." },
+    { id: "s6", n: "Dessert & Cake Table", p: 6500, e: "🍰", c: "Dessert", duration: "2 hours", rating: 4.8, desc: "A styled dessert table for up to 40 guests: cakes, pastries, fruit and sweets arranged to match your theme — including cutting and serving your own celebration cake." },
+  ],
+  gallery: [],
+  news: [],
+  about: "FeastHouse is a catering and event food service in Dhaka. Every event starts with a free tasting and a written quote: tell us the occasion, the guest count and the budget, and you get a fixed price listing exactly what is included — food, staffing, setup and breakdown — before you pay anything.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Food, staffing, setup and breakdown included; final quote confirmed in writing before booking.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

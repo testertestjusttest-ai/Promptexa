@@ -407,4 +407,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "catering": {
+    hero: "/ct-img/hero.webp",
+    cats: {
+    },
+  },
 };
