@@ -412,4 +412,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "homecare": {
+    hero: "/hc-img/hero.webp",
+    cats: {
+    },
+  },
 };

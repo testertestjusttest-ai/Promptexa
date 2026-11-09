@@ -59,6 +59,7 @@ const HAND_GROUPS: Record<string, string> = {
   photography: "🛠️ Services",
   autorepair: "🛠️ Services",
   catering: "🍔 Food",
+  homecare: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -995,6 +996,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free tasting • Setup included</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "homecare",
+    name: "CareHaven",
+    type: "Home Care & Senior Care Service",
+    desc: "Personal care, companionship, meal preparation and medication reminders at home — trained caregivers, fixed prices, a written care plan made with your family, and a full admin panel.",
+    price: "From 1,000 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🏠 CareHaven" links={["Services", "Book", "Reviews"]} cta="Book a Visit" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hc-img/hero.webp" alt="CareHaven caregiver walking with an elderly man in a bright living room" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">Care at home, with a kind hand — every day</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Personal Care", "1,500 Tk"], ["Companionship", "1,000 Tk"], ["Memory Care", "3,500 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-teal-50 px-2 py-1.5 ring-1 ring-teal-100">
+                <p className="text-[11px] font-black text-teal-700">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-teal-700 px-3 py-1.5 text-center text-[11px] font-black text-white">🏠 Book a Visit</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📋 Free Assessment</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Trained caregivers • Care plan included</p>
       </Frame>
     ),
   },

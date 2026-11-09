@@ -877,7 +877,33 @@ const CATERING_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk. Food, staffing, setup and breakdown included; final quote confirmed in writing before booking.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const HOMECARE_DEF: DemoSiteDef = {
+  slug: "homecare", name: "CareHaven", type: "Home Care & Senior Care Service", layout: "service",
+  logoEmoji: "🏠", accent: "#0f766e", dark: false, grad: "from-teal-700 via-emerald-800 to-slate-900",
+  heroTitle: "Care at home, with a kind hand — every day",
+  heroSub: "Personal care • Companionship • Meal preparation • Medication reminders — trained caregivers, fixed prices, care plans made with your family",
+  heroEmoji: "🏠",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Personal Care Visit", p: 1500, e: "🛁", c: "Personal care", duration: "2 hours", rating: 4.9, desc: "Help with bathing, dressing, grooming and getting up in the morning — a trained caregiver, the same familiar face whenever possible, at a time your family chooses." },
+    { id: "s1", n: "Companionship & Conversation", p: 1000, e: "💬", c: "Companionship", duration: "2 hours", rating: 4.9, desc: "Friendly company at home: conversation, reading together, a walk around the block or a game of cards — so no day feels long or lonely." },
+    { id: "s2", n: "Meal Preparation", p: 1200, e: "🍲", c: "Meals", duration: "2 hours", rating: 4.8, desc: "Groceries bought and fresh meals cooked to the diet the doctor ordered, served on time — with the kitchen left clean and the next meal planned." },
+    { id: "s3", n: "Medication Reminders & Health Checks", p: 1800, e: "💊", c: "Health", duration: "1 hour", rating: 4.8, desc: "Medicines set out and reminded on schedule, blood pressure and sugar checked and written down — and the family told at once if anything looks off." },
+    { id: "s4", n: "Mobility & Fall-Prevention Support", p: 2000, e: "🚶", c: "Mobility", duration: "2 hours", rating: 4.9, desc: "Safe help standing, walking and moving around the house: a steady arm, the right walker or wheelchair, and the home checked for trip hazards." },
+    { id: "s5", n: "Dementia & Memory Care", p: 3500, e: "🧠", c: "Memory care", duration: "4 hours", rating: 4.9, desc: "Calm, patient care for memory loss: familiar routines kept, gentle reminders, and a caregiver trained to handle confusion without distress." },
+    { id: "s6", n: "Respite Care (Full Day)", p: 4500, e: "🌿", c: "Respite", duration: "Full day", rating: 4.8, desc: "A full day of care while the family caregiver rests: personal care, meals, medication reminders and company, with a written note on how the day went." },
+  ],
+  gallery: [],
+  news: [],
+  about: "CareHaven is a home care service in Dhaka. Every family starts with a free care assessment at home: tell us what your loved one needs, and you get a written care plan listing exactly what is included — personal care, companionship, meals and medication reminders — before you pay anything.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Caregiver, travel and care-plan review included; final quote confirmed in writing before booking.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
