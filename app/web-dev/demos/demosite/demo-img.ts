@@ -417,4 +417,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "roofing": {
+    hero: "/rf-img/hero.webp",
+    cats: {
+    },
+  },
 };

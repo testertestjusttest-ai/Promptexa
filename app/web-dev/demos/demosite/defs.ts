@@ -903,7 +903,33 @@ const HOMECARE_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk. Caregiver, travel and care-plan review included; final quote confirmed in writing before booking.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const ROOFING_DEF: DemoSiteDef = {
+  slug: "roofing", name: "RoofGuard", type: "Roofing & Roof Repair Service", layout: "service",
+  logoEmoji: "🏡", accent: "#7c2d12", dark: false, grad: "from-orange-800 via-stone-700 to-stone-900",
+  heroTitle: "Leaks stopped, roofs rebuilt — rain or shine",
+  heroSub: "Roof replacement • Leak repair • Gutters & skylights — free inspection, fixed prices, work guaranteed",
+  heroEmoji: "🏡",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Roof Inspection & Leak Detection", p: 1500, e: "🔍", c: "Inspection", duration: "1 hour", rating: 4.9, desc: "A full roof check — shingles, flashing, gutters and attic — with photos of every problem found and a written report on what to fix first." },
+    { id: "s1", n: "Leak Repair", p: 3500, e: "💧", c: "Repair", duration: "Half day", rating: 4.9, desc: "Leaks traced to the source and sealed: flashing resealed, cracked tiles replaced, pipe boots fixed — so the drip stops for good." },
+    { id: "s2", n: "Shingle Repair & Replacement", p: 8000, e: "🧱", c: "Repair", duration: "1 day", rating: 4.8, desc: "Wind- or hail-damaged shingles replaced to match your roof: colour-matched, sealed and nailed to manufacturer spec." },
+    { id: "s3", n: "Gutter Installation & Repair", p: 6500, e: "🌧️", c: "Gutters", duration: "1 day", rating: 4.8, desc: "Seamless gutters fitted or repaired, downpipes re-routed and guards added — rainwater flows away from your walls, not into them." },
+    { id: "s4", n: "Skylight Installation & Repair", p: 12000, e: "☀️", c: "Skylight", duration: "1 day", rating: 4.8, desc: "A new skylight fitted with a watertight flashing kit, or a leaking one resealed — natural light in, rain kept out." },
+    { id: "s5", n: "Waterproofing & Roof Coating", p: 15000, e: "🛡️", c: "Protection", duration: "2 days", rating: 4.9, desc: "A protective waterproof coating over the whole roof: stops damp at the source and adds years to the roof's life." },
+    { id: "s6", n: "Full Roof Replacement", p: 120000, e: "🏠", c: "Replacement", duration: "3–5 days", rating: 4.9, desc: "The old roof stripped off and a new one built properly: decking, underlayment, flashing and ventilation, with a written warranty on the work." },
+  ],
+  gallery: [],
+  news: [],
+  about: "RoofGuard is a roofing and roof repair service in Dhaka. Every job starts with a free roof inspection: tell us the leak, the damage or the roof you want, and you get a fixed price listing exactly what is included — materials, labour and cleanup — before you pay anything.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Materials, labour and cleanup included; final quote confirmed in writing before booking.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ROOFING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];
