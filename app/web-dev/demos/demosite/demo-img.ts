@@ -422,4 +422,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "driving": {
+    hero: "/dv-img/hero.webp",
+    cats: {
+    },
+  },
 };

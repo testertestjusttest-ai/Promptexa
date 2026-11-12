@@ -929,7 +929,33 @@ const ROOFING_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk. Materials, labour and cleanup included; final quote confirmed in writing before booking.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ROOFING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const DRIVING_DEF: DemoSiteDef = {
+  slug: "driving", name: "DriveReady", type: "Driving School & Lessons", layout: "service",
+  logoEmoji: "🚗", accent: "#1d4ed8", dark: false, grad: "from-blue-800 via-slate-800 to-slate-900",
+  heroTitle: "From first lesson to licence — drive with confidence",
+  heroSub: "Beginner lessons • Intensive courses • Mock tests — patient instructors, dual-control cars, fixed prices, test-day car included",
+  heroEmoji: "🚗",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "First-Time Beginner Lesson", p: 1500, e: "🚗", c: "Lessons", duration: "2 hours", rating: 4.9, desc: "Your very first time behind the wheel: cockpit drill, moving off and stopping, steering and clutch control — a calm instructor beside you in a dual-control car, on quiet roads." },
+    { id: "s1", n: "10-Lesson Beginner Package", p: 12000, e: "📚", c: "Packages", duration: "10 lessons", rating: 4.9, desc: "Ten structured lessons that take you from first drive to test standard: junctions, roundabouts, parking and dual carriageways, with a progress card after every lesson." },
+    { id: "s2", n: "Intensive Course (2 Weeks)", p: 25000, e: "⚡", c: "Intensive", duration: "2 weeks", rating: 4.8, desc: "Learn to drive in two focused weeks: 4 hours a day, Monday to Friday, with your practical test booked at the end — the fastest route from beginner to licence." },
+    { id: "s3", n: "Mock Driving Test", p: 2000, e: "📝", c: "Test prep", duration: "1 hour", rating: 4.9, desc: "A full dress rehearsal of the real test: the same routes, the same marking, a written report on every fault — so test day holds no surprises." },
+    { id: "s4", n: "Refresher Course for Licence Holders", p: 5000, e: "🔄", c: "Refresher", duration: "5 lessons", rating: 4.8, desc: "Back behind the wheel after years away, or new to driving here: rebuild confidence, parking and motorway skills with a patient instructor at your pace." },
+    { id: "s5", n: "Automatic Car Lessons", p: 3000, e: "⚙️", c: "Lessons", duration: "2 hours", rating: 4.9, desc: "Learn in an automatic: no gears, no clutch, no stalling — just steering, observation and road sense, in a modern automatic car." },
+    { id: "s6", n: "Test-Day Car Hire", p: 4500, e: "🎓", c: "Test day", duration: "Half day", rating: 4.9, desc: "Take your test in our dual-control car: a warm-up lesson before the test, the car waiting at the test centre, and your instructor there to wish you luck." },
+  ],
+  gallery: [],
+  news: [],
+  about: "DriveReady is a driving school in Dhaka. Every learner starts with a free assessment lesson: tell us your experience, and you get a written plan listing exactly what is included — lessons, mock tests and test-day car — before you pay anything.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Instructor, dual-control car and fuel included; test fees are paid to the licensing authority, not to us.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ROOFING_DEF, DRIVING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

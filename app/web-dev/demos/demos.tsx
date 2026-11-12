@@ -61,6 +61,7 @@ const HAND_GROUPS: Record<string, string> = {
   catering: "🍔 Food",
   homecare: "🛠️ Services",
   roofing: "🛠️ Services",
+  driving: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -1057,6 +1058,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Free inspection • Work guaranteed</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "driving",
+    name: "DriveReady",
+    type: "Driving School & Lessons",
+    desc: "Beginner lessons, intensive courses, mock tests and test-day car hire — patient instructors, dual-control cars, fixed prices, and a full admin panel.",
+    price: "From 1,500 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🚗 DriveReady" links={["Lessons", "Courses", "Reviews"]} cta="Free Assessment" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/dv-img/hero.webp" alt="DriveReady learner driver with instructor in a dual-control car" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">From first lesson to licence — drive with confidence</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Beginner Lesson", "1,500 Tk"], ["10-Lesson Pack", "12,000 Tk"], ["Intensive Course", "25,000 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-blue-50 px-2 py-1.5 ring-1 ring-blue-100">
+                <p className="text-[11px] font-black text-blue-800">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-blue-700 px-3 py-1.5 text-center text-[11px] font-black text-white">🚗 Free Assessment</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📋 Get a Quote</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Dual-control cars • Test-day car included</p>
       </Frame>
     ),
   },
