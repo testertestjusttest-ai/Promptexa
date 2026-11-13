@@ -955,7 +955,33 @@ const DRIVING_DEF: DemoSiteDef = {
   priceNote: "Prices in Tk. Instructor, dual-control car and fuel included; test fees are paid to the licensing authority, not to us.",
   theme: "minimal",
 };
-export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ROOFING_DEF, DRIVING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
+const PETGROOMING_DEF: DemoSiteDef = {
+  slug: "petgrooming", name: "PawSpa", type: "Pet Grooming & Spa Service", layout: "service",
+  logoEmoji: "🐾", accent: "#0f766e", dark: false, grad: "from-teal-800 via-stone-700 to-stone-900",
+  heroTitle: "A fresh, happy pet — groomed with gentle hands",
+  heroSub: "Baths • Full haircuts • Nail & paw care — gentle groomers, fixed prices, dogs and cats welcome",
+  heroEmoji: "🐾",
+  cats: ["All"],
+  products: [],
+  services: [
+    { id: "s0", n: "Bath & Brush", p: 1200, e: "🛁", c: "Bath", duration: "1 hour", rating: 4.9, desc: "A warm bath with a gentle pet shampoo, blow-dry and full brush-out — coat clean, soft and tangle-free, with ears wiped and paws checked." },
+    { id: "s1", n: "Bath & Full Haircut", p: 2500, e: "✂️", c: "Haircut", duration: "2 hours", rating: 4.9, desc: "Everything in the bath, plus a full-body cut to your breed's style: face, paws and sanitary trim, brushing and light de-matting included." },
+    { id: "s2", n: "Puppy's First Groom", p: 1500, e: "🐶", c: "Puppy", duration: "1 hour", rating: 4.9, desc: "A slow, gentle first visit for puppies up to 5 months: a warm bath, 15 minutes of brushing, a nail trim and lots of treats — so grooming feels safe from day one." },
+    { id: "s3", n: "Nail Trim & Paw Care", p: 800, e: "🐾", c: "Nails", duration: "30 min", rating: 4.8, desc: "Nails trimmed and filed smooth so they stop catching and splitting, with paw pads checked and trimmed — walk in, walk out in half an hour." },
+    { id: "s4", n: "De-Shedding Treatment", p: 1800, e: "🧹", c: "Coat care", duration: "1.5 hours", rating: 4.8, desc: "A deep de-shedding bath and brush-out that lifts out loose undercoat — less hair on your sofa, a lighter coat on your dog, and calmer skin underneath." },
+    { id: "s5", n: "Teeth Brushing & Ear Cleaning", p: 1000, e: "🦷", c: "Care", duration: "45 min", rating: 4.8, desc: "Teeth brushed with pet-safe toothpaste and ears gently cleaned — fresher breath, healthier gums, and ears checked for redness or mites." },
+    { id: "s6", n: "Flea & Tick Bath", p: 2000, e: "🛡️", c: "Treatment", duration: "1 hour", rating: 4.9, desc: "A medicated flea and tick bath that kills fleas on contact, followed by a soothing rinse — for pets that have picked up fleas on walks or at the park." },
+  ],
+  gallery: [],
+  news: [],
+  about: "PawSpa is a pet grooming and spa service in Dhaka. Every visit starts with a coat and skin check: tell us your pet's breed, age and temperament, and you get a fixed price listing exactly what is included — bath, cut, nails and care — before you pay anything.",
+  contact: "01833402586",
+  address: "House 12, Road 5, Dhanmondi, Dhaka 1205",
+  hours: "Open daily, 8:00 AM – 8:00 PM",
+  priceNote: "Prices in Tk. Shampoo, grooming and cleanup included; final quote confirmed in writing before booking.",
+  theme: "minimal",
+};
+export const DEMO_DEFS: DemoSiteDef[] = [...HAND_DEFS, AURELIA_DEF, CLEANING_DEF, PAINTING_DEF, PESTCONTROL_DEF, APPLIANCEREPAIR_DEF, MOVING_DEF, SECURITY_DEF, GARDENING_DEF, SOLAR_DEF, LOCKSMITH_DEF, COURIER_DEF, PHOTOGRAPHY_DEF, AUTOREPAIR_DEF, CATERING_DEF, HOMECARE_DEF, ROOFING_DEF, DRIVING_DEF, PETGROOMING_DEF, ...ENGINE_CONVERTED, ...FINTECH_DEFS];
 
 /* Attach real photo assets (hero + category images) to every demo def. */
 const THEMES: DemoTheme[] = ["aurora", "split", "minimal", "bold", "elegant", "playful"];

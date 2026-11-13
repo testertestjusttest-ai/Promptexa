@@ -62,6 +62,7 @@ const HAND_GROUPS: Record<string, string> = {
   homecare: "🛠️ Services",
   roofing: "🛠️ Services",
   driving: "🛠️ Services",
+  petgrooming: "🛠️ Services",
   fitnesscourse: "💪 Fitness",
 };
 
@@ -1088,6 +1089,36 @@ const HAND_DEMOS: Demo[] = [
           </div>
         </div>
         <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Dual-control cars • Test-day car included</p>
+      </Frame>
+    ),
+  },
+  {
+    slug: "petgrooming",
+    name: "PawSpa",
+    type: "Pet Grooming & Spa Service",
+    desc: "Baths, full haircuts, nail and paw care — gentle groomers, fixed prices, dogs and cats welcome, and a full admin panel.",
+    price: "From 800 Tk",
+    render: () => (
+      <Frame>
+        <Nav logo="🐾 PawSpa" links={["Services", "Book", "Reviews"]} cta="Free Assessment" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/pg-img/hero.webp" alt="PawSpa groomer brushing a golden retriever in a bright pet salon" className="h-24 w-full object-cover" />
+        <div className="bg-white px-4 py-3">
+          <p className="text-sm font-black leading-snug text-slate-900">A fresh, happy pet — groomed with gentle hands</p>
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-center">
+            {[["Bath & Brush", "1,200 Tk"], ["Full Haircut", "2,500 Tk"], ["Nail & Paw Care", "800 Tk"]].map(([v, t]) => (
+              <div key={t} className="rounded-xl bg-teal-50 px-2 py-1.5 ring-1 ring-teal-100">
+                <p className="text-[11px] font-black text-teal-800">{v}</p>
+                <p className="text-[9px] font-bold text-slate-500">{t}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+            <span className="rounded-xl bg-teal-700 px-3 py-1.5 text-center text-[11px] font-black text-white">🐾 Free Assessment</span>
+            <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-center text-[11px] font-black text-slate-600 ring-1 ring-slate-200">📋 Get a Quote</span>
+          </div>
+        </div>
+        <p className="bg-slate-50 px-4 py-2 text-center text-[10px] font-bold text-slate-400">Fixed prices • Gentle groomers • Dogs & cats welcome</p>
       </Frame>
     ),
   },

@@ -427,4 +427,9 @@ export const DEMO_IMGS: Record<string, DemoImgs> = {
     cats: {
     },
   },
+  "petgrooming": {
+    hero: "/pg-img/hero.webp",
+    cats: {
+    },
+  },
 };
